@@ -5,9 +5,8 @@ import AuditChat from './components/AuditChat.jsx'
 import Report from './components/Report.jsx'
 import ConfigScreen from './components/ConfigScreen.jsx'
 
-// In production: set these as env vars and remove ConfigScreen
+// In production: set VITE_CLAUDE_API_KEY as env var and remove ConfigScreen
 const ENV_CLAUDE_KEY = import.meta.env.VITE_CLAUDE_API_KEY || ''
-const ENV_RESEND_KEY = import.meta.env.VITE_RESEND_API_KEY || ''
 
 const SCREENS = {
   CONFIG: 'config',
@@ -18,17 +17,15 @@ const SCREENS = {
 }
 
 export default function App() {
-  const needsConfig = !ENV_CLAUDE_KEY || !ENV_RESEND_KEY
+  const needsConfig = !ENV_CLAUDE_KEY
 
   const [screen, setScreen] = useState(needsConfig ? SCREENS.CONFIG : SCREENS.LANDING)
   const [claudeKey, setClaudeKey] = useState(ENV_CLAUDE_KEY)
-  const [resendKey, setResendKey] = useState(ENV_RESEND_KEY)
   const [userInfo, setUserInfo] = useState(null)
   const [conversationHistory, setConversationHistory] = useState([])
 
-  const handleConfig = (ck, rk) => {
+  const handleConfig = (ck) => {
     setClaudeKey(ck)
-    setResendKey(rk)
     setScreen(SCREENS.LANDING)
   }
 
@@ -69,7 +66,6 @@ export default function App() {
           userInfo={userInfo}
           conversationHistory={conversationHistory}
           apiKey={claudeKey}
-          resendApiKey={resendKey}
         />
       )}
     </>
