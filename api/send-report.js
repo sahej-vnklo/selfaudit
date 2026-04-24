@@ -130,7 +130,7 @@ export default async function handler(req, res) {
         'Authorization': `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: 'SelfAudit <onboarding@resend.dev>',
+        from: 'SelfAudit <audit@tryselfaudit.com>',
         to: ['sales@vnklo.com'],
         reply_to: userInfo.email,
         subject: `Audit Report — ${userInfo.name} | ${userInfo.context || 'General Audit'}`,
