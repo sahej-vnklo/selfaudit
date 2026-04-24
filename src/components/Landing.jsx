@@ -147,7 +147,7 @@ export default function Landing({ onStart }) {
 
             {/* Pricing scroll */}
             <button
-              onClick={() => document.getElementById('comparison')?.scrollIntoView({ behavior: 'smooth' })}
+              onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
               style={{ fontSize: 14, color: C.inkSoft, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500, padding: 0 }}
             >
               Pricing
@@ -321,12 +321,12 @@ export default function Landing({ onStart }) {
       </section>
 
       {/* Pricing */}
-      <section style={{ padding: '100px 0', background: C.card }}>
+      <section id="pricing" style={{ padding: '100px 0', background: C.card }}>
         <div style={wrap}>
           <div style={sectionLabel}>Pricing</div>
-          <h2 style={h2Style}>Simple, honest pricing.</h2>
+          <h2 style={h2Style}>Pay what a decent coffee costs.<br />Get what a $15k consultant would tell you.</h2>
           <p style={{ textAlign: 'center', fontSize: 18, color: C.inkSoft, maxWidth: 540, margin: '0 auto 64px' }}>
-            Your first audit is free — no account needed. Come back for more.
+            Your first audit is always free — no account needed. Come back for more.
           </p>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, maxWidth: 760, margin: '0 auto' }}>
