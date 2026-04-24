@@ -320,6 +320,66 @@ export default function Landing({ onStart }) {
         </div>
       </section>
 
+      {/* Pricing */}
+      <section style={{ padding: '100px 0', background: C.card }}>
+        <div style={wrap}>
+          <div style={sectionLabel}>Pricing</div>
+          <h2 style={h2Style}>Simple, honest pricing.</h2>
+          <p style={{ textAlign: 'center', fontSize: 18, color: C.inkSoft, maxWidth: 540, margin: '0 auto 64px' }}>
+            Your first audit is free — no account needed. Come back for more.
+          </p>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, maxWidth: 760, margin: '0 auto' }}>
+            {/* Free card */}
+            <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 16, padding: 36, display: 'flex', flexDirection: 'column' }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: C.inkMuted, textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: 20 }}>Free</div>
+              <div style={{ fontFamily: serif, fontSize: 44, fontWeight: 700, letterSpacing: '-1px', color: C.ink, lineHeight: 1 }}>$0</div>
+              <div style={{ fontSize: 14, color: C.inkMuted, marginTop: 6, marginBottom: 28 }}>No account needed</div>
+              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 32px', display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
+                {['1 domain per audit', 'Surface level report', 'Short verdict — useful, not complete'].map(f => (
+                  <li key={f} style={{ fontSize: 14, color: C.inkSoft, display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                    <span style={{ color: C.accent, fontWeight: 600, flexShrink: 0 }}>→</span> {f}
+                  </li>
+                ))}
+              </ul>
+              <button
+                onClick={onStart}
+                style={{ display: 'block', width: '100%', padding: '14px', borderRadius: 100, fontSize: 15, fontWeight: 500, cursor: 'pointer', background: 'transparent', color: C.ink, border: `1px solid ${C.border}`, transition: 'background 0.2s' }}
+                onMouseEnter={e => e.currentTarget.style.background = C.bg}
+                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+              >
+                Start free audit
+              </button>
+            </div>
+
+            {/* Pro card */}
+            <div style={{ background: C.card, border: `2px solid ${C.accent}`, borderRadius: 16, padding: 36, display: 'flex', flexDirection: 'column', position: 'relative', boxShadow: `0 12px 40px rgba(92,141,110,0.12)` }}>
+              <div style={{ position: 'absolute', top: -13, right: 24, background: C.accent, color: 'white', fontSize: 11, fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', padding: '4px 14px', borderRadius: 100 }}>
+                Most popular
+              </div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: C.accent, textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: 20 }}>Pro</div>
+              <div style={{ fontFamily: serif, fontSize: 44, fontWeight: 700, letterSpacing: '-1px', color: C.ink, lineHeight: 1 }}>$19<span style={{ fontSize: 18, fontWeight: 500, color: C.inkMuted }}>/mo</span></div>
+              <div style={{ fontSize: 14, color: C.inkMuted, marginTop: 6, marginBottom: 28 }}>or $199/year — save 2 months</div>
+              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 32px', display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
+                {['All domains covered', 'Full drill-down audit', 'Complete written report', 'Root cause diagnosis', 'Fix-first priority list', 'AI vs non-AI breakdown', 'Email delivery', 'Re-audit to track progress'].map(f => (
+                  <li key={f} style={{ fontSize: 14, color: C.inkSoft, display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                    <span style={{ color: C.accent, fontWeight: 600, flexShrink: 0 }}>→</span> {f}
+                  </li>
+                ))}
+              </ul>
+              <button
+                onClick={onStart}
+                style={{ display: 'block', width: '100%', padding: '14px', borderRadius: 100, fontSize: 15, fontWeight: 500, cursor: 'pointer', background: C.accent, color: 'white', border: 'none', transition: 'background 0.2s' }}
+                onMouseEnter={e => e.currentTarget.style.background = C.accentDark}
+                onMouseLeave={e => e.currentTarget.style.background = C.accent}
+              >
+                Get full access
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Closing CTA */}
       <section style={{ background: C.bg, textAlign: 'center', padding: '120px 0' }}>
         <div style={wrap}>
