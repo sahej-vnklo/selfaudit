@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { generateReport, sendReportEmail } from '../lib/audit.js'
 
-export default function Report({ userInfo, conversationHistory, apiKey, resendApiKey }) {
+export default function Report({ userInfo, conversationHistory, apiKey }) {
   const [report, setReport] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -28,7 +28,7 @@ export default function Report({ userInfo, conversationHistory, apiKey, resendAp
     if (shareState !== 'idle') return
     setShareState('sending')
     try {
-      await sendReportEmail({ userInfo, report, resendApiKey })
+      await sendReportEmail({ userInfo, report })
       setShareState('sent')
     } catch (e) {
       setShareState('error')
