@@ -113,27 +113,16 @@ export async function generateReport(messages, apiKey) {
   return JSON.parse(clean)
 }
 
-export async function sendReportEmail({ userInfo, report, resendApiKey }) {
-  const emailBody = buildEmailHTML(userInfo, report)
-
-  const response = await fetch('https://api.resend.com/emails', {
+export async function sendReportEmail({ userInfo, report }) {
+  const response = await fetch('/api/send-report', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${resendApiKey}`,
-    },
-    body: JSON.stringify({
-      from: 'SelfAudit <audit@selfaudit.co>',
-      to: ['sales@vnklo.com'],
-      subject: `Audit Report — ${userInfo.name} (${userInfo.context || 'General Audit'})`,
-      html: emailBody,
-      reply_to: userInfo.email,
-    }),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userInfo, report }),
   })
 
   if (!response.ok) {
     const err = await response.json()
-    throw new Error(err.message || 'Email send failed')
+    throw new Error(err.error || 'Email send failed')
   }
 
   return true
