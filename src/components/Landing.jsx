@@ -124,19 +124,25 @@ export default function Landing({ onStart }) {
                 How it works
                 <span style={{ fontSize: 10, display: 'inline-block', transform: howOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.15s' }}>▾</span>
               </button>
-              {howOpen && (
-                <div style={{ position: 'absolute', top: 'calc(100% + 16px)', left: '50%', transform: 'translateX(-50%)', background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, padding: '8px 0', width: 340, zIndex: 100, boxShadow: '0 8px 32px rgba(0,0,0,0.08)' }}>
-                  {HOW_STEPS.map((step, i) => (
-                    <div key={i} style={{ padding: '14px 20px', borderBottom: i < HOW_STEPS.length - 1 ? `1px solid ${C.border}` : 'none', display: 'flex', gap: 14, alignItems: 'flex-start' }}>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: C.accent, letterSpacing: '0.5px', minWidth: 20, paddingTop: 2 }}>{step.num}</span>
-                      <div>
-                        <div style={{ fontSize: 14, fontWeight: 600, color: C.ink, marginBottom: 2 }}>{step.title}</div>
-                        <div style={{ fontSize: 13, color: C.inkMuted }}>{step.desc}</div>
-                      </div>
+              <div style={{
+                position: 'absolute', top: 'calc(100% + 16px)', left: '50%',
+                transform: howOpen ? 'translateX(-50%) translateY(0)' : 'translateX(-50%) translateY(-6px)',
+                opacity: howOpen ? 1 : 0,
+                pointerEvents: howOpen ? 'auto' : 'none',
+                transition: 'opacity 0.2s ease, transform 0.2s ease',
+                background: C.card, border: `1px solid ${C.border}`, borderRadius: 12,
+                padding: '8px 0', width: 340, zIndex: 100, boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
+              }}>
+                {HOW_STEPS.map((step, i) => (
+                  <div key={i} style={{ padding: '14px 20px', borderBottom: i < HOW_STEPS.length - 1 ? `1px solid ${C.border}` : 'none', display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: C.accent, letterSpacing: '0.5px', minWidth: 20, paddingTop: 2 }}>{step.num}</span>
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: C.ink, marginBottom: 2 }}>{step.title}</div>
+                      <div style={{ fontSize: 13, color: C.inkMuted }}>{step.desc}</div>
                     </div>
-                  ))}
-                </div>
-              )}
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Pricing scroll */}
