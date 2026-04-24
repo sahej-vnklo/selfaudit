@@ -91,12 +91,21 @@ function Btn({ label, onClick }) {
   )
 }
 
+const HOW_STEPS = [
+  { num: '01', title: 'Give context', desc: 'Optional. Your business type, size, and situation.' },
+  { num: '02', title: 'Describe your problem', desc: 'What feels broken, stuck, or unclear.' },
+  { num: '03', title: 'Answer 5–7 questions', desc: 'The audit drills in. No fluff, no filler.' },
+  { num: '04', title: 'Get your report', desc: 'A ruthless diagnosis and exactly what to do next.' },
+]
+
 export default function Landing({ onStart }) {
+  const [howOpen, setHowOpen] = useState(false)
+
   return (
     <div style={{ fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", background: C.bg, color: C.ink, lineHeight: 1.6, minHeight: '100vh' }}>
 
       {/* Nav */}
-      <nav style={{ padding: '24px 0', borderBottom: `1px solid ${C.border}`, background: C.bg }}>
+      <nav style={{ padding: '24px 0', borderBottom: `1px solid ${C.border}`, background: C.bg, position: 'relative' }}>
         <div style={{ ...wrap, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div
             style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.5px', cursor: 'pointer' }}
@@ -104,11 +113,46 @@ export default function Landing({ onStart }) {
           >
             self<span style={{ color: C.accent, fontWeight: 500 }}>audit</span>
           </div>
-          <div style={{ fontSize: 14, color: C.inkMuted }}>
-            by{' '}
-            <a href="https://vnklo.com" target="_blank" rel="noopener" style={{ color: C.accent, textDecoration: 'none', fontWeight: 500 }}>
-              Vnklo
-            </a>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
+            {/* How it works */}
+            <div style={{ position: 'relative' }}>
+              <button
+                onClick={() => setHowOpen(o => !o)}
+                style={{ fontSize: 14, color: howOpen ? C.accent : C.inkSoft, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500, padding: 0, display: 'flex', alignItems: 'center', gap: 5 }}
+              >
+                How it works
+                <span style={{ fontSize: 10, display: 'inline-block', transform: howOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.15s' }}>▾</span>
+              </button>
+              {howOpen && (
+                <div style={{ position: 'absolute', top: 'calc(100% + 16px)', left: '50%', transform: 'translateX(-50%)', background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, padding: '8px 0', width: 340, zIndex: 100, boxShadow: '0 8px 32px rgba(0,0,0,0.08)' }}>
+                  {HOW_STEPS.map((step, i) => (
+                    <div key={i} style={{ padding: '14px 20px', borderBottom: i < HOW_STEPS.length - 1 ? `1px solid ${C.border}` : 'none', display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: C.accent, letterSpacing: '0.5px', minWidth: 20, paddingTop: 2 }}>{step.num}</span>
+                      <div>
+                        <div style={{ fontSize: 14, fontWeight: 600, color: C.ink, marginBottom: 2 }}>{step.title}</div>
+                        <div style={{ fontSize: 13, color: C.inkMuted }}>{step.desc}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Pricing scroll */}
+            <button
+              onClick={() => document.getElementById('comparison')?.scrollIntoView({ behavior: 'smooth' })}
+              style={{ fontSize: 14, color: C.inkSoft, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500, padding: 0 }}
+            >
+              Pricing
+            </button>
+
+            <div style={{ fontSize: 14, color: C.inkMuted }}>
+              by{' '}
+              <a href="https://vnklo.com" target="_blank" rel="noopener" style={{ color: C.accent, textDecoration: 'none', fontWeight: 500 }}>
+                Vnklo
+              </a>
+            </div>
           </div>
         </div>
       </nav>
@@ -117,13 +161,12 @@ export default function Landing({ onStart }) {
       <section style={{ padding: '120px 0 100px', textAlign: 'center' }}>
         <div style={wrap}>
           <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 8,
+            display: 'inline-flex', alignItems: 'center',
             background: C.accentSoft, color: C.accentDark,
             padding: '8px 16px', borderRadius: 100,
             fontSize: 13, fontWeight: 500, marginBottom: 32,
           }}>
-            <span style={{ fontSize: 8 }}>●</span>
-            Advisory like never seen before
+            &ldquo;Advisory like never seen before&rdquo;
           </div>
           <h1 style={{
             fontFamily: serif, fontSize: 'clamp(40px, 6vw, 68px)', fontWeight: 700,
@@ -144,7 +187,7 @@ export default function Landing({ onStart }) {
       </section>
 
       {/* Comparison */}
-      <section style={{ padding: '100px 0', background: C.card }}>
+      <section id="comparison" style={{ padding: '100px 0', background: C.card }}>
         <div style={wrap}>
           <div style={sectionLabel}>The new math of advisory</div>
           <h2 style={h2Style}>Advisory used to require<br />a calendar invite.</h2>
