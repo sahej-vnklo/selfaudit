@@ -1,0 +1,58 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --green: #1D9E75;
+  --green-dark: #0F6E56;
+  --green-light: #E1F5EE;
+  --green-mid: #9FE1CB;
+  --black: #0D0D0D;
+  --white: #FAFAF8;
+  --gray-100: #F4F3EF;
+  --gray-200: #E8E6E0;
+  --gray-400: #B0ADA4;
+  --gray-600: #6B6860;
+  --gray-800: #2C2B28;
+  --serif: 'DM Serif Display', Georgia, serif;
+  --sans: 'DM Sans', system-ui, sans-serif;
+  --radius: 12px;
+  --radius-sm: 6px;
+  --radius-pill: 100px;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--sans);
+  background: var(--white);
+  color: var(--black);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+button { font-family: var(--sans); cursor: pointer; border: none; outline: none; }
+input, textarea { font-family: var(--sans); outline: none; }
+a { text-decoration: none; color: inherit; }
+
+::selection { background: var(--green-light); color: var(--green-dark); }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.animate-fadeup { animation: fadeUp 0.5s ease forwards; }
+.animate-fadein { animation: fadeIn 0.4s ease forwards; }
