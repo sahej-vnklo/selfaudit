@@ -12,7 +12,7 @@ export default function Landing({ onStart }) {
   return (
     <div style={styles.page}>
       <nav style={styles.nav}>
-        <div style={styles.logo}>
+        <div style={{...styles.logo, cursor: 'pointer'}} onClick={() => window.location.reload()}>
           self<span style={{ color: 'var(--green)' }}>audit</span>
         </div>
         <div style={styles.navRight}>
