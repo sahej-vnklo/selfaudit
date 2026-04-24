@@ -73,7 +73,7 @@ export default function Landing({ onStart }) {
           },
           {
             icon: '→',
-            title: 'Questions you haven't thought to ask.',
+            title: "Questions you haven't thought to ask.",
             body: "Built on real consulting frameworks. Expect to be challenged — even if you've been running things for years."
           }
         ].map((p, i) => (
