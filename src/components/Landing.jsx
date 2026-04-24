@@ -1,171 +1,299 @@
 import React, { useState } from 'react'
 
-export default function Landing({ onStart }) {
-  const [hovered, setHovered] = useState(false)
+const C = {
+  bg: '#F8F7F4',
+  ink: '#1A1A1A',
+  inkSoft: '#4A4A4A',
+  inkMuted: '#7A7A7A',
+  accent: '#5C8D6E',
+  accentDark: '#3F6B52',
+  accentSoft: '#E6F0EA',
+  border: '#E8E6E0',
+  card: '#FFFFFF',
+}
 
-  const domains = [
-    'Business strategy', 'Operations', 'Sales', 'Marketing',
-    'Finance', 'People & culture', 'Technology', 'Product',
-    'Side projects', 'Startups', 'Career', 'Personal goals', 'Anything else'
-  ]
+const serif = "'Playfair Display', Georgia, serif"
 
+const wrap = { maxWidth: 1100, margin: '0 auto', padding: '0 32px' }
+
+const sectionLabel = {
+  textAlign: 'center', fontSize: 12, letterSpacing: 2,
+  textTransform: 'uppercase', color: '#7A7A7A', marginBottom: 16, fontWeight: 500,
+}
+
+const h2Style = {
+  fontFamily: serif, fontSize: 'clamp(30px, 4vw, 48px)', fontWeight: 700,
+  lineHeight: 1.1, letterSpacing: '-1px', textAlign: 'center', marginBottom: 20,
+}
+
+const compareRows = [
+  { dim: 'Time to insight',              s: 'Full-day event',      sBad: true,  c: '4–8 weeks',          cBad: true,  o: '5 minutes',    oGood: true },
+  { dim: 'Personalized to your business', s: 'Generic frameworks', sBad: true,  c: 'Yes',                cGood: true, o: 'Yes',          oGood: true },
+  { dim: 'Covers every department',       s: 'Speaker-dependent',  sBad: true,  c: 'Usually one domain', cBad: true,  o: 'Every domain', oGood: true },
+  { dim: "Will say AI isn't the answer",  s: 'Rarely',             sBad: true,  c: 'Rarely',             cBad: true,  o: 'Always',       oGood: true },
+  { dim: 'Q&A depth',                     s: '2 minutes if lucky', sBad: true,  c: 'Unlimited',          cGood: true, o: 'Unlimited',    oGood: true },
+  { dim: 'Available right now',           s: 'Wait for next event',sBad: true,  c: 'Weeks to start',     cBad: true,  o: 'Instantly',    oGood: true },
+]
+
+const verdictCards = [
+  {
+    badge: 'Critical · Operations', badgeBg: '#FDE9E7', badgeColor: '#B84A3E',
+    verdict: '"You\'re managing symptoms while your QC team burns thousands in preventable mistakes monthly because accountability doesn\'t exist."',
+    industry: 'Manufacturing', time: '6 min', findings: '3 critical · 2 needs-work',
+    fix: 'Performance accountability before any tech',
+  },
+  {
+    badge: 'Critical · Strategy', badgeBg: '#FFF3E0', badgeColor: '#C68A2E',
+    verdict: '"You\'re strangling your only revenue source by refusing to invest in the capacity to serve it properly."',
+    industry: 'Service business', time: '5 min', findings: '4 critical',
+    fix: 'Seasonal capital model, not AI tools',
+  },
+  {
+    badge: 'Needs work · People', badgeBg: '#E6F0EA', badgeColor: '#3F6B52',
+    verdict: '"This isn\'t a technology problem. It\'s a management problem you\'ve been paying to ignore."',
+    industry: 'SaaS (25 employees)', time: '7 min', findings: '2 critical · 3 needs-work',
+    fix: 'Replace two underperformers before automating',
+  },
+]
+
+const pillars = [
+  {
+    title: "Questions you haven't thought to ask.",
+    body: "Built on real consulting frameworks used by firms charging $500/hour. The audit drills down until it hits the real root cause — not the symptom you came in with.",
+  },
+  {
+    title: 'Zero flattery. Zero bias.',
+    body: "This isn't a chatbot trained to keep you happy. It's built to disagree with you when you're wrong. Expect to be challenged — even if you've been running things for years.",
+  },
+  {
+    title: "Tells you when AI isn't the answer.",
+    body: "Sometimes it's a process problem, a people problem, a cash-flow problem. We'll name it directly. Built by an AI consultancy that would rather lose the sale than recommend something you don't need.",
+  },
+]
+
+function Btn({ label, onClick }) {
+  const [hov, setHov] = useState(false)
   return (
-    <div style={styles.page}>
-      <nav style={styles.nav}>
-        <div style={{...styles.logo, cursor: 'pointer'}} onClick={() => window.location.reload()}>
-          self<span style={{ color: 'var(--green)' }}>audit</span>
-        </div>
-        <div style={styles.navRight}>
-          by <a href="https://vnklo.com" target="_blank" rel="noopener" style={{ color: 'var(--green)', fontWeight: 500 }}>Vnklo</a>
-        </div>
-      </nav>
-
-      <main style={styles.main}>
-        <div style={styles.badge}>
-          <span style={styles.dot} />
-          Free · No signup required · No AI hype
-        </div>
-
-        <h1 style={styles.h1}>
-          Does your business<br />
-          <em style={styles.em}>actually need AI?</em>
-        </h1>
-
-        <p style={styles.sub}>
-          A 5-minute audit that cuts through the noise. Find out where AI genuinely helps — and where something else is broken first.
-        </p>
-
-        <button
-          style={{ ...styles.cta, ...(hovered ? styles.ctaHover : {}) }}
-          onMouseEnter={() => setHovered(true)}
-          onMouseLeave={() => setHovered(false)}
-          onClick={onStart}
-        >
-          Start your free audit
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ marginLeft: 8 }}>
-            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </button>
-
-        <p style={styles.subtext}>Works for businesses, startups, side projects & personal goals</p>
-
-        <div style={styles.pillsWrap}>
-          <p style={styles.pillsLabel}>Covers every domain</p>
-          <div style={styles.pills}>
-            {domains.map(d => (
-              <span key={d} style={styles.pill}>{d}</span>
-            ))}
-          </div>
-        </div>
-      </main>
-
-      <section style={styles.promises}>
-        {[
-          {
-            icon: '→',
-            title: "We'll tell you if AI isn't the answer.",
-            body: "Sometimes it's a process problem, a people problem, or a cash-flow problem. We'll name it directly."
-          },
-          {
-            icon: '→',
-            title: 'No bias during the audit.',
-            body: "The conversation is completely neutral. AI recommendations only appear in your final report — never mid-audit."
-          },
-          {
-            icon: '→',
-            title: "Questions you haven't thought to ask.",
-            body: "Built on real consulting frameworks. Expect to be challenged — even if you've been running things for years."
-          }
-        ].map((p, i) => (
-          <div key={i} style={styles.promise}>
-            <div style={styles.promiseIcon}>{p.icon}</div>
-            <div>
-              <p style={styles.promiseTitle}>{p.title}</p>
-              <p style={styles.promiseBody}>{p.body}</p>
-            </div>
-          </div>
-        ))}
-      </section>
-
-      <footer style={styles.footer}>
-        Built by <a href="https://vnklo.com" target="_blank" rel="noopener" style={{ color: 'var(--green)' }}>Vnklo</a> — AI systems for businesses that are ready for them.
-      </footer>
-    </div>
+    <button
+      style={{
+        display: 'inline-flex', alignItems: 'center', gap: 10,
+        background: hov ? C.accentDark : C.accent, color: 'white',
+        padding: '16px 32px', borderRadius: 100,
+        fontSize: 16, fontWeight: 500, border: 'none', cursor: 'pointer',
+        transition: 'background 0.2s',
+      }}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      onClick={onClick}
+    >
+      {label} <span style={{ fontSize: 18 }}>→</span>
+    </button>
   )
 }
 
-const styles = {
-  page: { minHeight: '100vh', display: 'flex', flexDirection: 'column' },
-  nav: {
-    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-    padding: '1.25rem 2.5rem',
-    borderBottom: '0.5px solid var(--gray-200)',
-    position: 'sticky', top: 0, background: 'var(--white)', zIndex: 10,
-  },
-  logo: { fontSize: 17, fontWeight: 500, fontFamily: 'var(--sans)', letterSpacing: '-0.5px' },
-  navRight: { fontSize: 13, color: 'var(--gray-600)' },
-  main: {
-    flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
-    textAlign: 'center', padding: '5rem 2rem 4rem', maxWidth: 680, margin: '0 auto', width: '100%'
-  },
-  badge: {
-    display: 'inline-flex', alignItems: 'center', gap: 7,
-    background: 'var(--green-light)', color: 'var(--green-dark)',
-    fontSize: 12, fontWeight: 500, padding: '5px 14px',
-    borderRadius: 'var(--radius-pill)', marginBottom: '2rem'
-  },
-  dot: {
-    width: 6, height: 6, borderRadius: '50%', background: 'var(--green)',
-    display: 'inline-block'
-  },
-  h1: {
-    fontFamily: 'var(--serif)', fontSize: 'clamp(36px, 6vw, 52px)',
-    fontWeight: 400, lineHeight: 1.15, letterSpacing: '-0.5px',
-    marginBottom: '1.5rem', color: 'var(--black)'
-  },
-  em: { fontStyle: 'italic', color: 'var(--green)' },
-  sub: {
-    fontSize: 17, color: 'var(--gray-600)', lineHeight: 1.7,
-    maxWidth: 460, marginBottom: '2.5rem'
-  },
-  cta: {
-    display: 'inline-flex', alignItems: 'center',
-    background: 'var(--green)', color: 'white',
-    fontSize: 15, fontWeight: 500, padding: '14px 28px',
-    borderRadius: 'var(--radius)', cursor: 'pointer',
-    transition: 'background 0.15s, transform 0.1s',
-    marginBottom: '0.75rem'
-  },
-  ctaHover: { background: 'var(--green-dark)', transform: 'translateY(-1px)' },
-  subtext: { fontSize: 12, color: 'var(--gray-400)', marginBottom: '3rem' },
-  pillsWrap: { width: '100%' },
-  pillsLabel: {
-    fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.8px',
-    color: 'var(--gray-400)', marginBottom: '0.75rem'
-  },
-  pills: { display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 8 },
-  pill: {
-    fontSize: 12, color: 'var(--gray-600)',
-    background: 'var(--gray-100)', border: '0.5px solid var(--gray-200)',
-    padding: '4px 12px', borderRadius: 'var(--radius-pill)'
-  },
-  promises: {
-    maxWidth: 560, margin: '0 auto', padding: '0 2rem 4rem',
-    borderTop: '0.5px solid var(--gray-200)',
-    paddingTop: '3rem',
-  },
-  promise: {
-    display: 'flex', gap: '1rem', alignItems: 'flex-start',
-    padding: '1rem 0', borderBottom: '0.5px solid var(--gray-200)'
-  },
-  promiseIcon: {
-    fontSize: 16, color: 'var(--green)', fontWeight: 500,
-    marginTop: 2, flexShrink: 0
-  },
-  promiseTitle: { fontSize: 14, fontWeight: 500, color: 'var(--black)', marginBottom: 4 },
-  promiseBody: { fontSize: 13, color: 'var(--gray-600)', lineHeight: 1.6 },
-  footer: {
-    textAlign: 'center', fontSize: 12, color: 'var(--gray-400)',
-    padding: '2rem', borderTop: '0.5px solid var(--gray-200)'
-  }
+export default function Landing({ onStart }) {
+  return (
+    <div style={{ fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", background: C.bg, color: C.ink, lineHeight: 1.6, minHeight: '100vh' }}>
+
+      {/* Nav */}
+      <nav style={{ padding: '24px 0', borderBottom: `1px solid ${C.border}`, background: C.bg }}>
+        <div style={{ ...wrap, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div
+            style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.5px', cursor: 'pointer' }}
+            onClick={() => window.location.reload()}
+          >
+            self<span style={{ color: C.accent, fontWeight: 500 }}>audit</span>
+          </div>
+          <div style={{ fontSize: 14, color: C.inkMuted }}>
+            by{' '}
+            <a href="https://vnklo.com" target="_blank" rel="noopener" style={{ color: C.accent, textDecoration: 'none', fontWeight: 500 }}>
+              Vnklo
+            </a>
+          </div>
+        </div>
+      </nav>
+
+      {/* Hero */}
+      <section style={{ padding: '120px 0 100px', textAlign: 'center' }}>
+        <div style={wrap}>
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 8,
+            background: C.accentSoft, color: C.accentDark,
+            padding: '8px 16px', borderRadius: 100,
+            fontSize: 13, fontWeight: 500, marginBottom: 32,
+          }}>
+            <span style={{ fontSize: 8 }}>●</span>
+            Advisory like never seen before
+          </div>
+          <h1 style={{
+            fontFamily: serif, fontSize: 'clamp(40px, 6vw, 68px)', fontWeight: 700,
+            lineHeight: 1.05, letterSpacing: '-2px',
+            marginBottom: 28, maxWidth: 800, marginLeft: 'auto', marginRight: 'auto',
+          }}>
+            The business audit that<br />
+            <em style={{ color: C.accent, fontStyle: 'italic', fontWeight: 500 }}>actually tells you the truth.</em>
+          </h1>
+          <p style={{ fontSize: 19, color: C.inkSoft, maxWidth: 620, margin: '0 auto 40px' }}>
+            5 minutes. Every department. Every blind spot. A ruthless diagnostic of what&apos;s broken in your business — and exactly what to do about it.
+          </p>
+          <Btn label="Start your free audit" onClick={onStart} />
+          <div style={{ marginTop: 16, fontSize: 13, color: C.inkMuted }}>
+            No signup · No credit card · First audit free
+          </div>
+        </div>
+      </section>
+
+      {/* Comparison */}
+      <section style={{ padding: '100px 0', background: C.card }}>
+        <div style={wrap}>
+          <div style={sectionLabel}>The new math of advisory</div>
+          <h2 style={h2Style}>Advisory used to require<br />a calendar invite.</h2>
+          <p style={{ textAlign: 'center', fontSize: 18, color: C.inkSoft, maxWidth: 600, margin: '0 auto 64px' }}>
+            Not anymore. Here&apos;s what it used to cost to get real business advice — and what it costs now.
+          </p>
+
+          <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, overflow: 'hidden', maxWidth: 1000, margin: '0 auto' }}>
+            {/* Header */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr 1fr 1fr', borderBottom: `1px solid ${C.border}`, background: '#FAFAF7' }}>
+              <div style={{ padding: 24 }} />
+              {[
+                { name: 'Seminar',    tag: '$1,500+ ticket',            color: C.ink },
+                { name: 'Consultant', tag: '$15k to $150k engagement',  color: C.ink },
+                { name: 'SelfAudit', tag: 'Free to start',             color: C.accent },
+              ].map((col, i) => (
+                <div key={i} style={{ padding: 24, borderLeft: `1px solid ${C.border}` }}>
+                  <div style={{ fontSize: 18, fontWeight: 600, letterSpacing: '-0.3px', color: col.color }}>{col.name}</div>
+                  <div style={{ fontSize: 12, color: C.inkMuted, fontWeight: 400, marginTop: 4 }}>{col.tag}</div>
+                </div>
+              ))}
+            </div>
+            {/* Rows */}
+            {compareRows.map((row, i) => (
+              <div key={i} style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr 1fr 1fr', borderBottom: i < compareRows.length - 1 ? `1px solid ${C.border}` : 'none' }}>
+                <div style={{ padding: '20px 24px', fontSize: 14, fontWeight: 600, background: '#FAFAF7', display: 'flex', alignItems: 'center', borderRight: `1px solid ${C.border}` }}>
+                  {row.dim}
+                </div>
+                <div style={{ padding: '20px 24px', fontSize: 15, display: 'flex', alignItems: 'center', borderRight: `1px solid ${C.border}`, color: row.sBad ? C.inkMuted : (row.sGood ? C.accent : C.ink), fontWeight: row.sGood ? 600 : 400 }}>
+                  {row.s}
+                </div>
+                <div style={{ padding: '20px 24px', fontSize: 15, display: 'flex', alignItems: 'center', borderRight: `1px solid ${C.border}`, color: row.cBad ? C.inkMuted : (row.cGood ? C.accent : C.ink), fontWeight: row.cGood ? 600 : 400 }}>
+                  {row.c}
+                </div>
+                <div style={{ padding: '20px 24px', fontSize: 15, display: 'flex', alignItems: 'center', color: row.oGood ? C.accent : C.inkMuted, fontWeight: row.oGood ? 600 : 400 }}>
+                  {row.o}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <p style={{ textAlign: 'center', marginTop: 48, fontFamily: serif, fontStyle: 'italic', fontSize: 22, color: C.inkSoft }}>
+            You don&apos;t need another seminar. You need a diagnosis.
+          </p>
+        </div>
+      </section>
+
+      {/* Verdicts */}
+      <section style={{ padding: '100px 0', background: C.bg }}>
+        <div style={wrap}>
+          <div style={sectionLabel}>Real verdicts</div>
+          <h2 style={h2Style}>This is what you get.</h2>
+          <p style={{ textAlign: 'center', fontSize: 18, color: C.inkSoft, maxWidth: 600, margin: '0 auto 64px' }}>
+            No &ldquo;leverage synergies.&rdquo; Real diagnoses in plain English.
+          </p>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 }}>
+            {verdictCards.map((card, i) => (
+              <div key={i} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, padding: 32, display: 'flex', flexDirection: 'column' }}>
+                <div style={{
+                  fontSize: 11, letterSpacing: '1.5px', textTransform: 'uppercase', fontWeight: 600,
+                  marginBottom: 20, padding: '4px 10px', borderRadius: 4,
+                  display: 'inline-block', alignSelf: 'flex-start',
+                  background: card.badgeBg, color: card.badgeColor,
+                }}>
+                  {card.badge}
+                </div>
+                <div style={{ fontFamily: serif, fontSize: 22, fontWeight: 700, lineHeight: 1.25, letterSpacing: '-0.3px', marginBottom: 24, color: C.ink, flex: 1 }}>
+                  {card.verdict}
+                </div>
+                <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 20, display: 'flex', flexDirection: 'column', gap: 8, color: C.inkSoft }}>
+                  {[['Industry', card.industry], ['Audit time', card.time], ['Findings', card.findings]].map(([label, value]) => (
+                    <div key={label} style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: C.inkMuted, fontSize: 13 }}>{label}</span>
+                      <span style={{ fontWeight: 500, color: C.ink, fontSize: 14 }}>{value}</span>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ marginTop: 16, padding: 12, background: '#FAFAF7', borderRadius: 8, fontSize: 13, color: C.inkSoft }}>
+                  <strong style={{ color: C.ink }}>Fix first:</strong> {card.fix}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ textAlign: 'center', marginTop: 56 }}>
+            <Btn label="See what yours says" onClick={onStart} />
+          </div>
+        </div>
+      </section>
+
+      {/* Domains */}
+      <section style={{ padding: '100px 0', background: C.card }}>
+        <div style={wrap}>
+          <div style={sectionLabel}>Coverage</div>
+          <h2 style={h2Style}>Whatever&apos;s broken —<br />we&apos;ll find it.</h2>
+          <p style={{ textAlign: 'center', fontSize: 18, color: C.inkSoft, maxWidth: 600, margin: '0 auto 64px' }}>
+            From the top of the org chart to the bottom. From finance to feelings.
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center', maxWidth: 800, margin: '0 auto' }}>
+            {['Business strategy', 'Operations', 'Sales', 'Marketing', 'Finance', 'People & culture', 'Product', 'Customer experience', 'Leadership', 'Anything else'].map(d => (
+              <span key={d} style={{ background: C.bg, border: `1px solid ${C.border}`, padding: '10px 20px', borderRadius: 100, fontSize: 14, fontWeight: 500, color: C.inkSoft }}>
+                {d}
+              </span>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Pillars */}
+      <section style={{ padding: '100px 0', background: C.bg }}>
+        <div style={wrap}>
+          <div style={sectionLabel}>Why this works</div>
+          <h2 style={h2Style}>Why this beats<br />free AI advice.</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 48, maxWidth: 1000, margin: '64px auto 0' }}>
+            {pillars.map((p, i) => (
+              <div key={i}>
+                <div style={{ color: C.accent, fontSize: 20, marginBottom: 16 }}>→</div>
+                <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 12, letterSpacing: '-0.3px' }}>{p.title}</h3>
+                <p style={{ color: C.inkSoft, fontSize: 15 }}>{p.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Closing CTA */}
+      <section style={{ background: C.bg, textAlign: 'center', padding: '120px 0' }}>
+        <div style={wrap}>
+          <h2 style={h2Style}>Stop guessing.<br />Get a diagnosis.</h2>
+          <p style={{ fontSize: 19, color: C.inkSoft, maxWidth: 500, margin: '0 auto 40px' }}>
+            Whatever&apos;s broken, it has a name. In 5 minutes you&apos;ll know what it is — and what to do about it.
+          </p>
+          <Btn label="Run my audit" onClick={onStart} />
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer style={{ background: C.ink, color: '#B8B6B0', padding: '48px 0', textAlign: 'center', fontSize: 14 }}>
+        <div style={wrap}>
+          Built by{' '}
+          <a href="https://vnklo.com" target="_blank" rel="noopener" style={{ color: C.accentSoft, textDecoration: 'none', fontWeight: 500 }}>
+            Vnklo
+          </a>{' '}
+          — we build AI systems for businesses that actually need them.<br />
+          If your audit surfaces real AI opportunities, we can help you implement.
+        </div>
+      </footer>
+
+    </div>
+  )
 }
