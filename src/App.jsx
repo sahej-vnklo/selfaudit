@@ -49,8 +49,16 @@ export default function App() {
       setSession(session)
       setAuthLoading(false)
     })
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_e, session) => {
       setSession(session)
+      // After sign-up: check if onboarding is done; if not, send to onboarding
+      if (session && _e === 'SIGNED_IN') {
+        const { data: profile } = await supabase
+          .from('profiles').select('onboarding_complete').eq('id', session.user.id).single()
+        if (profile && !profile.onboarding_complete) {
+          navigate(SCREENS.ACCOUNT_ONBOARDING)
+        }
+      }
     })
     return () => subscription.unsubscribe()
   }, [])
