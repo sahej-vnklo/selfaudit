@@ -6,6 +6,7 @@ export default function Signup({ onSuccess, onLogin }) {
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
   const [globalError, setGlobalError] = useState(null)
+  const [emailSent, setEmailSent] = useState(false)
 
   const update = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
@@ -24,14 +25,45 @@ export default function Signup({ onSuccess, onLogin }) {
     setGlobalError(null)
     if (!validate()) return
     setLoading(true)
-    const { error: err } = await supabase.auth.signUp({
+    const { data, error: err } = await supabase.auth.signUp({
       email: form.email,
       password: form.password,
       options: { data: { name: form.name.trim() } },
     })
     setLoading(false)
     if (err) { setGlobalError(friendlyError(err.message)); return }
-    onSuccess()
+    // If email confirmation is required, data.session is null
+    if (data.session) {
+      onSuccess()
+    } else {
+      setEmailSent(true)
+    }
+  }
+
+  // Email confirmation pending state
+  if (emailSent) {
+    return (
+      <div style={s.page}>
+        <nav style={s.nav}>
+          <div style={s.logo} onClick={() => { window.location.hash = '' }}>
+            self<span style={{ color: 'var(--green)' }}>audit</span>
+          </div>
+        </nav>
+        <div style={s.wrap}>
+          <div style={s.card}>
+            <p style={s.eyebrow}>Almost there</p>
+            <h2 style={s.title}>Check your email</h2>
+            <p style={{ fontSize: 15, color: 'var(--gray-600)', lineHeight: 1.7, marginTop: 12 }}>
+              We sent a confirmation link to <strong style={{ color: 'var(--black)' }}>{form.email}</strong>.
+              Click it to activate your account, then come back and log in.
+            </p>
+            <button style={{ ...s.btn, marginTop: 28 }} onClick={onLogin}>
+              Go to login
+            </button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { supabase } from './lib/supabase.js'
 import Landing from './components/Landing.jsx'
 import Onboarding from './components/Onboarding.jsx'
@@ -13,79 +13,96 @@ import AccountOnboarding from './components/AccountOnboarding.jsx'
 const ENV_CLAUDE_KEY = import.meta.env.VITE_CLAUDE_API_KEY || ''
 
 const SCREENS = {
-  CONFIG: 'config',
-  LANDING: 'landing',
-  ONBOARDING: 'onboarding',
-  AUDIT: 'audit',
-  REPORT: 'report',
-  LOGIN: 'login',
-  SIGNUP: 'signup',
-  DASHBOARD: 'dashboard',
-  ACCOUNT_ONBOARDING: 'account_onboarding',
+  CONFIG:              'config',
+  LANDING:             'landing',
+  ONBOARDING:          'onboarding',
+  AUDIT:               'audit',
+  REPORT:              'report',
+  LOGIN:               'login',
+  SIGNUP:              'signup',
+  DASHBOARD:           'dashboard',
+  ACCOUNT_ONBOARDING:  'account_onboarding',
 }
 
-// Derive initial screen from URL hash so direct links work (#login, #signup, #dashboard)
+const HASH_SCREENS = new Set([
+  SCREENS.LOGIN, SCREENS.SIGNUP,
+  SCREENS.DASHBOARD, SCREENS.ACCOUNT_ONBOARDING,
+])
+
 function screenFromHash() {
-  const h = window.location.hash.replace('#', '')
-  if (h === 'login') return SCREENS.LOGIN
-  if (h === 'signup') return SCREENS.SIGNUP
-  if (h === 'dashboard') return SCREENS.DASHBOARD
+  const h = window.location.hash.replace(/^#\/?/, '')
+  if (h === 'login')              return SCREENS.LOGIN
+  if (h === 'signup')             return SCREENS.SIGNUP
+  if (h === 'dashboard')          return SCREENS.DASHBOARD
+  if (h === 'account_onboarding') return SCREENS.ACCOUNT_ONBOARDING
   return null
 }
 
 export default function App() {
   const needsConfig = !ENV_CLAUDE_KEY
-  const [screen, setScreen] = useState(screenFromHash() ?? (needsConfig ? SCREENS.CONFIG : SCREENS.LANDING))
-  const [claudeKey, setClaudeKey] = useState(ENV_CLAUDE_KEY)
-  const [userInfo, setUserInfo] = useState(null)
-  const [conversationHistory, setConversationHistory] = useState([])
-  const [session, setSession] = useState(null)
-  const [authLoading, setAuthLoading] = useState(!!supabase)
 
-  // Auth state listener
+  const [screen,              setScreen]              = useState(screenFromHash() ?? (needsConfig ? SCREENS.CONFIG : SCREENS.LANDING))
+  const [claudeKey,           setClaudeKey]           = useState(ENV_CLAUDE_KEY)
+  const [userInfo,            setUserInfo]            = useState(null)
+  const [conversationHistory, setConversationHistory] = useState([])
+  const [session,             setSession]             = useState(null)
+  const [authLoading,         setAuthLoading]         = useState(!!supabase)
+
+  // ── navigate: defined early so effects can safely reference it ────────────
+  const navigate = useCallback((s) => {
+    setScreen(s)
+    if (HASH_SCREENS.has(s)) {
+      window.location.hash = s
+    } else {
+      history.replaceState(null, '', window.location.pathname)
+    }
+  }, [])
+
+  // ── Respond to hash changes (back/forward, logo clicks) ───────────────────
+  useEffect(() => {
+    const onHashChange = () => {
+      const s = screenFromHash()
+      setScreen(s ?? (needsConfig ? SCREENS.CONFIG : SCREENS.LANDING))
+    }
+    window.addEventListener('hashchange', onHashChange)
+    return () => window.removeEventListener('hashchange', onHashChange)
+  }, [needsConfig])
+
+  // ── Auth state listener ───────────────────────────────────────────────────
   useEffect(() => {
     if (!supabase) return
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       setAuthLoading(false)
     })
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_e, session) => {
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session)
-      // After sign-up: check if onboarding is done; if not, send to onboarding
-      if (session && _e === 'SIGNED_IN') {
+
+      // After a fresh sign-in (signup or login), check whether onboarding is done
+      if (session && event === 'SIGNED_IN') {
         const { data: profile } = await supabase
-          .from('profiles').select('onboarding_complete').eq('id', session.user.id).single()
+          .from('profiles')
+          .select('onboarding_complete')
+          .eq('id', session.user.id)
+          .single()
+
         if (profile && !profile.onboarding_complete) {
           navigate(SCREENS.ACCOUNT_ONBOARDING)
         }
       }
     })
+
     return () => subscription.unsubscribe()
-  }, [])
+  }, [navigate])
 
-  // Sync screen → hash for auth screens
-  const navigate = (s) => {
-    setScreen(s)
-    const hashScreens = [SCREENS.LOGIN, SCREENS.SIGNUP, SCREENS.DASHBOARD, SCREENS.ACCOUNT_ONBOARDING]
-    if (hashScreens.includes(s)) {
-      window.location.hash = s
-    } else {
-      history.replaceState(null, '', window.location.pathname)
-    }
-  }
-
-  const requireAuth = (s) => {
-    if (!session) { navigate(SCREENS.LOGIN); return false }
-    navigate(s)
-    return true
-  }
-
-  // Existing audit flow handlers (unchanged)
-  const handleConfig = (ck) => { setClaudeKey(ck); navigate(SCREENS.LANDING) }
-  const handleStart = () => navigate(SCREENS.ONBOARDING)
-  const handleOnboarding = (info) => { setUserInfo(info); navigate(SCREENS.AUDIT) }
+  // ── Existing audit flow handlers ──────────────────────────────────────────
+  const handleConfig      = (ck)      => { setClaudeKey(ck); navigate(SCREENS.LANDING) }
+  const handleStart       = ()        => navigate(SCREENS.ONBOARDING)
+  const handleOnboarding  = (info)    => { setUserInfo(info); navigate(SCREENS.AUDIT) }
   const handleReportReady = (history) => { setConversationHistory(history); navigate(SCREENS.REPORT) }
-  const handleSignOut = async () => {
+  const handleSignOut     = async ()  => {
     await supabase?.auth.signOut()
     setSession(null)
     navigate(SCREENS.LANDING)
@@ -93,23 +110,29 @@ export default function App() {
 
   if (authLoading) return null
 
-  // Auth & account screens
+  // ── Auth screens ──────────────────────────────────────────────────────────
   if (screen === SCREENS.LOGIN) {
     return <Login
       onSuccess={() => navigate(SCREENS.DASHBOARD)}
       onSignup={() => navigate(SCREENS.SIGNUP)}
     />
   }
+
   if (screen === SCREENS.SIGNUP) {
     return <Signup
       onSuccess={() => navigate(SCREENS.ACCOUNT_ONBOARDING)}
       onLogin={() => navigate(SCREENS.LOGIN)}
     />
   }
+
   if (screen === SCREENS.ACCOUNT_ONBOARDING) {
     if (!session) { navigate(SCREENS.LOGIN); return null }
-    return <AccountOnboarding user={session.user} onComplete={() => navigate(SCREENS.DASHBOARD)} />
+    return <AccountOnboarding
+      user={session.user}
+      onComplete={() => navigate(SCREENS.DASHBOARD)}
+    />
   }
+
   if (screen === SCREENS.DASHBOARD) {
     if (!session) { navigate(SCREENS.LOGIN); return null }
     return <Dashboard
@@ -119,11 +142,11 @@ export default function App() {
     />
   }
 
-  // Existing audit flow (unchanged)
+  // ── Existing audit flow ───────────────────────────────────────────────────
   return (
     <>
-      {screen === SCREENS.CONFIG && <ConfigScreen onReady={handleConfig} />}
-      {screen === SCREENS.LANDING && <Landing onStart={handleStart} />}
+      {screen === SCREENS.CONFIG     && <ConfigScreen onReady={handleConfig} />}
+      {screen === SCREENS.LANDING    && <Landing onStart={handleStart} />}
       {screen === SCREENS.ONBOARDING && <Onboarding onComplete={handleOnboarding} />}
       {screen === SCREENS.AUDIT && userInfo && (
         <AuditChat
