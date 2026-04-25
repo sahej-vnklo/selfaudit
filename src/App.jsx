@@ -174,7 +174,11 @@ export default function App() {
     if (!session) { navigate(SCREENS.LOGIN); return null }
     return <Dashboard
       user={session.user}
-      onStartAudit={() => navigate(SCREENS.ONBOARDING)}
+      onStartAudit={(info) => {
+        // Logged-in users have context saved in their profile — skip Onboarding
+        setUserInfo(info)
+        navigate(SCREENS.AUDIT)
+      }}
     />
   }
 

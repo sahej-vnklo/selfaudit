@@ -154,7 +154,12 @@ export default function Dashboard({ user, onStartAudit }) {
                     ? 'Run a business audit and the report will appear here.'
                     : 'Run a personal audit and the report will appear here.'}
                 </p>
-                <button style={s.ctaBtn} onClick={onStartAudit}>
+                <button style={s.ctaBtn} onClick={() => onStartAudit({
+                  name:    user?.user_metadata?.name || user?.email?.split('@')[0] || 'User',
+                  email:   user?.email || '',
+                  phone:   '',
+                  context: profile?.context || '',
+                })}>
                   Start {activeTab} audit →
                 </button>
               </div>

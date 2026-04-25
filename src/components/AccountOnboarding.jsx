@@ -29,6 +29,33 @@ const BUSINESS_OPTIONS = [
 
 const PERSONAL_OPTIONS = ['Career', 'Finance', 'Health', 'Relationships', 'Other']
 
+// Domains relevant to each industry — drives Step 3 filter
+const ALL_DOMAIN_LABELS = DOMAINS.map(d => d.label)
+
+const DOMAIN_MAP = {
+  'SaaS':                 ['Strategy', 'Product', 'Sales', 'Marketing', 'Customer Experience', 'Technology', 'Data & Analytics', 'Finance', 'People & Culture'],
+  'Agency':               ['Strategy', 'Sales', 'Marketing', 'Operations', 'Finance', 'People & Culture', 'Brand', 'Customer Experience'],
+  'Retail':               ['Strategy', 'Operations', 'Marketing', 'Sales', 'Supply Chain', 'Customer Experience', 'Finance', 'Brand'],
+  'E-commerce':           ['Strategy', 'Marketing', 'Operations', 'Technology', 'Customer Experience', 'Supply Chain', 'Data & Analytics', 'Finance'],
+  'Restaurant / Food':    ['Operations', 'Marketing', 'Finance', 'People & Culture', 'Customer Experience', 'Brand', 'Supply Chain'],
+  'Healthcare':           ['Operations', 'Strategy', 'Legal & Compliance', 'People & Culture', 'Finance', 'Technology', 'Customer Experience'],
+  'Legal':                ['Operations', 'Strategy', 'Legal & Compliance', 'Finance', 'People & Culture', 'Brand', 'Customer Experience'],
+  'Real Estate':          ['Sales', 'Marketing', 'Operations', 'Finance', 'Strategy', 'Brand', 'Customer Experience'],
+  'Construction':         ['Operations', 'Finance', 'People & Culture', 'Supply Chain', 'Strategy', 'Legal & Compliance'],
+  'Manufacturing':        ['Operations', 'Supply Chain', 'Finance', 'Technology', 'People & Culture', 'Strategy', 'Legal & Compliance'],
+  'Logistics':            ['Operations', 'Supply Chain', 'Technology', 'Finance', 'Strategy', 'People & Culture'],
+  'Education':            ['Strategy', 'Operations', 'Marketing', 'Technology', 'People & Culture', 'Finance', 'Customer Experience'],
+  'Finance / Accounting': ['Strategy', 'Operations', 'Legal & Compliance', 'Technology', 'People & Culture', 'Finance', 'Data & Analytics'],
+  'Insurance':            ['Operations', 'Legal & Compliance', 'Finance', 'Technology', 'Strategy', 'Customer Experience'],
+  'Consulting':           ['Strategy', 'Operations', 'Sales', 'Marketing', 'People & Culture', 'Finance', 'Brand'],
+  'Marketing':            ['Strategy', 'Brand', 'Data & Analytics', 'Operations', 'Sales', 'Customer Experience', 'Technology'],
+  'Media / Publishing':   ['Strategy', 'Brand', 'Marketing', 'Operations', 'Finance', 'Technology', 'Data & Analytics'],
+  'Travel / Hospitality': ['Operations', 'Customer Experience', 'Marketing', 'Finance', 'Brand', 'People & Culture'],
+  'Nonprofit':            ['Strategy', 'Operations', 'Finance', 'Marketing', 'People & Culture', 'Partnerships'],
+  'Freelancer / Solo':    ['Strategy', 'Sales', 'Marketing', 'Finance', 'Brand', 'Operations'],
+  'Other':                ['Strategy', 'Operations', 'Sales', 'Marketing', 'Finance', 'People & Culture', 'Technology', 'Customer Experience'],
+}
+
 function buildContext(type, category, domains) {
   const list = domains.join(', ')
   const focus = domains.length === 0
@@ -132,12 +159,12 @@ function Step2({ type, onSelect, onBack }) {
 
 // ─── Step 3 — domains ─────────────────────────────────────────────────────────
 
-function Step3({ tier, selected, onToggle, onNext, onBack }) {
+function Step3({ tier, selected, onToggle, onNext, onBack, domainLabels }) {
   const isFree  = tier !== 'paid'
   const canNext = isFree ? selected.length >= 1 : true
   const hint    = isFree
     ? `Choose 1 domain to focus your audit. (${selected.length}/1 selected)`
-    : 'Your Pro plan covers everything — the audit will run across all domains.'
+    : 'Your Pro plan covers everything — the audit will run across all relevant domains.'
 
   return (
     <div>
@@ -153,14 +180,14 @@ function Step3({ tier, selected, onToggle, onNext, onBack }) {
       <p style={s.sub}>{hint}</p>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 24 }}>
-        {DOMAINS.map(d => {
-          const active   = selected.includes(d.label)
+        {domainLabels.map(label => {
+          const active   = selected.includes(label)
           const disabled = isFree && !active && selected.length >= 1
           return (
             <button
-              key={d.id}
+              key={label}
               disabled={disabled}
-              onClick={() => !disabled && onToggle(d.label)}
+              onClick={() => !disabled && onToggle(label)}
               style={{
                 ...s.domainCard,
                 ...(active   ? s.domainCardActive   : {}),
@@ -168,7 +195,7 @@ function Step3({ tier, selected, onToggle, onNext, onBack }) {
               }}
             >
               {active && <span style={s.domainCheck}>✓</span>}
-              {d.label}
+              {label}
             </button>
           )
         })}
@@ -233,6 +260,12 @@ export default function AccountOnboarding({ user, onComplete, onBack }) {
   const [saving,   setSaving]   = useState(false)
   const [tier,     setTier]     = useState('free')
 
+  // Domains available for Step 3 — filtered by selected industry
+  const availableDomains = React.useMemo(
+    () => (category && DOMAIN_MAP[category]) ? DOMAIN_MAP[category] : ALL_DOMAIN_LABELS,
+    [category]
+  )
+
   // Fetch tier via server-side API (avoids client-side session dependency)
   useEffect(() => {
     if (!user?.id) return
@@ -246,18 +279,17 @@ export default function AccountOnboarding({ user, onComplete, onBack }) {
       .catch(() => {}) // default 'free' tier on any error
   }, [user])
 
-  // Paid tier: animate all domains selecting one by one (150ms apart)
+  // Paid tier: animate all available domains selecting one by one (150ms apart)
   useEffect(() => {
     if (step !== 3 || tier !== 'paid') return
-    const labels = DOMAINS.map(d => d.label)
     let i = 0
     const interval = setInterval(() => {
       i++
-      setDomains(labels.slice(0, i))
-      if (i >= labels.length) clearInterval(interval)
+      setDomains(availableDomains.slice(0, i))
+      if (i >= availableDomains.length) clearInterval(interval)
     }, 150)
     return () => clearInterval(interval)
-  }, [step, tier])
+  }, [step, tier, availableDomains])
 
   const handleType = (t) => { setType(t); setStep(2) }
 
@@ -275,7 +307,9 @@ export default function AccountOnboarding({ user, onComplete, onBack }) {
   }
 
   const handleDomainsNext = () => {
-    const generated = buildContext(type, category, domains)
+    // For paid users ensure all available domains are captured even if animation is mid-run
+    const effectiveDomains = tier === 'paid' ? availableDomains : domains
+    const generated = buildContext(type, category, effectiveDomains)
     setCtxText(generated)
     setStep(4)
   }
@@ -334,6 +368,7 @@ export default function AccountOnboarding({ user, onComplete, onBack }) {
               selected={domains}
               onToggle={toggleDomain}
               onNext={handleDomainsNext}
+              domainLabels={availableDomains}
               onBack={() => setStep(2)}
             />
           )}
