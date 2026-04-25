@@ -42,7 +42,7 @@ function StepBar({ current }) {
 
 // ─── Step 1 — type ────────────────────────────────────────────────────────────
 
-function Step1({ onSelect }) {
+function Step1({ onSelect, onBack }) {
   return (
     <div>
       <p style={s.eyebrow}>Step 1 of 4</p>
@@ -69,6 +69,7 @@ function Step1({ onSelect }) {
           </button>
         ))}
       </div>
+      <BackLink onClick={onBack} />
     </div>
   )
 }
@@ -191,7 +192,7 @@ function BackLink({ onClick }) {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function AccountOnboarding({ user, onComplete }) {
+export default function AccountOnboarding({ user, onComplete, onBack }) {
   const [step,     setStep]     = useState(1)
   const [type,     setType]     = useState(null)
   const [category, setCategory] = useState(null)
@@ -263,7 +264,7 @@ export default function AccountOnboarding({ user, onComplete }) {
         <div style={{ ...s.card, maxWidth: step === 3 ? 540 : 480 }}>
           <StepBar current={step} />
 
-          {step === 1 && <Step1 onSelect={handleType} />}
+          {step === 1 && <Step1 onSelect={handleType} onBack={onBack} />}
 
           {step === 2 && (
             <Step2

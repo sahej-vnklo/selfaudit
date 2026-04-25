@@ -122,6 +122,7 @@ export default function App() {
     return <AccountOnboarding
       user={session.user}
       onComplete={() => navigate(SCREENS.DASHBOARD)}
+      onBack={() => navigate(SCREENS.LANDING)}
     />
   }
 
