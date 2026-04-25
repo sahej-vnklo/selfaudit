@@ -153,6 +153,14 @@ export default function Landing({ onStart }) {
               Pricing
             </button>
 
+            {/* Sign in */}
+            <button
+              onClick={() => { window.location.hash = 'login' }}
+              style={{ fontSize: 14, color: C.inkSoft, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500, padding: 0 }}
+            >
+              Sign in
+            </button>
+
             <div style={{ fontSize: 14, color: C.inkMuted }}>
               by{' '}
               <a href="https://vnklo.com" target="_blank" rel="noopener" style={{ color: C.accent, textDecoration: 'none', fontWeight: 500 }}>
