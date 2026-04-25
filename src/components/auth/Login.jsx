@@ -16,12 +16,18 @@ export default function Login({ onSuccess, onSignup }) {
     const timeout = setTimeout(() => {
       setLoading(false)
       setError('Connection timed out. Please try again.')
-    }, 5000)
+    }, 8000)
 
     try {
-      const { error: err } = await supabase.auth.signInWithPassword({ email: form.email, password: form.password })
+      const res = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'signin', email: form.email, password: form.password }),
+      })
       clearTimeout(timeout)
-      if (err) { setError(friendlyError(err.message)); return }
+      const data = await res.json()
+      if (!res.ok || data.error) { setError(friendlyError(data.error || 'Sign in failed.')); return }
+      if (data.session) await supabase?.auth.setSession(data.session)
       onSuccess()
     } catch (e) {
       setError('Connection timed out. Please try again.')

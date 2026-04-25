@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { supabase } from './lib/supabase.js'
+import { supabase, initSupabase } from './lib/supabase.js'
 import Landing from './components/Landing.jsx'
 import Onboarding from './components/Onboarding.jsx'
 import AuditChat from './components/AuditChat.jsx'
@@ -39,7 +39,7 @@ export default function App() {
   const [userInfo,            setUserInfo]            = useState(null)
   const [conversationHistory, setConversationHistory] = useState([])
   const [session,             setSession]             = useState(null)
-  const [authLoading,         setAuthLoading]         = useState(!!supabase)
+  const [authLoading,         setAuthLoading]         = useState(true)
 
   // ── navigate: defined early so effects can safely reference it ────────────
   const navigate = useCallback((s) => {
@@ -63,7 +63,7 @@ export default function App() {
 
   // ── Auth state listener ───────────────────────────────────────────────────
   useEffect(() => {
-    if (!supabase) return
+    let subscription = null
 
     const clearAuthAndRedirect = (reason) => {
       console.error('[auth]', reason, '— clearing storage and redirecting to login')
@@ -73,44 +73,55 @@ export default function App() {
       navigate(SCREENS.LOGIN)
     }
 
-    // Safety timeout — if getSession never resolves, clear and redirect
+    // Safety timeout covers both initSupabase + getSession
     const authTimeout = setTimeout(() => {
-      clearAuthAndRedirect('getSession timed out after 3s')
-    }, 3000)
+      clearAuthAndRedirect('auth init timed out after 5s')
+    }, 5000)
 
-    supabase.auth.getSession().then(({ data, error }) => {
+    initSupabase()
+      .then((sb) => {
+        sb.auth.getSession().then(({ data, error }) => {
+          clearTimeout(authTimeout)
+          if (error) {
+            clearAuthAndRedirect(`getSession error: ${error.message}`)
+          } else {
+            setSession(data?.session ?? null)
+            setAuthLoading(false)
+          }
+        }).catch((err) => {
+          clearTimeout(authTimeout)
+          clearAuthAndRedirect(`getSession threw: ${err?.message ?? err}`)
+        })
+
+        const { data: { subscription: sub } } = sb.auth.onAuthStateChange(async (event, session) => {
+          setSession(session)
+
+          if (session && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
+            const { data: profile } = await sb
+              .from('profiles')
+              .select('onboarding_complete')
+              .eq('id', session.user.id)
+              .single()
+
+            if (profile && !profile.onboarding_complete) {
+              navigate(SCREENS.ACCOUNT_ONBOARDING)
+            } else if (profile?.onboarding_complete) {
+              navigate(SCREENS.DASHBOARD)
+            }
+          }
+        })
+
+        subscription = sub
+      })
+      .catch((err) => {
+        clearTimeout(authTimeout)
+        clearAuthAndRedirect(`initSupabase failed: ${err.message}`)
+      })
+
+    return () => {
       clearTimeout(authTimeout)
-      if (error) {
-        clearAuthAndRedirect(`getSession error: ${error.message}`)
-      } else {
-        setSession(data?.session ?? null)
-        setAuthLoading(false)
-      }
-    }).catch((err) => {
-      clearTimeout(authTimeout)
-      clearAuthAndRedirect(`getSession threw: ${err?.message ?? err}`)
-    })
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setSession(session)
-
-      // Route the user based on onboarding state on sign-in or session restore
-      if (session && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('onboarding_complete')
-          .eq('id', session.user.id)
-          .single()
-
-        if (profile && !profile.onboarding_complete) {
-          navigate(SCREENS.ACCOUNT_ONBOARDING)
-        } else if (profile?.onboarding_complete) {
-          navigate(SCREENS.DASHBOARD)
-        }
-      }
-    })
-
-    return () => subscription.unsubscribe()
+      subscription?.unsubscribe()
+    }
   }, [navigate])
 
   // ── Existing audit flow handlers ──────────────────────────────────────────

@@ -1,31 +1,41 @@
 import { createClient } from '@supabase/supabase-js'
 
-function safeStr(s) {
-  return s ? s.replace(/[^\x00-\xFF]/g, '') : s
-}
+// Starts null; set by initSupabase(). ESM live binding — all importers
+// see the updated value once initSupabase() resolves.
+export let supabase = null
 
-const url = safeStr(import.meta.env.VITE_SUPABASE_URL)
-const key = safeStr(import.meta.env.VITE_SUPABASE_ANON_KEY)
+let _initPromise = null
 
-console.log('[supabase] url:', url || '(empty)')
-console.log('[supabase] key prefix:', key ? key.slice(0, 20) + '...' : '(empty)')
-console.log('[supabase] url length:', url?.length ?? 0, '| key length:', key?.length ?? 0)
-console.log('key after safeStr length:', key?.length)
-console.log('key after safeStr last 10:', key?.slice(-10))
+export async function initSupabase() {
+  if (supabase) return supabase
+  if (_initPromise) return _initPromise
 
-if (!url || !key) {
-  console.warn('[supabase] VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY not set — auth disabled')
-}
+  _initPromise = (async () => {
+    let url, key
 
-export const supabase = url && key ? createClient(url, key) : null
+    // Production: fetch from server-side API (no VITE_ encoding issues)
+    try {
+      const res = await fetch('/api/config')
+      if (res.ok) {
+        const data = await res.json()
+        url = data.supabaseUrl
+        key = data.supabaseAnonKey
+        console.log('[supabase] config loaded from /api/config')
+      }
+    } catch (_) {}
 
-if (supabase) {
-  console.log('[supabase] client created — testing reachability...')
-  fetch(`${url}/rest/v1/`, {
-    headers: { apikey: key, 'Content-Type': 'application/json' },
-  })
-    .then(r => console.log('[supabase] reachability check:', r.status, r.statusText))
-    .catch(e => console.error('[supabase] reachability check FAILED:', e.message))
-} else {
-  console.warn('[supabase] client is null — skipping reachability check')
+    // Local dev fallback: Vite bakes these into the bundle at build time
+    if (!url) url = import.meta.env.VITE_SUPABASE_URL
+    if (!key) key = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+    if (!url || !key) throw new Error('Supabase config unavailable from server and env vars')
+
+    console.log('[supabase] url:', url)
+    console.log('[supabase] key prefix:', key.slice(0, 20) + '...')
+
+    supabase = createClient(url, key)
+    return supabase
+  })()
+
+  return _initPromise
 }

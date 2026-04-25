@@ -25,18 +25,25 @@ export default function Signup({ onSuccess, onLogin }) {
     setGlobalError(null)
     if (!validate()) return
     setLoading(true)
-    const { data, error: err } = await supabase.auth.signUp({
-      email: form.email,
-      password: form.password,
-      options: { data: { name: form.name.trim() } },
-    })
-    setLoading(false)
-    if (err) { setGlobalError(friendlyError(err.message)); return }
-    // If email confirmation is required, data.session is null
-    if (data.session) {
-      onSuccess()
-    } else {
-      setEmailSent(true)
+    try {
+      const res = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'signup', email: form.email, password: form.password, name: form.name }),
+      })
+      const data = await res.json()
+      if (!res.ok || data.error) { setGlobalError(friendlyError(data.error || 'Sign up failed.')); return }
+      // session is null when email confirmation is required
+      if (data.session) {
+        await supabase?.auth.setSession(data.session)
+        onSuccess()
+      } else {
+        setEmailSent(true)
+      }
+    } catch (e) {
+      setGlobalError('Connection error. Please try again.')
+    } finally {
+      setLoading(false)
     }
   }
 
