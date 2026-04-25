@@ -27,8 +27,17 @@ export default function Dashboard({ user, onSignOut, onStartAudit }) {
       <aside style={s.sidebar}>
 
         {/* Logo */}
-        <div style={s.sidebarLogo}>
+        <div style={s.sidebarLogo} onClick={() => setSection('home')}>
           self<span style={{ color: 'var(--green)', fontWeight: 400 }}>audit</span>
+        </div>
+
+        {/* Home nav item */}
+        <div style={{ padding: '0 12px', marginBottom: 4 }}>
+          <SidebarItem
+            label="Home"
+            active={section === 'home'}
+            onClick={() => setSection('home')}
+          />
         </div>
 
         {/* Profile */}
