@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { generateReport, sendReportEmail } from '../lib/audit.js'
 
-export default function Report({ userInfo, conversationHistory, apiKey }) {
+export default function Report({ userInfo, conversationHistory }) {
   const [report, setReport] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)

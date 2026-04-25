@@ -4,16 +4,12 @@ import Landing from './components/Landing.jsx'
 import Onboarding from './components/Onboarding.jsx'
 import AuditChat from './components/AuditChat.jsx'
 import Report from './components/Report.jsx'
-import ConfigScreen from './components/ConfigScreen.jsx'
 import Login from './components/auth/Login.jsx'
 import Signup from './components/auth/Signup.jsx'
 import Dashboard from './components/Dashboard.jsx'
 import AccountOnboarding from './components/AccountOnboarding.jsx'
 
-const ENV_CLAUDE_KEY = import.meta.env.VITE_CLAUDE_API_KEY || ''
-
 const SCREENS = {
-  CONFIG:              'config',
   LANDING:             'landing',
   ONBOARDING:          'onboarding',
   AUDIT:               'audit',
@@ -39,10 +35,7 @@ function screenFromHash() {
 }
 
 export default function App() {
-  const needsConfig = !ENV_CLAUDE_KEY
-
-  const [screen,              setScreen]              = useState(screenFromHash() ?? (needsConfig ? SCREENS.CONFIG : SCREENS.LANDING))
-  const [claudeKey,           setClaudeKey]           = useState(ENV_CLAUDE_KEY)
+  const [screen,              setScreen]              = useState(screenFromHash() ?? SCREENS.LANDING)
   const [userInfo,            setUserInfo]            = useState(null)
   const [conversationHistory, setConversationHistory] = useState([])
   const [session,             setSession]             = useState(null)
@@ -62,11 +55,11 @@ export default function App() {
   useEffect(() => {
     const onHashChange = () => {
       const s = screenFromHash()
-      setScreen(s ?? (needsConfig ? SCREENS.CONFIG : SCREENS.LANDING))
+      setScreen(s ?? SCREENS.LANDING)
     }
     window.addEventListener('hashchange', onHashChange)
     return () => window.removeEventListener('hashchange', onHashChange)
-  }, [needsConfig])
+  }, [])
 
   // ── Auth state listener ───────────────────────────────────────────────────
   useEffect(() => {
@@ -98,7 +91,6 @@ export default function App() {
   }, [navigate])
 
   // ── Existing audit flow handlers ──────────────────────────────────────────
-  const handleConfig      = (ck)      => { setClaudeKey(ck); navigate(SCREENS.LANDING) }
   const handleStart       = ()        => navigate(SCREENS.ONBOARDING)
   const handleOnboarding  = (info)    => { setUserInfo(info); navigate(SCREENS.AUDIT) }
   const handleReportReady = (history) => { setConversationHistory(history); navigate(SCREENS.REPORT) }
@@ -145,13 +137,11 @@ export default function App() {
   // ── Existing audit flow ───────────────────────────────────────────────────
   return (
     <>
-      {screen === SCREENS.CONFIG     && <ConfigScreen onReady={handleConfig} />}
       {screen === SCREENS.LANDING    && <Landing onStart={handleStart} />}
       {screen === SCREENS.ONBOARDING && <Onboarding onComplete={handleOnboarding} />}
       {screen === SCREENS.AUDIT && userInfo && (
         <AuditChat
           userInfo={userInfo}
-          apiKey={claudeKey}
           onReportReady={handleReportReady}
           conversationHistory={conversationHistory}
           setConversationHistory={setConversationHistory}
@@ -161,7 +151,6 @@ export default function App() {
         <Report
           userInfo={userInfo}
           conversationHistory={conversationHistory}
-          apiKey={claudeKey}
         />
       )}
     </>
