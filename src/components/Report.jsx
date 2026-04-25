@@ -13,7 +13,7 @@ export default function Report({ userInfo, conversationHistory, apiKey }) {
         const apiMessages = conversationHistory
           .filter(m => m.role !== 'system')
           .map(m => ({ role: m.role, content: m.content }))
-        const r = await generateReport(apiMessages, apiKey)
+        const r = await generateReport(apiMessages)
         setReport(r)
       } catch (e) {
         setError(e.message)
