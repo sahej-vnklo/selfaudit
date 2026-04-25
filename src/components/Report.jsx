@@ -95,7 +95,7 @@ export default function Report({ userInfo, conversationHistory }) {
 
         {/* Non-AI Fixes */}
         {report.non_ai_fixes?.length > 0 && (
-          <Section title="Fix These First — No AI Needed">
+          <Section title="Fix These First">
             <div style={styles.fixList}>
               {report.non_ai_fixes.map((f, i) => (
                 <div key={i} style={styles.fixItem}>
@@ -109,7 +109,7 @@ export default function Report({ userInfo, conversationHistory }) {
 
         {/* AI Opportunities */}
         {report.ai_opportunities?.length > 0 && (
-          <Section title="Where AI Actually Applies">
+          <Section title="What's Now Possible">
             <div style={styles.aiList}>
               {report.ai_opportunities.map((a, i) => (
                 <div key={i} style={styles.aiItem}>

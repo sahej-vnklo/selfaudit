@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { sendMessage } from '../lib/audit.js'
 
-const FIRST_MESSAGE = (context) =>
-  `I'm here to audit — no agenda, no AI evangelism. Just honest clarity.\n\nYou're looking at: **${context}**\n\nLet's start simple. In one sentence — what's the biggest problem you're actually trying to solve right now?`
+const FIRST_MESSAGE = () =>
+  `Let's start simple. In one sentence — what's the biggest problem you're actually trying to solve right now?`
 
 export default function AuditChat({ userInfo, onReportReady, conversationHistory, setConversationHistory }) {
   const [input, setInput] = useState('')
@@ -13,7 +13,7 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
 
   useEffect(() => {
     if (!initialized) {
-      const firstMsg = FIRST_MESSAGE(userInfo.context)
+      const firstMsg = FIRST_MESSAGE()
       setConversationHistory([
         { role: 'assistant', content: firstMsg, display: firstMsg }
       ])

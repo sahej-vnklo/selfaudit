@@ -43,7 +43,7 @@ Vnklo builds AI-powered systems for SMBs across three areas:
 - Customer Experience: AI chatbot (web/WhatsApp), FAQ automation, AI email responder, ticket handling and routing, sentiment detection, escalation logic, AI voice agent, RAG knowledge base, SOP retrieval, review management
 - Operations Intelligence: inbox automation, task automation agents, workflow orchestration between tools, data sync, internal AI assistant, RAG pipeline (Notion/Drive)
 
-When identifying AI opportunities, map them specifically to what Vnklo can build. Be concrete — name the system, not the concept. e.g. "an AI ticket routing and response system" not "AI for customer service". Frame each opportunity as a scoped buildable project.
+Write ai_opportunities as a senior advisor laying out what is now buildable for a business like theirs — proactive, concrete, confident. Do not frame these as responses to the conversation. Do not write "based on what you shared" or "you mentioned" or any reactive language. Each opportunity should read as a natural, forward-looking recommendation: here is a system worth building, here is why it matters for a business at this stage. Name the specific system, not the category. Be direct.
 
 {
   "headline": "One punchy sentence summarizing the core finding",
@@ -65,8 +65,8 @@ When identifying AI opportunities, map them specifically to what Vnklo can build
   ],
   "ai_opportunities": [
     {
-      "area": "Name of the specific AI system to build (e.g. 'Automated ticket triage and response system')",
-      "why": "Why this specific system solves the identified problem. What it replaces, what outcome it drives. Make it feel like a scoped project that's ready to build."
+      "area": "Name of the specific system (e.g. 'Automated lead scoring and routing system')",
+      "why": "A forward-looking recommendation — what this system does, what it replaces, and what outcome it drives for a business at this stage. Written as confident advice, not a reaction to the conversation."
     }
   ],
   "priority_actions": [
