@@ -5,7 +5,8 @@ export default function Dashboard({ user, onSignOut, onStartAudit }) {
   const [profile, setProfile]               = useState(null)
   const [profileExpanded, setProfileExpanded] = useState(false)
   const [activeTab, setActiveTab]           = useState('business')
-  const [section, setSection]               = useState('home') // 'home' | 'billing' | 'account'
+  const [section, setSection]               = useState('home')
+  const [collapsed, setCollapsed]           = useState(false)
 
   const name     = user?.user_metadata?.name || user?.email?.split('@')[0] || 'there'
   const email    = user?.email || ''
@@ -20,44 +21,69 @@ export default function Dashboard({ user, onSignOut, onStartAudit }) {
       .then(({ data }) => { if (data) setProfile(data) })
   }, [user])
 
+  const toggleCollapse = () => {
+    setCollapsed(c => !c)
+    setProfileExpanded(false)
+  }
+
   return (
     <div style={s.shell}>
 
       {/* ── Sidebar ────────────────────────────────────────────────── */}
-      <aside style={s.sidebar}>
+      <aside style={{ ...s.sidebar, width: collapsed ? 60 : 240 }}>
 
-        {/* Logo */}
-        <div style={s.sidebarLogo} onClick={() => setSection('home')}>
-          self<span style={{ color: 'var(--green)', fontWeight: 400 }}>audit</span>
+        {/* Logo + Toggle */}
+        <div style={s.logoRow}>
+          {!collapsed && (
+            <div style={s.sidebarLogo} onClick={() => setSection('home')}>
+              self<span style={{ color: 'var(--green)', fontWeight: 400 }}>audit</span>
+            </div>
+          )}
+          <button
+            style={{ ...s.toggleBtn, margin: collapsed ? '0 auto' : '0 0 0 auto' }}
+            onClick={toggleCollapse}
+            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            {collapsed ? '›' : '‹'}
+          </button>
         </div>
 
         {/* Home nav item */}
-        <div style={{ padding: '0 12px', marginBottom: 4 }}>
+        <div style={{ padding: collapsed ? '0 8px' : '0 12px', marginBottom: 4 }}>
           <SidebarItem
-            label="Home"
-            active={section === 'home'}
+            icon="⌂" label="Home"
+            active={section === 'home'} collapsed={collapsed}
             onClick={() => setSection('home')}
           />
         </div>
 
         {/* Profile */}
-        <div style={s.profileWrap}>
+        <div style={{ ...s.profileWrap, padding: collapsed ? '0 8px' : '0 12px' }}>
           <button
-            style={s.profileBtn}
-            onClick={() => setProfileExpanded(p => !p)}
+            style={{
+              ...s.profileBtn,
+              justifyContent: collapsed ? 'center' : 'flex-start',
+              padding: collapsed ? '10px 0' : '10px 8px',
+            }}
+            onClick={() => !collapsed && setProfileExpanded(p => !p)}
+            title={collapsed ? name : undefined}
           >
             <div style={s.avatar}>{initials}</div>
-            <div style={s.profileText}>
-              <div style={s.profileName}>{name}</div>
-              <div style={s.profileEmail}>{email}</div>
-            </div>
-            <span style={{
-              ...s.chevron,
-              transform: profileExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-            }}>▾</span>
+            {!collapsed && (
+              <>
+                <div style={s.profileText}>
+                  <div style={s.profileName}>{name}</div>
+                  <div style={s.profileEmail}>{email}</div>
+                </div>
+                <span style={{
+                  ...s.chevron,
+                  transform: profileExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                }}>▾</span>
+              </>
+            )}
           </button>
 
-          {profileExpanded && (
+          {profileExpanded && !collapsed && (
             <div style={s.contextBox}>
               <p style={s.contextLabel}>Your context</p>
               <p style={s.contextText}>
@@ -71,21 +97,27 @@ export default function Dashboard({ user, onSignOut, onStartAudit }) {
         <div style={{ flex: 1 }} />
 
         {/* Settings */}
-        <div style={s.settingsGroup}>
-          <p style={s.settingsGroupLabel}>Settings</p>
+        <div style={{ ...s.settingsGroup, padding: collapsed ? '0 8px' : '0 12px' }}>
+          {!collapsed && <p style={s.settingsGroupLabel}>Settings</p>}
           <SidebarItem
-            label="Billing"
-            active={section === 'billing'}
+            icon="$" label="Billing"
+            active={section === 'billing'} collapsed={collapsed}
             onClick={() => setSection(section === 'billing' ? 'home' : 'billing')}
           />
           <SidebarItem
-            label="Account"
-            active={section === 'account'}
+            icon="⚙" label="Account"
+            active={section === 'account'} collapsed={collapsed}
             onClick={() => setSection(section === 'account' ? 'home' : 'account')}
           />
         </div>
 
-        <button style={s.signOutBtn} onClick={onSignOut}>Sign out</button>
+        {/* Sign out */}
+        <div style={{ padding: collapsed ? '0 8px' : '0 12px', marginTop: 8 }}>
+          {collapsed
+            ? <button style={s.signOutIcon} onClick={onSignOut} title="Sign out">→</button>
+            : <button style={s.signOutBtn} onClick={onSignOut}>Sign out</button>
+          }
+        </div>
       </aside>
 
       {/* ── Main ───────────────────────────────────────────────────── */}
@@ -180,13 +212,19 @@ function Tab({ label, active, onClick }) {
   )
 }
 
-function SidebarItem({ label, active, onClick }) {
+function SidebarItem({ label, icon, active, collapsed, onClick }) {
   return (
     <button
-      style={{ ...s.sidebarItem, ...(active ? s.sidebarItemActive : {}) }}
+      style={{
+        ...s.sidebarItem,
+        ...(active ? s.sidebarItemActive : {}),
+        ...(collapsed ? { justifyContent: 'center', padding: '8px 0' } : {}),
+      }}
       onClick={onClick}
+      title={collapsed ? label : undefined}
     >
-      {label}
+      {icon && <span style={{ fontSize: 14, lineHeight: 1, flexShrink: 0 }}>{icon}</span>}
+      {!collapsed && <span>{label}</span>}
     </button>
   )
 }
@@ -200,23 +238,38 @@ const s = {
 
   // Sidebar
   sidebar: {
-    width: 240, flexShrink: 0,
+    flexShrink: 0,
     display: 'flex', flexDirection: 'column',
     background: 'var(--white)', borderRight: '0.5px solid var(--gray-200)',
     padding: '24px 0', position: 'sticky', top: 0, height: '100vh',
-    overflowY: 'auto',
+    overflowX: 'hidden', overflowY: 'auto',
+    transition: 'width 0.2s ease',
+  },
+
+  // Logo + toggle row
+  logoRow: {
+    display: 'flex', alignItems: 'center',
+    padding: '0 12px', marginBottom: 20, gap: 8,
   },
   sidebarLogo: {
     fontSize: 17, fontWeight: 600, letterSpacing: '-0.5px',
-    padding: '0 20px', marginBottom: 28, color: 'var(--black)',
+    color: 'var(--black)', cursor: 'pointer', userSelect: 'none',
+    flex: 1, whiteSpace: 'nowrap',
+  },
+  toggleBtn: {
+    background: 'none', border: 'none', cursor: 'pointer',
+    fontSize: 18, color: 'var(--gray-400)', padding: '2px 6px',
+    borderRadius: 'var(--radius-sm)', lineHeight: 1,
+    transition: 'color 0.15s, background 0.15s',
+    flexShrink: 0,
   },
 
   // Profile
-  profileWrap: { padding: '0 12px', marginBottom: 8 },
+  profileWrap: { marginBottom: 8 },
   profileBtn: {
     display: 'flex', alignItems: 'center', gap: 10, width: '100%',
     background: 'none', border: 'none', cursor: 'pointer',
-    padding: '10px 8px', borderRadius: 'var(--radius-sm)', textAlign: 'left',
+    borderRadius: 'var(--radius-sm)', textAlign: 'left',
     transition: 'background 0.15s',
   },
   avatar: {
@@ -252,26 +305,35 @@ const s = {
   },
 
   // Settings
-  settingsGroup: { padding: '0 12px', marginBottom: 8 },
+  settingsGroup: { marginBottom: 8 },
   settingsGroupLabel: {
     fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.8px',
     color: 'var(--gray-400)', fontWeight: 600, padding: '0 8px', marginBottom: 4,
   },
   sidebarItem: {
-    display: 'block', width: '100%', textAlign: 'left',
+    display: 'flex', alignItems: 'center', gap: 8,
+    width: '100%', textAlign: 'left',
     fontSize: 13, color: 'var(--gray-600)', fontWeight: 500,
     background: 'none', border: 'none', cursor: 'pointer',
     padding: '8px 10px', borderRadius: 'var(--radius-sm)',
     transition: 'background 0.15s, color 0.15s',
+    whiteSpace: 'nowrap',
   },
   sidebarItemActive: {
     background: 'var(--green-light)', color: 'var(--green-dark)',
   },
   signOutBtn: {
-    display: 'block', width: 'calc(100% - 24px)', margin: '0 12px',
+    display: 'block', width: '100%',
     fontSize: 13, color: 'var(--gray-400)', background: 'none',
     border: '0.5px solid var(--gray-200)', padding: '8px 12px',
     borderRadius: 'var(--radius-sm)', cursor: 'pointer', textAlign: 'center',
+  },
+  signOutIcon: {
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    width: '100%', height: 36,
+    fontSize: 16, color: 'var(--gray-400)', background: 'none',
+    border: '0.5px solid var(--gray-200)',
+    borderRadius: 'var(--radius-sm)', cursor: 'pointer',
   },
 
   // Main
