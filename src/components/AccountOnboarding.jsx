@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import { supabase } from '../lib/supabase.js'
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
@@ -201,11 +200,17 @@ export default function AccountOnboarding({ user, onComplete, onBack }) {
   const [saving,   setSaving]   = useState(false)
   const [tier,     setTier]     = useState('free')
 
-  // Fetch tier from profile
+  // Fetch tier via server-side API (avoids client-side session dependency)
   useEffect(() => {
-    if (!user) return
-    supabase.from('profiles').select('tier').eq('id', user.id).single()
-      .then(({ data }) => { if (data) setTier(data.tier) })
+    if (!user?.id) return
+    fetch('/api/get-tier', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: user.id }),
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data?.tier) setTier(data.tier) })
+      .catch(() => {}) // default 'free' tier on any error
   }, [user])
 
   // Paid tier: auto-select all domains when reaching step 3
@@ -244,11 +249,23 @@ export default function AccountOnboarding({ user, onComplete, onBack }) {
 
   const handleSave = async () => {
     setSaving(true)
-    await supabase.from('profiles')
-      .update({ context: ctxText.trim(), onboarding_complete: true })
-      .eq('id', user.id)
-    setSaving(false)
-    onComplete()
+    try {
+      const res = await fetch('/api/save-context', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id, context: ctxText.trim() }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        console.error('[onboarding] save-context error:', err.error)
+        // Still navigate — don't block the user on a non-critical save failure
+      }
+    } catch (e) {
+      console.error('[onboarding] save-context fetch failed:', e.message)
+    } finally {
+      setSaving(false)
+      onComplete()
+    }
   }
 
   return (
