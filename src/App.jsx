@@ -65,16 +65,20 @@ export default function App() {
   useEffect(() => {
     if (!supabase) return
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
+    supabase.auth.getSession().then(({ data, error }) => {
+      if (error) console.error('[auth] getSession error:', error.message)
+      setSession(data?.session ?? null)
+      setAuthLoading(false)
+    }).catch((err) => {
+      console.error('[auth] getSession threw:', err)
       setAuthLoading(false)
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session)
 
-      // After a fresh sign-in (signup or login), check whether onboarding is done
-      if (session && event === 'SIGNED_IN') {
+      // Route the user based on onboarding state on sign-in or session restore
+      if (session && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
         const { data: profile } = await supabase
           .from('profiles')
           .select('onboarding_complete')
@@ -83,6 +87,8 @@ export default function App() {
 
         if (profile && !profile.onboarding_complete) {
           navigate(SCREENS.ACCOUNT_ONBOARDING)
+        } else if (profile?.onboarding_complete) {
+          navigate(SCREENS.DASHBOARD)
         }
       }
     })
