@@ -1,10 +1,17 @@
 import React, { useState, useEffect } from 'react'
-import { supabase } from '../lib/supabase.js'
+import { initSupabase } from '../lib/supabase.js'
 
 export default function Dashboard({ user, onStartAudit }) {
   const handleSignOut = async () => {
-    try { await supabase?.auth.signOut() } catch (_) {}
-    window.location.href = '/'
+    try {
+      const supabase = await initSupabase()
+      await supabase.auth.signOut()
+    } catch (e) {
+      console.error(e)
+    } finally {
+      localStorage.clear()
+      window.location.href = '/'
+    }
   }
   const [profile, setProfile]               = useState(null)
   const [profileExpanded, setProfileExpanded] = useState(false)
@@ -18,11 +25,13 @@ export default function Dashboard({ user, onStartAudit }) {
 
   useEffect(() => {
     if (!user) return
-    supabase.from('profiles')
-      .select('context, tier')
-      .eq('id', user.id)
-      .single()
-      .then(({ data }) => { if (data) setProfile(data) })
+    initSupabase().then(sb =>
+      sb.from('profiles')
+        .select('context, tier')
+        .eq('id', user.id)
+        .single()
+        .then(({ data }) => { if (data) setProfile(data) })
+    ).catch(() => {})
   }, [user])
 
   const toggleCollapse = () => {
