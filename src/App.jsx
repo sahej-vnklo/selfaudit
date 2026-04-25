@@ -65,21 +65,30 @@ export default function App() {
   useEffect(() => {
     if (!supabase) return
 
-    // Safety timeout — if getSession never resolves, unblock the UI after 3s
-    const authTimeout = setTimeout(() => {
-      console.error('[auth] getSession timed out after 3s — forcing authLoading false')
+    const clearAuthAndRedirect = (reason) => {
+      console.error('[auth]', reason, '— clearing storage and redirecting to login')
+      try { localStorage.clear() } catch (_) {}
+      setSession(null)
       setAuthLoading(false)
+      navigate(SCREENS.LOGIN)
+    }
+
+    // Safety timeout — if getSession never resolves, clear and redirect
+    const authTimeout = setTimeout(() => {
+      clearAuthAndRedirect('getSession timed out after 3s')
     }, 3000)
 
     supabase.auth.getSession().then(({ data, error }) => {
       clearTimeout(authTimeout)
-      if (error) console.error('[auth] getSession error:', error.message)
-      setSession(data?.session ?? null)
-      setAuthLoading(false)
+      if (error) {
+        clearAuthAndRedirect(`getSession error: ${error.message}`)
+      } else {
+        setSession(data?.session ?? null)
+        setAuthLoading(false)
+      }
     }).catch((err) => {
       clearTimeout(authTimeout)
-      console.error('[auth] getSession threw:', err)
-      setAuthLoading(false)
+      clearAuthAndRedirect(`getSession threw: ${err?.message ?? err}`)
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
