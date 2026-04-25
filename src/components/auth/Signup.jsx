@@ -25,24 +25,39 @@ export default function Signup({ onSuccess, onLogin }) {
     setGlobalError(null)
     if (!validate()) return
     setLoading(true)
+
+    const timeout = setTimeout(() => {
+      setLoading(false)
+      setGlobalError('Connection timed out. Please try again.')
+    }, 8000)
+
     try {
       const res = await fetch('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'signup', email: form.email, password: form.password, name: form.name }),
       })
+      clearTimeout(timeout)
       const data = await res.json()
       if (!res.ok || data.error) { setGlobalError(friendlyError(data.error || 'Sign up failed.')); return }
       // session is null when email confirmation is required
       if (data.session) {
-        await supabase?.auth.setSession(data.session)
-        onSuccess()
+        // Fire-and-forget: don't await setSession — it can stall and freeze the button.
+        // Pass the session to onSuccess so App updates its state before navigating.
+        if (supabase) {
+          supabase.auth.setSession(data.session).catch(err =>
+            console.warn('[signup] setSession error:', err?.message)
+          )
+        }
+        onSuccess(data.session)
       } else {
         setEmailSent(true)
       }
     } catch (e) {
+      clearTimeout(timeout)
       setGlobalError('Connection error. Please try again.')
     } finally {
+      clearTimeout(timeout)
       setLoading(false)
     }
   }

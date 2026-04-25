@@ -151,7 +151,12 @@ export default function App() {
 
   if (screen === SCREENS.SIGNUP) {
     return <Signup
-      onSuccess={() => navigate(SCREENS.ACCOUNT_ONBOARDING)}
+      onSuccess={(session) => {
+        // Set session immediately so the AccountOnboarding guard doesn't
+        // redirect back to login before onAuthStateChange has fired.
+        if (session) setSession(session)
+        navigate(SCREENS.ACCOUNT_ONBOARDING)
+      }}
       onLogin={() => navigate(SCREENS.LOGIN)}
     />
   }
