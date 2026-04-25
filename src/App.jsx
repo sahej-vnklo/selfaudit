@@ -139,7 +139,12 @@ export default function App() {
   // ── Auth screens ──────────────────────────────────────────────────────────
   if (screen === SCREENS.LOGIN) {
     return <Login
-      onSuccess={() => navigate(SCREENS.DASHBOARD)}
+      onSuccess={(session) => {
+        // Set session immediately so the Dashboard guard doesn't redirect back
+        // before onAuthStateChange has a chance to fire.
+        if (session) setSession(session)
+        navigate(SCREENS.DASHBOARD)
+      }}
       onSignup={() => navigate(SCREENS.SIGNUP)}
     />
   }

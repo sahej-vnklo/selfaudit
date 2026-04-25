@@ -27,8 +27,14 @@ export default function Login({ onSuccess, onSignup }) {
       clearTimeout(timeout)
       const data = await res.json()
       if (!res.ok || data.error) { setError(friendlyError(data.error || 'Sign in failed.')); return }
-      if (data.session) await supabase?.auth.setSession(data.session)
-      onSuccess()
+      // Fire-and-forget: don't await setSession — it can stall and freeze the button.
+      // Pass the session to onSuccess so App updates its state before navigating.
+      if (data.session && supabase) {
+        supabase.auth.setSession(data.session).catch(err =>
+          console.warn('[login] setSession error:', err?.message)
+        )
+      }
+      onSuccess(data.session)
     } catch (e) {
       setError('Connection timed out. Please try again.')
     } finally {
