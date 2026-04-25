@@ -76,12 +76,19 @@ When identifying AI opportunities, map them specifically to what Vnklo can build
   "honest_truth": "The single hardest thing for this person to hear — the thing they are avoiding or the structural reality they cannot escape. Make it land. If AI opportunities were identified, close with one sentence connecting their identified gap to what is now buildable — make the next step obvious without being salesy."
 }`
 
+// Strip any non-ASCII characters (e.g. BOM, invisible unicode, emojis) from a
+// value before placing it in a fetch header. HTTP headers must contain only
+// ISO-8859-1 code points; anything outside that range throws a TypeError.
+function safeHeader(value) {
+  return (value || '').replace(/[^\x20-\x7E]/g, '').trim()
+}
+
 export async function sendMessage(messages, apiKey) {
   const response = await fetch(CLAUDE_API, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-api-key': apiKey,
+      'x-api-key': safeHeader(apiKey),
       'anthropic-version': '2023-06-01',
       'anthropic-dangerous-direct-browser-access': 'true',
     },
@@ -112,7 +119,7 @@ export async function generateReport(messages, apiKey) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-api-key': apiKey,
+      'x-api-key': safeHeader(apiKey),
       'anthropic-version': '2023-06-01',
       'anthropic-dangerous-direct-browser-access': 'true',
     },
