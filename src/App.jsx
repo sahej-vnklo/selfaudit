@@ -65,11 +65,19 @@ export default function App() {
   useEffect(() => {
     if (!supabase) return
 
+    // Safety timeout — if getSession never resolves, unblock the UI after 3s
+    const authTimeout = setTimeout(() => {
+      console.error('[auth] getSession timed out after 3s — forcing authLoading false')
+      setAuthLoading(false)
+    }, 3000)
+
     supabase.auth.getSession().then(({ data, error }) => {
+      clearTimeout(authTimeout)
       if (error) console.error('[auth] getSession error:', error.message)
       setSession(data?.session ?? null)
       setAuthLoading(false)
     }).catch((err) => {
+      clearTimeout(authTimeout)
       console.error('[auth] getSession threw:', err)
       setAuthLoading(false)
     })
