@@ -250,14 +250,18 @@ export default function AccountOnboarding({ user, onComplete, onBack }) {
   const handleSave = async () => {
     setSaving(true)
     try {
+      const userId  = user.id
+      const context = ctxText.trim()
+      console.log('[onboarding] posting to save-context with:', { userId, context })
       const res = await fetch('/api/save-context', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id, context: ctxText.trim() }),
+        body: JSON.stringify({ userId, context }),
       })
+      const result = await res.json().catch(() => ({}))
+      console.log('[onboarding] save-context response:', result)
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        console.error('[onboarding] save-context error:', err.error)
+        console.error('[onboarding] save-context error:', result.error)
         // Still navigate — don't block the user on a non-critical save failure
       }
     } catch (e) {

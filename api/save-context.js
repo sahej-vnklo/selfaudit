@@ -3,6 +3,8 @@ import { createClient } from '@supabase/supabase-js'
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end()
 
+  console.log('[save-context] received:', req.body)
+
   const { userId, context } = req.body || {}
   if (!userId || !context) {
     return res.status(400).json({ error: 'userId and context are required' })
