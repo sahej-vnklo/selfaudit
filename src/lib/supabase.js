@@ -10,6 +10,8 @@ const key = safeStr(import.meta.env.VITE_SUPABASE_ANON_KEY)
 console.log('[supabase] url:', url || '(empty)')
 console.log('[supabase] key prefix:', key ? key.slice(0, 20) + '...' : '(empty)')
 console.log('[supabase] url length:', url?.length ?? 0, '| key length:', key?.length ?? 0)
+console.log('key after safeStr length:', key?.length)
+console.log('key after safeStr last 10:', key?.slice(-10))
 
 if (!url || !key) {
   console.warn('[supabase] VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY not set — auth disabled')
