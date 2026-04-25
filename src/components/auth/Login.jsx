@@ -12,10 +12,23 @@ export default function Login({ onSuccess, onSignup }) {
     setError(null)
     if (!form.email || !form.password) { setError('Please fill in all fields.'); return }
     setLoading(true)
-    const { error: err } = await supabase.auth.signInWithPassword({ email: form.email, password: form.password })
-    setLoading(false)
-    if (err) { setError(friendlyError(err.message)); return }
-    onSuccess()
+
+    const timeout = setTimeout(() => {
+      setLoading(false)
+      setError('Connection timed out. Please try again.')
+    }, 5000)
+
+    try {
+      const { error: err } = await supabase.auth.signInWithPassword({ email: form.email, password: form.password })
+      clearTimeout(timeout)
+      if (err) { setError(friendlyError(err.message)); return }
+      onSuccess()
+    } catch (e) {
+      setError('Connection timed out. Please try again.')
+    } finally {
+      clearTimeout(timeout)
+      setLoading(false)
+    }
   }
 
   return (
