@@ -3,24 +3,45 @@ import React, { useState, useEffect } from 'react'
 // ─── Data ────────────────────────────────────────────────────────────────────
 
 const DOMAINS = [
-  { id: 'strategy',   label: 'Strategy' },
-  { id: 'operations', label: 'Operations' },
-  { id: 'sales',      label: 'Sales' },
-  { id: 'marketing',  label: 'Marketing' },
-  { id: 'finance',    label: 'Finance' },
-  { id: 'people',     label: 'People & culture' },
-  { id: 'product',    label: 'Product' },
-  { id: 'cx',         label: 'Customer experience' },
+  { id: 'strategy',     label: 'Strategy' },
+  { id: 'operations',   label: 'Operations' },
+  { id: 'sales',        label: 'Sales' },
+  { id: 'marketing',    label: 'Marketing' },
+  { id: 'finance',      label: 'Finance' },
+  { id: 'people',       label: 'People & Culture' },
+  { id: 'product',      label: 'Product' },
+  { id: 'cx',           label: 'Customer Experience' },
+  { id: 'technology',   label: 'Technology' },
+  { id: 'legal',        label: 'Legal & Compliance' },
+  { id: 'supply',       label: 'Supply Chain' },
+  { id: 'brand',        label: 'Brand' },
+  { id: 'partnerships', label: 'Partnerships' },
+  { id: 'data',         label: 'Data & Analytics' },
 ]
 
-const BUSINESS_OPTIONS = ['Retail', 'SaaS', 'Service', 'Manufacturing', 'Agency', 'Other']
-const PERSONAL_OPTIONS  = ['Career', 'Finance', 'Health', 'Relationships', 'Other']
+const BUSINESS_OPTIONS = [
+  'SaaS', 'Agency', 'Retail', 'E-commerce', 'Restaurant / Food',
+  'Healthcare', 'Legal', 'Real Estate', 'Construction', 'Manufacturing',
+  'Logistics', 'Education', 'Finance / Accounting', 'Insurance',
+  'Consulting', 'Marketing', 'Media / Publishing', 'Travel / Hospitality',
+  'Nonprofit', 'Freelancer / Solo', 'Other',
+]
+
+const PERSONAL_OPTIONS = ['Career', 'Finance', 'Health', 'Relationships', 'Other']
 
 function buildContext(type, category, domains) {
   const list = domains.join(', ')
-  return type === 'business'
-    ? `${category} business. Looking to audit: ${list}.`
-    : `Personal goals — focused on ${category}. Looking to audit: ${list}.`
+  const focus = domains.length === 0
+    ? 'key areas'
+    : domains.length === 1
+      ? domains[0]
+      : `${domains.slice(0, -1).join(', ')} and ${domains[domains.length - 1]}`
+
+  if (type === 'business') {
+    return `You run a ${category} business and want a deep audit of your ${focus}. This audit will focus on identifying structural gaps, missed opportunities, and the single most important lever for growth. Be as specific as possible below — the more context you give, the sharper the questions.`
+  } else {
+    return `You're auditing your personal ${category} goals, with a focus on ${focus}. This audit will dig into what's holding you back, what's worth prioritising, and the clearest path forward. Add anything else that's relevant below.`
+  }
 }
 
 // ─── Progress bar ─────────────────────────────────────────────────────────────
@@ -41,7 +62,7 @@ function StepBar({ current }) {
 
 // ─── Step 1 — type ────────────────────────────────────────────────────────────
 
-function Step1({ onSelect, onBack }) {
+function Step1({ onSelect }) {
   return (
     <div>
       <p style={s.eyebrow}>Step 1 of 4</p>
@@ -68,7 +89,6 @@ function Step1({ onSelect, onBack }) {
           </button>
         ))}
       </div>
-      <BackLink onClick={onBack} />
     </div>
   )
 }
@@ -76,9 +96,9 @@ function Step1({ onSelect, onBack }) {
 // ─── Step 2 — category ────────────────────────────────────────────────────────
 
 function Step2({ type, onSelect, onBack }) {
-  const options  = type === 'business' ? BUSINESS_OPTIONS : PERSONAL_OPTIONS
-  const heading  = type === 'business' ? 'What industry?' : 'What area of life?'
-  const subtext  = type === 'business'
+  const options = type === 'business' ? BUSINESS_OPTIONS : PERSONAL_OPTIONS
+  const heading = type === 'business' ? 'What industry?' : 'What area of life?'
+  const subtext = type === 'business'
     ? 'Helps the audit use the right benchmarks.'
     : 'Helps the audit focus its questions.'
 
@@ -87,14 +107,19 @@ function Step2({ type, onSelect, onBack }) {
       <p style={s.eyebrow}>Step 2 of 4</p>
       <h2 style={s.title}>{heading}</h2>
       <p style={s.sub}>{subtext}</p>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 32 }}>
+      <div style={{
+        display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 28,
+        maxHeight: 340, overflowY: 'auto', paddingRight: 4,
+      }}>
         {options.map(opt => (
           <button
             key={opt}
             style={s.pill}
             onClick={() => onSelect(opt)}
             onMouseEnter={e => Object.assign(e.currentTarget.style, s.pillHover)}
-            onMouseLeave={e => Object.assign(e.currentTarget.style, { background: 'var(--gray-100)', color: 'var(--gray-800)', borderColor: 'var(--gray-200)' })}
+            onMouseLeave={e => Object.assign(e.currentTarget.style, {
+              background: 'var(--gray-100)', color: 'var(--gray-800)', borderColor: 'var(--gray-200)',
+            })}
           >
             {opt}
           </button>
@@ -108,19 +133,26 @@ function Step2({ type, onSelect, onBack }) {
 // ─── Step 3 — domains ─────────────────────────────────────────────────────────
 
 function Step3({ tier, selected, onToggle, onNext, onBack }) {
-  const isFree   = tier === 'free'
-  const canNext  = isFree ? selected.length === 1 : selected.length === DOMAINS.length
-  const hint     = isFree
+  const isFree  = tier !== 'paid'
+  const canNext = isFree ? selected.length >= 1 : true
+  const hint    = isFree
     ? `Choose 1 domain to focus your audit. (${selected.length}/1 selected)`
-    : 'All domains included — the audit will cover everything.'
+    : 'Your Pro plan covers everything — the audit will run across all domains.'
 
   return (
     <div>
       <p style={s.eyebrow}>Step 3 of 4</p>
       <h2 style={s.title}>{isFree ? 'Pick your focus.' : 'Everything is covered.'}</h2>
+
+      {!isFree && (
+        <div style={s.proBanner}>
+          ✦ Your Pro plan includes full-spectrum auditing across all domains.
+        </div>
+      )}
+
       <p style={s.sub}>{hint}</p>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 28 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 24 }}>
         {DOMAINS.map(d => {
           const active   = selected.includes(d.label)
           const disabled = isFree && !active && selected.length >= 1
@@ -131,7 +163,7 @@ function Step3({ tier, selected, onToggle, onNext, onBack }) {
               onClick={() => !disabled && onToggle(d.label)}
               style={{
                 ...s.domainCard,
-                ...(active ? s.domainCardActive : {}),
+                ...(active   ? s.domainCardActive   : {}),
                 ...(disabled ? s.domainCardDisabled : {}),
               }}
             >
@@ -168,7 +200,8 @@ function Step4({ contextText, setContextText, onSave, saving }) {
         style={s.textarea}
         value={contextText}
         onChange={e => setContextText(e.target.value)}
-        rows={5}
+        placeholder="Add anything else — your biggest challenge, your goal, what's been tried..."
+        rows={6}
       />
       <button
         style={{ ...s.btn, marginTop: 16, opacity: saving ? 0.7 : 1 }}
@@ -213,7 +246,7 @@ export default function AccountOnboarding({ user, onComplete, onBack }) {
       .catch(() => {}) // default 'free' tier on any error
   }, [user])
 
-  // Paid tier: auto-select all domains when reaching step 3
+  // Paid tier: animate all domains selecting one by one (150ms apart)
   useEffect(() => {
     if (step !== 3 || tier !== 'paid') return
     const labels = DOMAINS.map(d => d.label)
@@ -222,7 +255,7 @@ export default function AccountOnboarding({ user, onComplete, onBack }) {
       i++
       setDomains(labels.slice(0, i))
       if (i >= labels.length) clearInterval(interval)
-    }, 80)
+    }, 150)
     return () => clearInterval(interval)
   }, [step, tier])
 
@@ -231,11 +264,11 @@ export default function AccountOnboarding({ user, onComplete, onBack }) {
   const handleCategory = (c) => {
     setCategory(c)
     setStep(3)
-    if (tier === 'free') setDomains([])
+    if (tier !== 'paid') setDomains([])
   }
 
   const toggleDomain = (label) => {
-    if (tier === 'free') {
+    if (tier !== 'paid') {
       setDomains(prev => prev.includes(label) ? [] : [label])
     }
     // paid: controlled by animation, no manual toggle
@@ -282,10 +315,10 @@ export default function AccountOnboarding({ user, onComplete, onBack }) {
       </nav>
 
       <div style={s.wrap}>
-        <div style={{ ...s.card, maxWidth: step === 3 ? 540 : 480 }}>
+        <div style={{ ...s.card, maxWidth: step === 3 ? 560 : 480 }}>
           <StepBar current={step} />
 
-          {step === 1 && <Step1 onSelect={handleType} onBack={onBack} />}
+          {step === 1 && <Step1 onSelect={handleType} />}
 
           {step === 2 && (
             <Step2
@@ -332,6 +365,14 @@ const s = {
   title:   { fontFamily: 'var(--serif)', fontSize: 24, fontWeight: 400, lineHeight: 1.3, marginBottom: 8 },
   sub:     { fontSize: 14, color: 'var(--gray-600)', lineHeight: 1.6 },
 
+  proBanner: {
+    display: 'flex', alignItems: 'center', gap: 8,
+    background: 'var(--green-light)', border: '0.5px solid var(--green)',
+    borderRadius: 'var(--radius-sm)', padding: '10px 14px',
+    fontSize: 13, fontWeight: 500, color: 'var(--green-dark)',
+    marginBottom: 14, marginTop: 4,
+  },
+
   // Step 1 — type cards
   typeCard: {
     display: 'flex', alignItems: 'center', gap: 16, width: '100%',
@@ -350,7 +391,7 @@ const s = {
     padding: '10px 20px', borderRadius: 'var(--radius-pill)',
     border: '0.5px solid var(--gray-200)', background: 'var(--gray-100)',
     fontSize: 14, fontWeight: 500, color: 'var(--gray-800)',
-    cursor: 'pointer', transition: 'all 0.15s',
+    cursor: 'pointer', transition: 'all 0.15s', whiteSpace: 'nowrap',
   },
   pillHover: { background: 'var(--green)', color: 'white', borderColor: 'var(--green)' },
 
@@ -380,7 +421,8 @@ const s = {
     border: '0.5px solid var(--gray-200)', borderRadius: 'var(--radius)',
     fontSize: 14, color: 'var(--black)', lineHeight: 1.7,
     resize: 'vertical', background: 'var(--gray-100)',
-    fontFamily: 'var(--sans)',
+    fontFamily: 'var(--sans)', minHeight: 120,
+    boxSizing: 'border-box',
   },
 
   // Shared

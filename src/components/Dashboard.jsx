@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase.js'
 
-export default function Dashboard({ user, onSignOut, onStartAudit }) {
+export default function Dashboard({ user, onStartAudit }) {
+  const handleSignOut = async () => {
+    try { await supabase?.auth.signOut() } catch (_) {}
+    window.location.href = '/'
+  }
   const [profile, setProfile]               = useState(null)
   const [profileExpanded, setProfileExpanded] = useState(false)
   const [activeTab, setActiveTab]           = useState('business')
@@ -44,7 +48,7 @@ export default function Dashboard({ user, onSignOut, onStartAudit }) {
             onClick={toggleCollapse}
             title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
-            {collapsed ? '›' : '‹'}
+            {collapsed ? '❯' : '❮'}
           </button>
         </div>
 
@@ -114,8 +118,8 @@ export default function Dashboard({ user, onSignOut, onStartAudit }) {
         {/* Sign out */}
         <div style={{ padding: collapsed ? '0 8px' : '0 12px', marginTop: 8 }}>
           {collapsed
-            ? <button style={s.signOutIcon} onClick={onSignOut} title="Sign out">→</button>
-            : <button style={s.signOutBtn} onClick={onSignOut}>Sign out</button>
+            ? <button style={s.signOutIcon} onClick={handleSignOut} title="Sign out">→</button>
+            : <button style={s.signOutBtn} onClick={handleSignOut}>Sign out</button>
           }
         </div>
       </aside>
@@ -257,10 +261,10 @@ const s = {
     flex: 1, whiteSpace: 'nowrap',
   },
   toggleBtn: {
-    background: 'none', border: 'none', cursor: 'pointer',
-    fontSize: 18, color: 'var(--gray-400)', padding: '2px 6px',
+    background: 'rgba(29,158,117,0.15)', border: 'none', cursor: 'pointer',
+    fontSize: 20, color: 'var(--green)', padding: '8px',
     borderRadius: 'var(--radius-sm)', lineHeight: 1,
-    transition: 'color 0.15s, background 0.15s',
+    transition: 'background 0.15s',
     flexShrink: 0,
   },
 

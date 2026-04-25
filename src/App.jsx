@@ -174,7 +174,6 @@ export default function App() {
     if (!session) { navigate(SCREENS.LOGIN); return null }
     return <Dashboard
       user={session.user}
-      onSignOut={handleSignOut}
       onStartAudit={() => navigate(SCREENS.ONBOARDING)}
     />
   }
