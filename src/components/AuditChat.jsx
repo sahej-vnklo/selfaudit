@@ -135,7 +135,8 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
         .eq('id', userInfo.userId)
         .single()
       )
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        console.log('AUDIT CHAT PROFILE:', data, error)
         if (data) {
           console.log('TIER DATA:', { tier: data.tier, industry: data.industry, domain: data.domain })
           setTierData(data)

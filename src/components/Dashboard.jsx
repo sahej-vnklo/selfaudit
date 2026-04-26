@@ -151,6 +151,7 @@ export default function Dashboard({ user, onStartAudit }) {
         .single()
       )
       .then(({ data, error }) => {
+        console.log('PROFILE FETCH RESULT:', data, error)
         if (error) console.error('[dashboard] profile fetch:', error.message)
         if (data) setProfile(data)
       })
