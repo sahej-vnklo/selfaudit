@@ -54,14 +54,15 @@ const DOMAIN_MAP = {
   'Other':                ['Strategy', 'Operations', 'Sales', 'Marketing', 'Finance', 'People & Culture', 'Technology', 'Customer Experience'],
 }
 
-function buildContext(category, domains) {
-  const focus = domains.length === 0
-    ? 'key areas'
-    : domains.length === 1
-      ? domains[0]
-      : `${domains.slice(0, -1).join(', ')} and ${domains[domains.length - 1]}`
-
-  return `You run a ${category} business and want a deep audit of your ${focus}. This audit will focus on identifying structural gaps, missed opportunities, and the single most important lever for growth. Be as specific as possible below — the more context you give, the sharper the questions.`
+function buildContext(tier, industry, domain) {
+  if (tier === 'business') {
+    return `You run a ${industry} business and want a comprehensive audit across your entire operation. This audit will examine every function of your business to surface the highest-impact opportunities for growth. Be as specific as possible below — the more context you give, the sharper the questions.`
+  }
+  if (tier === 'portfolio') {
+    return `You manage multiple businesses across different industries. This audit will evaluate your portfolio for operational efficiency, cross-business leverage, and where AI can create the most compounded value across your holdings. Be as specific as possible below — the more context you give, the sharper the questions.`
+  }
+  // essential (default)
+  return `You run a ${industry} business and want a deep audit of your ${domain}. This audit will focus on identifying structural gaps, missed opportunities, and the single most important lever for growth. Be as specific as possible below — the more context you give, the sharper the questions.`
 }
 
 // ─── Progress bar ─────────────────────────────────────────────────────────────
@@ -257,9 +258,8 @@ export default function AccountOnboarding({ user, onComplete, onBack }) {
   }
 
   const handleDomainsNext = () => {
-    // For paid users ensure all available domains are captured even if animation is mid-run
-    const effectiveDomains = tier === 'paid' ? availableDomains : domains
-    const generated = buildContext(category, effectiveDomains)
+    const selectedDomain = tier === 'paid' ? availableDomains[0] : domains[0]
+    const generated = buildContext(tier, category, selectedDomain)
     setCtxText(generated)
     setStep(4)
   }
