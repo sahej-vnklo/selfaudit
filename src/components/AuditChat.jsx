@@ -146,6 +146,26 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [conversationHistory, loading])
 
+  // Fix 1: logo nav — dashboard for logged-in, homepage for anonymous
+  const handleLogoClick = () => {
+    if (userInfo?.userId) {
+      window.location.hash = '#dashboard'
+    } else {
+      window.location.href = '/'
+    }
+  }
+
+  // Fix 4: "Auditing:" label — derived from tier profile data
+  const auditingLabel = React.useMemo(() => {
+    if (!tierData) return userInfo?.context || ''
+    const { tier, industry, domain } = tierData
+    if (tier === 'portfolio') return 'Portfolio'
+    if (tier === 'business')  return industry || userInfo?.context || ''
+    // essential
+    if (industry && domain)   return `${industry} — ${domain}`
+    return userInfo?.context || ''
+  }, [tierData, userInfo])
+
   const send = async () => {
     const text = input.trim()
     if (!text || loading) return
@@ -223,12 +243,12 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
       )}
 
       <nav style={styles.nav}>
-        <div style={{...styles.logo, cursor: 'pointer'}} onClick={() => window.location.reload()}>
+        <div style={{...styles.logo, cursor: 'pointer'}} onClick={handleLogoClick}>
           self<span style={{ color: 'var(--green)' }}>audit</span>
         </div>
         <div style={styles.navMeta}>
           <span style={styles.auditingLabel}>Auditing:</span>
-          <span style={styles.auditingContext}>{userInfo.context}</span>
+          <span style={styles.auditingContext}>{auditingLabel}</span>
         </div>
       </nav>
 

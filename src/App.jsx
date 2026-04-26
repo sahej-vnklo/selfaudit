@@ -65,38 +65,44 @@ export default function App() {
   useEffect(() => {
     let subscription = null
 
-    const clearAuthAndRedirect = (reason) => {
-      console.error('[auth]', reason, '— clearing storage and redirecting to login')
-      try { localStorage.clear() } catch (_) {}
+    // Safety timeout: unblock the UI if Supabase is slow.
+    // Do NOT clear localStorage here — valid session tokens may still exist.
+    const authTimeout = setTimeout(() => {
+      console.warn('[auth] auth init timed out after 8s — unblocking UI')
       setSession(null)
       setAuthLoading(false)
       navigate(SCREENS.LOGIN)
-    }
-
-    // Safety timeout covers both initSupabase + getSession
-    const authTimeout = setTimeout(() => {
-      clearAuthAndRedirect('auth init timed out after 5s')
-    }, 5000)
+    }, 8000)
 
     initSupabase()
       .then((sb) => {
         sb.auth.getSession().then(({ data, error }) => {
           clearTimeout(authTimeout)
           if (error) {
-            clearAuthAndRedirect(`getSession error: ${error.message}`)
-          } else {
-            setSession(data?.session ?? null)
-            setAuthLoading(false)
+            console.error('[auth] getSession error:', error.message)
           }
+          setSession(data?.session ?? null)
+          setAuthLoading(false)
         }).catch((err) => {
           clearTimeout(authTimeout)
-          clearAuthAndRedirect(`getSession threw: ${err?.message ?? err}`)
+          console.error('[auth] getSession threw:', err?.message ?? err)
+          setSession(null)
+          setAuthLoading(false)
         })
 
         const { data: { subscription: sub } } = sb.auth.onAuthStateChange(async (event, session) => {
           setSession(session)
 
-          if (session && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
+          // SIGNED_OUT: clear state and go home
+          if (event === 'SIGNED_OUT') {
+            navigate(SCREENS.LANDING)
+            return
+          }
+
+          // SIGNED_IN only (new login) — navigate based on onboarding status.
+          // INITIAL_SESSION (page refresh) is intentionally excluded: the initial
+          // screen is already set from screenFromHash(), so we let it stand.
+          if (session && event === 'SIGNED_IN') {
             const { data: profile } = await sb
               .from('profiles')
               .select('onboarding_complete')
@@ -115,7 +121,10 @@ export default function App() {
       })
       .catch((err) => {
         clearTimeout(authTimeout)
-        clearAuthAndRedirect(`initSupabase failed: ${err.message}`)
+        console.error('[auth] initSupabase failed:', err.message)
+        setSession(null)
+        setAuthLoading(false)
+        navigate(SCREENS.LOGIN)
       })
 
     return () => {

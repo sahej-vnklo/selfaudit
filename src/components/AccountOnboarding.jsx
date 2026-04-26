@@ -55,14 +55,16 @@ const DOMAIN_MAP = {
 }
 
 function buildContext(tier, industry, domain) {
+  const article = /^[aeiou]/i.test(industry) ? 'an' : 'a'
+
   if (tier === 'business') {
-    return `You run a ${industry} business and want a comprehensive audit across your entire operation. This audit will examine every function of your business to surface the highest-impact opportunities for growth. Be as specific as possible below — the more context you give, the sharper the questions.`
+    return `You run ${article} ${industry} business and want a comprehensive audit across your entire operation. This audit will examine every function of your business to surface the highest-impact opportunities for growth. Be as specific as possible below — the more context you give, the sharper the questions.`
   }
   if (tier === 'portfolio') {
     return `You manage multiple businesses across different industries. This audit will evaluate your portfolio for operational efficiency, cross-business leverage, and where AI can create the most compounded value across your holdings. Be as specific as possible below — the more context you give, the sharper the questions.`
   }
   // essential (default)
-  return `You run a ${industry} business and want a deep audit of your ${domain}. This audit will focus on identifying structural gaps, missed opportunities, and the single most important lever for growth. Be as specific as possible below — the more context you give, the sharper the questions.`
+  return `You run ${article} ${industry} business and want a deep audit of your ${domain}. This audit will focus on identifying structural gaps, missed opportunities, and the single most important lever for growth. Be as specific as possible below — the more context you give, the sharper the questions.`
 }
 
 // ─── Progress bar ─────────────────────────────────────────────────────────────

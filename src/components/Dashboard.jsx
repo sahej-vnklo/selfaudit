@@ -65,7 +65,7 @@ export default function Dashboard({ user, onStartAudit }) {
           <SidebarItem
             icon="⌂" label="Home"
             active={section === 'home'} collapsed={collapsed}
-            onClick={() => setSection('home')}
+            onClick={collapsed ? undefined : () => setSection('home')}
           />
         </div>
 
@@ -114,19 +114,19 @@ export default function Dashboard({ user, onStartAudit }) {
           <SidebarItem
             icon="$" label="Billing"
             active={section === 'billing'} collapsed={collapsed}
-            onClick={() => setSection(section === 'billing' ? 'home' : 'billing')}
+            onClick={collapsed ? undefined : () => setSection(section === 'billing' ? 'home' : 'billing')}
           />
           <SidebarItem
             icon="⚙" label="Account"
             active={section === 'account'} collapsed={collapsed}
-            onClick={() => setSection(section === 'account' ? 'home' : 'account')}
+            onClick={collapsed ? undefined : () => setSection(section === 'account' ? 'home' : 'account')}
           />
         </div>
 
         {/* Sign out */}
         <div style={{ padding: collapsed ? '0 8px' : '0 12px', marginTop: 8 }}>
           {collapsed
-            ? <button style={s.signOutIcon} onClick={handleSignOut} title="Sign out">→</button>
+            ? <button style={s.signOutIcon} onClick={undefined} title="Sign out">→</button>
             : <button style={s.signOutBtn} onClick={handleSignOut}>Sign out</button>
           }
         </div>
