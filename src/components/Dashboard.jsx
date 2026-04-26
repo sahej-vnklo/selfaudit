@@ -78,6 +78,14 @@ const TIER_ORDER = { essential: 0, business: 1, portfolio: 2, free: 0, paid: 1 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
+// Normalize legacy tier strings so all display + logic is consistent
+function normalizeTier(raw) {
+  if (raw === 'paid')  return 'business'
+  if (raw === 'free')  return 'essential'
+  if (raw === 'business' || raw === 'portfolio') return raw
+  return 'essential'
+}
+
 function getGreeting() {
   const h = new Date().getHours()
   if (h < 12) return 'Good morning'
@@ -135,13 +143,18 @@ export default function Dashboard({ user, onStartAudit }) {
 
   useEffect(() => {
     if (!user) return
-    initSupabase().then(sb =>
-      sb.from('profiles')
+    initSupabase()
+      .then(sb => sb
+        .from('profiles')
         .select('context, tier, industry, domain, phone, name')
         .eq('id', user.id)
         .single()
-        .then(({ data }) => { if (data) setProfile(data) })
-    ).catch(() => {})
+      )
+      .then(({ data, error }) => {
+        if (error) console.error('[dashboard] profile fetch:', error.message)
+        if (data) setProfile(data)
+      })
+      .catch(err => console.error('[dashboard] profile fetch threw:', err?.message))
   }, [user])
 
   const handleSignOut = async () => {
@@ -164,7 +177,7 @@ export default function Dashboard({ user, onStartAudit }) {
     userId:  user?.id || null,
   })
 
-  const tier     = profile?.tier || 'essential'
+  const tier     = normalizeTier(profile?.tier)
   const industry = profile?.industry || null
   const domain   = profile?.domain   || null
   const badge    = TIER_BADGE[tier]  || TIER_BADGE.essential
@@ -922,10 +935,6 @@ const s = {
     textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 6,
   },
   scopeValue: { fontSize: 15, color: G.ink, fontWeight: 500 },
-  editScopeLink: {
-    background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-    fontSize: 12, color: G.green, fontWeight: 500, flexShrink: 0,
-  },
   greenPill: {
     fontSize: 12, fontWeight: 500,
     background: G.greenLight, color: G.greenDark,

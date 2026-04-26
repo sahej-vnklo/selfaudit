@@ -147,6 +147,9 @@ export default function App() {
 
   // ── Auth screens ──────────────────────────────────────────────────────────
   if (screen === SCREENS.LOGIN) {
+    // Guard: a logged-in user must never see the login screen (e.g. browser back).
+    // session is kept current by onAuthStateChange so this check is always fresh.
+    if (session) { navigate(SCREENS.DASHBOARD); return null }
     return <Login
       onSuccess={(session) => {
         // Set session immediately so the Dashboard guard doesn't redirect back
@@ -159,6 +162,7 @@ export default function App() {
   }
 
   if (screen === SCREENS.SIGNUP) {
+    if (session) { navigate(SCREENS.DASHBOARD); return null }
     return <Signup
       onSuccess={(session) => {
         // Set session immediately so the AccountOnboarding guard doesn't
