@@ -125,8 +125,9 @@ const IconSignOut = () => (
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function Dashboard({ user, onStartAudit }) {
-  const [profile, setProfile] = useState(null)
-  const [section, setSection] = useState('home')
+  const [profile,     setProfile]     = useState(null)
+  const [section,     setSection]     = useState('home')
+  const [isCollapsed, setIsCollapsed] = useState(false)
 
   const name     = user?.user_metadata?.name || user?.email?.split('@')[0] || 'there'
   const email    = user?.email || ''
@@ -172,19 +173,28 @@ export default function Dashboard({ user, onStartAudit }) {
     <div style={s.shell}>
 
       {/* ── Sidebar ──────────────────────────────────────────────────────────── */}
-      <aside style={s.sidebar}>
+      <aside style={{ ...s.sidebar, width: isCollapsed ? 56 : 240 }}>
 
-        {/* Logo */}
-        <div style={s.logoRow}>
-          <div style={s.logo} onClick={() => setSection('home')}>
-            self<span style={{ color: G.green }}>audit</span>
-          </div>
+        {/* Logo + collapse toggle */}
+        <div style={{ ...s.logoRow, justifyContent: 'space-between', alignItems: 'center' }}>
+          {!isCollapsed && (
+            <div style={s.logo} onClick={() => setSection('home')}>
+              self<span style={{ color: G.green }}>audit</span>
+            </div>
+          )}
+          <button
+            style={s.collapseBtn}
+            onClick={() => setIsCollapsed(c => !c)}
+            title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            {isCollapsed ? '›' : '‹'}
+          </button>
         </div>
 
         {/* Primary nav */}
         <nav style={s.nav}>
-          <NavItem icon={<IconHome />}    label="Home"    active={section === 'home'}    onClick={() => setSection('home')} />
-          <NavItem icon={<IconReports />} label="Reports" active={section === 'reports'} onClick={() => setSection('reports')} />
+          <NavItem icon={<IconHome />}    label="Home"    active={section === 'home'}    collapsed={isCollapsed} onClick={() => { if (isCollapsed) return; setSection('home') }} />
+          <NavItem icon={<IconReports />} label="Reports" active={section === 'reports'} collapsed={isCollapsed} onClick={() => { if (isCollapsed) return; setSection('reports') }} />
         </nav>
 
         {/* Spacer */}
@@ -192,26 +202,28 @@ export default function Dashboard({ user, onStartAudit }) {
 
         {/* Settings nav */}
         <div style={s.settingsSection}>
-          <div style={s.settingsLabel}>Settings</div>
-          <NavItem icon={<IconBilling />} label="Billing" active={section === 'billing'} onClick={() => setSection('billing')} />
-          <NavItem icon={<IconAccount />} label="Account" active={section === 'account'} onClick={() => setSection('account')} />
+          {!isCollapsed && <div style={s.settingsLabel}>Settings</div>}
+          <NavItem icon={<IconBilling />} label="Billing" active={section === 'billing'} collapsed={isCollapsed} onClick={() => { if (isCollapsed) return; setSection('billing') }} />
+          <NavItem icon={<IconAccount />} label="Account" active={section === 'account'} collapsed={isCollapsed} onClick={() => { if (isCollapsed) return; setSection('account') }} />
         </div>
 
         {/* User card */}
         <div style={s.userCard}>
           <div style={s.avatar}>{initials}</div>
-          <div style={s.userInfo}>
-            <div style={s.userName}>{name}</div>
-            <span style={{ ...s.tierBadge, background: badge.bg, color: badge.color }}>
-              {badge.label}
-            </span>
-          </div>
+          {!isCollapsed && (
+            <div style={s.userInfo}>
+              <div style={s.userName}>{name}</div>
+              <span style={{ ...s.tierBadge, background: badge.bg, color: badge.color }}>
+                {badge.label}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Sign out */}
-        <button style={s.signOut} onClick={handleSignOut}>
+        <button style={s.signOut} onClick={() => { if (isCollapsed) return; handleSignOut() }}>
           <IconSignOut />
-          Sign out
+          {!isCollapsed && 'Sign out'}
         </button>
 
       </aside>
@@ -227,7 +239,6 @@ export default function Dashboard({ user, onStartAudit }) {
             domain={domain}
             badge={badge}
             onStartAudit={startAudit}
-            onEditScope={() => setSection('account')}
           />
         )}
 
@@ -603,7 +614,7 @@ const acct = {
 
 // ─── Home section ─────────────────────────────────────────────────────────────
 
-function HomeSection({ name, tier, industry, domain, badge, onStartAudit, onEditScope }) {
+function HomeSection({ name, tier, industry, domain, badge, onStartAudit }) {
   return (
     <div style={s.content}>
       {/* Page header */}
@@ -630,7 +641,7 @@ function HomeSection({ name, tier, industry, domain, badge, onStartAudit, onEdit
       </div>
 
       {/* Audit scope card */}
-      <ScopeCard tier={tier} industry={industry} domain={domain} onEdit={onEditScope} />
+      <ScopeCard tier={tier} industry={industry} domain={domain} />
 
       {/* Recent reports */}
       <div style={{ marginTop: 28 }}>
@@ -655,7 +666,7 @@ function MetricCard({ label, value, valueColor, sub }) {
 
 // ─── Scope card ───────────────────────────────────────────────────────────────
 
-function ScopeCard({ tier, industry, domain, onEdit }) {
+function ScopeCard({ tier, industry, domain }) {
   const allDomains    = (tier === 'business' && industry) ? (DOMAIN_MAP[industry] || []) : []
   const visibleDomains = allDomains.slice(0, 4)
   const extraCount     = allDomains.length - 4
@@ -668,12 +679,9 @@ function ScopeCard({ tier, industry, domain, onEdit }) {
 
   return (
     <div style={s.scopeCard}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div>
-          <div style={s.sectionLabel}>Your audit scope</div>
-          <div style={s.scopeValue}>{scopeText}</div>
-        </div>
-        <button style={s.editScopeLink} onClick={onEdit}>Edit scope →</button>
+      <div>
+        <div style={s.sectionLabel}>Your audit scope</div>
+        <div style={s.scopeValue}>{scopeText}</div>
       </div>
 
       {tier !== 'portfolio' && (industry || domain) && (
@@ -707,19 +715,21 @@ function EmptyReports({ onStartAudit }) {
 
 // ─── Nav item ─────────────────────────────────────────────────────────────────
 
-function NavItem({ icon, label, active, onClick }) {
+function NavItem({ icon, label, active, collapsed, onClick }) {
   return (
     <button
       style={{
         ...s.navItem,
         ...(active ? s.navItemActive : {}),
+        ...(collapsed ? { justifyContent: 'center', padding: '8px 0' } : {}),
       }}
       onClick={onClick}
+      title={collapsed ? label : undefined}
     >
       <span style={{ display: 'flex', flexShrink: 0, color: active ? G.greenDark : G.inkMuted }}>
         {icon}
       </span>
-      <span>{label}</span>
+      {!collapsed && <span>{label}</span>}
     </button>
   )
 }
@@ -793,13 +803,21 @@ const s = {
 
   // ── Sidebar ────────────────────────────────────────────────────────────────
   sidebar: {
-    width: 240, flexShrink: 0,
+    flexShrink: 0,
     display: 'flex', flexDirection: 'column',
     background: G.white, borderRight: `0.5px solid ${G.border}`,
     padding: '22px 0 16px',
     height: '100vh', overflowY: 'auto',
+    transition: 'width 0.18s ease',
+    overflow: 'hidden',
   },
-  logoRow: { padding: '0 20px', marginBottom: 24 },
+  logoRow: { padding: '0 14px 0 20px', marginBottom: 24 },
+  collapseBtn: {
+    background: 'none', border: 'none', cursor: 'pointer',
+    fontSize: 16, color: G.inkFaint, padding: '2px 4px',
+    lineHeight: 1, flexShrink: 0,
+    transition: 'color 0.15s',
+  },
   logo: {
     fontSize: 17, fontWeight: 700, letterSpacing: '-0.5px',
     color: G.ink, cursor: 'pointer', userSelect: 'none',

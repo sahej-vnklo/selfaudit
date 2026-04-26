@@ -135,7 +135,7 @@ export default function Signup({ onSuccess, onLogin }) {
           {globalError && <p style={s.errorMsg}>{globalError}</p>}
 
           <button style={{ ...s.btn, opacity: loading ? 0.7 : 1 }} onClick={handleSubmit} disabled={loading}>
-            {loading ? 'Creating account…' : 'Create free account'}
+            {loading ? 'Creating account…' : 'Create account'}
           </button>
 
           <p style={s.privacy}>

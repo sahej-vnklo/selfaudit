@@ -71,7 +71,7 @@ export default function App() {
       console.warn('[auth] auth init timed out after 8s — unblocking UI')
       setSession(null)
       setAuthLoading(false)
-      navigate(SCREENS.LOGIN)
+      // Do NOT redirect here — let the screen guard handle it after authLoading clears
     }, 8000)
 
     initSupabase()
@@ -124,7 +124,7 @@ export default function App() {
         console.error('[auth] initSupabase failed:', err.message)
         setSession(null)
         setAuthLoading(false)
-        navigate(SCREENS.LOGIN)
+        // Do NOT redirect — let the screen guard handle it
       })
 
     return () => {

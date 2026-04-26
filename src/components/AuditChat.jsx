@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { sendMessage } from '../lib/audit.js'
+import { initSupabase } from '../lib/supabase.js'
 
 // ─── Gating data ──────────────────────────────────────────────────────────────
 
@@ -124,16 +125,17 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
     }
   }, [])
 
-  // Fetch tier/industry/domain for logged-in users
+  // Fetch tier/industry/domain for logged-in users via Supabase client
   useEffect(() => {
     if (!userInfo?.userId) return
-    fetch('/api/get-tier', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: userInfo.userId }),
-    })
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
+    initSupabase()
+      .then(sb => sb
+        .from('profiles')
+        .select('tier, industry, domain')
+        .eq('id', userInfo.userId)
+        .single()
+      )
+      .then(({ data }) => {
         if (data) {
           console.log('TIER DATA:', { tier: data.tier, industry: data.industry, domain: data.domain })
           setTierData(data)
