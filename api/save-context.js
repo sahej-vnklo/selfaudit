@@ -6,7 +6,7 @@ export default async function handler(req, res) {
 
   console.log('[save-context] received:', req.body)
 
-  const { userId, context } = req.body || {}
+  const { userId, context, industry, domain } = req.body || {}
   if (!userId || !context) {
     return res.status(400).json({ error: 'userId and context are required' })
   }
@@ -21,9 +21,13 @@ export default async function handler(req, res) {
   // Service role key bypasses RLS — no need for a user session
   const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
+  const update = { context: context.trim(), onboarding_complete: true }
+  if (industry) update.industry = industry
+  if (domain)   update.domain   = domain
+
   const { error } = await supabase
     .from('profiles')
-    .update({ context: context.trim(), onboarding_complete: true })
+    .update(update)
     .eq('id', userId)
 
   if (error) {

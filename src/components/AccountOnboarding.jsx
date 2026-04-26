@@ -269,11 +269,12 @@ export default function AccountOnboarding({ user, onComplete, onBack }) {
     try {
       const userId  = user.id
       const context = ctxText.trim()
-      console.log('[onboarding] posting to save-context with:', { userId, context })
+      const selectedDomain = domains[0] ?? null
+      console.log('[onboarding] posting to save-context with:', { userId, context, industry: category, domain: selectedDomain })
       const res = await fetch('/api/save-context', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, context }),
+        body: JSON.stringify({ userId, context, industry: category, domain: selectedDomain }),
       })
       const result = await res.json().catch(() => ({}))
       console.log('[onboarding] save-context response:', result)

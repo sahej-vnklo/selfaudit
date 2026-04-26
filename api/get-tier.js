@@ -17,7 +17,7 @@ export default async function handler(req, res) {
 
   const { data, error } = await supabase
     .from('profiles')
-    .select('tier')
+    .select('tier, industry, domain')
     .eq('id', userId)
     .single()
 
@@ -26,5 +26,5 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: error.message })
   }
 
-  return res.json({ tier: data?.tier ?? 'free' })
+  return res.json({ tier: data?.tier ?? 'essential', industry: data?.industry ?? null, domain: data?.domain ?? null })
 }
