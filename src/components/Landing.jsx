@@ -340,19 +340,18 @@ export default function Landing({ onStart, session }) {
       <section id="pricing" style={{ padding: '100px 0', background: C.card }}>
         <div style={wrap}>
           <div style={sectionLabel}>Pricing</div>
-          <h2 style={h2Style}>Pay what a decent coffee costs.<br />Get what a $15k consultant would tell you.</h2>
-          <p style={{ textAlign: 'center', fontSize: 18, color: C.inkSoft, maxWidth: 540, margin: '0 auto 64px' }}>
-            Your first audit is always free — no account needed. Come back for more.
-          </p>
+          <h2 style={h2Style}>The advisor who never sugarcoats.<br />Never bills by the hour.</h2>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, maxWidth: 760, margin: '0 auto' }}>
-            {/* Free card */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24, maxWidth: 1040, margin: '64px auto 0' }}>
+
+            {/* Essential */}
             <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 16, padding: 36, display: 'flex', flexDirection: 'column' }}>
-              <div style={{ fontSize: 13, fontWeight: 600, color: C.inkMuted, textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: 20 }}>Free</div>
-              <div style={{ fontFamily: serif, fontSize: 44, fontWeight: 700, letterSpacing: '-1px', color: C.ink, lineHeight: 1 }}>$0</div>
-              <div style={{ fontSize: 14, color: C.inkMuted, marginTop: 6, marginBottom: 28 }}>No account needed</div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: C.inkMuted, textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: 8 }}>Essential</div>
+              <div style={{ fontSize: 13, color: C.inkMuted, marginBottom: 20, lineHeight: 1.5 }}>One domain. Unlimited audits. Your dedicated department head.</div>
+              <div style={{ fontFamily: serif, fontSize: 44, fontWeight: 700, letterSpacing: '-1px', color: C.ink, lineHeight: 1 }}>$49<span style={{ fontSize: 18, fontWeight: 500, color: C.inkMuted }}>/mo</span></div>
+              <div style={{ fontSize: 14, color: C.inkMuted, marginTop: 6, marginBottom: 28 }}>&nbsp;</div>
               <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 32px', display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
-                {['1 domain per audit', 'Surface level report', 'Short verdict — useful, not complete'].map(f => (
+                {['1 industry, 1 domain', 'Unlimited audits on that domain', 'Full drill-down audit', 'Complete written report', 'Root cause diagnosis', 'Fix-first priority list', 'Email delivery'].map(f => (
                   <li key={f} style={{ fontSize: 14, color: C.inkSoft, display: 'flex', alignItems: 'flex-start', gap: 10 }}>
                     <span style={{ color: C.accent, fontWeight: 600, flexShrink: 0 }}>→</span> {f}
                   </li>
@@ -361,23 +360,25 @@ export default function Landing({ onStart, session }) {
               <button
                 onClick={onStart}
                 style={{ display: 'block', width: '100%', padding: '14px', borderRadius: 100, fontSize: 15, fontWeight: 500, cursor: 'pointer', background: 'transparent', color: C.ink, border: `1px solid ${C.border}`, transition: 'background 0.2s' }}
-                onMouseEnter={e => e.currentTarget.style.background = C.bg}
+                onMouseEnter={e => e.currentTarget.style.background = '#EDECEA'}
                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
               >
-                Start free audit
+                Start with Essential
               </button>
+              <div style={{ textAlign: 'center', fontSize: 12, color: C.inkMuted, marginTop: 12 }}>First audit free</div>
             </div>
 
-            {/* Pro card */}
+            {/* Business */}
             <div style={{ background: C.card, border: `2px solid ${C.accent}`, borderRadius: 16, padding: 36, display: 'flex', flexDirection: 'column', position: 'relative', boxShadow: `0 12px 40px rgba(92,141,110,0.12)` }}>
               <div style={{ position: 'absolute', top: -13, right: 24, background: C.accent, color: 'white', fontSize: 11, fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', padding: '4px 14px', borderRadius: 100 }}>
                 Most popular
               </div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: C.accent, textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: 20 }}>Pro</div>
-              <div style={{ fontFamily: serif, fontSize: 44, fontWeight: 700, letterSpacing: '-1px', color: C.ink, lineHeight: 1 }}>$19<span style={{ fontSize: 18, fontWeight: 500, color: C.inkMuted }}>/mo</span></div>
-              <div style={{ fontSize: 14, color: C.inkMuted, marginTop: 6, marginBottom: 28 }}>or $199/year — save 2 months</div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: C.accent, textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: 8 }}>Business</div>
+              <div style={{ fontSize: 13, color: C.inkMuted, marginBottom: 20, lineHeight: 1.5 }}>Every function of your business, fully audited. No blind spots.</div>
+              <div style={{ fontFamily: serif, fontSize: 44, fontWeight: 700, letterSpacing: '-1px', color: C.ink, lineHeight: 1 }}>$99<span style={{ fontSize: 18, fontWeight: 500, color: C.inkMuted }}>/mo</span></div>
+              <div style={{ fontSize: 14, color: C.inkMuted, marginTop: 6, marginBottom: 28 }}>&nbsp;</div>
               <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 32px', display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
-                {['All domains covered', 'Full drill-down audit', 'Complete written report', 'Root cause diagnosis', 'Fix-first priority list', 'AI vs non-AI breakdown', 'Email delivery', 'Re-audit to track progress'].map(f => (
+                {['1 industry, all domains', 'Unlimited audits', 'Full drill-down audit', 'Complete written report', 'Root cause diagnosis', 'Fix-first priority list', 'AI opportunity breakdown', 'Email delivery', 'Re-audit to track progress'].map(f => (
                   <li key={f} style={{ fontSize: 14, color: C.inkSoft, display: 'flex', alignItems: 'flex-start', gap: 10 }}>
                     <span style={{ color: C.accent, fontWeight: 600, flexShrink: 0 }}>→</span> {f}
                   </li>
@@ -389,9 +390,35 @@ export default function Landing({ onStart, session }) {
                 onMouseEnter={e => e.currentTarget.style.background = C.accentDark}
                 onMouseLeave={e => e.currentTarget.style.background = C.accent}
               >
-                Get full access
+                Start with Business
               </button>
+              <div style={{ textAlign: 'center', fontSize: 12, color: C.inkMuted, marginTop: 12 }}>First audit free</div>
             </div>
+
+            {/* Portfolio */}
+            <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 16, padding: 36, display: 'flex', flexDirection: 'column' }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: C.inkMuted, textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: 8 }}>Portfolio</div>
+              <div style={{ fontSize: 13, color: C.inkMuted, marginBottom: 20, lineHeight: 1.5 }}>Every industry. Every domain. Built for those who operate at scale.</div>
+              <div style={{ fontFamily: serif, fontSize: 44, fontWeight: 700, letterSpacing: '-1px', color: C.ink, lineHeight: 1 }}>$299<span style={{ fontSize: 18, fontWeight: 500, color: C.inkMuted }}>/mo</span></div>
+              <div style={{ fontSize: 14, color: C.inkMuted, marginTop: 6, marginBottom: 28 }}>&nbsp;</div>
+              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 32px', display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
+                {['All industries, all domains', 'Unlimited audits', 'Everything in Business', 'Multi-business coverage', 'Priority support'].map(f => (
+                  <li key={f} style={{ fontSize: 14, color: C.inkSoft, display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                    <span style={{ color: C.accent, fontWeight: 600, flexShrink: 0 }}>→</span> {f}
+                  </li>
+                ))}
+              </ul>
+              <button
+                onClick={onStart}
+                style={{ display: 'block', width: '100%', padding: '14px', borderRadius: 100, fontSize: 15, fontWeight: 500, cursor: 'pointer', background: 'transparent', color: C.ink, border: `1px solid ${C.border}`, transition: 'background 0.2s' }}
+                onMouseEnter={e => e.currentTarget.style.background = '#EDECEA'}
+                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+              >
+                Start with Portfolio
+              </button>
+              <div style={{ textAlign: 'center', fontSize: 12, color: C.inkMuted, marginTop: 12 }}>First audit free</div>
+            </div>
+
           </div>
         </div>
       </section>
