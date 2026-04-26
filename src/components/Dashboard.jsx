@@ -144,11 +144,13 @@ export default function Dashboard({ user, onStartAudit }) {
   useEffect(() => {
     if (!user) return
     initSupabase()
-      .then(sb => sb
-        .from('profiles')
-        .select('context, tier, industry, domain, phone, name')
-        .eq('id', user.id)
-      )
+      .then(async sb => {
+        await sb.auth.getSession()
+        return sb
+          .from('profiles')
+          .select('context, tier, industry, domain, phone, name')
+          .eq('id', user.id)
+      })
       .then(({ data, error }) => {
         console.log('PROFILE FETCH RESULT:', data, error)
         if (error) console.error('[dashboard] profile fetch:', error.message)
