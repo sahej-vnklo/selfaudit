@@ -157,26 +157,16 @@ export default function Dashboard({ user, onStartAudit }) {
         )}
 
         {section === 'billing' && (
-          <div style={s.content}>
-            <div style={s.sectionCard}>
-              <p style={s.sectionEyebrow}>Billing</p>
-              <h2 style={s.sectionTitle}>Subscription</h2>
-              <div style={s.billingTierRow}>
-                <span style={s.tierBadge(profile?.tier)}>
-                  {profile?.tier === 'paid' ? 'Pro' : 'Free'}
-                </span>
-                <span style={s.tierDesc}>
-                  {profile?.tier === 'paid'
-                    ? 'Full access — all domains, complete reports.'
-                    : 'One domain per audit. Upgrade for full reports.'}
-                </span>
-              </div>
-              {profile?.tier !== 'paid' && (
-                <button style={s.upgradeBtn}>Upgrade to Pro — $19/mo</button>
-              )}
-              {profile?.tier === 'paid' && (
-                <button style={s.cancelBtn}>Cancel subscription</button>
-              )}
+          <div style={{ ...s.content, maxWidth: 900 }}>
+            <p style={s.sectionEyebrow}>Billing</p>
+            <h2 style={s.sectionTitle}>Subscription</h2>
+            <p style={{ fontSize: 13, color: 'var(--gray-400)', marginBottom: 32, marginTop: -12 }}>
+              Your current plan is highlighted. Upgrade or downgrade any time.
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+              {TIERS.map(tier => (
+                <TierCard key={tier.key} tier={tier} currentTier={profile?.tier || 'essential'} />
+              ))}
             </div>
           </div>
         )}
@@ -204,6 +194,90 @@ export default function Dashboard({ user, onStartAudit }) {
         )}
 
       </div>
+    </div>
+  )
+}
+
+const TIERS = [
+  {
+    key: 'essential',
+    name: 'Essential',
+    price: '$49',
+    desc: 'One domain. Unlimited audits. Your dedicated department head.',
+    features: ['1 industry, 1 domain', 'Unlimited audits on that domain', 'Full drill-down audit', 'Complete written report', 'Root cause diagnosis', 'Fix-first priority list', 'Email delivery'],
+  },
+  {
+    key: 'business',
+    name: 'Business',
+    price: '$99',
+    desc: 'Every function of your business, fully audited. No blind spots.',
+    popular: true,
+    features: ['Everything in Essential', 'All domains for your industry', 'AI opportunity breakdown', 'Re-audit anytime — track progress'],
+  },
+  {
+    key: 'portfolio',
+    name: 'Portfolio',
+    price: '$299',
+    desc: 'Every industry. Every domain. Built for those who operate at scale.',
+    features: ['Everything in Business', 'All industries & domains', 'Multiple businesses', 'First access to new features', 'Priority Vnklo AI access'],
+  },
+]
+
+const TIER_ORDER = { essential: 0, business: 1, portfolio: 2 }
+
+function TierCard({ tier, currentTier }) {
+  const current    = tier.key === currentTier
+  const isUpgrade  = TIER_ORDER[tier.key] > TIER_ORDER[currentTier]
+  const isDowngrade = TIER_ORDER[tier.key] < TIER_ORDER[currentTier]
+
+  return (
+    <div style={{
+      background: current ? 'var(--green-light)' : 'var(--white)',
+      border: current ? '1.5px solid var(--green)' : '0.5px solid var(--gray-200)',
+      borderRadius: 'var(--radius)',
+      padding: '20px',
+      display: 'flex', flexDirection: 'column',
+      position: 'relative',
+    }}>
+      {current && (
+        <div style={{ position: 'absolute', top: -11, left: 16, background: 'var(--green)', color: 'white', fontSize: 10, fontWeight: 600, letterSpacing: '0.8px', textTransform: 'uppercase', padding: '3px 10px', borderRadius: 'var(--radius-pill)' }}>
+          Current plan
+        </div>
+      )}
+      {tier.popular && !current && (
+        <div style={{ position: 'absolute', top: -11, right: 16, background: 'var(--green)', color: 'white', fontSize: 10, fontWeight: 600, letterSpacing: '0.8px', textTransform: 'uppercase', padding: '3px 10px', borderRadius: 'var(--radius-pill)' }}>
+          Most popular
+        </div>
+      )}
+      <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: current ? 'var(--green-dark)' : 'var(--gray-600)', marginBottom: 6, marginTop: 8 }}>
+        {tier.name}
+      </div>
+      <div style={{ fontSize: 26, fontWeight: 700, letterSpacing: '-0.5px', color: 'var(--black)', lineHeight: 1, marginBottom: 4 }}>
+        {tier.price}<span style={{ fontSize: 13, fontWeight: 500, color: 'var(--gray-400)' }}>/mo</span>
+      </div>
+      <div style={{ fontSize: 12, color: 'var(--gray-600)', marginBottom: 16, lineHeight: 1.5 }}>{tier.desc}</div>
+      <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 20px', display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
+        {tier.features.map(f => (
+          <li key={f} style={{ fontSize: 12, color: 'var(--gray-600)', display: 'flex', alignItems: 'flex-start', gap: 7 }}>
+            <span style={{ color: 'var(--green)', fontWeight: 600, flexShrink: 0, lineHeight: 1.6 }}>→</span> {f}
+          </li>
+        ))}
+      </ul>
+      {current && (
+        <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--green-dark)', textAlign: 'center', padding: '9px', background: 'rgba(29,158,117,0.12)', borderRadius: 'var(--radius-sm)' }}>
+          Active plan
+        </div>
+      )}
+      {isUpgrade && (
+        <button style={{ fontSize: 13, fontWeight: 500, color: 'white', background: 'var(--green)', border: 'none', padding: '10px', borderRadius: 'var(--radius-sm)', cursor: 'pointer', transition: 'background 0.15s' }}>
+          Upgrade to {tier.name}
+        </button>
+      )}
+      {isDowngrade && (
+        <button style={{ fontSize: 13, fontWeight: 500, color: 'var(--gray-600)', background: 'none', border: '0.5px solid var(--gray-200)', padding: '10px', borderRadius: 'var(--radius-sm)', cursor: 'pointer', transition: 'background 0.15s' }}>
+          Downgrade to {tier.name}
+        </button>
+      )}
     </div>
   )
 }
@@ -364,31 +438,6 @@ const s = {
   sectionTitle: {
     fontFamily: 'var(--serif)', fontSize: 24, fontWeight: 400,
     lineHeight: 1.2, marginBottom: 24,
-  },
-
-  // Billing
-  billingTierRow: {
-    display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24,
-    padding: '14px 16px', background: 'var(--gray-100)',
-    borderRadius: 'var(--radius-sm)',
-  },
-  tierBadge: (tier) => ({
-    fontSize: 11, fontWeight: 600, letterSpacing: '0.8px',
-    textTransform: 'uppercase', padding: '3px 10px', borderRadius: 'var(--radius-pill)',
-    background: tier === 'paid' ? 'var(--green-light)' : 'var(--gray-200)',
-    color: tier === 'paid' ? 'var(--green-dark)' : 'var(--gray-600)',
-    flexShrink: 0,
-  }),
-  tierDesc: { fontSize: 13, color: 'var(--gray-600)', lineHeight: 1.5 },
-  upgradeBtn: {
-    fontSize: 14, fontWeight: 500, color: 'white',
-    background: 'var(--green)', border: 'none',
-    padding: '11px 22px', borderRadius: 'var(--radius)', cursor: 'pointer',
-  },
-  cancelBtn: {
-    fontSize: 13, color: 'var(--gray-600)', background: 'none',
-    border: '0.5px solid var(--gray-200)', padding: '9px 18px',
-    borderRadius: 'var(--radius-sm)', cursor: 'pointer',
   },
 
   // Account
