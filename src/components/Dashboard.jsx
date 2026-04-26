@@ -1,7 +1,148 @@
 import React, { useState, useEffect } from 'react'
 import { initSupabase } from '../lib/supabase.js'
 
+// ─── Design tokens ────────────────────────────────────────────────────────────
+
+const G = {
+  green:        '#1D9E75',
+  greenLight:   '#E1F5EE',
+  greenDark:    '#0F6E56',
+  blue:         '#185FA5',
+  blueLight:    '#E6F1FB',
+  purple:       '#534AB7',
+  purpleLight:  '#EEEDFE',
+  bg:           '#F5F4F0',
+  metricBg:     '#EDECE8',
+  white:        '#FFFFFF',
+  border:       '#E5E3DC',
+  ink:          '#1A1A1A',
+  inkMuted:     '#6B6B6B',
+  inkFaint:     '#9A9A9A',
+}
+
+// ─── Domain map (Business scope card) ─────────────────────────────────────────
+
+const DOMAIN_MAP = {
+  'SaaS':                 ['Strategy', 'Product', 'Sales', 'Marketing', 'Customer Experience', 'Technology', 'Data & Analytics', 'Finance', 'People & Culture'],
+  'Agency':               ['Strategy', 'Sales', 'Marketing', 'Operations', 'Finance', 'People & Culture', 'Brand', 'Customer Experience'],
+  'Retail':               ['Strategy', 'Operations', 'Marketing', 'Sales', 'Supply Chain', 'Customer Experience', 'Finance', 'Brand'],
+  'E-commerce':           ['Strategy', 'Marketing', 'Operations', 'Technology', 'Customer Experience', 'Supply Chain', 'Data & Analytics', 'Finance'],
+  'Restaurant / Food':    ['Operations', 'Marketing', 'Finance', 'People & Culture', 'Customer Experience', 'Brand', 'Supply Chain'],
+  'Healthcare':           ['Operations', 'Strategy', 'Legal & Compliance', 'People & Culture', 'Finance', 'Technology', 'Customer Experience'],
+  'Legal':                ['Operations', 'Strategy', 'Legal & Compliance', 'Finance', 'People & Culture', 'Brand', 'Customer Experience'],
+  'Real Estate':          ['Sales', 'Marketing', 'Operations', 'Finance', 'Strategy', 'Brand', 'Customer Experience'],
+  'Construction':         ['Operations', 'Finance', 'People & Culture', 'Supply Chain', 'Strategy', 'Legal & Compliance'],
+  'Manufacturing':        ['Operations', 'Supply Chain', 'Finance', 'Technology', 'People & Culture', 'Strategy', 'Legal & Compliance'],
+  'Logistics':            ['Operations', 'Supply Chain', 'Technology', 'Finance', 'Strategy', 'People & Culture'],
+  'Education':            ['Strategy', 'Operations', 'Marketing', 'Technology', 'People & Culture', 'Finance', 'Customer Experience'],
+  'Finance / Accounting': ['Strategy', 'Operations', 'Legal & Compliance', 'Technology', 'People & Culture', 'Finance', 'Data & Analytics'],
+  'Insurance':            ['Operations', 'Legal & Compliance', 'Finance', 'Technology', 'Strategy', 'Customer Experience'],
+  'Consulting':           ['Strategy', 'Operations', 'Sales', 'Marketing', 'People & Culture', 'Finance', 'Brand'],
+  'Marketing':            ['Strategy', 'Brand', 'Data & Analytics', 'Operations', 'Sales', 'Customer Experience', 'Technology'],
+  'Media / Publishing':   ['Strategy', 'Brand', 'Marketing', 'Operations', 'Finance', 'Technology', 'Data & Analytics'],
+  'Travel / Hospitality': ['Operations', 'Customer Experience', 'Marketing', 'Finance', 'Brand', 'People & Culture'],
+  'Nonprofit':            ['Strategy', 'Operations', 'Finance', 'Marketing', 'People & Culture', 'Partnerships'],
+  'Freelancer / Solo':    ['Strategy', 'Sales', 'Marketing', 'Finance', 'Brand', 'Operations'],
+  'Other':                ['Strategy', 'Operations', 'Sales', 'Marketing', 'Finance', 'People & Culture', 'Technology', 'Customer Experience'],
+}
+
+// ─── Tier config ──────────────────────────────────────────────────────────────
+
+const TIER_BADGE = {
+  essential: { bg: '#E1F5EE', color: '#0F6E56', label: 'Essential' },
+  business:  { bg: '#E6F1FB', color: '#185FA5', label: 'Business'  },
+  portfolio: { bg: '#EEEDFE', color: '#534AB7', label: 'Portfolio' },
+  free:      { bg: '#E1F5EE', color: '#0F6E56', label: 'Essential' }, // legacy
+  paid:      { bg: '#E6F1FB', color: '#185FA5', label: 'Business'  }, // legacy
+}
+
+const TIERS = [
+  {
+    key: 'essential', name: 'Essential', price: '$49',
+    desc: 'One domain. Unlimited audits. Your dedicated department head.',
+    features: ['1 industry, 1 domain', 'Unlimited audits on that domain', 'Full drill-down audit', 'Complete written report', 'Root cause diagnosis', 'Fix-first priority list', 'Email delivery'],
+  },
+  {
+    key: 'business', name: 'Business', price: '$99', popular: true,
+    desc: 'Every function of your business, fully audited. No blind spots.',
+    features: ['Everything in Essential', 'All domains for your industry', 'AI opportunity breakdown', 'Re-audit anytime — track progress'],
+  },
+  {
+    key: 'portfolio', name: 'Portfolio', price: '$299',
+    desc: 'Every industry. Every domain. Built for those who operate at scale.',
+    features: ['Everything in Business', 'All industries & domains', 'Multiple businesses', 'First access to new features', 'Priority Vnklo AI access'],
+  },
+]
+
+const TIER_ORDER = { essential: 0, business: 1, portfolio: 2, free: 0, paid: 1 }
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function getGreeting() {
+  const h = new Date().getHours()
+  if (h < 12) return 'Good morning'
+  if (h < 17) return 'Good afternoon'
+  return 'Good evening'
+}
+
+// ─── SVG Icons ────────────────────────────────────────────────────────────────
+
+const IconHome = () => (
+  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+    <path d="M7.5 1.5L1.5 6.5V13.5H5.5V9.5H9.5V13.5H13.5V6.5L7.5 1.5Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
+  </svg>
+)
+
+const IconReports = () => (
+  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+    <rect x="2.5" y="1.5" width="10" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
+    <path d="M5 5.5H10M5 8H10M5 10.5H8" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+  </svg>
+)
+
+const IconBilling = () => (
+  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+    <rect x="1.5" y="3.5" width="12" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
+    <path d="M1.5 6.5H13.5" stroke="currentColor" strokeWidth="1.2"/>
+    <rect x="3.5" y="8.5" width="3" height="1.5" rx="0.5" fill="currentColor"/>
+  </svg>
+)
+
+const IconAccount = () => (
+  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+    <circle cx="7.5" cy="5" r="2.5" stroke="currentColor" strokeWidth="1.2"/>
+    <path d="M2 13C2 10.24 4.46 8 7.5 8C10.54 8 13 10.24 13 13" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+  </svg>
+)
+
+const IconSignOut = () => (
+  <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+    <path d="M5 2H2.5C1.95 2 1.5 2.45 1.5 3V10C1.5 10.55 1.95 11 2.5 11H5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+    <path d="M8.5 9L11.5 6.5L8.5 4M4.5 6.5H11.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+)
+
+// ─── Main component ───────────────────────────────────────────────────────────
+
 export default function Dashboard({ user, onStartAudit }) {
+  const [profile, setProfile] = useState(null)
+  const [section, setSection] = useState('home')
+
+  const name     = user?.user_metadata?.name || user?.email?.split('@')[0] || 'there'
+  const email    = user?.email || ''
+  const initials = name.trim().split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
+
+  useEffect(() => {
+    if (!user) return
+    initSupabase().then(sb =>
+      sb.from('profiles')
+        .select('context, tier, industry, domain')
+        .eq('id', user.id)
+        .single()
+        .then(({ data }) => { if (data) setProfile(data) })
+    ).catch(() => {})
+  }, [user])
+
   const handleSignOut = async () => {
     try {
       const supabase = await initSupabase()
@@ -13,160 +154,107 @@ export default function Dashboard({ user, onStartAudit }) {
       window.location.href = '/'
     }
   }
-  const [profile, setProfile]               = useState(null)
-  const [profileExpanded, setProfileExpanded] = useState(false)
-  const [section, setSection]               = useState('home')
-  const [collapsed, setCollapsed]           = useState(false)
 
-  const name     = user?.user_metadata?.name || user?.email?.split('@')[0] || 'there'
-  const email    = user?.email || ''
-  const initials = name.trim().split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
+  const startAudit = () => onStartAudit({
+    name:    user?.user_metadata?.name || user?.email?.split('@')[0] || 'User',
+    email:   user?.email || '',
+    phone:   '',
+    context: profile?.context || '',
+    userId:  user?.id || null,
+  })
 
-  useEffect(() => {
-    if (!user) return
-    initSupabase().then(sb =>
-      sb.from('profiles')
-        .select('context, tier')
-        .eq('id', user.id)
-        .single()
-        .then(({ data }) => { if (data) setProfile(data) })
-    ).catch(() => {})
-  }, [user])
-
-  const toggleCollapse = () => {
-    setCollapsed(c => !c)
-    setProfileExpanded(false)
-  }
+  const tier     = profile?.tier || 'essential'
+  const industry = profile?.industry || null
+  const domain   = profile?.domain   || null
+  const badge    = TIER_BADGE[tier]  || TIER_BADGE.essential
 
   return (
     <div style={s.shell}>
 
-      {/* ── Sidebar ────────────────────────────────────────────────── */}
-      <aside style={{ ...s.sidebar, width: collapsed ? 60 : 240 }}>
+      {/* ── Sidebar ──────────────────────────────────────────────────────────── */}
+      <aside style={s.sidebar}>
 
-        {/* Logo + Toggle */}
+        {/* Logo */}
         <div style={s.logoRow}>
-          {!collapsed && (
-            <div style={s.sidebarLogo} onClick={() => setSection('home')}>
-              self<span style={{ color: 'var(--green)', fontWeight: 400 }}>audit</span>
-            </div>
-          )}
-          <button
-            style={{ ...s.toggleBtn, margin: collapsed ? '0 auto' : '0 0 0 auto' }}
-            onClick={toggleCollapse}
-            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          >
-            {collapsed ? '❯' : '❮'}
-          </button>
+          <div style={s.logo} onClick={() => setSection('home')}>
+            self<span style={{ color: G.green }}>audit</span>
+          </div>
         </div>
 
-        {/* Home nav item */}
-        <div style={{ padding: collapsed ? '0 8px' : '0 12px', marginBottom: 4 }}>
-          <SidebarItem
-            icon="⌂" label="Home"
-            active={section === 'home'} collapsed={collapsed}
-            onClick={collapsed ? undefined : () => setSection('home')}
-          />
-        </div>
-
-        {/* Profile */}
-        <div style={{ ...s.profileWrap, padding: collapsed ? '0 8px' : '0 12px' }}>
-          <button
-            style={{
-              ...s.profileBtn,
-              justifyContent: collapsed ? 'center' : 'flex-start',
-              padding: collapsed ? '10px 0' : '10px 8px',
-            }}
-            onClick={() => !collapsed && setProfileExpanded(p => !p)}
-            title={collapsed ? name : undefined}
-          >
-            <div style={s.avatar}>{initials}</div>
-            {!collapsed && (
-              <>
-                <div style={s.profileText}>
-                  <div style={s.profileName}>{name}</div>
-                  <div style={s.profileEmail}>{email}</div>
-                </div>
-                <span style={{
-                  ...s.chevron,
-                  transform: profileExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-                }}>▾</span>
-              </>
-            )}
-          </button>
-
-          {profileExpanded && !collapsed && (
-            <div style={s.contextBox}>
-              <p style={s.contextLabel}>Your context</p>
-              <p style={s.contextText}>
-                {profile?.context || 'No context set — complete onboarding to add one.'}
-              </p>
-            </div>
-          )}
-        </div>
+        {/* Primary nav */}
+        <nav style={s.nav}>
+          <NavItem icon={<IconHome />}    label="Home"    active={section === 'home'}    onClick={() => setSection('home')} />
+          <NavItem icon={<IconReports />} label="Reports" active={section === 'reports'} onClick={() => setSection('reports')} />
+        </nav>
 
         {/* Spacer */}
         <div style={{ flex: 1 }} />
 
-        {/* Settings */}
-        <div style={{ ...s.settingsGroup, padding: collapsed ? '0 8px' : '0 12px' }}>
-          {!collapsed && <p style={s.settingsGroupLabel}>Settings</p>}
-          <SidebarItem
-            icon="$" label="Billing"
-            active={section === 'billing'} collapsed={collapsed}
-            onClick={collapsed ? undefined : () => setSection(section === 'billing' ? 'home' : 'billing')}
-          />
-          <SidebarItem
-            icon="⚙" label="Account"
-            active={section === 'account'} collapsed={collapsed}
-            onClick={collapsed ? undefined : () => setSection(section === 'account' ? 'home' : 'account')}
-          />
+        {/* Settings nav */}
+        <div style={s.settingsSection}>
+          <div style={s.settingsLabel}>Settings</div>
+          <NavItem icon={<IconBilling />} label="Billing" active={section === 'billing'} onClick={() => setSection('billing')} />
+          <NavItem icon={<IconAccount />} label="Account" active={section === 'account'} onClick={() => setSection('account')} />
+        </div>
+
+        {/* User card */}
+        <div style={s.userCard}>
+          <div style={s.avatar}>{initials}</div>
+          <div style={s.userInfo}>
+            <div style={s.userName}>{name}</div>
+            <span style={{ ...s.tierBadge, background: badge.bg, color: badge.color }}>
+              {badge.label}
+            </span>
+          </div>
         </div>
 
         {/* Sign out */}
-        <div style={{ padding: collapsed ? '0 8px' : '0 12px', marginTop: 8 }}>
-          {collapsed
-            ? <button style={s.signOutIcon} onClick={undefined} title="Sign out">→</button>
-            : <button style={s.signOutBtn} onClick={handleSignOut}>Sign out</button>
-          }
-        </div>
+        <button style={s.signOut} onClick={handleSignOut}>
+          <IconSignOut />
+          Sign out
+        </button>
+
       </aside>
 
-      {/* ── Main ───────────────────────────────────────────────────── */}
+      {/* ── Main ─────────────────────────────────────────────────────────────── */}
       <div style={s.main}>
 
         {section === 'home' && (
-          <>
-            {/* Content */}
-            <div style={s.content}>
-              <div style={s.emptyCard}>
-                <p style={s.emptyIcon}>🏢</p>
-                <p style={s.emptyTitle}>No audits yet</p>
-                <p style={s.emptyBody}>Run a business audit and the report will appear here.</p>
-                <button style={s.ctaBtn} onClick={() => onStartAudit({
-                  name:    user?.user_metadata?.name || user?.email?.split('@')[0] || 'User',
-                  email:   user?.email || '',
-                  phone:   '',
-                  context: profile?.context || '',
-                  userId:  user?.id || null,
-                })}>
-                  Start audit →
-                </button>
+          <HomeSection
+            name={name}
+            tier={tier}
+            industry={industry}
+            domain={domain}
+            badge={badge}
+            onStartAudit={startAudit}
+            onEditScope={() => setSection('account')}
+          />
+        )}
+
+        {section === 'reports' && (
+          <div style={s.content}>
+            <div style={s.pageHeader}>
+              <div>
+                <h1 style={s.pageTitle}>Reports</h1>
+                <p style={s.pageSub}>Your saved audit reports.</p>
               </div>
+              <button style={s.newAuditBtn} onClick={startAudit}>New audit →</button>
             </div>
-          </>
+            <EmptyReports onStartAudit={startAudit} />
+          </div>
         )}
 
         {section === 'billing' && (
-          <div style={{ ...s.content, maxWidth: 900 }}>
-            <p style={s.sectionEyebrow}>Billing</p>
-            <h2 style={s.sectionTitle}>Subscription</h2>
-            <p style={{ fontSize: 13, color: 'var(--gray-400)', marginBottom: 32, marginTop: -12 }}>
-              Your current plan is highlighted. Upgrade or downgrade any time.
-            </p>
+          <div style={{ ...s.content, maxWidth: 960 }}>
+            <div style={s.pageHeader}>
+              <div>
+                <h1 style={s.pageTitle}>Subscription</h1>
+                <p style={s.pageSub}>Your current plan is highlighted. Upgrade or downgrade any time.</p>
+              </div>
+            </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
-              {TIERS.map(tier => (
-                <TierCard key={tier.key} tier={tier} currentTier={profile?.tier || 'essential'} />
+              {TIERS.map(t => (
+                <TierCard key={t.key} tier={t} currentTier={tier} />
               ))}
             </div>
           </div>
@@ -174,22 +262,24 @@ export default function Dashboard({ user, onStartAudit }) {
 
         {section === 'account' && (
           <div style={s.content}>
-            <div style={s.sectionCard}>
-              <p style={s.sectionEyebrow}>Account</p>
-              <h2 style={s.sectionTitle}>Account settings</h2>
-              <div style={s.accountRow}>
-                <div>
-                  <p style={s.accountLabel}>Email</p>
-                  <p style={s.accountValue}>{email}</p>
-                </div>
+            <div style={s.pageHeader}>
+              <div>
+                <h1 style={s.pageTitle}>Account settings</h1>
+                <p style={s.pageSub}>Manage your account details.</p>
               </div>
-              <div style={s.dangerZone}>
-                <p style={s.dangerLabel}>Danger zone</p>
-                <button style={s.deleteBtn}>Delete account</button>
-                <p style={s.deleteNote}>
-                  Permanently deletes your account and all audit data. This cannot be undone.
-                </p>
-              </div>
+            </div>
+            <div style={{ background: G.white, border: `0.5px solid ${G.border}`, borderRadius: 12, padding: '20px 24px', marginBottom: 12 }}>
+              <div style={{ fontSize: 11, color: G.inkFaint, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 6 }}>Email</div>
+              <div style={{ fontSize: 14, color: G.ink, fontWeight: 500 }}>{email}</div>
+            </div>
+            <div style={{ background: G.white, border: `0.5px solid ${G.border}`, borderRadius: 12, padding: '20px 24px' }}>
+              <div style={{ fontSize: 11, color: '#A32D2D', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: 14 }}>Danger zone</div>
+              <button style={{ fontSize: 13, fontWeight: 500, color: '#A32D2D', background: 'none', border: '0.5px solid #E8C4C4', padding: '9px 18px', borderRadius: 8, cursor: 'pointer', display: 'block', marginBottom: 10 }}>
+                Delete account
+              </button>
+              <p style={{ fontSize: 12, color: G.inkFaint, lineHeight: 1.6, margin: 0 }}>
+                Permanently deletes your account and all audit data. This cannot be undone.
+              </p>
             </div>
           </div>
         )}
@@ -199,83 +289,179 @@ export default function Dashboard({ user, onStartAudit }) {
   )
 }
 
-const TIERS = [
-  {
-    key: 'essential',
-    name: 'Essential',
-    price: '$49',
-    desc: 'One domain. Unlimited audits. Your dedicated department head.',
-    features: ['1 industry, 1 domain', 'Unlimited audits on that domain', 'Full drill-down audit', 'Complete written report', 'Root cause diagnosis', 'Fix-first priority list', 'Email delivery'],
-  },
-  {
-    key: 'business',
-    name: 'Business',
-    price: '$99',
-    desc: 'Every function of your business, fully audited. No blind spots.',
-    popular: true,
-    features: ['Everything in Essential', 'All domains for your industry', 'AI opportunity breakdown', 'Re-audit anytime — track progress'],
-  },
-  {
-    key: 'portfolio',
-    name: 'Portfolio',
-    price: '$299',
-    desc: 'Every industry. Every domain. Built for those who operate at scale.',
-    features: ['Everything in Business', 'All industries & domains', 'Multiple businesses', 'First access to new features', 'Priority Vnklo AI access'],
-  },
-]
+// ─── Home section ─────────────────────────────────────────────────────────────
 
-const TIER_ORDER = { essential: 0, business: 1, portfolio: 2 }
+function HomeSection({ name, tier, industry, domain, badge, onStartAudit, onEditScope }) {
+  return (
+    <div style={s.content}>
+      {/* Page header */}
+      <div style={s.pageHeader}>
+        <div>
+          <h1 style={s.pageTitle}>{getGreeting()}, {name}.</h1>
+          <p style={s.pageSub}>Your audits and reports live here.</p>
+        </div>
+        <button style={s.newAuditBtn} onClick={onStartAudit}>New audit →</button>
+      </div>
+
+      {/* Metric cards */}
+      <div style={s.metricsGrid}>
+        <MetricCard label="Audits run" value="0" />
+        <MetricCard label="Last audit" value="—" />
+        <MetricCard
+          label="Plan"
+          value={badge.label}
+          valueColor={badge.color}
+          sub={tier !== 'portfolio'
+            ? <button style={s.upgradeLink} onClick={() => {}}>Upgrade →</button>
+            : null}
+        />
+      </div>
+
+      {/* Audit scope card */}
+      <ScopeCard tier={tier} industry={industry} domain={domain} onEdit={onEditScope} />
+
+      {/* Recent reports */}
+      <div style={{ marginTop: 28 }}>
+        <div style={s.sectionLabel}>Recent reports</div>
+        <EmptyReports onStartAudit={onStartAudit} />
+      </div>
+    </div>
+  )
+}
+
+// ─── Metric card ──────────────────────────────────────────────────────────────
+
+function MetricCard({ label, value, valueColor, sub }) {
+  return (
+    <div style={s.metricCard}>
+      <div style={s.metricLabel}>{label}</div>
+      <div style={{ ...s.metricValue, ...(valueColor ? { color: valueColor } : {}) }}>{value}</div>
+      {sub && <div style={{ marginTop: 8 }}>{sub}</div>}
+    </div>
+  )
+}
+
+// ─── Scope card ───────────────────────────────────────────────────────────────
+
+function ScopeCard({ tier, industry, domain, onEdit }) {
+  const allDomains    = (tier === 'business' && industry) ? (DOMAIN_MAP[industry] || []) : []
+  const visibleDomains = allDomains.slice(0, 4)
+  const extraCount     = allDomains.length - 4
+
+  const scopeText = tier === 'portfolio'
+    ? 'All industries & domains'
+    : tier === 'business'
+      ? industry ? `${industry} — all domains` : '—'
+      : (industry && domain) ? `${industry} — ${domain}` : '—'
+
+  return (
+    <div style={s.scopeCard}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <div style={s.sectionLabel}>Your audit scope</div>
+          <div style={s.scopeValue}>{scopeText}</div>
+        </div>
+        <button style={s.editScopeLink} onClick={onEdit}>Edit scope →</button>
+      </div>
+
+      {tier !== 'portfolio' && (industry || domain) && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 14 }}>
+          {industry && <span style={s.greenPill}>{industry}</span>}
+          {tier === 'essential' && domain && (
+            <span style={s.grayPill}>{domain}</span>
+          )}
+          {tier === 'business' && visibleDomains.map(d => (
+            <span key={d} style={s.grayPill}>{d}</span>
+          ))}
+          {tier === 'business' && extraCount > 0 && (
+            <span style={s.grayPill}>+{extraCount} more</span>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Empty reports ────────────────────────────────────────────────────────────
+
+function EmptyReports({ onStartAudit }) {
+  return (
+    <div style={s.emptyReports}>
+      <div style={s.emptyReportsText}>Run your first audit to see your report here.</div>
+      <button style={s.emptyReportsBtn} onClick={onStartAudit}>Start audit →</button>
+    </div>
+  )
+}
+
+// ─── Nav item ─────────────────────────────────────────────────────────────────
+
+function NavItem({ icon, label, active, onClick }) {
+  return (
+    <button
+      style={{
+        ...s.navItem,
+        ...(active ? s.navItemActive : {}),
+      }}
+      onClick={onClick}
+    >
+      <span style={{ display: 'flex', flexShrink: 0, color: active ? G.greenDark : G.inkMuted }}>
+        {icon}
+      </span>
+      <span>{label}</span>
+    </button>
+  )
+}
+
+// ─── Tier card (billing section) ──────────────────────────────────────────────
 
 function TierCard({ tier, currentTier }) {
-  const current    = tier.key === currentTier
-  const isUpgrade  = TIER_ORDER[tier.key] > TIER_ORDER[currentTier]
-  const isDowngrade = TIER_ORDER[tier.key] < TIER_ORDER[currentTier]
+  const current     = tier.key === currentTier
+  const isUpgrade   = (TIER_ORDER[tier.key] ?? 0) > (TIER_ORDER[currentTier] ?? 0)
+  const isDowngrade = (TIER_ORDER[tier.key] ?? 0) < (TIER_ORDER[currentTier] ?? 0)
 
   return (
     <div style={{
-      background: current ? 'var(--green-light)' : 'var(--white)',
-      border: current ? '1.5px solid var(--green)' : '0.5px solid var(--gray-200)',
-      borderRadius: 'var(--radius)',
-      padding: '20px',
-      display: 'flex', flexDirection: 'column',
-      position: 'relative',
+      background: current ? G.greenLight : G.white,
+      border: current ? `1.5px solid ${G.green}` : `0.5px solid ${G.border}`,
+      borderRadius: 12, padding: '20px',
+      display: 'flex', flexDirection: 'column', position: 'relative',
     }}>
       {current && (
-        <div style={{ position: 'absolute', top: -11, left: 16, background: 'var(--green)', color: 'white', fontSize: 10, fontWeight: 600, letterSpacing: '0.8px', textTransform: 'uppercase', padding: '3px 10px', borderRadius: 'var(--radius-pill)' }}>
+        <div style={{ position: 'absolute', top: -11, left: 16, background: G.green, color: 'white', fontSize: 10, fontWeight: 600, letterSpacing: '0.8px', textTransform: 'uppercase', padding: '3px 10px', borderRadius: 100 }}>
           Current plan
         </div>
       )}
       {tier.popular && !current && (
-        <div style={{ position: 'absolute', top: -11, right: 16, background: 'var(--green)', color: 'white', fontSize: 10, fontWeight: 600, letterSpacing: '0.8px', textTransform: 'uppercase', padding: '3px 10px', borderRadius: 'var(--radius-pill)' }}>
+        <div style={{ position: 'absolute', top: -11, right: 16, background: G.green, color: 'white', fontSize: 10, fontWeight: 600, letterSpacing: '0.8px', textTransform: 'uppercase', padding: '3px 10px', borderRadius: 100 }}>
           Most popular
         </div>
       )}
-      <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: current ? 'var(--green-dark)' : 'var(--gray-600)', marginBottom: 6, marginTop: 8 }}>
+      <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: current ? G.greenDark : G.inkMuted, marginBottom: 6, marginTop: 8 }}>
         {tier.name}
       </div>
-      <div style={{ fontSize: 26, fontWeight: 700, letterSpacing: '-0.5px', color: 'var(--black)', lineHeight: 1, marginBottom: 4 }}>
-        {tier.price}<span style={{ fontSize: 13, fontWeight: 500, color: 'var(--gray-400)' }}>/mo</span>
+      <div style={{ fontSize: 26, fontWeight: 700, letterSpacing: '-0.5px', color: G.ink, lineHeight: 1, marginBottom: 4 }}>
+        {tier.price}<span style={{ fontSize: 13, fontWeight: 500, color: G.inkFaint }}>/mo</span>
       </div>
-      <div style={{ fontSize: 12, color: 'var(--gray-600)', marginBottom: 16, lineHeight: 1.5 }}>{tier.desc}</div>
+      <div style={{ fontSize: 12, color: G.inkMuted, marginBottom: 16, lineHeight: 1.5 }}>{tier.desc}</div>
       <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 20px', display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
         {tier.features.map(f => (
-          <li key={f} style={{ fontSize: 12, color: 'var(--gray-600)', display: 'flex', alignItems: 'flex-start', gap: 7 }}>
-            <span style={{ color: 'var(--green)', fontWeight: 600, flexShrink: 0, lineHeight: 1.6 }}>→</span> {f}
+          <li key={f} style={{ fontSize: 12, color: G.inkMuted, display: 'flex', alignItems: 'flex-start', gap: 7 }}>
+            <span style={{ color: G.green, fontWeight: 600, flexShrink: 0, lineHeight: 1.6 }}>→</span> {f}
           </li>
         ))}
       </ul>
       {current && (
-        <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--green-dark)', textAlign: 'center', padding: '9px', background: 'rgba(29,158,117,0.12)', borderRadius: 'var(--radius-sm)' }}>
+        <div style={{ fontSize: 12, fontWeight: 500, color: G.greenDark, textAlign: 'center', padding: '9px', background: 'rgba(29,158,117,0.12)', borderRadius: 8 }}>
           Active plan
         </div>
       )}
       {isUpgrade && (
-        <button style={{ fontSize: 13, fontWeight: 500, color: 'white', background: 'var(--green)', border: 'none', padding: '10px', borderRadius: 'var(--radius-sm)', cursor: 'pointer', transition: 'background 0.15s' }}>
+        <button style={{ fontSize: 13, fontWeight: 500, color: 'white', background: G.green, border: 'none', padding: '10px', borderRadius: 8, cursor: 'pointer', transition: 'background 0.15s' }}>
           Upgrade to {tier.name}
         </button>
       )}
       {isDowngrade && (
-        <button style={{ fontSize: 13, fontWeight: 500, color: 'var(--gray-600)', background: 'none', border: '0.5px solid var(--gray-200)', padding: '10px', borderRadius: 'var(--radius-sm)', cursor: 'pointer', transition: 'background 0.15s' }}>
+        <button style={{ fontSize: 13, fontWeight: 500, color: G.inkMuted, background: 'none', border: `0.5px solid ${G.border}`, padding: '10px', borderRadius: 8, cursor: 'pointer' }}>
           Downgrade to {tier.name}
         </button>
       )}
@@ -283,183 +469,155 @@ function TierCard({ tier, currentTier }) {
   )
 }
 
-function SidebarItem({ label, icon, active, collapsed, onClick }) {
-  return (
-    <button
-      style={{
-        ...s.sidebarItem,
-        ...(active ? s.sidebarItemActive : {}),
-        ...(collapsed ? { justifyContent: 'center', padding: '8px 0' } : {}),
-      }}
-      onClick={onClick}
-      title={collapsed ? label : undefined}
-    >
-      {icon && <span style={{ fontSize: 14, lineHeight: 1, flexShrink: 0 }}>{icon}</span>}
-      {!collapsed && <span>{label}</span>}
-    </button>
-  )
-}
-
-// ── Styles ─────────────────────────────────────────────────────────────────────
+// ─── Styles ───────────────────────────────────────────────────────────────────
 
 const s = {
+  // Shell — full height, no outer scroll
   shell: {
-    display: 'flex', minHeight: '100vh', background: 'var(--gray-100)',
+    display: 'flex', height: '100vh', overflow: 'hidden',
+    background: G.bg,
+    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
   },
 
-  // Sidebar
+  // ── Sidebar ────────────────────────────────────────────────────────────────
   sidebar: {
-    flexShrink: 0,
+    width: 240, flexShrink: 0,
     display: 'flex', flexDirection: 'column',
-    background: 'var(--white)', borderRight: '0.5px solid var(--gray-200)',
-    padding: '24px 0', position: 'sticky', top: 0, height: '100vh',
-    overflowX: 'hidden', overflowY: 'auto',
-    transition: 'width 0.2s ease',
+    background: G.white, borderRight: `0.5px solid ${G.border}`,
+    padding: '22px 0 16px',
+    height: '100vh', overflowY: 'auto',
   },
-
-  // Logo + toggle row
-  logoRow: {
-    display: 'flex', alignItems: 'center',
-    padding: '0 12px', marginBottom: 20, gap: 8,
+  logoRow: { padding: '0 20px', marginBottom: 24 },
+  logo: {
+    fontSize: 17, fontWeight: 700, letterSpacing: '-0.5px',
+    color: G.ink, cursor: 'pointer', userSelect: 'none',
   },
-  sidebarLogo: {
-    fontSize: 17, fontWeight: 600, letterSpacing: '-0.5px',
-    color: 'var(--black)', cursor: 'pointer', userSelect: 'none',
-    flex: 1, whiteSpace: 'nowrap',
+  nav: {
+    display: 'flex', flexDirection: 'column', gap: 2,
+    padding: '0 10px',
   },
-  toggleBtn: {
-    background: 'rgba(29,158,117,0.15)', border: 'none', cursor: 'pointer',
-    fontSize: 20, color: 'var(--green)', padding: '8px',
-    borderRadius: 'var(--radius-sm)', lineHeight: 1,
-    transition: 'background 0.15s',
-    flexShrink: 0,
-  },
-
-  // Profile
-  profileWrap: { marginBottom: 8 },
-  profileBtn: {
-    display: 'flex', alignItems: 'center', gap: 10, width: '100%',
-    background: 'none', border: 'none', cursor: 'pointer',
-    borderRadius: 'var(--radius-sm)', textAlign: 'left',
-    transition: 'background 0.15s',
-  },
-  avatar: {
-    width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
-    background: 'var(--green-light)', color: 'var(--green-dark)',
-    fontSize: 12, fontWeight: 600,
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-  },
-  profileText: { flex: 1, minWidth: 0 },
-  profileName: {
-    fontSize: 13, fontWeight: 600, color: 'var(--black)',
-    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-  },
-  profileEmail: {
-    fontSize: 11, color: 'var(--gray-400)',
-    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-  },
-  chevron: {
-    fontSize: 11, color: 'var(--gray-400)', flexShrink: 0,
-    display: 'inline-block', transition: 'transform 0.15s',
-  },
-  contextBox: {
-    margin: '6px 8px 0',
-    background: 'var(--gray-100)', borderRadius: 'var(--radius-sm)',
-    padding: '10px 12px',
-  },
-  contextLabel: {
-    fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.8px',
-    color: 'var(--green)', fontWeight: 600, marginBottom: 6,
-  },
-  contextText: {
-    fontSize: 12, color: 'var(--gray-600)', lineHeight: 1.6,
-  },
-
-  // Settings
-  settingsGroup: { marginBottom: 8 },
-  settingsGroupLabel: {
-    fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.8px',
-    color: 'var(--gray-400)', fontWeight: 600, padding: '0 8px', marginBottom: 4,
-  },
-  sidebarItem: {
-    display: 'flex', alignItems: 'center', gap: 8,
+  navItem: {
+    display: 'flex', alignItems: 'center', gap: 9,
     width: '100%', textAlign: 'left',
-    fontSize: 13, color: 'var(--gray-600)', fontWeight: 500,
+    fontSize: 13, color: G.inkMuted, fontWeight: 500,
     background: 'none', border: 'none', cursor: 'pointer',
-    padding: '8px 10px', borderRadius: 'var(--radius-sm)',
+    padding: '8px 10px', borderRadius: 8,
     transition: 'background 0.15s, color 0.15s',
     whiteSpace: 'nowrap',
   },
-  sidebarItemActive: {
-    background: 'var(--green-light)', color: 'var(--green-dark)',
+  navItemActive: {
+    background: G.greenLight, color: G.greenDark,
   },
-  signOutBtn: {
-    display: 'block', width: '100%',
-    fontSize: 13, color: 'var(--gray-400)', background: 'none',
-    border: '0.5px solid var(--gray-200)', padding: '8px 12px',
-    borderRadius: 'var(--radius-sm)', cursor: 'pointer', textAlign: 'center',
+  settingsSection: { padding: '0 10px', marginBottom: 6 },
+  settingsLabel: {
+    fontSize: 10, fontWeight: 600, letterSpacing: '1px',
+    textTransform: 'uppercase', color: G.inkFaint,
+    padding: '0 10px', marginBottom: 4,
   },
-  signOutIcon: {
+  userCard: {
+    display: 'flex', alignItems: 'center', gap: 10,
+    margin: '8px 10px 0', padding: '10px 10px',
+    background: G.bg, borderRadius: 10,
+  },
+  avatar: {
+    width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
+    background: G.greenLight, color: G.greenDark,
+    fontSize: 11, fontWeight: 700,
     display: 'flex', alignItems: 'center', justifyContent: 'center',
-    width: '100%', height: 36,
-    fontSize: 16, color: 'var(--gray-400)', background: 'none',
-    border: '0.5px solid var(--gray-200)',
-    borderRadius: 'var(--radius-sm)', cursor: 'pointer',
+  },
+  userInfo: { flex: 1, minWidth: 0 },
+  userName: {
+    fontSize: 13, fontWeight: 600, color: G.ink, marginBottom: 5,
+    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+  },
+  tierBadge: {
+    display: 'inline-block',
+    fontSize: 10, fontWeight: 600, letterSpacing: '0.3px',
+    padding: '2px 8px', borderRadius: 100,
+  },
+  signOut: {
+    display: 'flex', alignItems: 'center', gap: 6,
+    margin: '6px 16px 0',
+    background: 'none', border: 'none', cursor: 'pointer',
+    fontSize: 12, color: G.inkFaint, padding: '6px 4px',
+    transition: 'color 0.15s',
   },
 
-  // Main
-  main: { flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 },
+  // ── Main ────────────────────────────────────────────────────────────────────
+  main: { flex: 1, overflowY: 'auto', minWidth: 0 },
+  content: { padding: '32px 36px', maxWidth: 820 },
 
-  // Content
-  content: { flex: 1, padding: '32px', maxWidth: 760 },
-
-  emptyCard: {
-    background: 'var(--white)', border: '0.5px solid var(--gray-200)',
-    borderRadius: 'var(--radius)', padding: '4rem 2rem', textAlign: 'center',
+  pageHeader: {
+    display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
+    marginBottom: 28,
   },
-  emptyIcon:  { fontSize: 32, marginBottom: 16 },
-  emptyTitle: { fontSize: 16, fontWeight: 500, color: 'var(--black)', marginBottom: 8 },
-  emptyBody:  { fontSize: 14, color: 'var(--gray-600)', marginBottom: 24 },
-  ctaBtn: {
-    display: 'inline-flex', alignItems: 'center',
-    background: 'var(--green)', color: 'white',
-    fontSize: 14, fontWeight: 500, padding: '11px 22px',
-    borderRadius: 'var(--radius)', border: 'none', cursor: 'pointer',
+  pageTitle: { fontSize: 20, fontWeight: 500, color: G.ink, margin: '0 0 4px' },
+  pageSub:   { fontSize: 13, color: G.inkMuted, margin: 0 },
+  newAuditBtn: {
+    background: G.green, color: 'white',
+    fontSize: 13, fontWeight: 500, padding: '9px 18px',
+    borderRadius: 8, border: 'none', cursor: 'pointer',
+    flexShrink: 0, whiteSpace: 'nowrap',
+    transition: 'background 0.15s',
   },
 
-  // Section cards (billing / account)
-  sectionCard: {
-    background: 'var(--white)', border: '0.5px solid var(--gray-200)',
-    borderRadius: 'var(--radius)', padding: '2rem',
+  // Metric cards
+  metricsGrid: {
+    display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)',
+    gap: 12, marginBottom: 14,
   },
-  sectionEyebrow: {
-    fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.8px',
-    color: 'var(--green)', fontWeight: 600, marginBottom: 8,
+  metricCard: {
+    background: G.metricBg, borderRadius: 12,
+    padding: '18px 20px',
   },
-  sectionTitle: {
-    fontFamily: 'var(--serif)', fontSize: 24, fontWeight: 400,
-    lineHeight: 1.2, marginBottom: 24,
+  metricLabel: {
+    fontSize: 11, color: G.inkFaint, fontWeight: 500,
+    textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 8,
+  },
+  metricValue: {
+    fontSize: 22, fontWeight: 600, color: G.ink, letterSpacing: '-0.3px',
+  },
+  upgradeLink: {
+    background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+    fontSize: 12, color: G.green, fontWeight: 500,
   },
 
-  // Account
-  accountRow: {
-    padding: '14px 16px', background: 'var(--gray-100)',
-    borderRadius: 'var(--radius-sm)', marginBottom: 32,
+  // Scope card
+  scopeCard: {
+    background: G.white, border: `0.5px solid ${G.border}`,
+    borderRadius: 12, padding: '20px 22px',
   },
-  accountLabel: { fontSize: 11, color: 'var(--gray-400)', marginBottom: 4 },
-  accountValue: { fontSize: 14, color: 'var(--black)', fontWeight: 500 },
-  dangerZone: {
-    borderTop: '0.5px solid var(--gray-200)', paddingTop: 24,
+  sectionLabel: {
+    fontSize: 11, color: G.inkFaint, fontWeight: 500,
+    textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 6,
   },
-  dangerLabel: {
-    fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.8px',
-    color: '#A32D2D', fontWeight: 600, marginBottom: 12,
+  scopeValue: { fontSize: 15, color: G.ink, fontWeight: 500 },
+  editScopeLink: {
+    background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+    fontSize: 12, color: G.green, fontWeight: 500, flexShrink: 0,
   },
-  deleteBtn: {
-    fontSize: 13, fontWeight: 500, color: '#A32D2D',
-    background: 'none', border: '0.5px solid #E8C4C4',
-    padding: '9px 18px', borderRadius: 'var(--radius-sm)', cursor: 'pointer',
-    marginBottom: 10,
+  greenPill: {
+    fontSize: 12, fontWeight: 500,
+    background: G.greenLight, color: G.greenDark,
+    padding: '3px 10px', borderRadius: 100,
+    display: 'inline-block',
   },
-  deleteNote: { fontSize: 12, color: 'var(--gray-400)', lineHeight: 1.6 },
+  grayPill: {
+    fontSize: 12, fontWeight: 500,
+    background: G.metricBg, color: G.inkMuted,
+    padding: '3px 10px', borderRadius: 100,
+    display: 'inline-block',
+  },
+
+  // Empty reports
+  emptyReports: {
+    border: `1.5px dashed ${G.border}`, borderRadius: 12,
+    padding: '44px 24px', textAlign: 'center',
+  },
+  emptyReportsText: { fontSize: 13, color: G.inkFaint, marginBottom: 16 },
+  emptyReportsBtn: {
+    background: 'none', border: `0.5px solid ${G.border}`,
+    borderRadius: 8, fontSize: 13, fontWeight: 500,
+    color: G.inkMuted, cursor: 'pointer', padding: '8px 18px',
+  },
 }
