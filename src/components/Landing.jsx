@@ -405,7 +405,7 @@ export default function Landing({ onStart, session }) {
               <div style={{ fontSize: 14, color: C.inkMuted, marginTop: 6, marginBottom: 28 }}>&nbsp;</div>
               <div style={{ fontSize: 12, fontWeight: 600, color: C.inkMuted, textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: 12 }}>Everything in Business, plus:</div>
               <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 32px', display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
-                {['All industries, all domains — audit any business type', 'Run audits across multiple businesses', 'First access to new audit categories as they launch', 'Priority access to Vnklo AI implementation'].map(f => (
+                {['All industries, all domains — audit any business type', 'Run audits across multiple businesses', 'First access to new features', 'Priority access to Vnklo AI implementation'].map(f => (
                   <li key={f} style={{ fontSize: 14, color: C.inkSoft, display: 'flex', alignItems: 'flex-start', gap: 10 }}>
                     <span style={{ color: C.accent, fontWeight: 600, flexShrink: 0 }}>→</span> {f}
                   </li>
