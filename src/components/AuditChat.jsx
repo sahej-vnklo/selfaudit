@@ -133,13 +133,13 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
         .from('profiles')
         .select('tier, industry, domain')
         .eq('id', userInfo.userId)
-        .single()
       )
       .then(({ data, error }) => {
         console.log('AUDIT CHAT PROFILE:', data, error)
-        if (data) {
-          console.log('TIER DATA:', { tier: data.tier, industry: data.industry, domain: data.domain })
-          setTierData(data)
+        const row = data?.[0]
+        if (row) {
+          console.log('TIER DATA:', { tier: row.tier, industry: row.industry, domain: row.domain })
+          setTierData(row)
         }
       })
       .catch(() => {})

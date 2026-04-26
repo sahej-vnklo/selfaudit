@@ -1,5 +1,11 @@
-// env-reload
 import { createClient } from '@supabase/supabase-js'
+
+function getSupabase() {
+  return createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  )
+}
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end()
@@ -11,15 +17,12 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'userId and context are required' })
   }
 
-  const supabaseUrl         = process.env.SUPABASE_URL
-  const supabaseServiceKey  = process.env.SUPABASE_SERVICE_ROLE_KEY
+  const supabase = getSupabase()
 
-  if (!supabaseUrl || !supabaseServiceKey) {
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.error('[save-context] missing env vars: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY')
     return res.status(500).json({ error: 'Server config missing' })
   }
-
-  // Service role key bypasses RLS — no need for a user session
-  const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
   const update = { context: context.trim(), onboarding_complete: true }
   if (industry) update.industry = industry

@@ -148,12 +148,11 @@ export default function Dashboard({ user, onStartAudit }) {
         .from('profiles')
         .select('context, tier, industry, domain, phone, name')
         .eq('id', user.id)
-        .single()
       )
       .then(({ data, error }) => {
         console.log('PROFILE FETCH RESULT:', data, error)
         if (error) console.error('[dashboard] profile fetch:', error.message)
-        if (data) setProfile(data)
+        if (data?.[0]) setProfile(data[0])
       })
       .catch(err => console.error('[dashboard] profile fetch threw:', err?.message))
   }, [user])
