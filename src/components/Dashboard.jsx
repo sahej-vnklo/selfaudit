@@ -148,6 +148,7 @@ export default function Dashboard({ user, onStartAudit }) {
                   email:   user?.email || '',
                   phone:   '',
                   context: profile?.context || '',
+                  userId:  user?.id || null,
                 })}>
                   Start audit →
                 </button>

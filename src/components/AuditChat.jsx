@@ -1,15 +1,118 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { sendMessage } from '../lib/audit.js'
 
+// ─── Gating data ──────────────────────────────────────────────────────────────
+
+const ALL_DOMAINS = [
+  'Strategy', 'Operations', 'Sales', 'Marketing', 'Finance',
+  'People & Culture', 'Product', 'Customer Experience', 'Technology',
+  'Legal & Compliance', 'Supply Chain', 'Brand', 'Partnerships', 'Data & Analytics',
+]
+
+const ALL_INDUSTRIES = [
+  'SaaS', 'Agency', 'Retail', 'E-commerce', 'Restaurant / Food',
+  'Healthcare', 'Legal', 'Real Estate', 'Construction', 'Manufacturing',
+  'Logistics', 'Education', 'Finance / Accounting', 'Insurance',
+  'Consulting', 'Marketing', 'Media / Publishing', 'Travel / Hospitality',
+  'Nonprofit', 'Freelancer / Solo', 'Other',
+]
+
+const DOMAIN_MAP = {
+  'SaaS':                 ['Strategy', 'Product', 'Sales', 'Marketing', 'Customer Experience', 'Technology', 'Data & Analytics', 'Finance', 'People & Culture'],
+  'Agency':               ['Strategy', 'Sales', 'Marketing', 'Operations', 'Finance', 'People & Culture', 'Brand', 'Customer Experience'],
+  'Retail':               ['Strategy', 'Operations', 'Marketing', 'Sales', 'Supply Chain', 'Customer Experience', 'Finance', 'Brand'],
+  'E-commerce':           ['Strategy', 'Marketing', 'Operations', 'Technology', 'Customer Experience', 'Supply Chain', 'Data & Analytics', 'Finance'],
+  'Restaurant / Food':    ['Operations', 'Marketing', 'Finance', 'People & Culture', 'Customer Experience', 'Brand', 'Supply Chain'],
+  'Healthcare':           ['Operations', 'Strategy', 'Legal & Compliance', 'People & Culture', 'Finance', 'Technology', 'Customer Experience'],
+  'Legal':                ['Operations', 'Strategy', 'Legal & Compliance', 'Finance', 'People & Culture', 'Brand', 'Customer Experience'],
+  'Real Estate':          ['Sales', 'Marketing', 'Operations', 'Finance', 'Strategy', 'Brand', 'Customer Experience'],
+  'Construction':         ['Operations', 'Finance', 'People & Culture', 'Supply Chain', 'Strategy', 'Legal & Compliance'],
+  'Manufacturing':        ['Operations', 'Supply Chain', 'Finance', 'Technology', 'People & Culture', 'Strategy', 'Legal & Compliance'],
+  'Logistics':            ['Operations', 'Supply Chain', 'Technology', 'Finance', 'Strategy', 'People & Culture'],
+  'Education':            ['Strategy', 'Operations', 'Marketing', 'Technology', 'People & Culture', 'Finance', 'Customer Experience'],
+  'Finance / Accounting': ['Strategy', 'Operations', 'Legal & Compliance', 'Technology', 'People & Culture', 'Finance', 'Data & Analytics'],
+  'Insurance':            ['Operations', 'Legal & Compliance', 'Finance', 'Technology', 'Strategy', 'Customer Experience'],
+  'Consulting':           ['Strategy', 'Operations', 'Sales', 'Marketing', 'People & Culture', 'Finance', 'Brand'],
+  'Marketing':            ['Strategy', 'Brand', 'Data & Analytics', 'Operations', 'Sales', 'Customer Experience', 'Technology'],
+  'Media / Publishing':   ['Strategy', 'Brand', 'Marketing', 'Operations', 'Finance', 'Technology', 'Data & Analytics'],
+  'Travel / Hospitality': ['Operations', 'Customer Experience', 'Marketing', 'Finance', 'Brand', 'People & Culture'],
+  'Nonprofit':            ['Strategy', 'Operations', 'Finance', 'Marketing', 'People & Culture', 'Partnerships'],
+  'Freelancer / Solo':    ['Strategy', 'Sales', 'Marketing', 'Finance', 'Brand', 'Operations'],
+  'Other':                ['Strategy', 'Operations', 'Sales', 'Marketing', 'Finance', 'People & Culture', 'Technology', 'Customer Experience'],
+}
+
+// ─── Gating detection ─────────────────────────────────────────────────────────
+
+function detectDomainViolation(text, savedDomain) {
+  if (!savedDomain) return false
+  const lower = text.toLowerCase()
+  return ALL_DOMAINS.some(d =>
+    d.toLowerCase() !== savedDomain.toLowerCase() &&
+    lower.includes(d.toLowerCase())
+  )
+}
+
+function detectIndustryViolation(text, savedIndustry) {
+  if (!savedIndustry) return false
+  const lower = text.toLowerCase()
+  return ALL_INDUSTRIES.some(ind =>
+    ind.toLowerCase() !== savedIndustry.toLowerCase() &&
+    lower.includes(ind.toLowerCase())
+  )
+}
+
+// ─── Upgrade Modal ────────────────────────────────────────────────────────────
+
+function UpgradeModal({ type, tierData, onDismiss }) {
+  const isDomain = type === 'domain'
+
+  const title = isDomain
+    ? "This domain isn't included in your plan."
+    : "This industry isn't included in your plan."
+
+  const ctaLabel = isDomain
+    ? 'Upgrade to Business — $99/mo'
+    : 'Upgrade to Portfolio — $299/mo'
+
+  const pills     = isDomain ? (DOMAIN_MAP[tierData?.industry] || ALL_DOMAINS) : ALL_INDUSTRIES
+  const currentItem = isDomain ? tierData?.domain : tierData?.industry
+
+  return (
+    <div style={m.overlay}>
+      <div style={m.modal}>
+        <h2 style={m.title}>{title}</h2>
+        <div style={m.pills}>
+          {pills.map(item => {
+            const isCurrent = item.toLowerCase() === currentItem?.toLowerCase()
+            return (
+              <span key={item} style={{ ...m.pill, ...(isCurrent ? m.pillInactive : m.pillActive) }}>
+                {item}
+              </span>
+            )
+          })}
+        </div>
+        <button style={m.cta} onClick={onDismiss}>{ctaLabel}</button>
+        <button style={m.dismiss} onClick={onDismiss}>Stay on my plan</button>
+      </div>
+    </div>
+  )
+}
+
+// ─── Chat helpers ─────────────────────────────────────────────────────────────
+
 const FIRST_MESSAGE = () =>
   `Let's start simple. In one sentence — what's the biggest problem you're actually trying to solve right now?`
 
+// ─── Main component ───────────────────────────────────────────────────────────
+
 export default function AuditChat({ userInfo, onReportReady, conversationHistory, setConversationHistory }) {
-  const [input, setInput] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [initialized, setInitialized] = useState(false)
+  const [input,        setInput]        = useState('')
+  const [loading,      setLoading]      = useState(false)
+  const [initialized,  setInitialized]  = useState(false)
+  const [tierData,     setTierData]     = useState(null)   // { tier, industry, domain }
+  const [upgradeModal, setUpgradeModal] = useState(null)   // 'domain' | 'industry' | null
   const bottomRef = useRef(null)
-  const inputRef = useRef(null)
+  const inputRef  = useRef(null)
 
   useEffect(() => {
     if (!initialized) {
@@ -21,6 +124,19 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
     }
   }, [])
 
+  // Fetch tier/industry/domain for logged-in users
+  useEffect(() => {
+    if (!userInfo?.userId) return
+    fetch('/api/get-tier', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: userInfo.userId }),
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setTierData(data) })
+      .catch(() => {})
+  }, [userInfo?.userId])
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [conversationHistory, loading])
@@ -28,6 +144,25 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
   const send = async () => {
     const text = input.trim()
     if (!text || loading) return
+
+    // ── Tier gating — check before sending, never mid-response ───────────────
+    if (tierData) {
+      const { tier, industry, domain } = tierData
+
+      if (tier === 'essential' && detectDomainViolation(text, domain)) {
+        setInput('')
+        setUpgradeModal('domain')
+        return
+      }
+
+      if (tier === 'business' && detectIndustryViolation(text, industry)) {
+        setInput('')
+        setUpgradeModal('industry')
+        return
+      }
+      // 'portfolio' and anything else: pass through freely
+    }
+    // ── End gating ────────────────────────────────────────────────────────────
 
     setInput('')
     const userMsg = { role: 'user', content: text, display: text }
@@ -73,6 +208,14 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
 
   return (
     <div style={styles.page}>
+      {upgradeModal && (
+        <UpgradeModal
+          type={upgradeModal}
+          tierData={tierData}
+          onDismiss={() => { setUpgradeModal(null); inputRef.current?.focus() }}
+        />
+      )}
+
       <nav style={styles.nav}>
         <div style={{...styles.logo, cursor: 'pointer'}} onClick={() => window.location.reload()}>
           self<span style={{ color: 'var(--green)' }}>audit</span>
@@ -128,6 +271,8 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
   )
 }
 
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
 function Message({ msg, delay }) {
   const isUser = msg.role === 'user'
 
@@ -169,6 +314,8 @@ function FormattedText({ text }) {
     </p>
   )
 }
+
+// ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = {
   page: { height: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--white)' },
@@ -250,4 +397,53 @@ const styles = {
   },
   sendDisabled: { background: 'var(--gray-200)', color: 'var(--gray-400)', cursor: 'not-allowed' },
   hint: { fontSize: 11, color: 'var(--gray-400)', textAlign: 'center', marginTop: 8, maxWidth: 680, margin: '8px auto 0' }
+}
+
+// ─── Modal styles ─────────────────────────────────────────────────────────────
+
+const m = {
+  overlay: {
+    position: 'fixed', inset: 0, zIndex: 1000,
+    background: 'rgba(0,0,0,0.45)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    padding: 24,
+  },
+  modal: {
+    background: 'var(--white)', borderRadius: 'var(--radius)',
+    border: '0.5px solid var(--gray-200)',
+    padding: '2rem', width: '100%', maxWidth: 480,
+    boxShadow: '0 16px 48px rgba(0,0,0,0.15)',
+  },
+  title: {
+    fontFamily: 'var(--serif)', fontSize: 20, fontWeight: 400,
+    lineHeight: 1.3, marginBottom: '1.25rem', color: 'var(--black)',
+  },
+  pills: {
+    display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: '1.75rem',
+  },
+  pill: {
+    fontSize: 13, fontWeight: 500, padding: '6px 14px',
+    borderRadius: 'var(--radius-pill)', border: '0.5px solid',
+    cursor: 'default',
+  },
+  pillActive: {
+    background: 'var(--green-light)', color: 'var(--green-dark)',
+    borderColor: 'var(--green)',
+  },
+  pillInactive: {
+    background: 'var(--white)', color: 'var(--gray-300)',
+    borderColor: 'var(--gray-200)',
+  },
+  cta: {
+    width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+    background: 'var(--green)', color: 'white',
+    fontSize: 15, fontWeight: 500, padding: '13px',
+    borderRadius: 'var(--radius)', border: 'none', cursor: 'pointer',
+    marginBottom: 12,
+  },
+  dismiss: {
+    width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+    background: 'none', border: 'none', cursor: 'pointer',
+    fontSize: 13, color: 'var(--gray-400)', padding: 8,
+  },
 }
