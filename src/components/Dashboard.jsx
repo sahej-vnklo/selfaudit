@@ -448,23 +448,23 @@ function AccountSection({ user, profile, onProfileChange, onSignOut }) {
 
       {/* ── 2. Context card ─────────────────────────────────────────────── */}
       <div style={{ ...acct.card, marginTop: 12 }}>
-        <div style={acct.fieldLabel}>Your audit context</div>
-        <textarea
-          value={contextVal}
-          onChange={e => { setContextVal(e.target.value); setContextChanged(true) }}
-          rows={5}
-          style={acct.textarea}
-        />
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
-          <span style={acct.helperText}>This is what the AI uses to ask the right questions.</span>
+        <div style={acct.contextPad}>
+          <div style={acct.fieldLabel}>Audit context</div>
+          <textarea
+            value={contextVal}
+            onChange={e => { setContextVal(e.target.value); setContextChanged(true) }}
+            style={acct.textarea}
+          />
           {contextChanged && (
-            <button
-              style={{ ...acct.saveBtn, opacity: contextSaving ? 0.6 : 1 }}
-              onClick={saveContext}
-              disabled={contextSaving}
-            >
-              {contextSaving ? 'Saving…' : 'Save'}
-            </button>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 10 }}>
+              <button
+                style={{ ...acct.saveBtn, opacity: contextSaving ? 0.6 : 1 }}
+                onClick={saveContext}
+                disabled={contextSaving}
+              >
+                {contextSaving ? 'Saving…' : 'Save'}
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -554,15 +554,15 @@ const acct = {
     width: '100%',
   },
   savingText: { fontSize: 12, color: G.inkFaint, flexShrink: 0 },
+  contextPad: { padding: '14px 22px' },
   textarea: {
-    width: '100%', resize: 'vertical', fontSize: 13,
+    width: '100%', height: 120, resize: 'none', fontSize: 13,
     color: G.ink, lineHeight: 1.6,
     border: `0.5px solid ${G.border}`, borderRadius: 8,
-    padding: '10px 12px', background: G.bg,
+    padding: '10px 12px', background: G.white,
     outline: 'none', fontFamily: 'inherit',
     marginTop: 10, boxSizing: 'border-box',
   },
-  helperText: { fontSize: 12, color: G.inkFaint },
   saveBtn: {
     background: G.green, color: 'white',
     fontSize: 12, fontWeight: 500, border: 'none',

@@ -2,21 +2,26 @@ import React, { useState } from 'react'
 import { supabase } from '../../lib/supabase.js'
 
 export default function Signup({ onSuccess, onLogin }) {
-  const [form, setForm] = useState({ name: '', email: '', password: '' })
-  const [errors, setErrors] = useState({})
-  const [loading, setLoading] = useState(false)
+  const [form, setForm] = useState({
+    firstName: '', lastName: '', email: '', password: '', confirmPassword: '',
+  })
+  const [errors,      setErrors]      = useState({})
+  const [loading,     setLoading]     = useState(false)
   const [globalError, setGlobalError] = useState(null)
-  const [emailSent, setEmailSent] = useState(false)
+  const [emailSent,   setEmailSent]   = useState(false)
 
   const update = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
   const validate = () => {
     const e = {}
-    if (!form.name.trim()) e.name = 'Required'
+    if (!form.firstName.trim()) e.firstName = 'Required'
+    if (!form.lastName.trim())  e.lastName  = 'Required'
     if (!form.email.trim()) e.email = 'Required'
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Invalid email'
     if (!form.password) e.password = 'Required'
     else if (form.password.length < 8) e.password = 'At least 8 characters'
+    if (!form.confirmPassword) e.confirmPassword = 'Required'
+    else if (form.password && form.confirmPassword !== form.password) e.confirmPassword = "Passwords don't match"
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -25,6 +30,8 @@ export default function Signup({ onSuccess, onLogin }) {
     setGlobalError(null)
     if (!validate()) return
     setLoading(true)
+
+    const fullName = `${form.firstName.trim()} ${form.lastName.trim()}`
 
     const timeout = setTimeout(() => {
       setLoading(false)
@@ -35,15 +42,17 @@ export default function Signup({ onSuccess, onLogin }) {
       const res = await fetch('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'signup', email: form.email, password: form.password, name: form.name }),
+        body: JSON.stringify({
+          action: 'signup',
+          email: form.email,
+          password: form.password,
+          name: fullName,
+        }),
       })
       clearTimeout(timeout)
       const data = await res.json()
       if (!res.ok || data.error) { setGlobalError(friendlyError(data.error || 'Sign up failed.')); return }
-      // session is null when email confirmation is required
       if (data.session) {
-        // Fire-and-forget: don't await setSession — it can stall and freeze the button.
-        // Pass the session to onSuccess so App updates its state before navigating.
         if (supabase) {
           supabase.auth.setSession(data.session).catch(err =>
             console.warn('[signup] setSession error:', err?.message)
@@ -105,9 +114,22 @@ export default function Signup({ onSuccess, onLogin }) {
           </div>
 
           <div style={s.fields}>
-            <Field label="Your name" type="text" value={form.name} onChange={v => update('name', v)} placeholder="Jane Smith" error={errors.name} required />
+            {/* First + Last name — two equal columns */}
+            <div style={s.nameRow}>
+              <Field
+                label="First name" type="text"
+                value={form.firstName} onChange={v => update('firstName', v)}
+                placeholder="Jane" error={errors.firstName} required
+              />
+              <Field
+                label="Last name" type="text"
+                value={form.lastName} onChange={v => update('lastName', v)}
+                placeholder="Smith" error={errors.lastName} required
+              />
+            </div>
             <Field label="Email address" type="email" value={form.email} onChange={v => update('email', v)} placeholder="jane@company.com" error={errors.email} required />
-            <Field label="Password" type="password" value={form.password} onChange={v => update('password', v)} placeholder="Min. 8 characters" error={errors.password} required onEnter={handleSubmit} />
+            <Field label="Password" type="password" value={form.password} onChange={v => update('password', v)} placeholder="Min. 8 characters" error={errors.password} required />
+            <Field label="Confirm password" type="password" value={form.confirmPassword} onChange={v => update('confirmPassword', v)} placeholder="Repeat password" error={errors.confirmPassword} required onEnter={handleSubmit} />
           </div>
 
           {globalError && <p style={s.errorMsg}>{globalError}</p>}
@@ -160,23 +182,24 @@ function friendlyError(msg) {
 }
 
 const s = {
-  page: { minHeight: '100vh', background: 'var(--gray-100)' },
-  nav: { display: 'flex', alignItems: 'center', padding: '1.25rem 2.5rem', background: 'var(--white)', borderBottom: '0.5px solid var(--gray-200)' },
-  logo: { fontSize: 17, fontWeight: 500, letterSpacing: '-0.5px', cursor: 'pointer' },
-  wrap: { display: 'flex', justifyContent: 'center', padding: '4rem 1.5rem' },
-  card: { background: 'var(--white)', borderRadius: 'var(--radius)', border: '0.5px solid var(--gray-200)', padding: '2.5rem', width: '100%', maxWidth: 420, animation: 'fadeUp 0.4s ease' },
-  header: { marginBottom: '2rem' },
-  eyebrow: { fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--green)', marginBottom: 8 },
-  title: { fontFamily: 'var(--serif)', fontSize: 24, fontWeight: 400, lineHeight: 1.3, marginBottom: 8 },
-  sub: { fontSize: 14, color: 'var(--gray-600)' },
-  fields: { display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '1.5rem' },
-  label: { fontSize: 13, fontWeight: 500, color: 'var(--gray-800)' },
-  input: { width: '100%', padding: '10px 12px', border: '0.5px solid var(--gray-200)', borderRadius: 'var(--radius-sm)', fontSize: 14, color: 'var(--black)', background: 'var(--white)', transition: 'border-color 0.15s' },
-  inputFocused: { borderColor: 'var(--green)', boxShadow: '0 0 0 3px rgba(29,158,117,0.1)' },
-  inputError: { borderColor: '#E24B4A' },
-  errorMsg: { fontSize: 13, color: '#A32D2D', marginBottom: '1rem' },
-  btn: { width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--green)', color: 'white', fontSize: 15, fontWeight: 500, padding: '13px', borderRadius: 'var(--radius)', cursor: 'pointer', border: 'none', transition: 'background 0.15s', marginBottom: '1rem' },
-  privacy: { fontSize: 11, color: 'var(--gray-400)', textAlign: 'center', lineHeight: 1.5, marginBottom: '1.25rem' },
-  switch: { fontSize: 13, color: 'var(--gray-600)', textAlign: 'center' },
-  link: { background: 'none', border: 'none', color: 'var(--green)', fontWeight: 500, cursor: 'pointer', fontSize: 13, padding: 0 },
+  page:        { minHeight: '100vh', background: 'var(--gray-100)' },
+  nav:         { display: 'flex', alignItems: 'center', padding: '1.25rem 2.5rem', background: 'var(--white)', borderBottom: '0.5px solid var(--gray-200)' },
+  logo:        { fontSize: 17, fontWeight: 500, letterSpacing: '-0.5px', cursor: 'pointer' },
+  wrap:        { display: 'flex', justifyContent: 'center', padding: '4rem 1.5rem' },
+  card:        { background: 'var(--white)', borderRadius: 'var(--radius)', border: '0.5px solid var(--gray-200)', padding: '2.5rem', width: '100%', maxWidth: 420, animation: 'fadeUp 0.4s ease' },
+  header:      { marginBottom: '2rem' },
+  eyebrow:     { fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--green)', marginBottom: 8 },
+  title:       { fontFamily: 'var(--serif)', fontSize: 24, fontWeight: 400, lineHeight: 1.3, marginBottom: 8 },
+  sub:         { fontSize: 14, color: 'var(--gray-600)' },
+  fields:      { display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '1.5rem' },
+  nameRow:     { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' },
+  label:       { fontSize: 13, fontWeight: 500, color: 'var(--gray-800)' },
+  input:       { width: '100%', padding: '10px 12px', border: '0.5px solid var(--gray-200)', borderRadius: 'var(--radius-sm)', fontSize: 14, color: 'var(--black)', background: 'var(--white)', transition: 'border-color 0.15s', boxSizing: 'border-box' },
+  inputFocused:{ borderColor: 'var(--green)', boxShadow: '0 0 0 3px rgba(29,158,117,0.1)' },
+  inputError:  { borderColor: '#E24B4A' },
+  errorMsg:    { fontSize: 13, color: '#A32D2D', marginBottom: '1rem' },
+  btn:         { width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--green)', color: 'white', fontSize: 15, fontWeight: 500, padding: '13px', borderRadius: 'var(--radius)', cursor: 'pointer', border: 'none', transition: 'background 0.15s', marginBottom: '1rem' },
+  privacy:     { fontSize: 11, color: 'var(--gray-400)', textAlign: 'center', lineHeight: 1.5, marginBottom: '1.25rem' },
+  switch:      { fontSize: 13, color: 'var(--gray-600)', textAlign: 'center' },
+  link:        { background: 'none', border: 'none', color: 'var(--green)', fontWeight: 500, cursor: 'pointer', fontSize: 13, padding: 0 },
 }
