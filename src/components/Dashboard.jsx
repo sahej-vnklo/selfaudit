@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { initSupabase } from '../lib/supabase.js'
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
@@ -136,7 +136,7 @@ export default function Dashboard({ user, onStartAudit }) {
     if (!user) return
     initSupabase().then(sb =>
       sb.from('profiles')
-        .select('context, tier, industry, domain')
+        .select('context, tier, industry, domain, phone, name')
         .eq('id', user.id)
         .single()
         .then(({ data }) => { if (data) setProfile(data) })
@@ -261,32 +261,344 @@ export default function Dashboard({ user, onStartAudit }) {
         )}
 
         {section === 'account' && (
-          <div style={s.content}>
-            <div style={s.pageHeader}>
-              <div>
-                <h1 style={s.pageTitle}>Account settings</h1>
-                <p style={s.pageSub}>Manage your account details.</p>
-              </div>
-            </div>
-            <div style={{ background: G.white, border: `0.5px solid ${G.border}`, borderRadius: 12, padding: '20px 24px', marginBottom: 12 }}>
-              <div style={{ fontSize: 11, color: G.inkFaint, fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 6 }}>Email</div>
-              <div style={{ fontSize: 14, color: G.ink, fontWeight: 500 }}>{email}</div>
-            </div>
-            <div style={{ background: G.white, border: `0.5px solid ${G.border}`, borderRadius: 12, padding: '20px 24px' }}>
-              <div style={{ fontSize: 11, color: '#A32D2D', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: 14 }}>Danger zone</div>
-              <button style={{ fontSize: 13, fontWeight: 500, color: '#A32D2D', background: 'none', border: '0.5px solid #E8C4C4', padding: '9px 18px', borderRadius: 8, cursor: 'pointer', display: 'block', marginBottom: 10 }}>
-                Delete account
-              </button>
-              <p style={{ fontSize: 12, color: G.inkFaint, lineHeight: 1.6, margin: 0 }}>
-                Permanently deletes your account and all audit data. This cannot be undone.
-              </p>
-            </div>
-          </div>
+          <AccountSection
+            user={user}
+            profile={profile}
+            onProfileChange={(updated) => setProfile(p => ({ ...p, ...updated }))}
+            onSignOut={handleSignOut}
+          />
         )}
 
       </div>
     </div>
   )
+}
+
+// ─── Account section ──────────────────────────────────────────────────────────
+
+function AccountSection({ user, profile, onProfileChange, onSignOut }) {
+  const email = user?.email || ''
+
+  // ── Name ──────────────────────────────────────────────────────────────────
+  const [nameVal,     setNameVal]     = useState('')
+  const [nameEditing, setNameEditing] = useState(false)
+  const [nameSaving,  setNameSaving]  = useState(false)
+  const nameRef = useRef(null)
+
+  // ── Phone ─────────────────────────────────────────────────────────────────
+  const [phoneVal,     setPhoneVal]     = useState('')
+  const [phoneEditing, setPhoneEditing] = useState(false)
+  const [phoneSaving,  setPhoneSaving]  = useState(false)
+  const phoneRef = useRef(null)
+
+  // ── Context ───────────────────────────────────────────────────────────────
+  const [contextVal,     setContextVal]     = useState('')
+  const [contextChanged, setContextChanged] = useState(false)
+  const [contextSaving,  setContextSaving]  = useState(false)
+
+  // ── Delete modal ──────────────────────────────────────────────────────────
+  const [showDelete,   setShowDelete]   = useState(false)
+  const [deleteConf,   setDeleteConf]   = useState('')
+  const [deleteError,  setDeleteError]  = useState('')
+  const [deleting,     setDeleting]     = useState(false)
+
+  // Sync from profile once loaded
+  useEffect(() => {
+    if (profile) {
+      setNameVal(profile.name || user?.user_metadata?.name || '')
+      setPhoneVal(profile.phone || '')
+      setContextVal(profile.context || '')
+    }
+  }, [profile, user])
+
+  // Focus inputs when editing starts
+  useEffect(() => { if (nameEditing)  nameRef.current?.focus()  }, [nameEditing])
+  useEffect(() => { if (phoneEditing) phoneRef.current?.focus() }, [phoneEditing])
+
+  async function saveName() {
+    const trimmed = nameVal.trim()
+    if (!trimmed || trimmed === (profile?.name || user?.user_metadata?.name || '')) {
+      setNameEditing(false); return
+    }
+    setNameSaving(true)
+    try {
+      const sb = await initSupabase()
+      await sb.from('profiles').update({ name: trimmed }).eq('id', user.id)
+      onProfileChange({ name: trimmed })
+    } catch(e) { console.error(e) }
+    finally { setNameSaving(false); setNameEditing(false) }
+  }
+
+  async function savePhone() {
+    const trimmed = phoneVal.trim()
+    if (trimmed === (profile?.phone || '')) { setPhoneEditing(false); return }
+    setPhoneSaving(true)
+    try {
+      const sb = await initSupabase()
+      await sb.from('profiles').update({ phone: trimmed }).eq('id', user.id)
+      onProfileChange({ phone: trimmed })
+    } catch(e) { console.error(e) }
+    finally { setPhoneSaving(false); setPhoneEditing(false) }
+  }
+
+  async function saveContext() {
+    setContextSaving(true)
+    try {
+      const sb = await initSupabase()
+      await sb.from('profiles').update({ context: contextVal.trim() }).eq('id', user.id)
+      onProfileChange({ context: contextVal.trim() })
+      setContextChanged(false)
+    } catch(e) { console.error(e) }
+    finally { setContextSaving(false) }
+  }
+
+  async function handleDeleteAccount() {
+    if (deleteConf.trim().toLowerCase() !== 'delete') {
+      setDeleteError('Type "delete" to confirm.'); return
+    }
+    setDeleting(true)
+    try {
+      const sb = await initSupabase()
+      // Delete profile row (cascade will handle auth.users via admin or trigger)
+      await sb.from('profiles').delete().eq('id', user.id)
+      await sb.auth.signOut()
+      window.location.href = '/'
+    } catch(e) {
+      console.error(e)
+      setDeleteError('Something went wrong. Please try again.')
+      setDeleting(false)
+    }
+  }
+
+  return (
+    <div style={s.content}>
+      {/* Page header */}
+      <div style={s.pageHeader}>
+        <div>
+          <h1 style={s.pageTitle}>Account settings</h1>
+          <p style={s.pageSub}>Manage your profile and preferences.</p>
+        </div>
+      </div>
+
+      {/* ── 1. Profile card ─────────────────────────────────────────────── */}
+      <div style={acct.card}>
+
+        {/* NAME */}
+        <div style={acct.row}>
+          <div style={acct.fieldLabel}>Name</div>
+          {nameEditing ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
+              <input
+                ref={nameRef}
+                value={nameVal}
+                onChange={e => setNameVal(e.target.value)}
+                onBlur={saveName}
+                onKeyDown={e => { if (e.key === 'Enter') saveName(); if (e.key === 'Escape') setNameEditing(false) }}
+                disabled={nameSaving}
+                style={acct.input}
+              />
+              {nameSaving && <span style={acct.savingText}>Saving…</span>}
+            </div>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
+              <div style={acct.fieldValue}>{nameVal || <span style={{ color: G.inkFaint }}>—</span>}</div>
+              <button style={acct.editBtn} onClick={() => setNameEditing(true)}>Edit</button>
+            </div>
+          )}
+        </div>
+
+        <div style={acct.divider} />
+
+        {/* EMAIL */}
+        <div style={acct.row}>
+          <div style={acct.fieldLabel}>Email</div>
+          <div style={{ ...acct.fieldValue, color: G.inkMuted }}>{email}</div>
+        </div>
+
+        <div style={acct.divider} />
+
+        {/* PHONE */}
+        <div style={acct.row}>
+          <div style={acct.fieldLabel}>Phone number</div>
+          {phoneEditing ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
+              <input
+                ref={phoneRef}
+                value={phoneVal}
+                onChange={e => setPhoneVal(e.target.value)}
+                onBlur={savePhone}
+                onKeyDown={e => { if (e.key === 'Enter') savePhone(); if (e.key === 'Escape') setPhoneEditing(false) }}
+                disabled={phoneSaving}
+                placeholder="Add phone number"
+                style={acct.input}
+              />
+              {phoneSaving && <span style={acct.savingText}>Saving…</span>}
+            </div>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
+              <div style={acct.fieldValue}>
+                {phoneVal || <span style={{ color: G.inkFaint }}>Add phone number</span>}
+              </div>
+              <button style={acct.editBtn} onClick={() => setPhoneEditing(true)}>Edit</button>
+            </div>
+          )}
+        </div>
+
+      </div>
+
+      {/* ── 2. Context card ─────────────────────────────────────────────── */}
+      <div style={{ ...acct.card, marginTop: 12 }}>
+        <div style={acct.fieldLabel}>Your audit context</div>
+        <textarea
+          value={contextVal}
+          onChange={e => { setContextVal(e.target.value); setContextChanged(true) }}
+          rows={5}
+          style={acct.textarea}
+        />
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
+          <span style={acct.helperText}>This is what the AI uses to ask the right questions.</span>
+          {contextChanged && (
+            <button
+              style={{ ...acct.saveBtn, opacity: contextSaving ? 0.6 : 1 }}
+              onClick={saveContext}
+              disabled={contextSaving}
+            >
+              {contextSaving ? 'Saving…' : 'Save'}
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* ── 3. Delete account ───────────────────────────────────────────── */}
+      <div style={{ marginTop: 28 }}>
+        <span style={acct.deleteNudge}>Want to delete your account? </span>
+        <button style={acct.deleteLink} onClick={() => { setShowDelete(true); setDeleteConf(''); setDeleteError('') }}>
+          Delete account
+        </button>
+      </div>
+
+      {/* ── Confirmation modal ──────────────────────────────────────────── */}
+      {showDelete && (
+        <div style={acct.modalOverlay} onClick={() => setShowDelete(false)}>
+          <div style={acct.modal} onClick={e => e.stopPropagation()}>
+            <div style={acct.modalTitle}>Delete your account?</div>
+            <p style={acct.modalBody}>
+              This permanently deletes your account and all audit data. This cannot be undone.
+            </p>
+            <p style={acct.modalBody}>
+              Type <strong>delete</strong> to confirm.
+            </p>
+            <input
+              value={deleteConf}
+              onChange={e => { setDeleteConf(e.target.value); setDeleteError('') }}
+              onKeyDown={e => { if (e.key === 'Enter') handleDeleteAccount() }}
+              placeholder="delete"
+              style={{ ...acct.input, marginBottom: 8 }}
+              autoFocus
+            />
+            {deleteError && <p style={{ fontSize: 12, color: '#C0392B', margin: '0 0 10px' }}>{deleteError}</p>}
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button style={acct.modalCancel} onClick={() => setShowDelete(false)} disabled={deleting}>
+                Cancel
+              </button>
+              <button
+                style={{ ...acct.modalDelete, opacity: deleting ? 0.6 : 1 }}
+                onClick={handleDeleteAccount}
+                disabled={deleting}
+              >
+                {deleting ? 'Deleting…' : 'Delete account'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Account section styles ────────────────────────────────────────────────────
+
+const acct = {
+  card: {
+    background: G.white,
+    border: `0.5px solid ${G.border}`,
+    borderRadius: 12,
+    padding: '4px 0',
+  },
+  row: {
+    display: 'flex', alignItems: 'center', gap: 16,
+    padding: '14px 22px',
+  },
+  divider: {
+    height: '0.5px', background: G.border,
+    margin: '0 22px',
+  },
+  fieldLabel: {
+    fontSize: 11, fontWeight: 600, textTransform: 'uppercase',
+    letterSpacing: '0.5px', color: G.inkFaint,
+    width: 120, flexShrink: 0,
+  },
+  fieldValue: {
+    fontSize: 14, color: G.ink, fontWeight: 500, flex: 1,
+  },
+  editBtn: {
+    background: 'none', border: 'none', cursor: 'pointer',
+    fontSize: 12, color: G.green, fontWeight: 500, padding: 0,
+    flexShrink: 0,
+  },
+  input: {
+    flex: 1, fontSize: 14, color: G.ink, fontWeight: 500,
+    border: `0.5px solid ${G.border}`, borderRadius: 8,
+    padding: '7px 11px', background: G.bg,
+    outline: 'none', fontFamily: 'inherit',
+    width: '100%',
+  },
+  savingText: { fontSize: 12, color: G.inkFaint, flexShrink: 0 },
+  textarea: {
+    width: '100%', resize: 'vertical', fontSize: 13,
+    color: G.ink, lineHeight: 1.6,
+    border: `0.5px solid ${G.border}`, borderRadius: 8,
+    padding: '10px 12px', background: G.bg,
+    outline: 'none', fontFamily: 'inherit',
+    marginTop: 10, boxSizing: 'border-box',
+  },
+  helperText: { fontSize: 12, color: G.inkFaint },
+  saveBtn: {
+    background: G.green, color: 'white',
+    fontSize: 12, fontWeight: 500, border: 'none',
+    padding: '7px 16px', borderRadius: 8, cursor: 'pointer',
+    flexShrink: 0,
+  },
+  deleteNudge: { fontSize: 12, color: G.inkFaint },
+  deleteLink: {
+    background: 'none', border: 'none', cursor: 'pointer',
+    fontSize: 12, color: '#C0392B', fontWeight: 500, padding: 0,
+    textDecoration: 'underline',
+  },
+  // Modal
+  modalOverlay: {
+    position: 'fixed', inset: 0,
+    background: 'rgba(0,0,0,0.35)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    zIndex: 1000,
+  },
+  modal: {
+    background: G.white, borderRadius: 14,
+    padding: '28px 28px 24px', width: 380, maxWidth: '90vw',
+    boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+  },
+  modalTitle: { fontSize: 16, fontWeight: 600, color: G.ink, marginBottom: 10 },
+  modalBody:  { fontSize: 13, color: G.inkMuted, lineHeight: 1.6, margin: '0 0 10px' },
+  modalCancel: {
+    background: 'none', border: `0.5px solid ${G.border}`,
+    borderRadius: 8, fontSize: 13, fontWeight: 500,
+    color: G.inkMuted, cursor: 'pointer', padding: '8px 16px',
+  },
+  modalDelete: {
+    background: '#C0392B', color: 'white',
+    border: 'none', borderRadius: 8,
+    fontSize: 13, fontWeight: 500, cursor: 'pointer', padding: '8px 16px',
+  },
 }
 
 // ─── Home section ─────────────────────────────────────────────────────────────
