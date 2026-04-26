@@ -378,8 +378,9 @@ export default function Landing({ onStart, session }) {
               <div style={{ fontSize: 13, color: C.inkMuted, marginBottom: 20, lineHeight: 1.5 }}>Every function of your business, fully audited. No blind spots.</div>
               <div style={{ fontFamily: serif, fontSize: 44, fontWeight: 700, letterSpacing: '-1px', color: C.ink, lineHeight: 1 }}>$99<span style={{ fontSize: 18, fontWeight: 500, color: C.inkMuted }}>/mo</span></div>
               <div style={{ fontSize: 14, color: C.inkMuted, marginTop: 6, marginBottom: 28 }}>&nbsp;</div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: C.inkMuted, textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: 12 }}>Everything in Essential, plus:</div>
               <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 32px', display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
-                {['1 industry, all domains', 'Unlimited audits', 'Full drill-down audit', 'Complete written report', 'Root cause diagnosis', 'Fix-first priority list', 'AI opportunity breakdown', 'Email delivery', 'Re-audit to track progress'].map(f => (
+                {['All domains for your industry — no blind spots', 'AI opportunity breakdown', 'Re-audit anytime — track improvement over time'].map(f => (
                   <li key={f} style={{ fontSize: 14, color: C.inkSoft, display: 'flex', alignItems: 'flex-start', gap: 10 }}>
                     <span style={{ color: C.accent, fontWeight: 600, flexShrink: 0 }}>→</span> {f}
                   </li>
@@ -402,8 +403,9 @@ export default function Landing({ onStart, session }) {
               <div style={{ fontSize: 13, color: C.inkMuted, marginBottom: 20, lineHeight: 1.5 }}>Every industry. Every domain. Built for those who operate at scale.</div>
               <div style={{ fontFamily: serif, fontSize: 44, fontWeight: 700, letterSpacing: '-1px', color: C.ink, lineHeight: 1 }}>$299<span style={{ fontSize: 18, fontWeight: 500, color: C.inkMuted }}>/mo</span></div>
               <div style={{ fontSize: 14, color: C.inkMuted, marginTop: 6, marginBottom: 28 }}>&nbsp;</div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: C.inkMuted, textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: 12 }}>Everything in Business, plus:</div>
               <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 32px', display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
-                {['All industries, all domains', 'Unlimited audits', 'Everything in Business', 'Multi-business coverage', 'Priority support'].map(f => (
+                {['All industries, all domains — audit any business type', 'Run audits across multiple businesses', 'First access to new audit categories as they launch', 'Priority access to Vnklo AI implementation'].map(f => (
                   <li key={f} style={{ fontSize: 14, color: C.inkSoft, display: 'flex', alignItems: 'flex-start', gap: 10 }}>
                     <span style={{ color: C.accent, fontWeight: 600, flexShrink: 0 }}>→</span> {f}
                   </li>
