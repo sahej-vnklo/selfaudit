@@ -185,7 +185,7 @@ export default function App() {
   // ── Existing audit flow ───────────────────────────────────────────────────
   return (
     <>
-      {screen === SCREENS.LANDING    && <Landing onStart={handleStart} />}
+      {screen === SCREENS.LANDING    && <Landing onStart={handleStart} session={session} />}
       {screen === SCREENS.ONBOARDING && <Onboarding onComplete={handleOnboarding} />}
       {screen === SCREENS.AUDIT && userInfo && (
         <AuditChat

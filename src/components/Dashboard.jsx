@@ -15,7 +15,6 @@ export default function Dashboard({ user, onStartAudit }) {
   }
   const [profile, setProfile]               = useState(null)
   const [profileExpanded, setProfileExpanded] = useState(false)
-  const [activeTab, setActiveTab]           = useState('business')
   const [section, setSection]               = useState('home')
   const [collapsed, setCollapsed]           = useState(false)
 
@@ -138,29 +137,19 @@ export default function Dashboard({ user, onStartAudit }) {
 
         {section === 'home' && (
           <>
-            {/* Tab bar */}
-            <div style={s.tabBar}>
-              <Tab label="Business" active={activeTab === 'business'} onClick={() => setActiveTab('business')} />
-              <Tab label="Personal" active={activeTab === 'personal'} onClick={() => setActiveTab('personal')} />
-            </div>
-
             {/* Content */}
             <div style={s.content}>
               <div style={s.emptyCard}>
-                <p style={s.emptyIcon}>{activeTab === 'business' ? '🏢' : '👤'}</p>
-                <p style={s.emptyTitle}>No {activeTab} audits yet</p>
-                <p style={s.emptyBody}>
-                  {activeTab === 'business'
-                    ? 'Run a business audit and the report will appear here.'
-                    : 'Run a personal audit and the report will appear here.'}
-                </p>
+                <p style={s.emptyIcon}>🏢</p>
+                <p style={s.emptyTitle}>No audits yet</p>
+                <p style={s.emptyBody}>Run a business audit and the report will appear here.</p>
                 <button style={s.ctaBtn} onClick={() => onStartAudit({
                   name:    user?.user_metadata?.name || user?.email?.split('@')[0] || 'User',
                   email:   user?.email || '',
                   phone:   '',
                   context: profile?.context || '',
                 })}>
-                  Start {activeTab} audit →
+                  Start audit →
                 </button>
               </div>
             </div>
@@ -216,17 +205,6 @@ export default function Dashboard({ user, onStartAudit }) {
 
       </div>
     </div>
-  )
-}
-
-function Tab({ label, active, onClick }) {
-  return (
-    <button
-      style={{ ...s.tab, ...(active ? s.tabActive : {}) }}
-      onClick={onClick}
-    >
-      {label}
-    </button>
   )
 }
 
@@ -356,22 +334,6 @@ const s = {
 
   // Main
   main: { flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 },
-
-  // Tab bar
-  tabBar: {
-    display: 'flex', gap: 4, padding: '20px 32px 0',
-    borderBottom: '0.5px solid var(--gray-200)',
-    background: 'var(--white)',
-  },
-  tab: {
-    fontSize: 14, fontWeight: 500, color: 'var(--gray-400)',
-    background: 'none', border: 'none', cursor: 'pointer',
-    padding: '10px 16px', borderBottom: '2px solid transparent',
-    marginBottom: -1, transition: 'color 0.15s, border-color 0.15s',
-  },
-  tabActive: {
-    color: 'var(--green)', borderBottomColor: 'var(--green)',
-  },
 
   // Content
   content: { flex: 1, padding: '32px', maxWidth: 760 },

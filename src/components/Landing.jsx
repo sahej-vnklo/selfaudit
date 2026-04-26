@@ -98,8 +98,16 @@ const HOW_STEPS = [
   { num: '04', title: 'Get your report', desc: 'A ruthless diagnosis and exactly what to do next.' },
 ]
 
-export default function Landing({ onStart }) {
+export default function Landing({ onStart, session }) {
   const [howOpen, setHowOpen] = useState(false)
+
+  const handleLogoClick = () => {
+    if (session) {
+      window.location.hash = 'dashboard'
+    } else {
+      window.location.href = '/'
+    }
+  }
 
   return (
     <div style={{ fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", background: C.bg, color: C.ink, lineHeight: 1.6, minHeight: '100vh' }}>
@@ -109,7 +117,7 @@ export default function Landing({ onStart }) {
         <div style={{ ...wrap, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div
             style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.5px', cursor: 'pointer' }}
-            onClick={() => window.location.reload()}
+            onClick={handleLogoClick}
           >
             self<span style={{ color: C.accent, fontWeight: 500 }}>audit</span>
           </div>

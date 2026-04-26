@@ -27,8 +27,6 @@ const BUSINESS_OPTIONS = [
   'Nonprofit', 'Freelancer / Solo', 'Other',
 ]
 
-const PERSONAL_OPTIONS = ['Career', 'Finance', 'Health', 'Relationships', 'Other']
-
 // Domains relevant to each industry — drives Step 3 filter
 const ALL_DOMAIN_LABELS = DOMAINS.map(d => d.label)
 
@@ -56,19 +54,14 @@ const DOMAIN_MAP = {
   'Other':                ['Strategy', 'Operations', 'Sales', 'Marketing', 'Finance', 'People & Culture', 'Technology', 'Customer Experience'],
 }
 
-function buildContext(type, category, domains) {
-  const list = domains.join(', ')
+function buildContext(category, domains) {
   const focus = domains.length === 0
     ? 'key areas'
     : domains.length === 1
       ? domains[0]
       : `${domains.slice(0, -1).join(', ')} and ${domains[domains.length - 1]}`
 
-  if (type === 'business') {
-    return `You run a ${category} business and want a deep audit of your ${focus}. This audit will focus on identifying structural gaps, missed opportunities, and the single most important lever for growth. Be as specific as possible below — the more context you give, the sharper the questions.`
-  } else {
-    return `You're auditing your personal ${category} goals, with a focus on ${focus}. This audit will dig into what's holding you back, what's worth prioritising, and the clearest path forward. Add anything else that's relevant below.`
-  }
+  return `You run a ${category} business and want a deep audit of your ${focus}. This audit will focus on identifying structural gaps, missed opportunities, and the single most important lever for growth. Be as specific as possible below — the more context you give, the sharper the questions.`
 }
 
 // ─── Progress bar ─────────────────────────────────────────────────────────────
@@ -76,7 +69,7 @@ function buildContext(type, category, domains) {
 function StepBar({ current }) {
   return (
     <div style={{ display: 'flex', gap: 6, marginBottom: 36 }}>
-      {[1, 2, 3, 4].map(n => (
+      {[1, 2, 3].map(n => (
         <div key={n} style={{
           flex: 1, height: 3, borderRadius: 3,
           background: n <= current ? 'var(--green)' : 'var(--gray-200)',
@@ -87,58 +80,19 @@ function StepBar({ current }) {
   )
 }
 
-// ─── Step 1 — type ────────────────────────────────────────────────────────────
+// ─── Step 1 — category ────────────────────────────────────────────────────────
 
-function Step1({ onSelect }) {
+function Step2({ onSelect }) {
   return (
     <div>
-      <p style={s.eyebrow}>Step 1 of 4</p>
-      <h2 style={s.title}>What are you auditing?</h2>
-      <p style={s.sub}>This shapes every question the audit asks.</p>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginTop: 32 }}>
-        {[
-          { type: 'business', icon: '🏢', label: 'Business', desc: 'A company, startup, or side project' },
-          { type: 'personal', icon: '👤', label: 'Personal', desc: 'Career, goals, finances, or decisions' },
-        ].map(opt => (
-          <button
-            key={opt.type}
-            style={s.typeCard}
-            onClick={() => onSelect(opt.type)}
-            onMouseEnter={e => Object.assign(e.currentTarget.style, s.typeCardHover)}
-            onMouseLeave={e => Object.assign(e.currentTarget.style, { borderColor: 'var(--gray-200)', background: 'var(--white)' })}
-          >
-            <span style={s.typeIcon}>{opt.icon}</span>
-            <div style={{ textAlign: 'left' }}>
-              <div style={s.typeLabel}>{opt.label}</div>
-              <div style={s.typeDesc}>{opt.desc}</div>
-            </div>
-            <span style={s.typeArrow}>→</span>
-          </button>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-// ─── Step 2 — category ────────────────────────────────────────────────────────
-
-function Step2({ type, onSelect, onBack }) {
-  const options = type === 'business' ? BUSINESS_OPTIONS : PERSONAL_OPTIONS
-  const heading = type === 'business' ? 'What industry?' : 'What area of life?'
-  const subtext = type === 'business'
-    ? 'Helps the audit use the right benchmarks.'
-    : 'Helps the audit focus its questions.'
-
-  return (
-    <div>
-      <p style={s.eyebrow}>Step 2 of 4</p>
-      <h2 style={s.title}>{heading}</h2>
-      <p style={s.sub}>{subtext}</p>
+      <p style={s.eyebrow}>Step 1 of 3</p>
+      <h2 style={s.title}>What industry?</h2>
+      <p style={s.sub}>Helps the audit use the right benchmarks.</p>
       <div style={{
         display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 28,
         maxHeight: 340, overflowY: 'auto', paddingRight: 4,
       }}>
-        {options.map(opt => (
+        {BUSINESS_OPTIONS.map(opt => (
           <button
             key={opt}
             style={s.pill}
@@ -152,7 +106,6 @@ function Step2({ type, onSelect, onBack }) {
           </button>
         ))}
       </div>
-      <BackLink onClick={onBack} />
     </div>
   )
 }
@@ -168,7 +121,7 @@ function Step3({ tier, selected, onToggle, onNext, onBack, domainLabels }) {
 
   return (
     <div>
-      <p style={s.eyebrow}>Step 3 of 4</p>
+      <p style={s.eyebrow}>Step 2 of 3</p>
       <h2 style={s.title}>{isFree ? 'Pick your focus.' : 'Everything is covered.'}</h2>
 
       {!isFree && (
@@ -218,7 +171,7 @@ function Step3({ tier, selected, onToggle, onNext, onBack, domainLabels }) {
 function Step4({ contextText, setContextText, onSave, saving }) {
   return (
     <div>
-      <p style={s.eyebrow}>Step 4 of 4</p>
+      <p style={s.eyebrow}>Step 3 of 3</p>
       <h2 style={s.title}>Does this sound right?</h2>
       <p style={s.sub}>
         We generated a context summary from your answers. Edit it until it feels accurate — the audit uses this to ask the right questions.
@@ -252,8 +205,7 @@ function BackLink({ onClick }) {
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function AccountOnboarding({ user, onComplete, onBack }) {
-  const [step,     setStep]     = useState(1)
-  const [type,     setType]     = useState(null)
+  const [step,     setStep]     = useState(2)
   const [category, setCategory] = useState(null)
   const [domains,  setDomains]  = useState([])
   const [ctxText,  setCtxText]  = useState('')
@@ -291,8 +243,6 @@ export default function AccountOnboarding({ user, onComplete, onBack }) {
     return () => clearInterval(interval)
   }, [step, tier, availableDomains])
 
-  const handleType = (t) => { setType(t); setStep(2) }
-
   const handleCategory = (c) => {
     setCategory(c)
     setStep(3)
@@ -309,7 +259,7 @@ export default function AccountOnboarding({ user, onComplete, onBack }) {
   const handleDomainsNext = () => {
     // For paid users ensure all available domains are captured even if animation is mid-run
     const effectiveDomains = tier === 'paid' ? availableDomains : domains
-    const generated = buildContext(type, category, effectiveDomains)
+    const generated = buildContext(category, effectiveDomains)
     setCtxText(generated)
     setStep(4)
   }
@@ -350,15 +300,11 @@ export default function AccountOnboarding({ user, onComplete, onBack }) {
 
       <div style={s.wrap}>
         <div style={{ ...s.card, maxWidth: step === 3 ? 560 : 480 }}>
-          <StepBar current={step} />
-
-          {step === 1 && <Step1 onSelect={handleType} />}
+          <StepBar current={step - 1} />
 
           {step === 2 && (
             <Step2
-              type={type}
               onSelect={handleCategory}
-              onBack={() => setStep(1)}
             />
           )}
 
@@ -408,20 +354,7 @@ const s = {
     marginBottom: 14, marginTop: 4,
   },
 
-  // Step 1 — type cards
-  typeCard: {
-    display: 'flex', alignItems: 'center', gap: 16, width: '100%',
-    padding: '20px 22px', borderRadius: 'var(--radius)',
-    border: '0.5px solid var(--gray-200)', background: 'var(--white)',
-    cursor: 'pointer', textAlign: 'left', transition: 'border-color 0.15s, background 0.15s',
-  },
-  typeCardHover: { borderColor: 'var(--green)', background: 'var(--green-light)' },
-  typeIcon:  { fontSize: 28, flexShrink: 0 },
-  typeLabel: { fontSize: 15, fontWeight: 600, color: 'var(--black)', marginBottom: 2 },
-  typeDesc:  { fontSize: 13, color: 'var(--gray-600)' },
-  typeArrow: { marginLeft: 'auto', fontSize: 18, color: 'var(--green)', flexShrink: 0 },
-
-  // Step 2 — pills
+  // Step 1 — pills
   pill: {
     padding: '10px 20px', borderRadius: 'var(--radius-pill)',
     border: '0.5px solid var(--gray-200)', background: 'var(--gray-100)',
