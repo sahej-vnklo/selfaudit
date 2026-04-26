@@ -27,12 +27,13 @@ const h2Style = {
 }
 
 const compareRows = [
-  { dim: 'Time to insight',              s: 'Full-day event',      sBad: true,  c: '4–8 weeks',          cBad: true,  o: '5 minutes',    oGood: true },
-  { dim: 'Personalized to your business', s: 'Generic frameworks', sBad: true,  c: 'Yes',                cGood: true, o: 'Yes',          oGood: true },
-  { dim: 'Covers every department',       s: 'Speaker-dependent',  sBad: true,  c: 'Usually one domain', cBad: true,  o: 'Every domain', oGood: true },
-  { dim: "Will say AI isn't the answer",  s: 'Rarely',             sBad: true,  c: 'Rarely',             cBad: true,  o: 'Always',       oGood: true },
-  { dim: 'Q&A depth',                     s: '2 minutes if lucky', sBad: true,  c: 'Unlimited',          cGood: true, o: 'Unlimited',    oGood: true },
-  { dim: 'Available right now',           s: 'Wait for next event',sBad: true,  c: 'Weeks to start',     cBad: true,  o: 'Instantly',    oGood: true },
+  { dim: 'Time to insight',               s: 'Full-day event',      sBad: true,  c: '4–8 weeks',          cBad: true,  o: '5 minutes',    oGood: true },
+  { dim: 'Personalized to your business', s: 'Generic frameworks',  sBad: true,  c: 'Yes',                cGood: true, o: 'Yes',          oGood: true },
+  { dim: 'Covers every department',       s: 'Speaker-dependent',   sBad: true,  c: 'Usually one domain', cBad: true,  o: 'Every domain', oGood: true },
+  { dim: 'Audits per month',              s: 'Once a year',         sBad: true,  c: 'Billed per session', cBad: true,  o: 'Unlimited',    oGood: true },
+  { dim: 'Replaces a department hire',    s: 'No',                  sBad: true,  c: 'Partially',          cBad: true,  o: 'Yes',          oGood: true },
+  { dim: 'Q&A depth',                     s: '2 minutes if lucky',  sBad: true,  c: 'Unlimited',          cGood: true, o: 'Unlimited',    oGood: true },
+  { dim: 'Available right now',           s: 'Wait for next event', sBad: true,  c: 'Weeks to start',     cBad: true,  o: 'Instantly',    oGood: true },
 ]
 
 const verdictCards = [
@@ -224,7 +225,7 @@ export default function Landing({ onStart, session }) {
               {[
                 { name: 'Seminar',    tag: '$1,500+ ticket',            color: C.ink },
                 { name: 'Consultant', tag: '$15k to $150k engagement',  color: C.ink },
-                { name: 'SelfAudit', tag: 'Free to start',             color: C.accent },
+                { name: 'SelfAudit', tag: 'From $49/mo',               color: C.accent },
               ].map((col, i) => (
                 <div key={i} style={{ padding: 24, borderLeft: `1px solid ${C.border}` }}>
                   <div style={{ fontSize: 18, fontWeight: 600, letterSpacing: '-0.3px', color: col.color }}>{col.name}</div>
