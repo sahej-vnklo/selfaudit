@@ -3,7 +3,7 @@ create table public.profiles (
   id         uuid references auth.users on delete cascade primary key,
   email      text not null,
   name       text,
-  tier       text not null default 'free' check (tier in ('free', 'paid')),
+  tier       text not null default 'essential' check (tier in ('essential', 'business', 'portfolio', 'free', 'paid')),
   context    text,
   created_at timestamptz not null default now()
 );
