@@ -133,7 +133,12 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
       body: JSON.stringify({ userId: userInfo.userId }),
     })
       .then(r => r.ok ? r.json() : null)
-      .then(data => { if (data) setTierData(data) })
+      .then(data => {
+        if (data) {
+          console.log('TIER DATA:', { tier: data.tier, industry: data.industry, domain: data.domain })
+          setTierData(data)
+        }
+      })
       .catch(() => {})
   }, [userInfo?.userId])
 
@@ -148,6 +153,7 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
     // ── Tier gating — check before sending, never mid-response ───────────────
     if (tierData) {
       const { tier, industry, domain } = tierData
+      console.log('CHECKING MESSAGE:', text, 'AGAINST DOMAIN:', domain, '| tier:', tier)
 
       if (tier === 'essential' && detectDomainViolation(text, domain)) {
         setInput('')
