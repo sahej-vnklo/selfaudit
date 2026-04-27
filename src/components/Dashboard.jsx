@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { initSupabase } from '../lib/supabase.js'
+import { supabase, initSupabase } from '../lib/supabase.js'
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 
@@ -161,14 +161,12 @@ export default function Dashboard({ user, onStartAudit }) {
 
   const handleSignOut = async () => {
     try {
-      const supabase = await initSupabase()
       await supabase.auth.signOut()
     } catch (e) {
-      console.error(e)
-    } finally {
-      localStorage.clear()
-      window.location.href = '/'
+      console.error('[dashboard] signOut error:', e?.message)
     }
+    window.location.hash = ''
+    window.location.reload()
   }
 
   const startAudit = () => onStartAudit({
@@ -236,7 +234,7 @@ export default function Dashboard({ user, onStartAudit }) {
         </div>
 
         {/* Sign out */}
-        <button style={s.signOut} onClick={() => { if (isCollapsed) return; handleSignOut() }}>
+        <button style={s.signOut} onClick={handleSignOut}>
           <IconSignOut />
           {!isCollapsed && 'Sign out'}
         </button>
