@@ -88,9 +88,10 @@ function normalizeTier(raw) {
 
 function getGreeting() {
   const h = new Date().getHours()
-  if (h < 12) return 'Good morning'
-  if (h < 17) return 'Good afternoon'
-  return 'Good evening'
+  if (h >= 5  && h <= 11) return 'Good morning'
+  if (h >= 12 && h <= 16) return 'Good afternoon'
+  if (h >= 17 && h <= 21) return 'Good evening'
+  return 'Hey'
 }
 
 // ─── SVG Icons ────────────────────────────────────────────────────────────────
