@@ -150,9 +150,14 @@ export default function App() {
   }
   const handleReportReady = (history) => { setConversationHistory(history); navigate(SCREENS.REPORT) }
   const handleSignOut     = async ()  => {
-    await supabase?.auth.signOut()
+    try {
+      const sb = await initSupabase()
+      await sb.auth.signOut()
+    } catch (e) {
+      console.error('[auth] signOut error:', e?.message)
+    }
     setSession(null)
-    navigate(SCREENS.LANDING)
+    navigate(SCREENS.LOGIN)
   }
 
   if (authLoading) return null
@@ -199,6 +204,7 @@ export default function App() {
     if (!session) { navigate(SCREENS.LOGIN); return null }
     return <Dashboard
       user={session.user}
+      onSignOut={handleSignOut}
       onStartAudit={(info) => {
         setUserInfo(info)
         navigate(SCREENS.ONBOARDING)

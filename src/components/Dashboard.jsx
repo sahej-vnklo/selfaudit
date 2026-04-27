@@ -133,7 +133,7 @@ const IconSignOut = () => (
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function Dashboard({ user, onStartAudit }) {
+export default function Dashboard({ user, onStartAudit, onSignOut }) {
   const [profile,        setProfile]        = useState(null)
   const [reportsLoading, setReportsLoading] = useState(true)
   const [section,        setSection]        = useState('home')
@@ -182,16 +182,6 @@ export default function Dashboard({ user, onStartAudit }) {
 
     return () => { cancelled = true }
   }, [user])
-
-  const handleSignOut = async () => {
-    try {
-      await supabase.auth.signOut()
-    } catch (e) {
-      console.error('[dashboard] signOut error:', e?.message)
-    }
-    window.location.hash = ''
-    window.location.reload()
-  }
 
   const startAudit = () => onStartAudit({
     name:     user?.user_metadata?.name || user?.email?.split('@')[0] || 'User',
@@ -255,7 +245,7 @@ export default function Dashboard({ user, onStartAudit }) {
         </div>
 
         {/* Sign out */}
-        <button style={s.signOut} onClick={handleSignOut}>
+        <button style={s.signOut} onClick={onSignOut}>
           <IconSignOut />
           {!isCollapsed && 'Sign out'}
         </button>
@@ -312,7 +302,7 @@ export default function Dashboard({ user, onStartAudit }) {
             user={user}
             profile={profile}
             onProfileChange={(updated) => setProfile(p => ({ ...p, ...updated }))}
-            onSignOut={handleSignOut}
+            onSignOut={onSignOut}
           />
         )}
 
