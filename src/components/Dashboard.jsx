@@ -697,16 +697,25 @@ function ScopeCard({ tier, industry, domain, context }) {
   const visibleDomains = allDomains.slice(0, 4)
   const extraCount     = allDomains.length - 4
 
-  const isEmpty = !context
-  const scopeValue = context || 'Start an audit to set your scope'
+  // Primary: show industry — domain label (the user-facing scope), fall back to context paragraph
+  const scopeLabel = industry
+    ? (tier === 'essential' && domain ? `${industry} — ${domain}` : industry)
+    : null
+  const isEmpty    = !scopeLabel && !context
+  const primaryVal = scopeLabel || context || 'Start an audit to set your scope'
 
   return (
     <div style={s.scopeCard}>
       <div>
         <div style={s.sectionLabel}>Your audit scope</div>
         <div style={{ ...s.scopeValue, ...(isEmpty ? { color: 'var(--gray-400)', fontStyle: 'italic', fontSize: 14 } : {}) }}>
-          {scopeValue}
+          {primaryVal}
         </div>
+        {scopeLabel && context && (
+          <p style={{ fontSize: 13, color: 'var(--gray-500)', marginTop: 6, lineHeight: 1.6 }}>
+            {context}
+          </p>
+        )}
       </div>
 
       {tier !== 'portfolio' && (industry || domain) && (
