@@ -156,8 +156,7 @@ export default function App() {
     } catch (e) {
       console.error('[auth] signOut error:', e?.message)
     }
-    setSession(null)
-    navigate(SCREENS.LOGIN)
+    window.location.replace('/')
   }
 
   if (authLoading) return null
