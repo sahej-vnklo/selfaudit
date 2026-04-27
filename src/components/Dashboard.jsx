@@ -134,9 +134,10 @@ const IconSignOut = () => (
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function Dashboard({ user, onStartAudit }) {
-  const [profile,     setProfile]     = useState(null)
-  const [section,     setSection]     = useState('home')
-  const [isCollapsed, setIsCollapsed] = useState(false)
+  const [profile,        setProfile]        = useState(null)
+  const [reportsLoading, setReportsLoading] = useState(true)
+  const [section,        setSection]        = useState('home')
+  const [isCollapsed,    setIsCollapsed]    = useState(false)
 
   const name     = user?.user_metadata?.name?.trim() || ''
   const email    = user?.email || ''
@@ -174,6 +175,8 @@ export default function Dashboard({ user, onStartAudit }) {
         }
       } catch (err) {
         console.error('[dashboard] profile fetch threw:', err?.message ?? err)
+      } finally {
+        if (!cancelled) setReportsLoading(false)
       }
     })()
 
@@ -276,6 +279,7 @@ export default function Dashboard({ user, onStartAudit }) {
             domain={domain}
             badge={badge}
             context={profile?.context || ''}
+            reportsLoading={reportsLoading}
             onStartAudit={startAudit}
           />
         )}
@@ -289,7 +293,7 @@ export default function Dashboard({ user, onStartAudit }) {
               </div>
               <button style={s.newAuditBtn} onClick={startAudit}>New audit →</button>
             </div>
-            <EmptyReports onStartAudit={startAudit} />
+            {reportsLoading ? <ReportSkeletons /> : <EmptyReports onStartAudit={startAudit} />}
           </div>
         )}
 
@@ -652,7 +656,7 @@ const acct = {
 
 // ─── Home section ─────────────────────────────────────────────────────────────
 
-function HomeSection({ name, tier, industry, domain, badge, context, onStartAudit }) {
+function HomeSection({ name, tier, industry, domain, badge, context, reportsLoading, onStartAudit }) {
   return (
     <div style={s.content}>
       {/* Page header */}
@@ -684,7 +688,7 @@ function HomeSection({ name, tier, industry, domain, badge, context, onStartAudi
       {/* Recent reports */}
       <div style={{ marginTop: 28 }}>
         <div style={s.sectionLabel}>Recent reports</div>
-        <EmptyReports onStartAudit={onStartAudit} />
+        {reportsLoading ? <ReportSkeletons /> : <EmptyReports onStartAudit={onStartAudit} />}
       </div>
     </div>
   )
@@ -736,6 +740,30 @@ function ScopeCard({ tier, industry, domain, context }) {
         </div>
       )}
     </div>
+  )
+}
+
+// ─── Report skeletons (loading state) ────────────────────────────────────────
+
+function ReportSkeletons() {
+  return (
+    <>
+      <style>{`@keyframes skeletonPulse{0%,100%{opacity:.55}50%{opacity:.25}}`}</style>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {[0, 1, 2].map(i => (
+          <div
+            key={i}
+            style={{
+              background: G.metricBg,
+              borderRadius: 10,
+              height: 54,
+              animation: 'skeletonPulse 1.4s ease-in-out infinite',
+              animationDelay: `${i * 0.18}s`,
+            }}
+          />
+        ))}
+      </div>
+    </>
   )
 }
 
