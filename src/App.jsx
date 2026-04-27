@@ -149,13 +149,19 @@ export default function App() {
     navigate(SCREENS.AUDIT)
   }
   const handleReportReady = (history) => { setConversationHistory(history); navigate(SCREENS.REPORT) }
-  const handleSignOut     = async ()  => {
-    try {
-      const sb = await initSupabase()
-      await sb.auth.signOut()
-    } catch (e) {
-      console.error('[auth] signOut error:', e?.message)
+  const handleSignOut = () => {
+    // Use the client if it's already initialized — don't await initSupabase()
+    // because it may still be pending and will silently hang the button click.
+    if (supabase) {
+      supabase.auth.signOut().catch(e => console.error('[auth] signOut error:', e?.message))
     }
+    // Belt-and-suspenders: wipe all Supabase session keys from localStorage
+    // so the page comes up clean even if signOut() hasn't finished yet.
+    try {
+      Object.keys(localStorage)
+        .filter(k => k.startsWith('sb-'))
+        .forEach(k => localStorage.removeItem(k))
+    } catch (_) {}
     window.location.replace('/')
   }
 
