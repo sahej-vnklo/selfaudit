@@ -137,9 +137,11 @@ export default function Dashboard({ user, onStartAudit }) {
   const [section,     setSection]     = useState('home')
   const [isCollapsed, setIsCollapsed] = useState(false)
 
-  const name     = user?.user_metadata?.name || user?.email?.split('@')[0] || 'there'
+  const name     = user?.user_metadata?.name?.trim() || ''
   const email    = user?.email || ''
-  const initials = name.trim().split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
+  const initials = name
+    ? name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
+    : (email[0] || '?').toUpperCase()
 
   useEffect(() => {
     if (!user) return
@@ -246,7 +248,7 @@ export default function Dashboard({ user, onStartAudit }) {
           <div style={s.avatar}>{initials}</div>
           {!isCollapsed && (
             <div style={s.userInfo}>
-              <div style={s.userName}>{name}</div>
+              <div style={s.userName}>{name || email}</div>
               <span style={{ ...s.tierBadge, background: badge.bg, color: badge.color }}>
                 {badge.label}
               </span>
@@ -654,7 +656,7 @@ function HomeSection({ name, tier, industry, domain, badge, onStartAudit }) {
       {/* Page header */}
       <div style={s.pageHeader}>
         <div>
-          <h1 style={s.pageTitle}>{getGreeting()}, {name}.</h1>
+          <h1 style={s.pageTitle}>{getGreeting()}{name ? `, ${name}` : ''}.</h1>
           <p style={s.pageSub}>Your audits and reports live here.</p>
         </div>
         <button style={s.newAuditBtn} onClick={onStartAudit}>New audit →</button>
