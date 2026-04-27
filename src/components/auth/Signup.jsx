@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { supabase } from '../../lib/supabase.js'
+import { initSupabase } from '../../lib/supabase.js'
 
 export default function Signup({ onSuccess, onLogin }) {
   const [form, setForm] = useState({
@@ -30,43 +30,26 @@ export default function Signup({ onSuccess, onLogin }) {
     setGlobalError(null)
     if (!validate()) return
     setLoading(true)
-
     const fullName = `${form.firstName.trim()} ${form.lastName.trim()}`
-
-    const timeout = setTimeout(() => {
-      setLoading(false)
-      setGlobalError('Connection timed out. Please try again.')
-    }, 8000)
-
     try {
-      const res = await fetch('/api/auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'signup',
-          email: form.email,
-          password: form.password,
-          name: fullName,
-        }),
+      const sb = await initSupabase()
+      const { data, error: authError } = await sb.auth.signUp({
+        email: form.email,
+        password: form.password,
+        options: { data: { name: fullName } },
       })
-      clearTimeout(timeout)
-      const data = await res.json()
-      if (!res.ok || data.error) { setGlobalError(friendlyError(data.error || 'Sign up failed.')); return }
+      if (authError) { setGlobalError(friendlyError(authError.message)); return }
       if (data.session) {
-        if (supabase) {
-          supabase.auth.setSession(data.session).catch(err =>
-            console.warn('[signup] setSession error:', err?.message)
-          )
-        }
+        // Supabase stores the session and fires onAuthStateChange(SIGNED_IN).
+        // No setSession() call needed — that was the source of the gotrue lock race.
         onSuccess(data.session)
       } else {
+        // Email confirmation required — no session yet
         setEmailSent(true)
       }
     } catch (e) {
-      clearTimeout(timeout)
       setGlobalError('Connection error. Please try again.')
     } finally {
-      clearTimeout(timeout)
       setLoading(false)
     }
   }

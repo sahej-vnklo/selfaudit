@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { supabase } from '../../lib/supabase.js'
+import { initSupabase } from '../../lib/supabase.js'
 
 export default function Login({ onSuccess, onSignup }) {
   const [form, setForm] = useState({ email: '', password: '' })
@@ -12,33 +12,19 @@ export default function Login({ onSuccess, onSignup }) {
     setError(null)
     if (!form.email || !form.password) { setError('Please fill in all fields.'); return }
     setLoading(true)
-
-    const timeout = setTimeout(() => {
-      setLoading(false)
-      setError('Connection timed out. Please try again.')
-    }, 8000)
-
     try {
-      const res = await fetch('/api/auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'signin', email: form.email, password: form.password }),
+      const sb = await initSupabase()
+      const { data, error: authError } = await sb.auth.signInWithPassword({
+        email: form.email,
+        password: form.password,
       })
-      clearTimeout(timeout)
-      const data = await res.json()
-      if (!res.ok || data.error) { setError(friendlyError(data.error || 'Sign in failed.')); return }
-      // Fire-and-forget: don't await setSession — it can stall and freeze the button.
-      // Pass the session to onSuccess so App updates its state before navigating.
-      if (data.session && supabase) {
-        supabase.auth.setSession(data.session).catch(err =>
-          console.warn('[login] setSession error:', err?.message)
-        )
-      }
+      if (authError) { setError(friendlyError(authError.message)); return }
+      // Supabase stores the session internally and fires onAuthStateChange(SIGNED_IN).
+      // No setSession() call needed — that was the source of the gotrue lock race.
       onSuccess(data.session)
     } catch (e) {
       setError('Connection timed out. Please try again.')
     } finally {
-      clearTimeout(timeout)
       setLoading(false)
     }
   }
