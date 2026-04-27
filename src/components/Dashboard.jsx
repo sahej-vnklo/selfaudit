@@ -222,13 +222,7 @@ export default function Dashboard({ user, onStartAudit }) {
               self<span style={{ color: G.green }}>audit</span>
             </div>
           )}
-          <button
-            style={s.collapseBtn}
-            onClick={() => setIsCollapsed(c => !c)}
-            title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          >
-            {isCollapsed ? '›' : '‹'}
-          </button>
+          <CollapseBtn isCollapsed={isCollapsed} onClick={() => setIsCollapsed(c => !c)} />
         </div>
 
         {/* Primary nav */}
@@ -778,24 +772,52 @@ function EmptyReports({ onStartAudit }) {
   )
 }
 
+// ─── Collapse button ──────────────────────────────────────────────────────────
+
+function CollapseBtn({ isCollapsed, onClick }) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <div style={{ position: 'relative' }}>
+      <button
+        style={s.collapseBtn}
+        onClick={onClick}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+      >
+        {isCollapsed ? '›' : '‹'}
+      </button>
+      {hovered && (
+        <div style={s.tooltip}>{isCollapsed ? 'Expand menu' : 'Collapse menu'}</div>
+      )}
+    </div>
+  )
+}
+
 // ─── Nav item ─────────────────────────────────────────────────────────────────
 
 function NavItem({ icon, label, active, collapsed, onClick }) {
+  const [hovered, setHovered] = useState(false)
   return (
-    <button
-      style={{
-        ...s.navItem,
-        ...(active ? s.navItemActive : {}),
-        ...(collapsed ? { justifyContent: 'center', padding: '8px 0' } : {}),
-      }}
-      onClick={onClick}
-      title={collapsed ? label : undefined}
-    >
-      <span style={{ display: 'flex', flexShrink: 0, color: active ? G.greenDark : G.inkMuted }}>
-        {icon}
-      </span>
-      {!collapsed && <span>{label}</span>}
-    </button>
+    <div style={{ position: 'relative', width: '100%' }}>
+      <button
+        style={{
+          ...s.navItem,
+          ...(active ? s.navItemActive : {}),
+          ...(collapsed ? { justifyContent: 'center', padding: '8px 0' } : {}),
+        }}
+        onClick={onClick}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+      >
+        <span style={{ display: 'flex', flexShrink: 0, color: active ? G.greenDark : G.inkMuted }}>
+          {icon}
+        </span>
+        {!collapsed && <span>{label}</span>}
+      </button>
+      {collapsed && hovered && (
+        <div style={s.tooltip}>{label}</div>
+      )}
+    </div>
   )
 }
 
@@ -1010,5 +1032,22 @@ const s = {
     background: 'none', border: `0.5px solid ${G.border}`,
     borderRadius: 8, fontSize: 13, fontWeight: 500,
     color: G.inkMuted, cursor: 'pointer', padding: '8px 18px',
+  },
+
+  // Sidebar tooltip
+  tooltip: {
+    position: 'absolute',
+    left: 'calc(100% + 10px)',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    background: G.ink,
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 500,
+    padding: '5px 10px',
+    borderRadius: 6,
+    whiteSpace: 'nowrap',
+    pointerEvents: 'none',
+    zIndex: 200,
   },
 }
