@@ -66,12 +66,20 @@ export default function App() {
     let subscription = null
 
     // Safety timeout: unblock the UI if Supabase is slow.
-    // Do NOT clear localStorage here — valid session tokens may still exist.
+    // Recover session from localStorage so a logged-in user isn't bounced to Login
+    // when getSession() hangs due to gotrue lock contention.
     const authTimeout = setTimeout(() => {
       console.warn('[auth] auth init timed out after 8s — unblocking UI')
-      setSession(null)
+      let recovered = null
+      try {
+        const key = Object.keys(localStorage).find(k => k.startsWith('sb-') && k.endsWith('-auth-token'))
+        if (key) {
+          const stored = JSON.parse(localStorage.getItem(key))
+          if (stored?.access_token && stored?.user) recovered = stored
+        }
+      } catch (_) {}
+      setSession(recovered)
       setAuthLoading(false)
-      // Do NOT redirect here — let the screen guard handle it after authLoading clears
     }, 8000)
 
     initSupabase()
