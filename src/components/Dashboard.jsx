@@ -143,20 +143,38 @@ export default function Dashboard({ user, onStartAudit }) {
 
   useEffect(() => {
     if (!user) return
-    initSupabase()
-      .then(async sb => {
-        await sb.auth.getSession()
-        return sb
+    let cancelled = false
+
+    ;(async () => {
+      try {
+        // Wait for the session to be hydrated before querying RLS-gated tables
+        const { data: { session } } = await supabase.auth.getSession()
+        if (!session) {
+          console.warn('[dashboard] no session yet, skipping profile fetch')
+          return
+        }
+
+        const { data, error } = await supabase
           .from('profiles')
-          .select('context, tier, industry, domain, phone, name')
+          .select('tier, industry, domain, context, name, phone, onboarding_complete')
           .eq('id', user.id)
-      })
-      .then(({ data, error }) => {
-        console.log('PROFILE FETCH RESULT:', data, error)
-        if (error) console.error('[dashboard] profile fetch:', error.message)
-        if (data?.[0]) setProfile(data[0])
-      })
-      .catch(err => console.error('[dashboard] profile fetch threw:', err?.message))
+          .single()
+
+        if (cancelled) return
+        if (error) {
+          console.error('[dashboard] profile fetch error:', error.message)
+          return
+        }
+        if (data) {
+          console.log('[dashboard] profile loaded:', { tier: data.tier, industry: data.industry, domain: data.domain })
+          setProfile(data)
+        }
+      } catch (err) {
+        console.error('[dashboard] profile fetch threw:', err?.message ?? err)
+      }
+    })()
+
+    return () => { cancelled = true }
   }, [user])
 
   const handleSignOut = async () => {
