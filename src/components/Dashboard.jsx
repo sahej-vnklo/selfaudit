@@ -151,14 +151,12 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
 
     ;(async () => {
       try {
-        // Wait for the session to be hydrated before querying RLS-gated tables
-        const { data: { session } } = await supabase.auth.getSession()
-        if (!session) {
-          console.warn('[dashboard] no session yet, skipping profile fetch')
-          return
-        }
+        // user prop is set by App.jsx only when session exists — skip getSession()
+        // to avoid Supabase auth-lock contention causing a false null return
+        const sb = await initSupabase()
+        if (cancelled) return
 
-        const { data, error } = await supabase
+        const { data, error } = await sb
           .from('profiles')
           .select('tier, industry, domain, context, name, phone, onboarding_complete')
           .eq('id', user.id)
