@@ -1,7 +1,12 @@
 import React, { useState } from 'react'
 
-export default function Onboarding({ onComplete }) {
-  const [form, setForm] = useState({ name: '', email: '', phone: '', context: '' })
+export default function Onboarding({ onComplete, defaultValues }) {
+  const [form, setForm] = useState({
+    name:    defaultValues?.name    || '',
+    email:   defaultValues?.email   || '',
+    phone:   defaultValues?.phone   || '',
+    context: defaultValues?.context || '',
+  })
   const [errors, setErrors] = useState({})
   const [step, setStep] = useState(0)
 

@@ -274,6 +274,7 @@ export default function Dashboard({ user, onStartAudit }) {
             industry={industry}
             domain={domain}
             badge={badge}
+            context={profile?.context || ''}
             onStartAudit={startAudit}
           />
         )}
@@ -650,7 +651,7 @@ const acct = {
 
 // ─── Home section ─────────────────────────────────────────────────────────────
 
-function HomeSection({ name, tier, industry, domain, badge, onStartAudit }) {
+function HomeSection({ name, tier, industry, domain, badge, context, onStartAudit }) {
   return (
     <div style={s.content}>
       {/* Page header */}
@@ -677,7 +678,7 @@ function HomeSection({ name, tier, industry, domain, badge, onStartAudit }) {
       </div>
 
       {/* Audit scope card */}
-      <ScopeCard tier={tier} industry={industry} domain={domain} />
+      <ScopeCard tier={tier} industry={industry} domain={domain} context={context} />
 
       {/* Recent reports */}
       <div style={{ marginTop: 28 }}>
@@ -702,22 +703,21 @@ function MetricCard({ label, value, valueColor, sub }) {
 
 // ─── Scope card ───────────────────────────────────────────────────────────────
 
-function ScopeCard({ tier, industry, domain }) {
-  const allDomains    = (tier === 'business' && industry) ? (DOMAIN_MAP[industry] || []) : []
+function ScopeCard({ tier, industry, domain, context }) {
+  const allDomains     = (tier === 'business' && industry) ? (DOMAIN_MAP[industry] || []) : []
   const visibleDomains = allDomains.slice(0, 4)
   const extraCount     = allDomains.length - 4
 
-  const scopeText = tier === 'portfolio'
-    ? 'All industries & domains'
-    : tier === 'business'
-      ? industry ? `${industry} — all domains` : '—'
-      : (industry && domain) ? `${industry} — ${domain}` : '—'
+  const isEmpty = !context
+  const scopeValue = context || 'Start an audit to set your scope'
 
   return (
     <div style={s.scopeCard}>
       <div>
         <div style={s.sectionLabel}>Your audit scope</div>
-        <div style={s.scopeValue}>{scopeText}</div>
+        <div style={{ ...s.scopeValue, ...(isEmpty ? { color: 'var(--gray-400)', fontStyle: 'italic', fontSize: 14 } : {}) }}>
+          {scopeValue}
+        </div>
       </div>
 
       {tier !== 'portfolio' && (industry || domain) && (

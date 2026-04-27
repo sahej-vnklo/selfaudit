@@ -134,8 +134,20 @@ export default function App() {
   }, [navigate])
 
   // ── Existing audit flow handlers ──────────────────────────────────────────
-  const handleStart       = ()        => navigate(SCREENS.ONBOARDING)
-  const handleOnboarding  = (info)    => { setUserInfo(info); navigate(SCREENS.AUDIT) }
+  const handleStart      = () => navigate(SCREENS.ONBOARDING)
+  const handleOnboarding = async (info) => {
+    const merged = userInfo ? { ...userInfo, ...info } : info
+    setUserInfo(merged)
+    if (session && info.context?.trim()) {
+      try {
+        const sb = await initSupabase()
+        await sb.from('profiles').update({ context: info.context.trim() }).eq('id', session.user.id)
+      } catch (e) {
+        console.warn('[onboarding] context save failed:', e?.message)
+      }
+    }
+    navigate(SCREENS.AUDIT)
+  }
   const handleReportReady = (history) => { setConversationHistory(history); navigate(SCREENS.REPORT) }
   const handleSignOut     = async ()  => {
     await supabase?.auth.signOut()
@@ -188,9 +200,8 @@ export default function App() {
     return <Dashboard
       user={session.user}
       onStartAudit={(info) => {
-        // Logged-in users have context saved in their profile — skip Onboarding
         setUserInfo(info)
-        navigate(SCREENS.AUDIT)
+        navigate(SCREENS.ONBOARDING)
       }}
     />
   }
@@ -199,7 +210,17 @@ export default function App() {
   return (
     <>
       {screen === SCREENS.LANDING    && <Landing onStart={handleStart} session={session} />}
-      {screen === SCREENS.ONBOARDING && <Onboarding onComplete={handleOnboarding} />}
+      {screen === SCREENS.ONBOARDING && (
+        <Onboarding
+          onComplete={handleOnboarding}
+          defaultValues={userInfo ? {
+            name:    userInfo.name    || '',
+            email:   userInfo.email   || '',
+            phone:   userInfo.phone   || '',
+            context: userInfo.context || '',
+          } : undefined}
+        />
+      )}
       {screen === SCREENS.AUDIT && userInfo && (
         <AuditChat
           userInfo={userInfo}
