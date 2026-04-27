@@ -188,11 +188,14 @@ export default function Dashboard({ user, onStartAudit }) {
   }
 
   const startAudit = () => onStartAudit({
-    name:    user?.user_metadata?.name || user?.email?.split('@')[0] || 'User',
-    email:   user?.email || '',
-    phone:   '',
-    context: profile?.context || '',
-    userId:  user?.id || null,
+    name:     user?.user_metadata?.name || user?.email?.split('@')[0] || 'User',
+    email:    user?.email || '',
+    phone:    '',
+    context:  profile?.context  || '',
+    userId:   user?.id          || null,
+    tier:     profile?.tier     || null,
+    industry: profile?.industry || null,
+    domain:   profile?.domain   || null,
   })
 
   const tier     = normalizeTier(profile?.tier)

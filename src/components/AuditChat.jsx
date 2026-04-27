@@ -158,15 +158,18 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
     }
   }
 
-  // Fix 4: "Auditing:" label — derived from tier profile data
+  // "Auditing:" label — prefer tierData once loaded, fall back to profile fields
+  // passed directly from Dashboard so the label is correct on first render too.
   const auditingLabel = React.useMemo(() => {
-    if (!tierData) return userInfo?.context || ''
-    const { tier, industry, domain } = tierData
+    const tier     = tierData?.tier     ?? userInfo?.tier
+    const industry = tierData?.industry ?? userInfo?.industry
+    const domain   = tierData?.domain   ?? userInfo?.domain
+
     if (tier === 'portfolio') return 'Portfolio'
-    if (tier === 'business')  return industry || userInfo?.context || ''
-    // essential
+    if (tier === 'business')  return industry || ''
     if (industry && domain)   return `${industry} — ${domain}`
-    return userInfo?.context || ''
+    if (industry)             return industry
+    return ''
   }, [tierData, userInfo])
 
   const send = async () => {
@@ -249,10 +252,12 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
         <div style={{...styles.logo, cursor: 'pointer'}} onClick={handleLogoClick}>
           self<span style={{ color: 'var(--green)' }}>audit</span>
         </div>
-        <div style={styles.navMeta}>
-          <span style={styles.auditingLabel}>Auditing:</span>
-          <span style={styles.auditingContext}>{auditingLabel}</span>
-        </div>
+        {auditingLabel && (
+          <div style={styles.navMeta}>
+            <span style={styles.auditingLabel}>Auditing:</span>
+            <span style={styles.auditingContext}>{auditingLabel}</span>
+          </div>
+        )}
       </nav>
 
       <div style={styles.messages}>
