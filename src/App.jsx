@@ -65,9 +65,9 @@ export default function App() {
   useEffect(() => {
     let subscription = null
 
-    // Safety timeout: unblock the UI if Supabase is slow.
-    // Recover session from localStorage so a logged-in user isn't bounced to Login
-    // when getSession() hangs due to gotrue lock contention.
+    // Safety timeout: only fires if onAuthStateChange never emits INITIAL_SESSION
+    // (e.g. /api/config is unreachable). Reads localStorage so a logged-in user
+    // isn't bounced to Login while the Supabase client is still initialising.
     const authTimeout = setTimeout(() => {
       console.warn('[auth] auth init timed out after 8s — unblocking UI')
       let recovered = null
@@ -84,22 +84,20 @@ export default function App() {
 
     initSupabase()
       .then((sb) => {
-        sb.auth.getSession().then(({ data, error }) => {
-          clearTimeout(authTimeout)
-          if (error) {
-            console.error('[auth] getSession error:', error.message)
-          }
-          setSession(data?.session ?? null)
-          setAuthLoading(false)
-        }).catch((err) => {
-          clearTimeout(authTimeout)
-          console.error('[auth] getSession threw:', err?.message ?? err)
-          setSession(null)
-          setAuthLoading(false)
-        })
-
+        // Use onAuthStateChange exclusively for session state — never call getSession()
+        // separately. Both would compete for the gotrue IndexedDB lock, causing the
+        // "lock not released within 5000ms" warning and the Login setSession race.
+        // INITIAL_SESSION fires synchronously on subscription with the current session
+        // (or null), so it replaces getSession() completely.
         const { data: { subscription: sub } } = sb.auth.onAuthStateChange(async (event, session) => {
+          clearTimeout(authTimeout)
           setSession(session)
+
+          if (event === 'INITIAL_SESSION') {
+            setAuthLoading(false)
+            // Screen already set from screenFromHash() — don't navigate
+            return
+          }
 
           // SIGNED_OUT: clear state and go home
           if (event === 'SIGNED_OUT') {
@@ -108,9 +106,8 @@ export default function App() {
           }
 
           // SIGNED_IN only (new login) — navigate based on onboarding status.
-          // INITIAL_SESSION (page refresh) is intentionally excluded: the initial
-          // screen is already set from screenFromHash(), so we let it stand.
           if (session && event === 'SIGNED_IN') {
+            setAuthLoading(false)
             const { data: profile } = await sb
               .from('profiles')
               .select('onboarding_complete')
@@ -132,7 +129,6 @@ export default function App() {
         console.error('[auth] initSupabase failed:', err.message)
         setSession(null)
         setAuthLoading(false)
-        // Do NOT redirect — let the screen guard handle it
       })
 
     return () => {
