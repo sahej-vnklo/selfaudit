@@ -92,16 +92,7 @@ function Btn({ label, onClick }) {
   )
 }
 
-const HOW_STEPS = [
-  { num: '01', title: 'Give context', desc: 'Optional. Your business type, size, and situation.' },
-  { num: '02', title: 'Describe your problem', desc: 'What feels broken, stuck, or unclear.' },
-  { num: '03', title: 'Answer 5–7 questions', desc: 'The audit drills in. No fluff, no filler.' },
-  { num: '04', title: 'Get your report', desc: 'A ruthless diagnosis and exactly what to do next.' },
-]
-
 export default function Landing({ onStart, session }) {
-  const [howOpen, setHowOpen] = useState(false)
-
   const handleLogoClick = () => {
     if (session) {
       window.location.hash = 'dashboard'
@@ -124,36 +115,6 @@ export default function Landing({ onStart, session }) {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
-            {/* How it works */}
-            <div style={{ position: 'relative' }}>
-              <button
-                onClick={() => setHowOpen(o => !o)}
-                style={{ fontSize: 14, color: howOpen ? C.accent : C.inkSoft, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500, padding: 0, display: 'flex', alignItems: 'center', gap: 5 }}
-              >
-                How it works
-                <span style={{ fontSize: 10, display: 'inline-block', transform: howOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.15s' }}>▾</span>
-              </button>
-              <div style={{
-                position: 'absolute', top: 'calc(100% + 16px)', left: '50%',
-                transform: howOpen ? 'translateX(-50%) translateY(0)' : 'translateX(-50%) translateY(-6px)',
-                opacity: howOpen ? 1 : 0,
-                pointerEvents: howOpen ? 'auto' : 'none',
-                transition: 'opacity 0.2s ease, transform 0.2s ease',
-                background: C.card, border: `1px solid ${C.border}`, borderRadius: 12,
-                padding: '8px 0', width: 340, zIndex: 100, boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
-              }}>
-                {HOW_STEPS.map((step, i) => (
-                  <div key={i} style={{ padding: '14px 20px', borderBottom: i < HOW_STEPS.length - 1 ? `1px solid ${C.border}` : 'none', display: 'flex', gap: 14, alignItems: 'flex-start' }}>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: C.accent, letterSpacing: '0.5px', minWidth: 20, paddingTop: 2 }}>{step.num}</span>
-                    <div>
-                      <div style={{ fontSize: 14, fontWeight: 600, color: C.ink, marginBottom: 2 }}>{step.title}</div>
-                      <div style={{ fontSize: 13, color: C.inkMuted }}>{step.desc}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
             {/* Pricing scroll */}
             <button
               onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
