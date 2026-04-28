@@ -84,23 +84,28 @@ export default function App() {
 
     initSupabase()
       .then(async (sb) => {
-        // onAuthStateChange handles ongoing events (login, logout, token refresh).
-        // INITIAL_SESSION is intentionally ignored here — it fires from localStorage
-        // before any pending token refresh completes, so the session it carries may
-        // be stale. getSession() below is the authoritative initial hydration path.
+        // ── Step 1: resolve session fully before any auth-gated UI renders ──
+        // getSession() awaits any pending token refresh so auth.uid() is valid
+        // when Dashboard mounts and runs its RLS-gated profile query.
+        // Dashboard must never render until this resolves.
+        const { data } = await sb.auth.getSession()
+        clearTimeout(authTimeout)
+        setSession(data?.session ?? null)
+        setAuthLoading(false)
+
+        // ── Step 2: subscribe for subsequent auth events only ──────────────
+        // INITIAL_SESSION is ignored — already handled by getSession() above.
+        // Only SIGNED_IN and SIGNED_OUT drive navigation and state changes.
         const { data: { subscription: sub } } = sb.auth.onAuthStateChange(async (event, session) => {
           if (event === 'INITIAL_SESSION') return
 
-          clearTimeout(authTimeout)
           setSession(session)
 
-          // SIGNED_OUT: clear state and go home
           if (event === 'SIGNED_OUT') {
             navigate(SCREENS.LANDING)
             return
           }
 
-          // SIGNED_IN only (new login) — navigate based on onboarding status.
           if (session && event === 'SIGNED_IN') {
             setAuthLoading(false)
             const { data: profile } = await sb
@@ -118,15 +123,6 @@ export default function App() {
         })
 
         subscription = sub
-
-        // Authoritative initial session: getSession() awaits any pending token
-        // refresh, so Dashboard always receives a fully resolved user on mount.
-        // Safe now that Login/Signup use direct Supabase auth — no concurrent
-        // setSession() to race against.
-        const { data } = await sb.auth.getSession()
-        clearTimeout(authTimeout)
-        setSession(data?.session ?? null)
-        setAuthLoading(false)
       })
       .catch((err) => {
         clearTimeout(authTimeout)
