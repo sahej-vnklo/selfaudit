@@ -64,7 +64,6 @@ export default function Onboarding({ onComplete, defaultValues }) {
               onChange={v => update('phone', v)}
               placeholder="+1 (555) 000-0000"
               type="tel"
-              hint="Optional — but helpful if Vnklo reaches out"
             />
           </div>
 
