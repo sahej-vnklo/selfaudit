@@ -170,6 +170,18 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
         if (data) {
           console.log('[dashboard] profile loaded:', { tier: data.tier, industry: data.industry, domain: data.domain })
           setProfile(data)
+        } else {
+          // RLS may not have resolved auth.uid() yet — retry once after a short delay
+          await new Promise(r => setTimeout(r, 800))
+          const retry = await sb
+            .from('profiles')
+            .select('tier, industry, domain, context, name, phone, onboarding_complete')
+            .eq('id', user.id)
+            .single()
+          if (!cancelled && retry.data) {
+            console.log('[dashboard] profile loaded (retry):', { tier: retry.data.tier })
+            setProfile(retry.data)
+          }
         }
       } catch (err) {
         console.error('[dashboard] profile fetch threw:', err?.message ?? err)
