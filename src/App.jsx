@@ -88,7 +88,7 @@ export default function App() {
         // getSession() awaits any pending token refresh so auth.uid() is valid
         // when Dashboard mounts and runs its RLS-gated profile query.
         // Dashboard must never render until this resolves.
-        const { data } = await sb.auth.getSession()
+        const { data } = await sb.auth.refreshSession()
         clearTimeout(authTimeout)
         setSession(data?.session ?? null)
         setAuthLoading(false)
