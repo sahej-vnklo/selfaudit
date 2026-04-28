@@ -142,6 +142,8 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
   })
   const [isCollapsed,    setIsCollapsed]    = useState(false)
 
+  const SECTIONS = ['home', 'reports', 'billing', 'account']
+
   // Keep browser history in sync so back/forward navigates between sections
   const navigateSection = (s) => {
     history.pushState({ section: s }, '', `#${s}`)
@@ -149,15 +151,22 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
   }
 
   useEffect(() => {
+    // Stamp the initial history entry so popstate has a state object when
+    // the user navigates back to the dashboard from a section.
+    history.replaceState({ section: 'home' }, '', '#dashboard')
+
     const onPopState = (e) => {
-      const s = e.state?.section
-      if (s && ['home', 'reports', 'billing', 'account'].includes(s)) {
-        setSection(s)
-      }
+      // Prefer the state object; fall back to reading the hash directly
+      const fromState = e.state?.section
+      const fromHash  = window.location.hash.replace(/^#/, '')
+      const s = (fromState && SECTIONS.includes(fromState))
+        ? fromState
+        : (SECTIONS.includes(fromHash) ? fromHash : 'home')
+      setSection(s)
     }
     window.addEventListener('popstate', onPopState)
     return () => window.removeEventListener('popstate', onPopState)
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const name     = user?.user_metadata?.name?.trim() || ''
   const email    = user?.email || ''
