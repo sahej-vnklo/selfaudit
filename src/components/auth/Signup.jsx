@@ -1,14 +1,39 @@
 import React, { useState } from 'react'
+import { loadStripe } from '@stripe/stripe-js'
+import {
+  Elements,
+  CardNumberElement,
+  CardExpiryElement,
+  CardCvcElement,
+  useStripe,
+  useElements,
+} from '@stripe/react-stripe-js'
 import { initSupabase } from '../../lib/supabase.js'
 
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '')
+
 export default function Signup({ onSuccess, onLogin }) {
+  return (
+    <Elements stripe={stripePromise}>
+      <SignupForm onSuccess={onSuccess} onLogin={onLogin} />
+    </Elements>
+  )
+}
+
+function SignupForm({ onSuccess, onLogin }) {
+  const stripe   = useStripe()
+  const elements = useElements()
+
   const [form, setForm] = useState({
     firstName: '', lastName: '', email: '', password: '', confirmPassword: '',
   })
-  const [errors,      setErrors]      = useState({})
-  const [loading,     setLoading]     = useState(false)
-  const [globalError, setGlobalError] = useState(null)
-  const [emailSent,   setEmailSent]   = useState(false)
+  const [selectedPlan, setSelectedPlan] = useState('essential')
+  const [errors,       setErrors]       = useState({})
+  const [loading,      setLoading]      = useState(false)
+  const [globalError,  setGlobalError]  = useState(null)
+  const [emailSent,    setEmailSent]    = useState(false)
+
+  const showCard = selectedPlan === 'business' || selectedPlan === 'portfolio'
 
   const update = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
@@ -33,22 +58,57 @@ export default function Signup({ onSuccess, onLogin }) {
     const fullName = `${form.firstName.trim()} ${form.lastName.trim()}`
     try {
       const sb = await initSupabase()
+
+      // 1. Create auth user
       const { data, error: authError } = await sb.auth.signUp({
         email: form.email,
         password: form.password,
         options: { data: { name: fullName } },
       })
       if (authError) { setGlobalError(friendlyError(authError.message)); return }
+
+      const user = data.user
+      if (user) {
+        // 2. Insert profile row with selected tier
+        await sb.from('profiles').insert({
+          id:         user.id,
+          name:       fullName,
+          tier:       selectedPlan,
+        }).throwOnError()
+
+        // 3. For paid plans: create Stripe customer + subscription
+        if (showCard && stripe && elements) {
+          const cardNumber = elements.getElement(CardNumberElement)
+          if (!cardNumber) throw new Error('Card element not found')
+
+          const { paymentMethod, error: pmError } = await stripe.createPaymentMethod({
+            type: 'card',
+            card: cardNumber,
+            billing_details: { name: fullName, email: form.email },
+          })
+          if (pmError) throw new Error(pmError.message)
+
+          const { data: subData, error: fnError } = await sb.functions.invoke(
+            'create-stripe-subscription',
+            { body: { userId: user.id, email: form.email, name: fullName, tier: selectedPlan, paymentMethodId: paymentMethod.id } }
+          )
+          if (fnError) throw fnError
+          if (subData?.error) throw new Error(subData.error)
+
+          await sb.from('profiles').update({
+            stripe_customer_id:     subData.customerId,
+            stripe_subscription_id: subData.subscriptionId,
+          }).eq('id', user.id).throwOnError()
+        }
+      }
+
       if (data.session) {
-        // Supabase stores the session and fires onAuthStateChange(SIGNED_IN).
-        // No setSession() call needed — that was the source of the gotrue lock race.
         onSuccess(data.session)
       } else {
-        // Email confirmation required — no session yet
         setEmailSent(true)
       }
     } catch (e) {
-      setGlobalError('Connection error. Please try again.')
+      setGlobalError(e.message || 'Connection error. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -115,10 +175,67 @@ export default function Signup({ onSuccess, onLogin }) {
             <Field label="Confirm password" type="password" value={form.confirmPassword} onChange={v => update('confirmPassword', v)} placeholder="Repeat password" error={errors.confirmPassword} required onEnter={handleSubmit} />
           </div>
 
+          {/* Plan selector */}
+          <div style={{ marginBottom: '1.5rem' }}>
+            <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--gray-600)', marginBottom: 10 }}>
+              Choose plan
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {SIGNUP_PLANS.map(p => {
+                const sel = selectedPlan === p.key
+                return (
+                  <button
+                    key={p.key}
+                    onClick={() => setSelectedPlan(p.key)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 12,
+                      padding: '12px 14px', borderRadius: 'var(--radius-sm)',
+                      border: sel ? '1.5px solid var(--green)' : '0.5px solid var(--gray-200)',
+                      background: sel ? 'var(--green-light)' : 'var(--white)',
+                      cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s',
+                    }}
+                  >
+                    <div style={{
+                      width: 16, height: 16, borderRadius: '50%', flexShrink: 0,
+                      border: sel ? '5px solid var(--green)' : '1.5px solid var(--gray-200)',
+                      background: 'var(--white)', transition: 'all 0.15s',
+                    }} />
+                    <div style={{ flex: 1 }}>
+                      <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--black)' }}>{p.name}</span>
+                      {p.popular && (
+                        <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 600, background: 'var(--green)', color: 'white', padding: '1px 7px', borderRadius: 100 }}>
+                          Popular
+                        </span>
+                      )}
+                    </div>
+                    <span style={{ fontSize: 14, fontWeight: 600, color: sel ? 'var(--green-dark)' : 'var(--gray-800)' }}>
+                      {p.price}<span style={{ fontSize: 12, fontWeight: 400, color: 'var(--gray-600)' }}>/mo</span>
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Stripe card fields — slide in for paid plans */}
+          <div style={{ maxHeight: showCard ? '260px' : '0', overflow: 'hidden', transition: 'max-height 0.3s ease' }}>
+            <div style={{ paddingBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--gray-600)', marginBottom: 2 }}>
+                Card details
+              </div>
+              <StripeField label="Card number"><CardNumberElement options={stripeStyle} /></StripeField>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                <StripeField label="Expiry"><CardExpiryElement options={stripeStyle} /></StripeField>
+                <StripeField label="CVC"><CardCvcElement options={stripeStyle} /></StripeField>
+              </div>
+              <p style={{ fontSize: 11, color: 'var(--gray-400)', margin: 0 }}>Secured by Stripe. Card details never stored on our servers.</p>
+            </div>
+          </div>
+
           {globalError && <p style={s.errorMsg}>{globalError}</p>}
 
-          <button style={{ ...s.btn, opacity: loading ? 0.7 : 1 }} onClick={handleSubmit} disabled={loading}>
-            {loading ? 'Creating account…' : 'Create account'}
+          <button style={{ ...s.btn, opacity: loading ? 0.7 : 1 }} onClick={handleSubmit} disabled={loading || (showCard && !stripe)}>
+            {loading ? 'Creating account…' : showCard ? 'Create account + start plan →' : 'Create account →'}
           </button>
 
           <p style={s.privacy}>
@@ -131,6 +248,33 @@ export default function Signup({ onSuccess, onLogin }) {
           </p>
         </div>
       </div>
+    </div>
+  )
+}
+
+const SIGNUP_PLANS = [
+  { key: 'essential', name: 'Essential', price: '$49' },
+  { key: 'business',  name: 'Business',  price: '$99',  popular: true },
+  { key: 'portfolio', name: 'Portfolio', price: '$299' },
+]
+
+const stripeStyle = {
+  style: {
+    base: {
+      fontSize: '14px',
+      fontFamily: "'DM Sans', system-ui, sans-serif",
+      color: '#0D0D0D',
+      '::placeholder': { color: '#B0ADA4' },
+    },
+    invalid: { color: '#E24B4A' },
+  },
+}
+
+function StripeField({ label, children }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+      <label style={s.label}>{label}</label>
+      <div style={{ ...s.input, padding: '10px 12px' }}>{children}</div>
     </div>
   )
 }

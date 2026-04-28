@@ -92,7 +92,7 @@ function Btn({ label, onClick }) {
   )
 }
 
-export default function Landing({ onStart, session }) {
+export default function Landing({ onStart, onSignUp, session }) {
   const handleLogoClick = () => {
     if (session) {
       window.location.hash = 'dashboard'
@@ -130,6 +130,16 @@ export default function Landing({ onStart, session }) {
             >
               Sign in
             </button>
+
+            {/* Create account */}
+            {onSignUp && (
+              <button
+                onClick={onSignUp}
+                style={{ fontSize: 14, fontWeight: 600, color: 'white', background: C.accent, border: 'none', borderRadius: 100, padding: '8px 18px', cursor: 'pointer' }}
+              >
+                Create account
+              </button>
+            )}
 
             <div style={{ fontSize: 14, color: C.inkMuted }}>
               by{' '}
@@ -348,12 +358,12 @@ export default function Landing({ onStart, session }) {
                 ))}
               </ul>
               <button
-                onClick={onStart}
+                onClick={onSignUp || onStart}
                 style={{ display: 'block', width: '100%', padding: '14px', borderRadius: 100, fontSize: 15, fontWeight: 500, cursor: 'pointer', background: C.accent, color: 'white', border: 'none', transition: 'background 0.2s' }}
                 onMouseEnter={e => e.currentTarget.style.background = C.accentDark}
                 onMouseLeave={e => e.currentTarget.style.background = C.accent}
               >
-                Start with Business
+                Get full access
               </button>
               <div style={{ textAlign: 'center', fontSize: 12, color: C.inkMuted, marginTop: 12 }}>First audit free</div>
             </div>

@@ -115,12 +115,18 @@ function Step2({ onSelect }) {
 
 // ─── Step 3 — domains ─────────────────────────────────────────────────────────
 
+function isPaidTier(tier) {
+  return tier === 'paid' || tier === 'business' || tier === 'portfolio'
+}
+
 function Step3({ tier, selected, onToggle, onNext, onBack, domainLabels }) {
-  const isFree  = tier !== 'paid'
+  const isFree  = !isPaidTier(tier)
   const canNext = isFree ? selected.length >= 1 : true
   const hint    = isFree
     ? `Choose 1 domain to focus your audit. (${selected.length}/1 selected)`
-    : 'Your Pro plan covers everything — the audit will run across all relevant domains.'
+    : tier === 'portfolio'
+    ? 'Your Portfolio plan covers every domain across all industries. Deselect anything that doesn\'t apply.'
+    : 'Your Business plan covers all domains for your industry — the audit runs across everything.'
 
   return (
     <div>
@@ -234,33 +240,39 @@ export default function AccountOnboarding({ user, onComplete, onBack }) {
       .catch(() => {}) // default 'free' tier on any error
   }, [user])
 
-  // Paid tier: animate all available domains selecting one by one (150ms apart)
+  // Paid tiers: animate domains selecting one by one.
+  // Portfolio cascades ALL domain labels; business/paid uses the industry-filtered set.
   useEffect(() => {
-    if (step !== 3 || tier !== 'paid') return
+    if (step !== 3 || !isPaidTier(tier)) return
+    const source = tier === 'portfolio' ? ALL_DOMAIN_LABELS : availableDomains
     let i = 0
     const interval = setInterval(() => {
       i++
-      setDomains(availableDomains.slice(0, i))
-      if (i >= availableDomains.length) clearInterval(interval)
-    }, 150)
+      setDomains(source.slice(0, i))
+      if (i >= source.length) clearInterval(interval)
+    }, tier === 'portfolio' ? 80 : 150)
     return () => clearInterval(interval)
   }, [step, tier, availableDomains])
 
   const handleCategory = (c) => {
     setCategory(c)
     setStep(3)
-    if (tier !== 'paid') setDomains([])
+    if (!isPaidTier(tier)) setDomains([])
   }
 
   const toggleDomain = (label) => {
-    if (tier !== 'paid') {
+    if (!isPaidTier(tier)) {
       setDomains(prev => prev.includes(label) ? [] : [label])
+    } else {
+      // Paid tiers: allow deselect/reselect after animation completes
+      setDomains(prev =>
+        prev.includes(label) ? prev.filter(d => d !== label) : [...prev, label]
+      )
     }
-    // paid: controlled by animation, no manual toggle
   }
 
   const handleDomainsNext = () => {
-    const selectedDomain = tier === 'paid' ? availableDomains[0] : domains[0]
+    const selectedDomain = isPaidTier(tier) ? (domains[0] ?? null) : domains[0]
     const generated = buildContext(tier, category, selectedDomain)
     setCtxText(generated)
     setStep(4)

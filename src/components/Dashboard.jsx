@@ -136,6 +136,10 @@ const IconSignOut = () => (
 export default function Dashboard({ user, onStartAudit, onSignOut }) {
   const [profile,        setProfile]        = useState(null)
   const [reportsLoading, setReportsLoading] = useState(true)
+  const [billing,        setBilling]        = useState(null)
+  const [billingLoading, setBillingLoading] = useState(false)
+  const [billingError,   setBillingError]   = useState('')
+  const [portalLoading,  setPortalLoading]  = useState(false)
   const [section,        setSection]        = useState(() => {
     const h = window.location.hash.replace(/^#/, '')
     return ['home', 'reports', 'billing', 'account'].includes(h) ? h : 'home'
@@ -187,7 +191,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
 
         const { data, error } = await sb
           .from('profiles')
-          .select('tier, industry, domain, context, name, phone, onboarding_complete')
+          .select('tier, industry, domain, context, name, phone, onboarding_complete, stripe_customer_id, stripe_subscription_id')
           .eq('id', user.id)
           .single()
 
@@ -204,7 +208,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
           await new Promise(r => setTimeout(r, 800))
           const retry = await sb
             .from('profiles')
-            .select('tier, industry, domain, context, name, phone, onboarding_complete')
+            .select('tier, industry, domain, context, name, phone, onboarding_complete, stripe_customer_id, stripe_subscription_id')
             .eq('id', user.id)
             .single()
           if (!cancelled && retry.data) {
@@ -221,6 +225,51 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
 
     return () => { cancelled = true }
   }, [user])
+
+  // Fetch live billing details from Stripe when the billing section is opened
+  useEffect(() => {
+    if (section !== 'billing') return
+    if (!profile?.stripe_customer_id || !profile?.stripe_subscription_id) return
+    if (billing) return  // already loaded
+    setBillingLoading(true)
+    setBillingError('')
+    ;(async () => {
+      try {
+        const sb = await initSupabase()
+        const { data, error } = await sb.functions.invoke('get-billing-details', {
+          body: {
+            customerId:     profile.stripe_customer_id,
+            subscriptionId: profile.stripe_subscription_id,
+          },
+        })
+        if (error) throw error
+        if (data?.error) throw new Error(data.error)
+        setBilling(data)
+      } catch (err) {
+        setBillingError(err.message || 'Could not load billing details.')
+      } finally {
+        setBillingLoading(false)
+      }
+    })()
+  }, [section, profile?.stripe_customer_id, profile?.stripe_subscription_id]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const openPortal = async () => {
+    if (!profile?.stripe_customer_id) return
+    setPortalLoading(true)
+    try {
+      const sb = await initSupabase()
+      const { data, error } = await sb.functions.invoke('create-portal-session', {
+        body: { customerId: profile.stripe_customer_id, returnUrl: window.location.href },
+      })
+      if (error) throw error
+      if (data?.error) throw new Error(data.error)
+      window.location.href = data.url
+    } catch (err) {
+      setBillingError(err.message || 'Could not open billing portal.')
+    } finally {
+      setPortalLoading(false)
+    }
+  }
 
   const startAudit = () => onStartAudit({
     name:     user?.user_metadata?.name || user?.email?.split('@')[0] || 'User',
@@ -328,7 +377,19 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
                 <p style={s.pageSub}>Your current plan is highlighted. Upgrade or downgrade any time.</p>
               </div>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+
+            {/* Live billing details for paid tiers */}
+            {(tier === 'business' || tier === 'portfolio') && (
+              <LiveBillingCard
+                billing={billing}
+                billingLoading={billingLoading}
+                billingError={billingError}
+                onOpenPortal={openPortal}
+                portalLoading={portalLoading}
+              />
+            )}
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginTop: 24 }}>
               {TIERS.map(t => (
                 <TierCard key={t.key} tier={t} currentTier={tier} />
               ))}
@@ -854,6 +915,58 @@ function NavItem({ icon, label, active, collapsed, onClick }) {
       </button>
       {collapsed && hovered && (
         <div style={s.tooltip}>{label}</div>
+      )}
+    </div>
+  )
+}
+
+// ─── Live billing card ────────────────────────────────────────────────────────
+
+function LiveBillingCard({ billing, billingLoading, billingError, onOpenPortal, portalLoading }) {
+  const nextDate = billing?.current_period_end
+    ? new Date(billing.current_period_end * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+    : null
+  const card = billing?.card
+  const expiry = card ? `${String(card.exp_month).padStart(2, '0')}/${String(card.exp_year).slice(-2)}` : null
+  const brand  = card?.brand ? card.brand.charAt(0).toUpperCase() + card.brand.slice(1) : 'Card'
+
+  return (
+    <div style={{ background: G.white, border: `0.5px solid ${G.border}`, borderRadius: 12, marginBottom: 8, overflow: 'hidden' }}>
+      {billingLoading && (
+        <div style={{ padding: '18px 22px', fontSize: 13, color: G.inkFaint }}>Loading billing details…</div>
+      )}
+      {billingError && !billingLoading && (
+        <div style={{ padding: '14px 22px', fontSize: 13, color: '#C0392B', background: '#FDE9E7' }}>{billingError}</div>
+      )}
+      {!billingLoading && !billingError && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', alignItems: 'center', gap: 0 }}>
+          <div style={{ padding: '18px 22px', borderRight: `0.5px solid ${G.border}` }}>
+            <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', color: G.inkFaint, marginBottom: 5 }}>Next billing</div>
+            <div style={{ fontSize: 14, fontWeight: 500, color: G.ink }}>{nextDate || '—'}</div>
+          </div>
+          <div style={{ padding: '18px 22px', borderRight: `0.5px solid ${G.border}` }}>
+            <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', color: G.inkFaint, marginBottom: 5 }}>Payment method</div>
+            <div style={{ fontSize: 14, fontWeight: 500, color: G.ink }}>
+              {card ? `${brand} ···· ${card.last4}` : '—'}
+            </div>
+            {expiry && <div style={{ fontSize: 11, color: G.inkFaint, marginTop: 2 }}>Expires {expiry}</div>}
+          </div>
+          <div style={{ padding: '18px 22px', borderRight: `0.5px solid ${G.border}` }}>
+            <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', color: G.inkFaint, marginBottom: 5 }}>Status</div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: G.greenDark, background: G.greenLight, display: 'inline-block', padding: '2px 10px', borderRadius: 100 }}>
+              {billing?.status || 'active'}
+            </div>
+          </div>
+          <div style={{ padding: '18px 22px' }}>
+            <button
+              onClick={onOpenPortal}
+              disabled={portalLoading}
+              style={{ fontSize: 12, fontWeight: 500, color: G.green, background: 'none', border: `0.5px solid ${G.green}`, padding: '7px 14px', borderRadius: 8, cursor: portalLoading ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap', opacity: portalLoading ? 0.6 : 1 }}
+            >
+              {portalLoading ? 'Redirecting…' : 'Update payment →'}
+            </button>
+          </div>
+        </div>
       )}
     </div>
   )
