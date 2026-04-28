@@ -98,7 +98,7 @@ const HOW_STEPS = [
   { num: '04', title: 'Get your report', desc: 'A ruthless diagnosis and exactly what to do next.' },
 ]
 
-export default function Landing({ onStart }) {
+export default function Landing({ onStart, onSignUp }) {
   const [howOpen, setHowOpen] = useState(false)
 
   return (
@@ -159,6 +159,17 @@ export default function Landing({ onStart }) {
                 Vnklo
               </a>
             </div>
+
+            {onSignUp && (
+              <button
+                onClick={onSignUp}
+                style={{ fontSize: 14, fontWeight: 600, color: 'white', background: C.accent, border: 'none', borderRadius: 100, padding: '8px 20px', cursor: 'pointer', transition: 'background 0.2s' }}
+                onMouseEnter={e => e.currentTarget.style.background = C.accentDark}
+                onMouseLeave={e => e.currentTarget.style.background = C.accent}
+              >
+                Create account
+              </button>
+            )}
           </div>
         </div>
       </nav>
@@ -368,7 +379,7 @@ export default function Landing({ onStart }) {
                 ))}
               </ul>
               <button
-                onClick={onStart}
+                onClick={onSignUp || onStart}
                 style={{ display: 'block', width: '100%', padding: '14px', borderRadius: 100, fontSize: 15, fontWeight: 500, cursor: 'pointer', background: C.accent, color: 'white', border: 'none', transition: 'background 0.2s' }}
                 onMouseEnter={e => e.currentTarget.style.background = C.accentDark}
                 onMouseLeave={e => e.currentTarget.style.background = C.accent}
