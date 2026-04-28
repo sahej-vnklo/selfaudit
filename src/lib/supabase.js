@@ -34,6 +34,11 @@ export async function initSupabase() {
     console.log('[supabase] key prefix:', key.slice(0, 20) + '...')
 
     supabase = createClient(url, key)
+
+    // Force auth hydration before any caller uses this client.
+    // This ensures auth.uid() is valid in RLS before Dashboard queries profiles.
+    await supabase.auth.getSession()
+
     return supabase
   })()
 
