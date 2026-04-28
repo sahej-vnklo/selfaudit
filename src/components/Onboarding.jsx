@@ -2,10 +2,9 @@ import React, { useState } from 'react'
 
 export default function Onboarding({ onComplete, defaultValues }) {
   const [form, setForm] = useState({
-    name:    defaultValues?.name    || '',
-    email:   defaultValues?.email   || '',
-    phone:   defaultValues?.phone   || '',
-    context: defaultValues?.context || '',
+    name:  defaultValues?.name  || '',
+    email: defaultValues?.email || '',
+    phone: defaultValues?.phone || '',
   })
   const [errors, setErrors] = useState({})
   const [step, setStep] = useState(0)
@@ -17,7 +16,6 @@ export default function Onboarding({ onComplete, defaultValues }) {
     if (!form.name.trim()) e.name = 'Required'
     if (!form.email.trim()) e.email = 'Required'
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Invalid email'
-    if (!form.context.trim()) e.context = 'Required'
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -39,7 +37,7 @@ export default function Onboarding({ onComplete, defaultValues }) {
           <div style={styles.header}>
             <p style={styles.step}>Before we begin</p>
             <h2 style={styles.title}>Tell us a little about yourself</h2>
-            <p style={styles.sub}>So we can tailor the audit — and so Vnklo knows who to reach out to if you want help.</p>
+            <p style={styles.sub}>So we can send your report to the right place.</p>
           </div>
 
           <div style={styles.fields}>
@@ -67,15 +65,6 @@ export default function Onboarding({ onComplete, defaultValues }) {
               placeholder="+1 (555) 000-0000"
               type="tel"
               hint="Optional — but helpful if Vnklo reaches out"
-            />
-            <Field
-              label="What are you auditing today?"
-              value={form.context}
-              onChange={v => update('context', v)}
-              placeholder="e.g. My e-commerce business, My SaaS startup, My personal productivity, Planning a new venture..."
-              multiline
-              error={errors.context}
-              required
             />
           </div>
 
