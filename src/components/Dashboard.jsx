@@ -215,8 +215,8 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
 
         {/* Primary nav */}
         <nav style={s.nav}>
-          <NavItem icon={<IconHome />}    label="Home"    active={section === 'home'}    collapsed={isCollapsed} onClick={() => { if (isCollapsed) return; setSection('home') }} />
-          <NavItem icon={<IconReports />} label="Reports" active={section === 'reports'} collapsed={isCollapsed} onClick={() => { if (isCollapsed) return; setSection('reports') }} />
+          <NavItem icon={<IconHome />}    label="Home"    active={section === 'home'}    collapsed={isCollapsed} onClick={() => setSection('home')} />
+          <NavItem icon={<IconReports />} label="Reports" active={section === 'reports'} collapsed={isCollapsed} onClick={() => setSection('reports')} />
         </nav>
 
         {/* Spacer */}
@@ -225,8 +225,8 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
         {/* Settings nav */}
         <div style={s.settingsSection}>
           {!isCollapsed && <div style={s.settingsLabel}>Settings</div>}
-          <NavItem icon={<IconBilling />} label="Billing" active={section === 'billing'} collapsed={isCollapsed} onClick={() => { if (isCollapsed) return; setSection('billing') }} />
-          <NavItem icon={<IconAccount />} label="Account" active={section === 'account'} collapsed={isCollapsed} onClick={() => { if (isCollapsed) return; setSection('account') }} />
+          <NavItem icon={<IconBilling />} label="Billing" active={section === 'billing'} collapsed={isCollapsed} onClick={() => setSection('billing')} />
+          <NavItem icon={<IconAccount />} label="Account" active={section === 'account'} collapsed={isCollapsed} onClick={() => setSection('account')} />
         </div>
 
         {/* User card */}

@@ -83,21 +83,16 @@ export default function App() {
     }, 8000)
 
     initSupabase()
-      .then((sb) => {
-        // Use onAuthStateChange exclusively for session state — never call getSession()
-        // separately. Both would compete for the gotrue IndexedDB lock, causing the
-        // "lock not released within 5000ms" warning and the Login setSession race.
-        // INITIAL_SESSION fires synchronously on subscription with the current session
-        // (or null), so it replaces getSession() completely.
+      .then(async (sb) => {
+        // onAuthStateChange handles ongoing events (login, logout, token refresh).
+        // INITIAL_SESSION is intentionally ignored here — it fires from localStorage
+        // before any pending token refresh completes, so the session it carries may
+        // be stale. getSession() below is the authoritative initial hydration path.
         const { data: { subscription: sub } } = sb.auth.onAuthStateChange(async (event, session) => {
+          if (event === 'INITIAL_SESSION') return
+
           clearTimeout(authTimeout)
           setSession(session)
-
-          if (event === 'INITIAL_SESSION') {
-            setAuthLoading(false)
-            // Screen already set from screenFromHash() — don't navigate
-            return
-          }
 
           // SIGNED_OUT: clear state and go home
           if (event === 'SIGNED_OUT') {
@@ -123,6 +118,15 @@ export default function App() {
         })
 
         subscription = sub
+
+        // Authoritative initial session: getSession() awaits any pending token
+        // refresh, so Dashboard always receives a fully resolved user on mount.
+        // Safe now that Login/Signup use direct Supabase auth — no concurrent
+        // setSession() to race against.
+        const { data } = await sb.auth.getSession()
+        clearTimeout(authTimeout)
+        setSession(data?.session ?? null)
+        setAuthLoading(false)
       })
       .catch((err) => {
         clearTimeout(authTimeout)
