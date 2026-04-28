@@ -136,8 +136,28 @@ const IconSignOut = () => (
 export default function Dashboard({ user, onStartAudit, onSignOut }) {
   const [profile,        setProfile]        = useState(null)
   const [reportsLoading, setReportsLoading] = useState(true)
-  const [section,        setSection]        = useState('home')
+  const [section,        setSection]        = useState(() => {
+    const h = window.location.hash.replace(/^#/, '')
+    return ['home', 'reports', 'billing', 'account'].includes(h) ? h : 'home'
+  })
   const [isCollapsed,    setIsCollapsed]    = useState(false)
+
+  // Keep browser history in sync so back/forward navigates between sections
+  const navigateSection = (s) => {
+    history.pushState({ section: s }, '', `#${s}`)
+    setSection(s)
+  }
+
+  useEffect(() => {
+    const onPopState = (e) => {
+      const s = e.state?.section
+      if (s && ['home', 'reports', 'billing', 'account'].includes(s)) {
+        setSection(s)
+      }
+    }
+    window.addEventListener('popstate', onPopState)
+    return () => window.removeEventListener('popstate', onPopState)
+  }, [])
 
   const name     = user?.user_metadata?.name?.trim() || ''
   const email    = user?.email || ''
@@ -218,7 +238,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
         {/* Logo + collapse toggle */}
         <div style={{ ...s.logoRow, justifyContent: 'space-between', alignItems: 'center' }}>
           {!isCollapsed && (
-            <div style={s.logo} onClick={() => setSection('home')}>
+            <div style={s.logo} onClick={() => navigateSection('home')}>
               self<span style={{ color: G.green }}>audit</span>
             </div>
           )}
@@ -227,8 +247,8 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
 
         {/* Primary nav */}
         <nav style={s.nav}>
-          <NavItem icon={<IconHome />}    label="Home"    active={section === 'home'}    collapsed={isCollapsed} onClick={() => setSection('home')} />
-          <NavItem icon={<IconReports />} label="Reports" active={section === 'reports'} collapsed={isCollapsed} onClick={() => setSection('reports')} />
+          <NavItem icon={<IconHome />}    label="Home"    active={section === 'home'}    collapsed={isCollapsed} onClick={() => navigateSection('home')} />
+          <NavItem icon={<IconReports />} label="Reports" active={section === 'reports'} collapsed={isCollapsed} onClick={() => navigateSection('reports')} />
         </nav>
 
         {/* Spacer */}
@@ -237,8 +257,8 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
         {/* Settings nav */}
         <div style={s.settingsSection}>
           {!isCollapsed && <div style={s.settingsLabel}>Settings</div>}
-          <NavItem icon={<IconBilling />} label="Billing" active={section === 'billing'} collapsed={isCollapsed} onClick={() => setSection('billing')} />
-          <NavItem icon={<IconAccount />} label="Account" active={section === 'account'} collapsed={isCollapsed} onClick={() => setSection('account')} />
+          <NavItem icon={<IconBilling />} label="Billing" active={section === 'billing'} collapsed={isCollapsed} onClick={() => navigateSection('billing')} />
+          <NavItem icon={<IconAccount />} label="Account" active={section === 'account'} collapsed={isCollapsed} onClick={() => navigateSection('account')} />
         </div>
 
         {/* User card */}

@@ -25,12 +25,16 @@ const HASH_SCREENS = new Set([
   SCREENS.DASHBOARD, SCREENS.ACCOUNT_ONBOARDING,
 ])
 
-function screenFromHash() {
+const DASHBOARD_SECTION_HASHES = new Set(['home', 'reports', 'billing', 'account'])
+
+function screenFromHash(isAuthenticated = false) {
   const h = window.location.hash.replace(/^#\/?/, '')
   if (h === 'login')              return SCREENS.LOGIN
   if (h === 'signup')             return SCREENS.SIGNUP
   if (h === 'dashboard')          return SCREENS.DASHBOARD
   if (h === 'account_onboarding') return SCREENS.ACCOUNT_ONBOARDING
+  // Dashboard section hashes (#billing, #reports, etc.) must not exit the dashboard
+  if (isAuthenticated && DASHBOARD_SECTION_HASHES.has(h)) return SCREENS.DASHBOARD
   return null
 }
 
@@ -54,12 +58,12 @@ export default function App() {
   // ── Respond to hash changes (back/forward, logo clicks) ───────────────────
   useEffect(() => {
     const onHashChange = () => {
-      const s = screenFromHash()
+      const s = screenFromHash(!!session)
       setScreen(s ?? SCREENS.LANDING)
     }
     window.addEventListener('hashchange', onHashChange)
     return () => window.removeEventListener('hashchange', onHashChange)
-  }, [])
+  }, [session])
 
   // ── Auth state listener ───────────────────────────────────────────────────
   useEffect(() => {
