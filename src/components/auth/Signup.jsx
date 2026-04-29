@@ -40,8 +40,6 @@ function SignupForm({ onSuccess, onLogin }) {
   const [globalError,  setGlobalError]  = useState(null)
   const [emailSent,    setEmailSent]    = useState(false)
 
-  const showCard = selectedPlan === 'business' || selectedPlan === 'portfolio'
-
   const update = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
   const validate = () => {
@@ -83,30 +81,29 @@ function SignupForm({ onSuccess, onLogin }) {
           tier:       selectedPlan,
         }).throwOnError()
 
-        // 3. For paid plans: create Stripe customer + subscription
-        if (showCard && stripe && elements) {
-          const cardNumber = elements.getElement(CardNumberElement)
-          if (!cardNumber) throw new Error('Card element not found')
+        // 3. Create Stripe customer + subscription (all plans require card)
+        if (!stripe || !elements) throw new Error('Stripe is not loaded yet. Please try again.')
+        const cardNumber = elements.getElement(CardNumberElement)
+        if (!cardNumber) throw new Error('Card element not found')
 
-          const { paymentMethod, error: pmError } = await stripe.createPaymentMethod({
-            type: 'card',
-            card: cardNumber,
-            billing_details: { name: fullName, email: form.email },
-          })
-          if (pmError) throw new Error(pmError.message)
+        const { paymentMethod, error: pmError } = await stripe.createPaymentMethod({
+          type: 'card',
+          card: cardNumber,
+          billing_details: { name: fullName, email: form.email },
+        })
+        if (pmError) throw new Error(pmError.message)
 
-          const { data: subData, error: fnError } = await sb.functions.invoke(
-            'create-stripe-subscription',
-            { body: { userId: user.id, email: form.email, name: fullName, tier: selectedPlan, paymentMethodId: paymentMethod.id } }
-          )
-          if (fnError) throw fnError
-          if (subData?.error) throw new Error(subData.error)
+        const { data: subData, error: fnError } = await sb.functions.invoke(
+          'create-stripe-subscription',
+          { body: { userId: user.id, email: form.email, name: fullName, tier: selectedPlan, paymentMethodId: paymentMethod.id } }
+        )
+        if (fnError) throw fnError
+        if (subData?.error) throw new Error(subData.error)
 
-          await sb.from('profiles').update({
-            stripe_customer_id:     subData.customerId,
-            stripe_subscription_id: subData.subscriptionId,
-          }).eq('id', user.id).throwOnError()
-        }
+        await sb.from('profiles').update({
+          stripe_customer_id:     subData.customerId,
+          stripe_subscription_id: subData.subscriptionId,
+        }).eq('id', user.id).throwOnError()
       }
 
       if (data.session) {
@@ -160,7 +157,7 @@ function SignupForm({ onSuccess, onLogin }) {
           <div style={s.header}>
             <p style={s.eyebrow}>Create account</p>
             <h2 style={s.title}>Start your first audit</h2>
-            <p style={s.sub}>Free to start. No credit card required.</p>
+            <p style={s.sub}>Choose a plan and enter your card to get started.</p>
           </div>
 
           <div style={s.fields}>
@@ -224,25 +221,23 @@ function SignupForm({ onSuccess, onLogin }) {
             </div>
           </div>
 
-          {/* Stripe card fields — slide in for paid plans */}
-          <div style={{ maxHeight: showCard ? '260px' : '0', overflow: 'hidden', transition: 'max-height 0.3s ease' }}>
-            <div style={{ paddingBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--gray-600)', marginBottom: 2 }}>
-                Card details
-              </div>
-              <StripeField label="Card number"><CardNumberElement options={stripeStyle} /></StripeField>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                <StripeField label="Expiry"><CardExpiryElement options={stripeStyle} /></StripeField>
-                <StripeField label="CVC"><CardCvcElement options={stripeStyle} /></StripeField>
-              </div>
-              <p style={{ fontSize: 11, color: 'var(--gray-400)', margin: 0 }}>Secured by Stripe. Card details never stored on our servers.</p>
+          {/* Stripe card fields — always shown */}
+          <div style={{ paddingBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--gray-600)', marginBottom: 2 }}>
+              Card details
             </div>
+            <StripeField label="Card number"><CardNumberElement options={stripeStyle} /></StripeField>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+              <StripeField label="Expiry"><CardExpiryElement options={stripeStyle} /></StripeField>
+              <StripeField label="CVC"><CardCvcElement options={stripeStyle} /></StripeField>
+            </div>
+            <p style={{ fontSize: 11, color: 'var(--gray-400)', margin: 0 }}>Secured by Stripe. Card details never stored on our servers.</p>
           </div>
 
           {globalError && <p style={s.errorMsg}>{globalError}</p>}
 
-          <button style={{ ...s.btn, opacity: loading ? 0.7 : 1 }} onClick={handleSubmit} disabled={loading || (showCard && !stripe)}>
-            {loading ? 'Creating account…' : showCard ? 'Create account + start plan →' : 'Create account →'}
+          <button style={{ ...s.btn, opacity: loading ? 0.7 : 1 }} onClick={handleSubmit} disabled={loading || !stripe}>
+            {loading ? 'Creating account…' : 'Create account + start plan →'}
           </button>
 
           <p style={s.privacy}>
