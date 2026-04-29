@@ -30,7 +30,7 @@ const DASHBOARD_SECTION_HASHES = new Set(['home', 'reports', 'billing', 'account
 function screenFromHash(isAuthenticated = false) {
   const h = window.location.hash.replace(/^#\/?/, '')
   if (h === 'login')              return SCREENS.LOGIN
-  if (h === 'signup')             return SCREENS.SIGNUP
+  if (h === 'signup' || h.startsWith('signup?')) return SCREENS.SIGNUP
   if (h === 'dashboard')          return SCREENS.DASHBOARD
   if (h === 'account_onboarding') return SCREENS.ACCOUNT_ONBOARDING
   // Dashboard section hashes (#billing, #reports, etc.) must not exit the dashboard
@@ -228,7 +228,7 @@ export default function App() {
   // ── Existing audit flow ───────────────────────────────────────────────────
   return (
     <>
-      {screen === SCREENS.LANDING    && <Landing onStart={handleStart} onSignUp={() => navigate(SCREENS.SIGNUP)} session={session} />}
+      {screen === SCREENS.LANDING    && <Landing onStart={handleStart} onSignUp={(plan) => { window.location.hash = plan ? `signup?plan=${plan}` : 'signup' }} session={session} />}
       {screen === SCREENS.ONBOARDING && (
         <Onboarding
           onComplete={handleOnboarding}

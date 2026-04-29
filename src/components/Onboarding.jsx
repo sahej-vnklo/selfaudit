@@ -74,9 +74,6 @@ export default function Onboarding({ onComplete, defaultValues }) {
             </svg>
           </button>
 
-          <p style={styles.privacy}>
-            Your info is only used to personalize the audit and optionally share with Vnklo if you choose to.
-          </p>
         </div>
       </div>
     </div>

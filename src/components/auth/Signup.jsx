@@ -27,7 +27,14 @@ function SignupForm({ onSuccess, onLogin }) {
   const [form, setForm] = useState({
     firstName: '', lastName: '', email: '', password: '', confirmPassword: '',
   })
-  const [selectedPlan, setSelectedPlan] = useState('essential')
+  const [selectedPlan, setSelectedPlan] = useState(() => {
+    const hash = window.location.hash.replace(/^#\/?/, '')
+    if (hash.startsWith('signup?plan=')) {
+      const plan = hash.split('plan=')[1]
+      if (['essential', 'business', 'portfolio'].includes(plan)) return plan
+    }
+    return 'essential'
+  })
   const [errors,       setErrors]       = useState({})
   const [loading,      setLoading]      = useState(false)
   const [globalError,  setGlobalError]  = useState(null)

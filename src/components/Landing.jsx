@@ -330,7 +330,7 @@ export default function Landing({ onStart, onSignUp, session }) {
                 ))}
               </ul>
               <button
-                onClick={onStart}
+                onClick={() => onSignUp('essential')}
                 style={{ display: 'block', width: '100%', padding: '14px', borderRadius: 100, fontSize: 15, fontWeight: 500, cursor: 'pointer', background: 'transparent', color: C.ink, border: `1px solid ${C.border}`, transition: 'background 0.2s' }}
                 onMouseEnter={e => e.currentTarget.style.background = '#EDECEA'}
                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
@@ -358,7 +358,7 @@ export default function Landing({ onStart, onSignUp, session }) {
                 ))}
               </ul>
               <button
-                onClick={onSignUp || onStart}
+                onClick={() => onSignUp('business')}
                 style={{ display: 'block', width: '100%', padding: '14px', borderRadius: 100, fontSize: 15, fontWeight: 500, cursor: 'pointer', background: C.accent, color: 'white', border: 'none', transition: 'background 0.2s' }}
                 onMouseEnter={e => e.currentTarget.style.background = C.accentDark}
                 onMouseLeave={e => e.currentTarget.style.background = C.accent}
@@ -383,7 +383,7 @@ export default function Landing({ onStart, onSignUp, session }) {
                 ))}
               </ul>
               <button
-                onClick={onStart}
+                onClick={() => onSignUp('portfolio')}
                 style={{ display: 'block', width: '100%', padding: '14px', borderRadius: 100, fontSize: 15, fontWeight: 500, cursor: 'pointer', background: 'transparent', color: C.ink, border: `1px solid ${C.border}`, transition: 'background 0.2s' }}
                 onMouseEnter={e => e.currentTarget.style.background = '#EDECEA'}
                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
