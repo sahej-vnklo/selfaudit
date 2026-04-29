@@ -154,14 +154,6 @@ export default function Landing({ onStart, onSignUp, session }) {
       {/* Hero */}
       <section style={{ padding: '120px 0 100px', textAlign: 'center' }}>
         <div style={wrap}>
-          <div style={{
-            display: 'inline-flex', alignItems: 'center',
-            background: C.accentSoft, color: C.accentDark,
-            padding: '8px 16px', borderRadius: 100,
-            fontSize: 13, fontWeight: 500, marginBottom: 32,
-          }}>
-            &ldquo;Advisory like never seen before&rdquo;
-          </div>
           <h1 style={{
             fontFamily: serif, fontSize: 'clamp(40px, 6vw, 68px)', fontWeight: 700,
             lineHeight: 1.05, letterSpacing: '-2px',
@@ -282,7 +274,7 @@ export default function Landing({ onStart, onSignUp, session }) {
             From the top of the org chart to the bottom. From finance to feelings.
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center', maxWidth: 800, margin: '0 auto' }}>
-            {['Business strategy', 'Operations', 'Sales', 'Marketing', 'Finance', 'People & culture', 'Product', 'Customer experience', 'Leadership', 'Anything else'].map(d => (
+            {['SaaS', 'E-commerce', 'Agency', 'Law firm', 'Healthcare', 'Real estate', 'Manufacturing', 'Consulting', 'Logistics', 'Restaurant & hospitality', 'Education', 'Media & content', 'Strategy', 'Operations', 'Sales', 'Marketing', 'Finance', 'People & HR', 'Product', 'Customer experience', 'Technology', 'Legal & compliance', 'Pricing', 'Supply chain', 'Brand'].map(d => (
               <span key={d} style={{ background: C.bg, border: `1px solid ${C.border}`, padding: '10px 20px', borderRadius: 100, fontSize: 14, fontWeight: 500, color: C.inkSoft }}>
                 {d}
               </span>
