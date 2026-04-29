@@ -46,7 +46,7 @@ Every question you ask must probe ${domain} specifically through the lens of a $
 
 Do not mention that you have been given this context. Just apply it naturally.
 
-When you redirect the user back to their scope, end your message with exactly this token on a new line: [SCOPE_LIMIT]`
+When you enforce scope, append [SCOPE_LIMIT] on a new line at the end of your message only. Never add it otherwise.`
 }
 
 const REPORT_PROMPT = `Based on this entire conversation, generate a comprehensive audit report.

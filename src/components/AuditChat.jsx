@@ -62,39 +62,36 @@ function detectIndustryViolation(text, savedIndustry) {
   )
 }
 
-// ─── Upgrade Modal ────────────────────────────────────────────────────────────
+// ─── Upgrade Panel ────────────────────────────────────────────────────────────
 
-function UpgradeModal({ type, tierData, onDismiss }) {
-  const isDomain = type === 'domain'
-
-  const title = isDomain
-    ? "This domain isn't included in your plan."
-    : "This industry isn't included in your plan."
-
-  const ctaLabel = isDomain
-    ? 'Upgrade to Business — $99/mo'
-    : 'Upgrade to Portfolio — $299/mo'
-
-  const pills     = isDomain ? (DOMAIN_MAP[tierData?.industry] || ALL_DOMAINS) : ALL_INDUSTRIES
+function UpgradePanel({ type, tierData, onDismiss }) {
+  const isDomain    = type === 'domain'
+  const ctaLabel    = isDomain ? 'Upgrade to Business — $99/mo' : 'Upgrade to Portfolio — $299/mo'
+  const pills       = isDomain ? (DOMAIN_MAP[tierData?.industry] || ALL_DOMAINS) : ALL_INDUSTRIES
   const currentItem = isDomain ? tierData?.domain : tierData?.industry
 
   return (
-    <div style={m.overlay}>
-      <div style={m.modal}>
-        <h2 style={m.title}>{title}</h2>
-        <div style={m.pills}>
-          {pills.map(item => {
-            const isCurrent = item.toLowerCase() === currentItem?.toLowerCase()
-            return (
-              <span key={item} style={{ ...m.pill, ...(isCurrent ? m.pillInactive : m.pillActive) }}>
-                {item}
-              </span>
-            )
-          })}
-        </div>
-        <button style={m.cta} onClick={onDismiss}>{ctaLabel}</button>
-        <button style={m.dismiss} onClick={onDismiss}>Stay on my plan</button>
+    <div style={p.panel}>
+      <div style={p.header}>
+        <span style={p.title}>Outside your scope</span>
+        <button style={p.close} onClick={onDismiss} aria-label="Close">✕</button>
       </div>
+      <p style={p.sub}>
+        {isDomain
+          ? `Your plan covers ${tierData?.domain || 'your selected domain'} only.`
+          : `Your plan covers ${tierData?.industry || 'your selected industry'} only.`}
+      </p>
+      <div style={p.pills}>
+        {pills.map(item => {
+          const isCurrent = item.toLowerCase() === currentItem?.toLowerCase()
+          return (
+            <span key={item} style={{ ...p.pill, ...(isCurrent ? p.pillInactive : p.pillActive) }}>
+              {item}
+            </span>
+          )
+        })}
+      </div>
+      <button style={p.cta} onClick={onDismiss}>{ctaLabel}</button>
     </div>
   )
 }
@@ -111,7 +108,7 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
   const [loading,      setLoading]      = useState(false)
   const [initialized,  setInitialized]  = useState(false)
   const [tierData,     setTierData]     = useState(null)   // { tier, industry, domain }
-  const [upgradeModal, setUpgradeModal] = useState(null)   // 'domain' | 'industry' | null
+  const [scopePanel,   setScopePanel]   = useState(null)   // 'domain' | 'industry' | null
   const bottomRef = useRef(null)
   const inputRef  = useRef(null)
 
@@ -176,26 +173,6 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
     const text = input.trim()
     if (!text || loading) return
 
-    // ── Tier gating — check before sending, never mid-response ───────────────
-    if (tierData) {
-      const { tier, industry, domain } = tierData
-      console.log('CHECKING MESSAGE:', text, 'AGAINST DOMAIN:', domain, '| tier:', tier)
-
-      if (tier === 'essential' && detectDomainViolation(text, domain)) {
-        setInput('')
-        setUpgradeModal('domain')
-        return
-      }
-
-      if (tier === 'business' && detectIndustryViolation(text, industry)) {
-        setInput('')
-        setUpgradeModal('industry')
-        return
-      }
-      // 'portfolio' and anything else: pass through freely
-    }
-    // ── End gating ────────────────────────────────────────────────────────────
-
     setInput('')
     const userMsg = { role: 'user', content: text, display: text }
     const newHistory = [...conversationHistory, userMsg]
@@ -222,7 +199,7 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
       const finalHistory = [...newHistory, assistantMsg]
       setConversationHistory(finalHistory)
 
-      if (isScopeLimit) setUpgradeModal('domain')
+      if (isScopeLimit) setScopePanel('domain')
       if (isReady) {
         setTimeout(() => onReportReady(finalHistory), 1200)
       }
@@ -248,11 +225,11 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
 
   return (
     <div style={styles.page}>
-      {upgradeModal && (
-        <UpgradeModal
-          type={upgradeModal}
+      {scopePanel && (
+        <UpgradePanel
+          type={scopePanel}
           tierData={tierData}
-          onDismiss={() => { setUpgradeModal(null); inputRef.current?.focus() }}
+          onDismiss={() => { setScopePanel(null); inputRef.current?.focus() }}
         />
       )}
 
@@ -441,32 +418,36 @@ const styles = {
   hint: { fontSize: 11, color: 'var(--gray-400)', textAlign: 'center', marginTop: 8, maxWidth: 680, margin: '8px auto 0' }
 }
 
-// ─── Modal styles ─────────────────────────────────────────────────────────────
+// ─── Panel styles ─────────────────────────────────────────────────────────────
 
-const m = {
-  overlay: {
-    position: 'fixed', inset: 0, zIndex: 1000,
-    background: 'rgba(0,0,0,0.45)',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    padding: 24,
+const p = {
+  panel: {
+    position: 'fixed', top: 0, right: 0, bottom: 0, width: 260, zIndex: 200,
+    background: 'var(--white)', borderLeft: '0.5px solid var(--gray-200)',
+    padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: 12,
+    boxShadow: '-4px 0 24px rgba(0,0,0,0.06)',
   },
-  modal: {
-    background: 'var(--white)', borderRadius: 'var(--radius)',
-    border: '0.5px solid var(--gray-200)',
-    padding: '2rem', width: '100%', maxWidth: 480,
-    boxShadow: '0 16px 48px rgba(0,0,0,0.15)',
+  header: {
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+    marginBottom: 2,
   },
   title: {
-    fontFamily: 'var(--serif)', fontSize: 20, fontWeight: 400,
-    lineHeight: 1.3, marginBottom: '1.25rem', color: 'var(--black)',
+    fontSize: 13, fontWeight: 600, color: 'var(--black)',
+    letterSpacing: '-0.1px',
+  },
+  close: {
+    background: 'none', border: 'none', cursor: 'pointer',
+    fontSize: 14, color: 'var(--gray-400)', padding: 0, lineHeight: 1,
+  },
+  sub: {
+    fontSize: 12, color: 'var(--gray-600)', lineHeight: 1.5, margin: 0,
   },
   pills: {
-    display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: '1.75rem',
+    display: 'flex', flexWrap: 'wrap', gap: 6, flex: 1, alignContent: 'flex-start',
   },
   pill: {
-    fontSize: 13, fontWeight: 500, padding: '6px 14px',
-    borderRadius: 'var(--radius-pill)', border: '0.5px solid',
-    cursor: 'default',
+    fontSize: 11, fontWeight: 500, padding: '4px 10px',
+    borderRadius: 100, border: '0.5px solid', cursor: 'default',
   },
   pillActive: {
     background: 'var(--green-light)', color: 'var(--green-dark)',
@@ -479,13 +460,8 @@ const m = {
   cta: {
     width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
     background: 'var(--green)', color: 'white',
-    fontSize: 15, fontWeight: 500, padding: '13px',
+    fontSize: 13, fontWeight: 500, padding: '11px',
     borderRadius: 'var(--radius)', border: 'none', cursor: 'pointer',
-    marginBottom: 12,
-  },
-  dismiss: {
-    width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-    background: 'none', border: 'none', cursor: 'pointer',
-    fontSize: 13, color: 'var(--gray-400)', padding: 8,
+    marginTop: 'auto',
   },
 }
