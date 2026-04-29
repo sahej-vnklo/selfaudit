@@ -72,26 +72,28 @@ function UpgradePanel({ type, tierData, onDismiss }) {
 
   return (
     <div style={p.panel}>
-      <div style={p.header}>
-        <span style={p.title}>Outside your scope</span>
-        <button style={p.close} onClick={onDismiss} aria-label="Close">✕</button>
-      </div>
+      <button style={p.close} onClick={onDismiss} aria-label="Close">✕</button>
+      <div style={p.eyebrow}>SCOPE LIMIT</div>
+      <div style={p.title}>Outside your scope</div>
       <p style={p.sub}>
         {isDomain
           ? `You're getting a ${tierData?.domain || 'selected domain'}-only audit. Unlock all ${pills.length} domains.`
           : `You're getting a ${tierData?.industry || 'selected industry'}-only audit. Unlock all ${pills.length} industries.`}
       </p>
+      <div style={p.sectionLabel}>YOUR PLAN</div>
       <div style={p.pills}>
-        {pills.map(item => {
-          const isCurrent = item.toLowerCase() === currentItem?.toLowerCase()
-          return (
-            <span key={item} style={{ ...p.pill, ...(isCurrent ? p.pillCurrent : p.pillLocked) }}>
-              {item}
-            </span>
-          )
-        })}
+        {pills.filter(item => item.toLowerCase() === currentItem?.toLowerCase()).map(item => (
+          <span key={item} style={{ ...p.pill, ...p.pillCurrent }}>{item}</span>
+        ))}
+      </div>
+      <div style={p.sectionLabel}>{isDomain ? 'UNLOCK WITH BUSINESS' : 'UNLOCK WITH PORTFOLIO'}</div>
+      <div style={p.pills}>
+        {pills.filter(item => item.toLowerCase() !== currentItem?.toLowerCase()).map(item => (
+          <span key={item} style={{ ...p.pill, ...p.pillLocked }}>{item}</span>
+        ))}
       </div>
       <button style={p.cta} onClick={onDismiss}>{ctaLabel}</button>
+      <div style={p.stayLink} onClick={onDismiss}>Stay on my plan</div>
     </div>
   )
 }
@@ -422,46 +424,49 @@ const styles = {
 
 const p = {
   panel: {
-    position: 'fixed', top: 0, right: 0, bottom: 0, width: 260, zIndex: 200,
-    background: 'var(--white)', borderLeft: '0.5px solid var(--gray-200)',
-    padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: 12,
-    boxShadow: '-4px 0 24px rgba(0,0,0,0.06)',
+    position: 'fixed', right: 20, top: '50%', transform: 'translateY(-50%)',
+    width: 280, zIndex: 200, background: '#fff', borderRadius: 16,
+    boxShadow: '0 8px 32px rgba(0,0,0,0.12)', padding: 24,
+    border: '1px solid rgba(0,0,0,0.06)',
   },
-  header: {
-    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-    marginBottom: 2,
+  eyebrow: {
+    fontSize: 10, letterSpacing: '1.5px', textTransform: 'uppercase', color: '#888',
   },
   title: {
-    fontSize: 13, fontWeight: 600, color: 'var(--black)',
-    letterSpacing: '-0.1px',
+    fontSize: 18, fontWeight: 700, color: '#111', marginTop: 4,
   },
   close: {
+    position: 'absolute', top: 16, right: 16,
     background: 'none', border: 'none', cursor: 'pointer',
-    fontSize: 14, color: 'var(--gray-400)', padding: 0, lineHeight: 1,
+    fontSize: 14, color: '#888', padding: 0, lineHeight: 1,
   },
   sub: {
-    fontSize: 12, color: 'var(--gray-600)', lineHeight: 1.5, margin: 0,
+    fontSize: 13, color: '#666', lineHeight: 1.5, marginTop: 6, marginBottom: 0,
+  },
+  sectionLabel: {
+    fontSize: 10, letterSpacing: '1.5px', textTransform: 'uppercase',
+    color: '#888', marginTop: 20,
   },
   pills: {
-    display: 'flex', flexWrap: 'wrap', gap: 6, flex: 1, alignContent: 'flex-start',
+    display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8,
   },
   pill: {
-    fontSize: 11, fontWeight: 500, padding: '4px 10px',
-    borderRadius: 100, border: '0.5px solid', cursor: 'default',
+    fontSize: 12, borderRadius: 20, padding: '4px 12px',
+    border: 'none', cursor: 'default',
   },
   pillCurrent: {
-    background: '#F4F3EF', color: 'var(--gray-600)',
-    borderColor: 'var(--gray-200)',
+    background: '#111', color: '#fff',
   },
   pillLocked: {
-    background: 'var(--white)', color: 'var(--gray-300)',
-    borderColor: 'var(--gray-200)',
+    background: '#f0f0f0', color: '#444',
   },
   cta: {
     width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-    background: 'var(--green)', color: 'white',
-    fontSize: 13, fontWeight: 500, padding: '11px',
-    borderRadius: 'var(--radius)', border: 'none', cursor: 'pointer',
-    marginTop: 'auto',
+    background: '#1a1a1a', color: '#fff', borderRadius: 10,
+    padding: '12px', fontWeight: 600, fontSize: 14,
+    border: 'none', cursor: 'pointer', marginTop: 20, boxSizing: 'border-box',
+  },
+  stayLink: {
+    textAlign: 'center', fontSize: 12, color: '#888', cursor: 'pointer', marginTop: 10,
   },
 }
