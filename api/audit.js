@@ -1,7 +1,8 @@
 // v2 - serverless only
 const CLAUDE_API = 'https://api.anthropic.com/v1/messages'
 
-const SYSTEM_PROMPT = `You are SelfAudit — a brutally honest, senior-level business and life advisor. Your job is to audit any situation a user brings — business, startup, side project, personal goals, career, anything.
+function buildSystemPrompt(industry, domain) {
+  const base = `You are SelfAudit — a brutally honest, senior-level business and life advisor. Your job is to audit any situation a user brings — business, startup, side project, personal goals, career, anything.
 
 CORE RULES:
 1. NEVER suggest or hint that AI is a solution during the conversation. The audit is neutral. AI recommendations only appear in the final report.
@@ -32,6 +33,19 @@ QUESTIONING FRAMEWORK — adapt based on what you detect:
 - CEO/FOUNDER problems: is this a strategy problem, execution problem, or self-awareness problem
 
 You are not here to make people feel good. You are here to give them clarity they cannot get anywhere else. Earn that standard on every exchange.`
+
+  if (!industry || !domain) return base
+
+  return base + `
+
+AUDIT CONTEXT:
+This user runs a ${industry} business.
+Their selected audit domain is ${domain}.
+
+Every question you ask must probe ${domain} specifically through the lens of a ${industry} business. Do not drift into other domains. If the user asks something outside ${domain}, acknowledge it briefly, then steer back: "That's outside your current audit scope — let's stay focused on ${domain}. Here's what I want to dig into..."
+
+Do not mention that you have been given this context. Just apply it naturally.`
+}
 
 const REPORT_PROMPT = `Based on this entire conversation, generate a comprehensive audit report.
 
@@ -82,7 +96,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { type, messages } = req.body
+  const { type, messages, industry, domain } = req.body
   if (!type || !messages) {
     return res.status(400).json({ error: 'Missing type or messages' })
   }
@@ -111,7 +125,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: isReport ? 2048 : 1024,
-        system: SYSTEM_PROMPT,
+        system: buildSystemPrompt(industry, domain),
         messages: finalMessages,
       }),
     })

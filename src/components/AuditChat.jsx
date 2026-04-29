@@ -207,7 +207,10 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
         .filter(m => m.role !== 'system')
         .map(m => ({ role: m.role, content: m.content }))
 
-      const response = await sendMessage(apiMessages)
+      const response = await sendMessage(apiMessages, {
+        industry: tierData?.industry ?? userInfo?.industry,
+        domain:   tierData?.domain   ?? userInfo?.domain,
+      })
       const isReady = response.includes('[READY_FOR_REPORT]')
       const cleanResponse = response.replace('[READY_FOR_REPORT]', '').trim()
 

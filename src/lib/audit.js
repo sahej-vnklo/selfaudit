@@ -1,11 +1,11 @@
-export async function sendMessage(messages) {
+export async function sendMessage(messages, { industry, domain } = {}) {
   const headers = { 'Content-Type': 'application/json' }
   console.log('HEADERS BEING SENT:', JSON.stringify(headers))
 
   const response = await fetch('/api/audit', {
     method: 'POST',
     headers,
-    body: JSON.stringify({ type: 'chat', messages }),
+    body: JSON.stringify({ type: 'chat', messages, industry, domain }),
   })
 
   if (!response.ok) {
