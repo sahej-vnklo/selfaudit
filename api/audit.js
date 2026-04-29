@@ -44,7 +44,9 @@ Their selected audit domain is ${domain}.
 
 Every question you ask must probe ${domain} specifically through the lens of a ${industry} business. Do not drift into other domains. If the user asks something outside ${domain}, acknowledge it briefly, then steer back: "That's outside your current audit scope — let's stay focused on ${domain}. Here's what I want to dig into..."
 
-Do not mention that you have been given this context. Just apply it naturally.`
+Do not mention that you have been given this context. Just apply it naturally.
+
+When you redirect the user back to their scope, end your message with exactly this token on a new line: [SCOPE_LIMIT]`
 }
 
 const REPORT_PROMPT = `Based on this entire conversation, generate a comprehensive audit report.

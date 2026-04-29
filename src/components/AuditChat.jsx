@@ -211,13 +211,18 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
         industry: tierData?.industry ?? userInfo?.industry,
         domain:   tierData?.domain   ?? userInfo?.domain,
       })
-      const isReady = response.includes('[READY_FOR_REPORT]')
-      const cleanResponse = response.replace('[READY_FOR_REPORT]', '').trim()
+      const isReady      = response.includes('[READY_FOR_REPORT]')
+      const isScopeLimit = response.includes('[SCOPE_LIMIT]')
+      const cleanResponse = response
+        .replace('[READY_FOR_REPORT]', '')
+        .replace('[SCOPE_LIMIT]', '')
+        .trim()
 
       const assistantMsg = { role: 'assistant', content: cleanResponse, display: cleanResponse }
       const finalHistory = [...newHistory, assistantMsg]
       setConversationHistory(finalHistory)
 
+      if (isScopeLimit) setUpgradeModal('domain')
       if (isReady) {
         setTimeout(() => onReportReady(finalHistory), 1200)
       }
