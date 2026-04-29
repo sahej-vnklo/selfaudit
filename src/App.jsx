@@ -220,7 +220,7 @@ export default function App() {
       onSignOut={handleSignOut}
       onStartAudit={(info) => {
         setUserInfo(info)
-        navigate(SCREENS.ONBOARDING)
+        navigate(SCREENS.AUDIT)
       }}
     />
   }
