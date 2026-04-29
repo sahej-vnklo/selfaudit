@@ -66,9 +66,10 @@ function detectIndustryViolation(text, savedIndustry) {
 
 function UpgradePanel({ type, tierData, onDismiss }) {
   const isDomain    = type === 'domain'
-  const ctaLabel    = isDomain ? 'Upgrade to Business — $99/mo' : 'Upgrade to Portfolio — $299/mo'
-  const pills       = isDomain ? (DOMAIN_MAP[tierData?.industry] || ALL_DOMAINS) : ALL_INDUSTRIES
-  const currentItem = isDomain ? tierData?.domain : tierData?.industry
+  const isEssential = tierData?.tier === 'essential'
+  const ctaLabel    = isEssential ? 'Upgrade to Business — $99/mo' : 'Upgrade to Portfolio — $299/mo'
+  const pills       = isEssential ? (DOMAIN_MAP[tierData?.industry] || ALL_DOMAINS) : ALL_INDUSTRIES
+  const currentItem = isEssential ? tierData?.domain : tierData?.industry
 
   return (
     <div style={p.panel}>
@@ -76,7 +77,7 @@ function UpgradePanel({ type, tierData, onDismiss }) {
       <div style={p.eyebrow}>SCOPE LIMIT</div>
       <div style={p.title}>Outside your scope</div>
       <p style={p.sub}>
-        {isDomain
+        {isEssential
           ? `You're getting a ${tierData?.domain || 'selected domain'}-only audit. Unlock all ${pills.length} domains.`
           : `You're getting a ${tierData?.industry || 'selected industry'}-only audit. Unlock all ${pills.length} industries.`}
       </p>
@@ -86,7 +87,7 @@ function UpgradePanel({ type, tierData, onDismiss }) {
           <span key={item} style={{ ...p.pill, ...p.pillCurrent }}>{item}</span>
         ))}
       </div>
-      <div style={p.sectionLabel}>{isDomain ? 'UNLOCK WITH BUSINESS' : 'UNLOCK WITH PORTFOLIO'}</div>
+      <div style={p.sectionLabel}>{isEssential ? 'UNLOCK WITH BUSINESS' : 'UNLOCK WITH PORTFOLIO'}</div>
       <div style={p.pills}>
         {pills.filter(item => item.toLowerCase() !== currentItem?.toLowerCase()).map(item => (
           <span key={item} style={{ ...p.pill, ...p.pillLocked }}>{item}</span>
