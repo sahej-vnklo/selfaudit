@@ -78,14 +78,14 @@ function UpgradePanel({ type, tierData, onDismiss }) {
       </div>
       <p style={p.sub}>
         {isDomain
-          ? `Your plan covers ${tierData?.domain || 'your selected domain'} only.`
-          : `Your plan covers ${tierData?.industry || 'your selected industry'} only.`}
+          ? `You're getting a ${tierData?.domain || 'selected domain'}-only audit. Unlock all ${pills.length} domains.`
+          : `You're getting a ${tierData?.industry || 'selected industry'}-only audit. Unlock all ${pills.length} industries.`}
       </p>
       <div style={p.pills}>
         {pills.map(item => {
           const isCurrent = item.toLowerCase() === currentItem?.toLowerCase()
           return (
-            <span key={item} style={{ ...p.pill, ...(isCurrent ? p.pillInactive : p.pillActive) }}>
+            <span key={item} style={{ ...p.pill, ...(isCurrent ? p.pillCurrent : p.pillLocked) }}>
               {item}
             </span>
           )
@@ -449,11 +449,11 @@ const p = {
     fontSize: 11, fontWeight: 500, padding: '4px 10px',
     borderRadius: 100, border: '0.5px solid', cursor: 'default',
   },
-  pillActive: {
-    background: 'var(--green-light)', color: 'var(--green-dark)',
-    borderColor: 'var(--green)',
+  pillCurrent: {
+    background: '#F4F3EF', color: 'var(--gray-600)',
+    borderColor: 'var(--gray-200)',
   },
-  pillInactive: {
+  pillLocked: {
     background: 'var(--white)', color: 'var(--gray-300)',
     borderColor: 'var(--gray-200)',
   },
