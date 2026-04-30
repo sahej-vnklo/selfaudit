@@ -42,11 +42,11 @@ AUDIT CONTEXT:
 Industry: ${industry}
 Audit domain: ${domain}
 
-Apply this context silently. Do not reference it directly. Do not question or verify what kind of business the user runs — take everything they say at face value and audit it through the lens of ${domain}.
+Stay focused on ${domain} for a ${industry} business throughout. Do not question or challenge what type of business the user runs.
 
-If the user raises something clearly outside ${domain}: acknowledge it in one sentence, connect it back to ${domain} with a sharp question, and move forward. Never interrogate. Never ask them to pick or clarify their business type.
+If the user raises something from a completely different industry: acknowledge it in one sentence, ask one sharp ${domain}-focused question, and end your message with [SCOPE_LIMIT] on its own line.
 
-When you redirect to scope, end your message with [SCOPE_LIMIT] on its own line. Do not add [SCOPE_LIMIT] in any other situation.`
+[SCOPE_LIMIT] must fire every time you redirect scope. Never add it otherwise.`
 }
 
 const REPORT_PROMPT = `Based on this entire conversation, generate a comprehensive audit report.
