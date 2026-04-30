@@ -64,12 +64,34 @@ function detectIndustryViolation(text, savedIndustry) {
 
 // ─── Upgrade Panel ────────────────────────────────────────────────────────────
 
-function UpgradePanel({ type, tierData, onDismiss }) {
+function UpgradePanel({ type, tierData, userInfo, onDismiss }) {
+  const [checkoutLoading, setCheckoutLoading] = useState(false)
+  const [checkoutError,   setCheckoutError]   = useState(null)
+
   const isDomain    = type === 'domain'
   const isEssential = tierData?.tier === 'essential'
+  const targetTier  = isEssential ? 'business' : 'portfolio'
   const ctaLabel    = isEssential ? 'Upgrade to Business — $99/mo' : 'Upgrade to Portfolio — $299/mo'
   const pills       = isEssential ? (DOMAIN_MAP[tierData?.industry] || ALL_DOMAINS) : ALL_INDUSTRIES
   const currentItem = isEssential ? tierData?.domain : tierData?.industry
+
+  const handleUpgrade = async () => {
+    setCheckoutLoading(true)
+    setCheckoutError(null)
+    try {
+      const res = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tier: targetTier, userId: userInfo?.userId, email: userInfo?.email }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to start checkout')
+      window.location.href = data.url
+    } catch (e) {
+      setCheckoutError(e.message)
+      setCheckoutLoading(false)
+    }
+  }
 
   return (
     <div style={p.panel}>
@@ -93,7 +115,14 @@ function UpgradePanel({ type, tierData, onDismiss }) {
           <span key={item} style={{ ...p.pill, ...p.pillLocked }}>{item}</span>
         ))}
       </div>
-      <button style={p.cta} onClick={onDismiss}>{ctaLabel}</button>
+      <button
+        style={{ ...p.cta, opacity: checkoutLoading ? 0.7 : 1 }}
+        onClick={handleUpgrade}
+        disabled={checkoutLoading}
+      >
+        {checkoutLoading ? 'Redirecting…' : ctaLabel}
+      </button>
+      {checkoutError && <div style={p.error}>{checkoutError}</div>}
       <div style={p.stayLink} onClick={onDismiss}>Stay on my plan</div>
     </div>
   )
@@ -232,6 +261,7 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
         <UpgradePanel
           type={scopePanel}
           tierData={tierData}
+          userInfo={userInfo}
           onDismiss={() => { setScopePanel(null); inputRef.current?.focus() }}
         />
       )}
@@ -469,5 +499,8 @@ const p = {
   },
   stayLink: {
     textAlign: 'center', fontSize: 12, color: '#888', cursor: 'pointer', marginTop: 10,
+  },
+  error: {
+    fontSize: 11, color: '#c0392b', textAlign: 'center', marginTop: 8,
   },
 }
