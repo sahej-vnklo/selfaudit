@@ -1,11 +1,13 @@
 export default function handler(req, res) {
-  const supabaseUrl     = process.env.SUPABASE_URL
-  const supabaseAnonKey = process.env.SUPABASE_ANON_KEY
+  const supabaseUrl          = process.env.SUPABASE_URL
+  const supabaseAnonKey      = process.env.SUPABASE_ANON_KEY
+  const stripePublishableKey = process.env.STRIPE_PUBLISHABLE_KEY || process.env.VITE_STRIPE_PUBLISHABLE_KEY
 
   console.log('[config] SUPABASE_URL:', supabaseUrl || '(not set)')
   console.log('[config] SUPABASE_ANON_KEY length:', supabaseAnonKey?.length ?? 0)
   console.log('[config] SUPABASE_ANON_KEY prefix:', supabaseAnonKey ? supabaseAnonKey.slice(0, 20) + '...' : '(not set)')
   console.log('[config] SUPABASE_ANON_KEY suffix:', supabaseAnonKey ? '...' + supabaseAnonKey.slice(-10) : '(not set)')
+  console.log('[config] STRIPE_PUBLISHABLE_KEY:', stripePublishableKey ? stripePublishableKey.slice(0, 8) + '...' : '(not set)')
 
   if (!supabaseUrl || !supabaseAnonKey) {
     console.error('[config] Missing env vars — returning 500')
@@ -13,5 +15,5 @@ export default function handler(req, res) {
   }
 
   res.setHeader('Cache-Control', 'public, max-age=3600')
-  res.json({ supabaseUrl, supabaseAnonKey })
+  res.json({ supabaseUrl, supabaseAnonKey, stripePublishableKey: stripePublishableKey || null })
 }

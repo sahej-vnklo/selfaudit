@@ -147,7 +147,7 @@ export default function Landing({ onStart, onSignUp, session }) {
             {/* Create account */}
             {onSignUp && (
               <button
-                onClick={onSignUp}
+                onClick={() => onSignUp()}
                 style={{ fontSize: 14, fontWeight: 600, color: 'white', background: C.accent, border: 'none', borderRadius: 100, padding: '8px 18px', cursor: 'pointer' }}
               >
                 Create account

@@ -11,7 +11,10 @@ import {
 import { initSupabase } from '../../lib/supabase.js'
 import { usePostHog } from '@posthog/react'
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '')
+const stripePromise = fetch('/api/config')
+  .then(r => r.ok ? r.json() : Promise.reject())
+  .then(cfg => loadStripe(cfg.stripePublishableKey || import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || ''))
+  .catch(() => loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || ''))
 
 export default function Signup({ onSuccess, onLogin }) {
   return (
