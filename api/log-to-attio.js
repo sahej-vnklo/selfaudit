@@ -1,5 +1,5 @@
 const BASE      = 'https://api.attio.com/v2'
-const LIST_SLUG = 'tsa-users'
+const LIST_ID = '0a9bbc2b-9724-44b0-bc5a-4f2d1ec02a3a'
 
 async function attio(method, path, body) {
   const res = await fetch(`${BASE}${path}`, {
@@ -38,7 +38,7 @@ export async function attioCreateUser({ email, name, tier, industry, domain }) {
   // Upsert list entry with plan attributes
   await attio(
     'PUT',
-    `/lists/${LIST_SLUG}/entries?matching_attribute=record_id`,
+    `/lists/${LIST_ID}/entries?matching_attribute=record_id`,
     {
       data: {
         record_id: { object: 'people', record_id: recordId },
@@ -113,7 +113,7 @@ export default async function handler(req, res) {
       const { email } = req.body
       if (!email) return res.status(400).json({ error: 'email required' })
 
-      const { data: entries } = await attio('POST', `/lists/${LIST_SLUG}/entries/query`, {
+      const { data: entries } = await attio('POST', `/lists/${LIST_ID}/entries/query`, {
         filter: { 'record.email_addresses': { $contains: { email_address: email } } },
         limit: 1,
       })
@@ -123,7 +123,7 @@ export default async function handler(req, res) {
       const entryId = entry.id.entry_id
       const current = entry.entry_values?.report_count?.[0]?.value ?? 0
 
-      await attio('PATCH', `/lists/${LIST_SLUG}/entries/${entryId}`, {
+      await attio('PATCH', `/lists/${LIST_ID}/entries/${entryId}`, {
         data: { entry_values: { report_count: [{ value: current + 1 }] } },
       })
 
