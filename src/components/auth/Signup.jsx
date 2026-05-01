@@ -9,6 +9,7 @@ import {
   useElements,
 } from '@stripe/react-stripe-js'
 import { initSupabase } from '../../lib/supabase.js'
+import { usePostHog } from '@posthog/react'
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '')
 
@@ -39,6 +40,7 @@ function SignupForm({ onSuccess, onLogin }) {
   const [loading,      setLoading]      = useState(false)
   const [globalError,  setGlobalError]  = useState(null)
   const [emailSent,    setEmailSent]    = useState(false)
+  const posthog = usePostHog()
 
   const update = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
@@ -61,6 +63,7 @@ function SignupForm({ onSuccess, onLogin }) {
     if (!validate()) return
     setLoading(true)
     const fullName = `${form.firstName.trim()} ${form.lastName.trim()}`
+    posthog?.capture('signup_submitted', { plan: selectedPlan, email: form.email })
     try {
       const sb = await initSupabase()
 
@@ -104,6 +107,9 @@ function SignupForm({ onSuccess, onLogin }) {
           stripe_customer_id:     subData.customerId,
           stripe_subscription_id: subData.subscriptionId,
         }).eq('id', user.id).throwOnError()
+
+        posthog?.identify(user.id, { email: form.email, name: fullName, plan: selectedPlan })
+        posthog?.capture('signup_completed', { plan: selectedPlan, email: form.email })
       }
 
       if (data.session) {
@@ -112,6 +118,7 @@ function SignupForm({ onSuccess, onLogin }) {
         setEmailSent(true)
       }
     } catch (e) {
+      posthog?.captureException(e)
       setGlobalError(e.message || 'Connection error. Please try again.')
     } finally {
       setLoading(false)

@@ -1,11 +1,13 @@
 import React, { useState } from 'react'
 import { generateReport, sendReportEmail } from '../lib/audit.js'
+import { usePostHog } from '@posthog/react'
 
 export default function Report({ userInfo, conversationHistory }) {
   const [report, setReport] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [shareState, setShareState] = useState('idle') // idle | sending | sent | error
+  const posthog = usePostHog()
 
   React.useEffect(() => {
     async function build() {
@@ -15,7 +17,14 @@ export default function Report({ userInfo, conversationHistory }) {
           .map(m => ({ role: m.role, content: m.content }))
         const r = await generateReport(apiMessages)
         setReport(r)
+        posthog?.capture('report_generated', {
+          domain_count: r.domains?.length,
+          has_ai_opportunities: (r.ai_opportunities?.length ?? 0) > 0,
+          has_non_ai_fixes: (r.non_ai_fixes?.length ?? 0) > 0,
+          priority_action_count: r.priority_actions?.length,
+        })
       } catch (e) {
+        posthog?.captureException(e)
         setError(e.message)
       } finally {
         setLoading(false)
@@ -27,10 +36,12 @@ export default function Report({ userInfo, conversationHistory }) {
   const handleShare = async () => {
     if (shareState !== 'idle') return
     setShareState('sending')
+    posthog?.capture('report_shared', { email: userInfo?.email })
     try {
       await sendReportEmail({ userInfo, report })
       setShareState('sent')
     } catch (e) {
+      posthog?.captureException(e)
       setShareState('error')
     }
   }

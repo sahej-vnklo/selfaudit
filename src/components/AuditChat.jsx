@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { sendMessage } from '../lib/audit.js'
 import { initSupabase } from '../lib/supabase.js'
+import { usePostHog } from '@posthog/react'
 
 // ─── Gating data ──────────────────────────────────────────────────────────────
 
@@ -67,6 +68,7 @@ function detectIndustryViolation(text, savedIndustry) {
 function UpgradePanel({ type, tierData, userInfo, onDismiss }) {
   const [checkoutLoading, setCheckoutLoading] = useState(false)
   const [checkoutError,   setCheckoutError]   = useState(null)
+  const posthog = usePostHog()
 
   const isDomain    = type === 'domain'
   const isEssential = tierData?.tier === 'essential'
@@ -75,7 +77,23 @@ function UpgradePanel({ type, tierData, userInfo, onDismiss }) {
   const pills       = isEssential ? (DOMAIN_MAP[tierData?.industry] || ALL_DOMAINS) : ALL_INDUSTRIES
   const currentItem = isEssential ? tierData?.domain : tierData?.industry
 
+  useEffect(() => {
+    posthog?.capture('upgrade_panel_shown', {
+      trigger_type: type,
+      current_tier: tierData?.tier,
+      target_tier: targetTier,
+      industry: tierData?.industry,
+      domain: tierData?.domain,
+    })
+  }, [])
+
   const handleUpgrade = async () => {
+    posthog?.capture('upgrade_clicked', {
+      current_tier: tierData?.tier,
+      target_tier: targetTier,
+      industry: tierData?.industry,
+      domain: tierData?.domain,
+    })
     setCheckoutLoading(true)
     setCheckoutError(null)
     try {
@@ -88,6 +106,7 @@ function UpgradePanel({ type, tierData, userInfo, onDismiss }) {
       if (!res.ok) throw new Error(data.error || 'Failed to start checkout')
       window.location.href = data.url
     } catch (e) {
+      posthog?.captureException(e)
       setCheckoutError(e.message)
       setCheckoutLoading(false)
     }
@@ -143,6 +162,7 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
   const [scopePanel,   setScopePanel]   = useState(null)   // 'domain' | 'industry' | null
   const bottomRef = useRef(null)
   const inputRef  = useRef(null)
+  const posthog   = usePostHog()
 
   useEffect(() => {
     if (!initialized) {
@@ -211,6 +231,14 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
     setConversationHistory(newHistory)
     setLoading(true)
 
+    const messageIndex = newHistory.filter(m => m.role === 'user').length
+    posthog?.capture('audit_message_sent', {
+      message_index: messageIndex,
+      industry: tierData?.industry ?? userInfo?.industry,
+      domain: tierData?.domain ?? userInfo?.domain,
+      tier: tierData?.tier ?? userInfo?.tier,
+    })
+
     try {
       const apiMessages = newHistory
         .filter(m => m.role !== 'system')
@@ -233,9 +261,16 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
 
       if (isScopeLimit) setScopePanel('domain')
       if (isReady) {
+        posthog?.capture('audit_report_ready', {
+          message_count: finalHistory.filter(m => m.role === 'user').length,
+          industry: tierData?.industry ?? userInfo?.industry,
+          domain: tierData?.domain ?? userInfo?.domain,
+          tier: tierData?.tier ?? userInfo?.tier,
+        })
         setTimeout(() => onReportReady(finalHistory), 1200)
       }
     } catch (err) {
+      posthog?.captureException(err)
       setConversationHistory(prev => [...prev, {
         role: 'assistant',
         content: 'Something went wrong. Please try again.',

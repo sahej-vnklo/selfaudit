@@ -1,10 +1,12 @@
 import React, { useState } from 'react'
 import { initSupabase } from '../../lib/supabase.js'
+import { usePostHog } from '@posthog/react'
 
 export default function Login({ onSuccess, onSignup }) {
   const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
+  const posthog = usePostHog()
 
   const update = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
@@ -12,6 +14,7 @@ export default function Login({ onSuccess, onSignup }) {
     setError(null)
     if (!form.email || !form.password) { setError('Please fill in all fields.'); return }
     setLoading(true)
+    posthog?.capture('login_submitted', { email: form.email })
     try {
       const sb = await initSupabase()
       const { data, error: authError } = await sb.auth.signInWithPassword({
@@ -21,8 +24,11 @@ export default function Login({ onSuccess, onSignup }) {
       if (authError) { setError(friendlyError(authError.message)); return }
       // Supabase stores the session internally and fires onAuthStateChange(SIGNED_IN).
       // No setSession() call needed — that was the source of the gotrue lock race.
+      posthog?.identify(data.session.user.id, { email: form.email })
+      posthog?.capture('login_completed', { email: form.email })
       onSuccess(data.session)
     } catch (e) {
+      posthog?.captureException(e)
       setError('Connection timed out. Please try again.')
     } finally {
       setLoading(false)

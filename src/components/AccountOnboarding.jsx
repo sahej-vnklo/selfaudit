@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { usePostHog } from '@posthog/react'
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
@@ -220,6 +221,7 @@ export default function AccountOnboarding({ user, onComplete, onBack }) {
   const [ctxText,  setCtxText]  = useState('')
   const [saving,   setSaving]   = useState(false)
   const [tier,     setTier]     = useState('free')
+  const posthog = usePostHog()
 
   // Domains available for Step 3 — filtered by selected industry
   const availableDomains = React.useMemo(
@@ -255,6 +257,7 @@ export default function AccountOnboarding({ user, onComplete, onBack }) {
   }, [step, tier, availableDomains])
 
   const handleCategory = (c) => {
+    posthog?.capture('account_onboarding_industry_selected', { industry: c, tier })
     setCategory(c)
     setStep(3)
     if (!isPaidTier(tier)) setDomains([])
@@ -296,6 +299,7 @@ export default function AccountOnboarding({ user, onComplete, onBack }) {
         console.error('[onboarding] save-context error:', result.error)
         // Still navigate — don't block the user on a non-critical save failure
       }
+      posthog?.capture('account_onboarding_completed', { industry: category, domain: selectedDomain, tier })
     } catch (e) {
       console.error('[onboarding] save-context fetch failed:', e.message)
     } finally {

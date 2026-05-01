@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { usePostHog } from '@posthog/react'
 
 export default function Onboarding({ onComplete, defaultValues }) {
   const [form, setForm] = useState({
@@ -8,6 +9,7 @@ export default function Onboarding({ onComplete, defaultValues }) {
   })
   const [errors, setErrors] = useState({})
   const [step, setStep] = useState(0)
+  const posthog = usePostHog()
 
   const update = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
@@ -21,7 +23,10 @@ export default function Onboarding({ onComplete, defaultValues }) {
   }
 
   const handleSubmit = () => {
-    if (validate()) onComplete(form)
+    if (validate()) {
+      posthog?.capture('onboarding_submitted', { email: form.email, has_phone: !!form.phone })
+      onComplete(form)
+    }
   }
 
   return (

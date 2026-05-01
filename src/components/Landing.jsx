@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { usePostHog } from '@posthog/react'
 
 const C = {
   bg: '#F8F7F4',
@@ -93,6 +94,18 @@ function Btn({ label, onClick }) {
 }
 
 export default function Landing({ onStart, onSignUp, session }) {
+  const posthog = usePostHog()
+
+  const handleAuditStart = () => {
+    posthog?.capture('audit_started', { source: 'landing' })
+    onStart()
+  }
+
+  const handleSignUpWithPlan = (plan) => {
+    posthog?.capture('signup_plan_selected', { plan })
+    onSignUp(plan)
+  }
+
   const handleLogoClick = () => {
     if (session) {
       window.location.hash = 'dashboard'
@@ -165,7 +178,7 @@ export default function Landing({ onStart, onSignUp, session }) {
           <p style={{ fontSize: 19, color: C.inkSoft, maxWidth: 620, margin: '0 auto 40px' }}>
             5 minutes. Every department. Every blind spot. A ruthless diagnostic of what&apos;s broken in your business — and exactly what to do about it.
           </p>
-          <Btn label="Start your free audit" onClick={onStart} />
+          <Btn label="Start your free audit" onClick={handleAuditStart} />
           <div style={{ marginTop: 16, fontSize: 13, color: C.inkMuted }}>
             No signup · No credit card · First audit free
           </div>
@@ -260,7 +273,7 @@ export default function Landing({ onStart, onSignUp, session }) {
           </div>
 
           <div style={{ textAlign: 'center', marginTop: 56 }}>
-            <Btn label="See what yours says" onClick={onStart} />
+            <Btn label="See what yours says" onClick={handleAuditStart} />
           </div>
         </div>
       </section>
@@ -322,7 +335,7 @@ export default function Landing({ onStart, onSignUp, session }) {
                 ))}
               </ul>
               <button
-                onClick={() => onSignUp('essential')}
+                onClick={() => handleSignUpWithPlan('essential')}
                 style={{ display: 'block', width: '100%', padding: '14px', borderRadius: 100, fontSize: 15, fontWeight: 500, cursor: 'pointer', background: 'transparent', color: C.ink, border: `1px solid ${C.border}`, transition: 'background 0.2s' }}
                 onMouseEnter={e => e.currentTarget.style.background = '#EDECEA'}
                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
@@ -350,7 +363,7 @@ export default function Landing({ onStart, onSignUp, session }) {
                 ))}
               </ul>
               <button
-                onClick={() => onSignUp('business')}
+                onClick={() => handleSignUpWithPlan('business')}
                 style={{ display: 'block', width: '100%', padding: '14px', borderRadius: 100, fontSize: 15, fontWeight: 500, cursor: 'pointer', background: C.accent, color: 'white', border: 'none', transition: 'background 0.2s' }}
                 onMouseEnter={e => e.currentTarget.style.background = C.accentDark}
                 onMouseLeave={e => e.currentTarget.style.background = C.accent}
@@ -375,7 +388,7 @@ export default function Landing({ onStart, onSignUp, session }) {
                 ))}
               </ul>
               <button
-                onClick={() => onSignUp('portfolio')}
+                onClick={() => handleSignUpWithPlan('portfolio')}
                 style={{ display: 'block', width: '100%', padding: '14px', borderRadius: 100, fontSize: 15, fontWeight: 500, cursor: 'pointer', background: 'transparent', color: C.ink, border: `1px solid ${C.border}`, transition: 'background 0.2s' }}
                 onMouseEnter={e => e.currentTarget.style.background = '#EDECEA'}
                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
@@ -396,7 +409,7 @@ export default function Landing({ onStart, onSignUp, session }) {
           <p style={{ fontSize: 19, color: C.inkSoft, maxWidth: 500, margin: '0 auto 40px' }}>
             Whatever&apos;s broken, it has a name. In 5 minutes you&apos;ll know what it is — and what to do about it.
           </p>
-          <Btn label="Run my audit" onClick={onStart} />
+          <Btn label="Run my audit" onClick={handleAuditStart} />
         </div>
       </section>
 
