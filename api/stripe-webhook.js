@@ -42,20 +42,28 @@ export default async function handler(req, res) {
   }
 
   if (event.type === 'checkout.session.completed') {
-    const session  = event.data.object
-    const { userId, tier } = session.metadata || {}
+    const session = event.data.object
+    const userId  = session.client_reference_id || session.metadata?.userId
+    const { tier, priceId } = session.metadata || {}
 
     if (userId && tier) {
       const supabase = getSupabase()
       const { error } = await supabase
         .from('profiles')
-        .update({ tier })
+        .update({
+          tier,
+          stripe_customer_id:      session.customer      || null,
+          stripe_subscription_id:  session.subscription  || null,
+          stripe_price_id:         priceId               || null,
+        })
         .eq('id', userId)
 
       if (error) {
         console.error('[stripe-webhook] profile update failed:', error.message)
         return res.status(500).json({ error: error.message })
       }
+    } else {
+      console.warn('[stripe-webhook] missing userId or tier — skipping profile update', { userId, tier })
     }
   }
 

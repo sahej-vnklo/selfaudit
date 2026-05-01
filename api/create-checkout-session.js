@@ -1,8 +1,9 @@
 import Stripe from 'stripe'
 
 const PRICE_IDS = {
-  business:  'price_1TRDcRJxpOyRd0sIrivReTDB',
-  portfolio: 'price_1TRDcjJxpOyRd0sIaryd6fga',
+  essential:  null, // TODO: add essential price ID from Stripe dashboard
+  business:   'price_1TRDcRJxpOyRd0sIrivReTDB',
+  portfolio:  'price_1TRDcjJxpOyRd0sIaryd6fga',
 }
 
 export default async function handler(req, res) {
@@ -17,7 +18,7 @@ export default async function handler(req, res) {
 
   const priceId = PRICE_IDS[tier]
   if (!priceId) {
-    return res.status(400).json({ error: `Unknown tier: ${tier}` })
+    return res.status(400).json({ error: `Unknown or unconfigured tier: ${tier}` })
   }
 
   const secretKey = process.env.STRIPE_SECRET_KEY
@@ -34,9 +35,10 @@ export default async function handler(req, res) {
       mode: 'subscription',
       line_items: [{ price: priceId, quantity: 1 }],
       customer_email: email,
+      client_reference_id: userId,
       success_url: `${appUrl}/#dashboard`,
       cancel_url:  `${appUrl}/#dashboard`,
-      metadata: { userId, tier },
+      metadata: { userId, tier, priceId },
     })
 
     return res.status(200).json({ url: session.url })
