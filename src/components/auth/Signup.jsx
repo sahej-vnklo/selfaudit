@@ -80,6 +80,13 @@ function SignupForm({ onSuccess, onLogin }) {
 
       const user = data.user
       if (user) {
+        // Log to Attio CRM (fire-and-forget)
+        fetch('/api/log-to-attio', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'create_user', email: form.email, name: fullName, tier: selectedPlan }),
+        }).catch(e => console.warn('[signup] Attio failed:', e.message))
+
         // 2. Insert profile row with selected tier
         await sb.from('profiles').insert({
           id:         user.id,
