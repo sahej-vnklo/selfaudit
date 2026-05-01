@@ -428,11 +428,6 @@ function AccountSection({ user, profile, onProfileChange, onSignOut }) {
   const [phoneSaving,  setPhoneSaving]  = useState(false)
   const phoneRef = useRef(null)
 
-  // ── Context ───────────────────────────────────────────────────────────────
-  const [contextVal,     setContextVal]     = useState('')
-  const [contextChanged, setContextChanged] = useState(false)
-  const [contextSaving,  setContextSaving]  = useState(false)
-
   // ── Delete modal ──────────────────────────────────────────────────────────
   const [showDelete,   setShowDelete]   = useState(false)
   const [deleteConf,   setDeleteConf]   = useState('')
@@ -444,7 +439,6 @@ function AccountSection({ user, profile, onProfileChange, onSignOut }) {
     if (profile) {
       setNameVal(profile.name || user?.user_metadata?.name || '')
       setPhoneVal(profile.phone || '')
-      setContextVal(profile.context || '')
     }
   }, [profile, user])
 
@@ -476,17 +470,6 @@ function AccountSection({ user, profile, onProfileChange, onSignOut }) {
       onProfileChange({ phone: trimmed })
     } catch(e) { console.error(e) }
     finally { setPhoneSaving(false); setPhoneEditing(false) }
-  }
-
-  async function saveContext() {
-    setContextSaving(true)
-    try {
-      const sb = await initSupabase()
-      await sb.from('profiles').update({ context: contextVal.trim() }).eq('id', user.id)
-      onProfileChange({ context: contextVal.trim() })
-      setContextChanged(false)
-    } catch(e) { console.error(e) }
-    finally { setContextSaving(false) }
   }
 
   async function handleDeleteAccount() {
@@ -583,30 +566,7 @@ function AccountSection({ user, profile, onProfileChange, onSignOut }) {
 
       </div>
 
-      {/* ── 2. Context card ─────────────────────────────────────────────── */}
-      <div style={{ ...acct.card, marginTop: 12 }}>
-        <div style={acct.contextPad}>
-          <div style={acct.fieldLabel}>Audit context</div>
-          <textarea
-            value={contextVal}
-            onChange={e => { setContextVal(e.target.value); setContextChanged(true) }}
-            style={acct.textarea}
-          />
-          {contextChanged && (
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 10 }}>
-              <button
-                style={{ ...acct.saveBtn, opacity: contextSaving ? 0.6 : 1 }}
-                onClick={saveContext}
-                disabled={contextSaving}
-              >
-                {contextSaving ? 'Saving…' : 'Save'}
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* ── 3. Delete account ───────────────────────────────────────────── */}
+      {/* ── 2. Delete account ───────────────────────────────────────────── */}
       <div style={{ marginTop: 28 }}>
         <span style={acct.deleteNudge}>Want to delete your account? </span>
         <button style={acct.deleteLink} onClick={() => { setShowDelete(true); setDeleteConf(''); setDeleteError('') }}>
