@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { generateReport, sendReportEmail } from '../lib/audit.js'
+import { initSupabase } from '../lib/supabase.js'
 import { usePostHog } from '@posthog/react'
 
 export default function Report({ userInfo, conversationHistory }) {
@@ -17,6 +18,16 @@ export default function Report({ userInfo, conversationHistory }) {
           .map(m => ({ role: m.role, content: m.content }))
         const r = await generateReport(apiMessages)
         setReport(r)
+
+        if (userInfo?.userId) {
+          initSupabase().then(sb => sb.from('reports').insert({
+            user_id: userInfo.userId,
+            title:   r.headline,
+            content: JSON.stringify(r),
+            domains: r.domains?.map(d => d.name) ?? [],
+          })).catch(e => console.warn('[reports] save failed:', e?.message))
+        }
+
         posthog?.capture('report_generated', {
           domain_count: r.domains?.length,
           has_ai_opportunities: (r.ai_opportunities?.length ?? 0) > 0,

@@ -160,9 +160,10 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
   const [initialized,  setInitialized]  = useState(false)
   const [tierData,     setTierData]     = useState(null)   // { tier, industry, domain }
   const [scopePanel,   setScopePanel]   = useState(null)   // 'domain' | 'industry' | null
-  const bottomRef = useRef(null)
-  const inputRef  = useRef(null)
-  const posthog   = usePostHog()
+  const bottomRef   = useRef(null)
+  const inputRef    = useRef(null)
+  const sessionIdRef = useRef(crypto.randomUUID())
+  const posthog     = usePostHog()
 
   useEffect(() => {
     if (!initialized) {
@@ -258,6 +259,15 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
       const assistantMsg = { role: 'assistant', content: cleanResponse, display: cleanResponse }
       const finalHistory = [...newHistory, assistantMsg]
       setConversationHistory(finalHistory)
+
+      if (userInfo?.userId) {
+        const sessionId = sessionIdRef.current
+        const userId = userInfo.userId
+        initSupabase().then(sb => sb.from('chats').insert([
+          { user_id: userId, session_id: sessionId, role: 'user',      message: text },
+          { user_id: userId, session_id: sessionId, role: 'assistant', message: cleanResponse },
+        ])).catch(e => console.warn('[chats] save failed:', e?.message))
+      }
 
       if (isScopeLimit) setScopePanel('domain')
       if (isReady) {
