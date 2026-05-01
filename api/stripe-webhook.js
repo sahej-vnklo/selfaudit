@@ -25,7 +25,7 @@ export default async function handler(req, res) {
   }
 
   const secretKey     = process.env.STRIPE_SECRET_KEY
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET_DEV || process.env.STRIPE_WEBHOOK_SECRET
   if (!secretKey || !webhookSecret) {
     return res.status(500).json({ error: 'Stripe env vars not configured' })
   }
