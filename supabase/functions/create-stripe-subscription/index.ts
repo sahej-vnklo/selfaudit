@@ -10,6 +10,7 @@ const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, {
 })
 
 const PRICE_IDS: Record<string, string | undefined> = {
+  essential: Deno.env.get('STRIPE_PRICE_ESSENTIAL'),
   business:  Deno.env.get('STRIPE_PRICE_BUSINESS'),
   portfolio: Deno.env.get('STRIPE_PRICE_PORTFOLIO'),
 }
