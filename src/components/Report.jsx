@@ -48,6 +48,7 @@ export default function Report({ userInfo, conversationHistory }) {
         }
 
         posthog?.capture('report_generated', {
+          conversation_mode: r.conversation_mode ?? 'DIAGNOSTIC',
           domain_count: r.domains?.length,
           has_ai_opportunities: (r.ai_opportunities?.length ?? 0) > 0,
           has_non_ai_fixes: (r.non_ai_fixes?.length ?? 0) > 0,
@@ -81,9 +82,20 @@ export default function Report({ userInfo, conversationHistory }) {
   if (loading) return <LoadingScreen />
   if (error) return <ErrorScreen error={error} />
 
+  const mode = report.conversation_mode ?? 'DIAGNOSTIC'
   const statusColor = { strong: '#1D9E75', needs_work: '#BA7517', critical: '#A32D2D' }
   const statusBg = { strong: '#E1F5EE', needs_work: '#FAEEDA', critical: '#FCEBEB' }
   const statusLabel = { strong: 'Strong', needs_work: 'Needs Work', critical: 'Critical' }
+
+  const headerSubtext = mode === 'DIAGNOSTIC'
+    ? report.overall_verdict
+    : mode === 'EXECUTION'
+      ? report.execution_context
+      : report.acknowledgment
+
+  const shareCopy = mode === 'DIAGNOSTIC'
+    ? 'Share this report with Vnklo and discuss your first steps on implementing AI in the areas identified. One click — we\'ll reach out directly.'
+    : 'Share this report with Vnklo and we\'ll reach out to talk through next steps. One click.'
 
   return (
     <div style={styles.page}>
@@ -96,11 +108,11 @@ export default function Report({ userInfo, conversationHistory }) {
 
       <div style={styles.content}>
 
-        {/* Header */}
+        {/* Header — shared across all modes */}
         <div style={styles.reportHeader}>
           <span style={styles.reportLabel}>Your Audit Report</span>
           <h1 style={styles.headline}>{report.headline}</h1>
-          <p style={styles.verdict}>{report.overall_verdict}</p>
+          {headerSubtext && <p style={styles.verdict}>{headerSubtext}</p>}
           <div style={styles.metaRow}>
             <span style={styles.metaItem}>
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ marginRight: 5 }}>
@@ -116,67 +128,122 @@ export default function Report({ userInfo, conversationHistory }) {
           </div>
         </div>
 
-        {/* Domain Cards */}
-        <Section title="Domain Findings">
-          <div style={styles.domainsGrid}>
-            {report.domains?.map((d, i) => (
-              <div key={i} style={{ ...styles.domainCard, borderTop: `3px solid ${statusColor[d.status]}` }}>
-                <div style={styles.domainTop}>
-                  <span style={styles.domainName}>{d.name}</span>
-                  <span style={{
-                    ...styles.badge,
-                    background: statusBg[d.status],
-                    color: statusColor[d.status]
-                  }}>{statusLabel[d.status]}</span>
-                </div>
-                <p style={styles.domainFinding}>{d.finding}</p>
-                <p style={styles.domainAction}>→ {d.action}</p>
-              </div>
-            ))}
-          </div>
-        </Section>
-
-        {/* Non-AI Fixes */}
-        {report.non_ai_fixes?.length > 0 && (
-          <Section title="Fix These First">
-            <div style={styles.fixList}>
-              {report.non_ai_fixes.map((f, i) => (
-                <div key={i} style={styles.fixItem}>
-                  <div style={styles.fixIssue}>{f.issue}</div>
-                  <div style={styles.fixSolution}>{f.fix}</div>
+        {/* DIAGNOSTIC sections */}
+        {mode === 'DIAGNOSTIC' && <>
+          <Section title="Domain Findings">
+            <div style={styles.domainsGrid}>
+              {report.domains?.map((d, i) => (
+                <div key={i} style={{ ...styles.domainCard, borderTop: `3px solid ${statusColor[d.status]}` }}>
+                  <div style={styles.domainTop}>
+                    <span style={styles.domainName}>{d.name}</span>
+                    <span style={{
+                      ...styles.badge,
+                      background: statusBg[d.status],
+                      color: statusColor[d.status]
+                    }}>{statusLabel[d.status]}</span>
+                  </div>
+                  <p style={styles.domainFinding}>{d.finding}</p>
+                  <p style={styles.domainAction}>→ {d.action}</p>
                 </div>
               ))}
             </div>
           </Section>
-        )}
 
-        {/* AI Opportunities */}
-        {report.ai_opportunities?.length > 0 && (
-          <Section title="What's Now Possible">
-            <div style={styles.aiList}>
-              {report.ai_opportunities.map((a, i) => (
-                <div key={i} style={styles.aiItem}>
-                  <div style={styles.aiArea}>{a.area}</div>
-                  <div style={styles.aiWhy}>{a.why}</div>
+          {report.non_ai_fixes?.length > 0 && (
+            <Section title="Fix These First">
+              <div style={styles.fixList}>
+                {report.non_ai_fixes.map((f, i) => (
+                  <div key={i} style={styles.fixItem}>
+                    <div style={styles.fixIssue}>{f.issue}</div>
+                    <div style={styles.fixSolution}>{f.fix}</div>
+                  </div>
+                ))}
+              </div>
+            </Section>
+          )}
+
+          {report.ai_opportunities?.length > 0 && (
+            <Section title="What's Now Possible">
+              <div style={styles.aiList}>
+                {report.ai_opportunities.map((a, i) => (
+                  <div key={i} style={styles.aiItem}>
+                    <div style={styles.aiArea}>{a.area}</div>
+                    <div style={styles.aiWhy}>{a.why}</div>
+                  </div>
+                ))}
+              </div>
+            </Section>
+          )}
+
+          <Section title="Priority Actions">
+            <div style={styles.actions}>
+              {report.priority_actions?.map((a, i) => (
+                <div key={i} style={styles.action}>
+                  <div style={styles.actionNum}>{i + 1}</div>
+                  <div style={styles.actionText}>{a}</div>
                 </div>
               ))}
             </div>
           </Section>
-        )}
+        </>}
 
-        {/* Priority Actions */}
-        <Section title="Priority Actions">
-          <div style={styles.actions}>
-            {report.priority_actions?.map((a, i) => (
-              <div key={i} style={styles.action}>
-                <div style={styles.actionNum}>{i + 1}</div>
-                <div style={styles.actionText}>{a}</div>
+        {/* EXECUTION sections */}
+        {mode === 'EXECUTION' && <>
+          {report.delivery_plan?.length > 0 && (
+            <Section title="Delivery Plan">
+              <div style={styles.planList}>
+                {report.delivery_plan.map((s, i) => (
+                  <div key={i} style={styles.planItem}>
+                    <div style={styles.planStep}>{s.step}</div>
+                    <div>
+                      <div style={styles.planAction}>{s.action}</div>
+                      <div style={styles.planWhy}>{s.why}</div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </Section>
+            </Section>
+          )}
 
-        {/* Honest Truth */}
+          {report.what_to_expect && (
+            <Section title="What to Expect">
+              <p style={styles.prose}>{report.what_to_expect}</p>
+            </Section>
+          )}
+
+          {report.key_message && (
+            <Section title="Key Message">
+              <div style={styles.keyMessage}>
+                <p style={styles.keyMessageText}>{report.key_message}</p>
+              </div>
+            </Section>
+          )}
+        </>}
+
+        {/* HUMAN_MOMENT sections */}
+        {mode === 'HUMAN_MOMENT' && <>
+          {report.what_this_actually_is && (
+            <Section title="What This Actually Is">
+              <p style={styles.prose}>{report.what_this_actually_is}</p>
+            </Section>
+          )}
+
+          {report.delivery_script && (
+            <Section title="What to Say">
+              <div style={styles.scriptBlock}>
+                <p style={styles.scriptText}>{report.delivery_script}</p>
+              </div>
+            </Section>
+          )}
+
+          {report.what_to_expect && (
+            <Section title="What to Expect">
+              <p style={styles.prose}>{report.what_to_expect}</p>
+            </Section>
+          )}
+        </>}
+
+        {/* Honest Truth — shared across all modes */}
         <Section title="The Honest Truth">
           <div style={styles.truth}>
             <p style={styles.truthText}>{report.honest_truth}</p>
@@ -188,7 +255,7 @@ export default function Report({ userInfo, conversationHistory }) {
           <div style={styles.shareCard}>
             <div style={styles.shareLeft}>
               <p style={styles.shareTitle}>Want to act on this?</p>
-              <p style={styles.shareBody}>Share this report with Vnklo and discuss your first steps on implementing AI in the areas identified. One click — we'll reach out directly.</p>
+              <p style={styles.shareBody}>{shareCopy}</p>
             </div>
             <div style={styles.shareRight}>
               {shareState === 'idle' && (
@@ -329,6 +396,27 @@ const styles = {
   },
   aiArea: { fontSize: 13, fontWeight: 500, color: 'var(--green-dark)', marginBottom: 4 },
   aiWhy: { fontSize: 13, color: 'var(--gray-800)', lineHeight: 1.6 },
+  planList: { display: 'flex', flexDirection: 'column', gap: 10 },
+  planItem: { display: 'flex', gap: 14, alignItems: 'flex-start' },
+  planStep: {
+    width: 26, height: 26, borderRadius: '50%',
+    background: 'var(--black)', color: 'white',
+    fontSize: 12, fontWeight: 500, flexShrink: 0,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    marginTop: 1
+  },
+  planAction: { fontSize: 14, fontWeight: 500, color: 'var(--black)', marginBottom: 3 },
+  planWhy: { fontSize: 13, color: 'var(--gray-600)', lineHeight: 1.6 },
+  prose: { fontSize: 14, color: 'var(--gray-700)', lineHeight: 1.75 },
+  keyMessage: {
+    background: 'var(--black)', borderRadius: 'var(--radius)', padding: '1.25rem 1.5rem'
+  },
+  keyMessageText: { fontSize: 16, color: 'white', lineHeight: 1.6, margin: 0, fontFamily: 'var(--serif)', fontWeight: 400 },
+  scriptBlock: {
+    background: 'var(--gray-50, #F9F9F9)', borderLeft: '3px solid var(--green)',
+    borderRadius: '0 var(--radius) var(--radius) 0', padding: '1.25rem 1.5rem'
+  },
+  scriptText: { fontSize: 14, color: 'var(--gray-800)', lineHeight: 1.8, margin: 0, whiteSpace: 'pre-wrap' },
   actions: { display: 'flex', flexDirection: 'column', gap: 10 },
   action: { display: 'flex', gap: 12, alignItems: 'flex-start' },
   actionNum: {
