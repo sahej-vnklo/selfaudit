@@ -229,17 +229,17 @@ export default function AccountOnboarding({ user, onComplete, onBack }) {
     [category]
   )
 
-  // Fetch tier via server-side API (avoids client-side session dependency)
+  // Fetch tier directly from Supabase client — more reliable than the server
+  // API which requires SUPABASE_SERVICE_ROLE_KEY to be set in the environment.
   useEffect(() => {
     if (!user?.id) return
-    fetch('/api/get-tier', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: user.id }),
-    })
-      .then(r => r.ok ? r.json() : null)
-      .then(data => { if (data?.tier) setTier(data.tier) })
-      .catch(() => {}) // default 'free' tier on any error
+    import('../lib/supabase.js').then(({ initSupabase }) =>
+      initSupabase().then(sb =>
+        sb.from('profiles').select('tier').eq('id', user.id).single()
+      )
+    )
+      .then(({ data }) => { if (data?.tier) setTier(data.tier) })
+      .catch(() => {}) // keep default 'free' tier on any error
   }, [user])
 
   // Paid tiers: animate domains selecting one by one.

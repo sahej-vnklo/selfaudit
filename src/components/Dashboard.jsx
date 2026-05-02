@@ -391,7 +391,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginTop: 24 }}>
               {TIERS.map(t => (
-                <TierCard key={t.key} tier={t} currentTier={tier} />
+                <TierCard key={t.key} tier={t} currentTier={tier} userId={user?.id} email={user?.email} />
               ))}
             </div>
           </div>
@@ -934,10 +934,31 @@ function LiveBillingCard({ billing, billingLoading, billingError, onOpenPortal, 
 
 // ─── Tier card (billing section) ──────────────────────────────────────────────
 
-function TierCard({ tier, currentTier }) {
+function TierCard({ tier, currentTier, userId, email }) {
+  const [loading, setLoading] = useState(false)
   const current     = tier.key === currentTier
   const isUpgrade   = (TIER_ORDER[tier.key] ?? 0) > (TIER_ORDER[currentTier] ?? 0)
   const isDowngrade = (TIER_ORDER[tier.key] ?? 0) < (TIER_ORDER[currentTier] ?? 0)
+
+  const handleCheckout = async () => {
+    if (!userId || !email) return
+    setLoading(true)
+    try {
+      const res = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tier: tier.key, userId, email }),
+      })
+      const data = await res.json()
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        setLoading(false)
+      }
+    } catch (e) {
+      setLoading(false)
+    }
+  }
 
   return (
     <div style={{
@@ -976,13 +997,21 @@ function TierCard({ tier, currentTier }) {
         </div>
       )}
       {isUpgrade && (
-        <button style={{ fontSize: 13, fontWeight: 500, color: 'white', background: G.green, border: 'none', padding: '10px', borderRadius: 8, cursor: 'pointer', transition: 'background 0.15s' }}>
-          Upgrade to {tier.name}
+        <button
+          onClick={handleCheckout}
+          disabled={loading}
+          style={{ fontSize: 13, fontWeight: 500, color: 'white', background: loading ? G.inkFaint : G.green, border: 'none', padding: '10px', borderRadius: 8, cursor: loading ? 'not-allowed' : 'pointer', transition: 'background 0.15s' }}
+        >
+          {loading ? 'Redirecting…' : `Upgrade to ${tier.name}`}
         </button>
       )}
       {isDowngrade && (
-        <button style={{ fontSize: 13, fontWeight: 500, color: G.inkMuted, background: 'none', border: `0.5px solid ${G.border}`, padding: '10px', borderRadius: 8, cursor: 'pointer' }}>
-          Downgrade to {tier.name}
+        <button
+          onClick={handleCheckout}
+          disabled={loading}
+          style={{ fontSize: 13, fontWeight: 500, color: G.inkMuted, background: 'none', border: `0.5px solid ${G.border}`, padding: '10px', borderRadius: 8, cursor: loading ? 'not-allowed' : 'pointer' }}
+        >
+          {loading ? 'Redirecting…' : `Downgrade to ${tier.name}`}
         </button>
       )}
     </div>

@@ -1,9 +1,9 @@
 import Stripe from 'stripe'
 
 const PRICE_IDS = {
-  essential:  null, // TODO: add essential price ID from Stripe dashboard
-  business:   'price_1TRDcRJxpOyRd0sIrivReTDB',
-  portfolio:  'price_1TRDcjJxpOyRd0sIaryd6fga',
+  essential:  process.env.STRIPE_PRICE_ESSENTIAL || null,
+  business:   process.env.STRIPE_PRICE_BUSINESS  || 'price_1TRDcRJxpOyRd0sIrivReTDB',
+  portfolio:  process.env.STRIPE_PRICE_PORTFOLIO || 'price_1TRDcjJxpOyRd0sIaryd6fga',
 }
 
 export default async function handler(req, res) {

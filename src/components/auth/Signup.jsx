@@ -87,12 +87,14 @@ function SignupForm({ onSuccess, onLogin }) {
           body: JSON.stringify({ action: 'create_user', email: form.email, name: fullName, tier: selectedPlan }),
         }).catch(e => console.warn('[signup] Attio failed:', e.message))
 
-        // 2. Insert profile row with selected tier
-        await sb.from('profiles').insert({
+        // 2. Upsert profile row with selected tier — upsert handles the case where
+        // a Supabase trigger already created the row (e.g. handle_new_user), ensuring
+        // tier is always written correctly even if the row pre-exists.
+        await sb.from('profiles').upsert({
           id:         user.id,
           name:       fullName,
           tier:       selectedPlan,
-        }).throwOnError()
+        }, { onConflict: 'id' }).throwOnError()
 
         // 3. Create Stripe customer + subscription (all plans require card)
         if (!stripe || !elements) throw new Error('Stripe is not loaded yet. Please try again.')
