@@ -100,6 +100,26 @@ const HOW_STEPS = [
 
 export default function Landing({ onStart }) {
   const [howOpen, setHowOpen] = useState(false)
+  const [upgradeLoading, setUpgradeLoading] = useState(false)
+
+  const handleUpgrade = async (plan) => {
+    setUpgradeLoading(true)
+    try {
+      const res = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan }),
+      })
+      const data = await res.json()
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        setUpgradeLoading(false)
+      }
+    } catch (e) {
+      setUpgradeLoading(false)
+    }
+  }
 
   return (
     <div style={{ fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", background: C.bg, color: C.ink, lineHeight: 1.6, minHeight: '100vh' }}>
@@ -368,12 +388,13 @@ export default function Landing({ onStart }) {
                 ))}
               </ul>
               <button
-                onClick={onStart}
-                style={{ display: 'block', width: '100%', padding: '14px', borderRadius: 100, fontSize: 15, fontWeight: 500, cursor: 'pointer', background: C.accent, color: 'white', border: 'none', transition: 'background 0.2s' }}
-                onMouseEnter={e => e.currentTarget.style.background = C.accentDark}
-                onMouseLeave={e => e.currentTarget.style.background = C.accent}
+                onClick={() => handleUpgrade('essential')}
+                disabled={upgradeLoading}
+                style={{ display: 'block', width: '100%', padding: '14px', borderRadius: 100, fontSize: 15, fontWeight: 500, cursor: upgradeLoading ? 'not-allowed' : 'pointer', background: upgradeLoading ? C.inkMuted : C.accent, color: 'white', border: 'none', transition: 'background 0.2s' }}
+                onMouseEnter={e => { if (!upgradeLoading) e.currentTarget.style.background = C.accentDark }}
+                onMouseLeave={e => { if (!upgradeLoading) e.currentTarget.style.background = C.accent }}
               >
-                Get full access
+                {upgradeLoading ? 'Redirecting...' : 'Get full access'}
               </button>
             </div>
           </div>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { generateReport, sendReportEmail } from '../lib/audit.js'
 
-export default function Report({ userInfo, conversationHistory, apiKey }) {
+export default function Report({ userInfo, conversationHistory, apiKey, attioPersonId }) {
   const [report, setReport] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -23,6 +23,43 @@ export default function Report({ userInfo, conversationHistory, apiKey }) {
     }
     build()
   }, [])
+
+  // Log full chat thread + report to Attio once report is ready
+  React.useEffect(() => {
+    if (!report || !attioPersonId) return
+
+    const transcript = conversationHistory
+      .filter(m => m.role !== 'system')
+      .map(m => `[${m.role === 'user' ? 'User' : 'SelfAudit'}]: ${m.content}`)
+      .join('\n\n')
+
+    const reportText = [
+      `HEADLINE: ${report.headline}`,
+      `OVERALL VERDICT: ${report.overall_verdict}`,
+      '',
+      'DOMAIN FINDINGS:',
+      ...(report.domains || []).map(d => `  ${d.name} (${d.status}): ${d.finding} → ${d.action}`),
+      '',
+      'NON-AI FIXES:',
+      ...(report.non_ai_fixes || []).map(f => `  • ${f.issue}: ${f.fix}`),
+      '',
+      'AI OPPORTUNITIES:',
+      ...(report.ai_opportunities || []).map(a => `  • ${a.area}: ${a.why}`),
+      '',
+      'PRIORITY ACTIONS:',
+      ...(report.priority_actions || []).map((a, i) => `  ${i + 1}. ${a}`),
+      '',
+      `THE HONEST TRUTH: ${report.honest_truth}`,
+    ].join('\n')
+
+    const noteContent = `=== AUDIT SESSION ===\nPlan: ${userInfo?.plan || 'free'}\nContext: ${userInfo?.context || ''}\nDate: ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}\n\n=== CHAT TRANSCRIPT ===\n${transcript}\n\n=== AUDIT REPORT ===\n${reportText}`
+
+    fetch('/api/attio', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'create_note', person_id: attioPersonId, note_content: noteContent }),
+    }).catch(e => console.error('Attio note failed:', e))
+  }, [report, attioPersonId])
 
   const handleShare = async () => {
     if (shareState !== 'idle') return
@@ -48,7 +85,21 @@ export default function Report({ userInfo, conversationHistory, apiKey }) {
         <div style={{...styles.logo, cursor: 'pointer'}} onClick={() => window.location.reload()}>
           self<span style={{ color: 'var(--green)' }}>audit</span>
         </div>
-        <div style={styles.navRight}>Audit Report</div>
+        <div style={styles.navRight}>
+          {userInfo?.plan && (
+            <span style={{
+              fontSize: 11, fontWeight: 600, padding: '3px 10px',
+              borderRadius: 'var(--radius-pill)', textTransform: 'uppercase', letterSpacing: '0.5px',
+              background: userInfo.plan === 'business' ? 'var(--green-light)' : 'var(--gray-100)',
+              color: userInfo.plan === 'business' ? 'var(--green-dark)' : 'var(--gray-600)',
+              border: userInfo.plan !== 'business' ? '1px solid var(--gray-200)' : 'none',
+              marginRight: 12,
+            }}>
+              {userInfo.plan === 'business' ? 'Business' : userInfo.plan === 'essential' ? 'Essential' : 'Free'}
+            </span>
+          )}
+          Audit Report
+        </div>
       </nav>
 
       <div style={styles.content}>

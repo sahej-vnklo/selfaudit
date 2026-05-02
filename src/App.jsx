@@ -1,17 +1,18 @@
 import React, { useState } from 'react'
 import Landing from './components/Landing.jsx'
 import Onboarding from './components/Onboarding.jsx'
+import Dashboard from './components/Dashboard.jsx'
 import AuditChat from './components/AuditChat.jsx'
 import Report from './components/Report.jsx'
 import ConfigScreen from './components/ConfigScreen.jsx'
 
-// In production: set VITE_CLAUDE_API_KEY as env var and remove ConfigScreen
 const ENV_CLAUDE_KEY = import.meta.env.VITE_CLAUDE_API_KEY || ''
 
 const SCREENS = {
   CONFIG: 'config',
   LANDING: 'landing',
   ONBOARDING: 'onboarding',
+  DASHBOARD: 'dashboard',
   AUDIT: 'audit',
   REPORT: 'report',
 }
@@ -23,6 +24,7 @@ export default function App() {
   const [claudeKey, setClaudeKey] = useState(ENV_CLAUDE_KEY)
   const [userInfo, setUserInfo] = useState(null)
   const [conversationHistory, setConversationHistory] = useState([])
+  const [attioPersonId, setAttioPersonId] = useState(null)
 
   const handleConfig = (ck) => {
     setClaudeKey(ck)
@@ -31,10 +33,26 @@ export default function App() {
 
   const handleStart = () => setScreen(SCREENS.ONBOARDING)
 
-  const handleOnboarding = (info) => {
+  const handleOnboarding = async (info) => {
     setUserInfo(info)
-    setScreen(SCREENS.AUDIT)
+    setScreen(SCREENS.DASHBOARD)
+
+    // Upsert person in Attio — fire and forget
+    try {
+      const res = await fetch('/api/attio', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'upsert_person', userInfo: info }),
+      })
+      const data = await res.json()
+      if (data.person_id) setAttioPersonId(data.person_id)
+    } catch (e) {
+      // Non-blocking — CRM sync failure should not break the user flow
+      console.error('Attio upsert failed:', e)
+    }
   }
+
+  const handleStartAudit = () => setScreen(SCREENS.AUDIT)
 
   const handleReportReady = (history) => {
     setConversationHistory(history)
@@ -52,6 +70,9 @@ export default function App() {
       {screen === SCREENS.ONBOARDING && (
         <Onboarding onComplete={handleOnboarding} />
       )}
+      {screen === SCREENS.DASHBOARD && userInfo && (
+        <Dashboard userInfo={userInfo} onStartAudit={handleStartAudit} />
+      )}
       {screen === SCREENS.AUDIT && userInfo && (
         <AuditChat
           userInfo={userInfo}
@@ -66,6 +87,7 @@ export default function App() {
           userInfo={userInfo}
           conversationHistory={conversationHistory}
           apiKey={claudeKey}
+          attioPersonId={attioPersonId}
         />
       )}
     </>
