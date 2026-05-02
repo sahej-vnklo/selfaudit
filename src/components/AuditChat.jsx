@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import * as Sentry from '@sentry/react'
 import { sendMessage } from '../lib/audit.js'
 import { initSupabase } from '../lib/supabase.js'
 import { usePostHog } from '@posthog/react'
@@ -106,6 +107,7 @@ function UpgradePanel({ type, tierData, userInfo, onDismiss }) {
       if (!res.ok) throw new Error(data.error || 'Failed to start checkout')
       window.location.href = data.url
     } catch (e) {
+      Sentry.captureException(e)
       posthog?.captureException(e)
       setCheckoutError(e.message)
       setCheckoutLoading(false)
@@ -280,6 +282,7 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
         setTimeout(() => onReportReady(finalHistory), 1200)
       }
     } catch (err) {
+      Sentry.captureException(err)
       posthog?.captureException(err)
       setConversationHistory(prev => [...prev, {
         role: 'assistant',

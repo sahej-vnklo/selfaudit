@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import * as Sentry from '@sentry/react'
 import { loadStripe } from '@stripe/stripe-js'
 import {
   Elements,
@@ -134,6 +135,7 @@ function SignupForm({ onSuccess, onLogin }) {
         setEmailSent(true)
       }
     } catch (e) {
+      Sentry.captureException(e)
       posthog?.captureException(e)
       setGlobalError(e.message || 'Connection error. Please try again.')
     } finally {

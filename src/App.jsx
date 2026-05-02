@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
+import * as Sentry from '@sentry/react'
 import { supabase, initSupabase } from './lib/supabase.js'
 import Landing from './components/Landing.jsx'
 import Onboarding from './components/Onboarding.jsx'
@@ -130,6 +131,7 @@ export default function App() {
       })
       .catch((err) => {
         clearTimeout(authTimeout)
+        Sentry.captureException(err)
         console.error('[auth] initSupabase failed:', err.message)
         setSession(null)
         setAuthLoading(false)
@@ -151,6 +153,7 @@ export default function App() {
         const sb = await initSupabase()
         await sb.from('profiles').update({ context: info.context.trim() }).eq('id', session.user.id)
       } catch (e) {
+        Sentry.captureException(e)
         console.warn('[onboarding] context save failed:', e?.message)
       }
     }

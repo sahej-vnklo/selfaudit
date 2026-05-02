@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import * as Sentry from '@sentry/react'
 import { generateReport, sendReportEmail } from '../lib/audit.js'
 import { initSupabase } from '../lib/supabase.js'
 import { usePostHog } from '@posthog/react'
@@ -53,6 +54,7 @@ export default function Report({ userInfo, conversationHistory }) {
           priority_action_count: r.priority_actions?.length,
         })
       } catch (e) {
+        Sentry.captureException(e)
         posthog?.captureException(e)
         setError(e.message)
       } finally {
@@ -70,6 +72,7 @@ export default function Report({ userInfo, conversationHistory }) {
       await sendReportEmail({ userInfo, report })
       setShareState('sent')
     } catch (e) {
+      Sentry.captureException(e)
       posthog?.captureException(e)
       setShareState('error')
     }

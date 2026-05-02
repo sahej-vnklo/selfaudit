@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import * as Sentry from '@sentry/react'
 import { usePostHog } from '@posthog/react'
 
 // ─── Data ────────────────────────────────────────────────────────────────────
@@ -251,7 +252,8 @@ export default function AccountOnboarding({ user, onComplete, onBack }) {
         setTier(data?.tier ?? 'free')
         setTierLoaded(true)
       })
-      .catch(() => {
+      .catch((err) => {
+        Sentry.captureException(err)
         setTierLoaded(true) // unblock with default 'free' tier on any error
       })
   }, [user])
@@ -328,6 +330,7 @@ export default function AccountOnboarding({ user, onComplete, onBack }) {
       }
       posthog?.capture('account_onboarding_completed', { industry: category, domain: selectedDomain, tier })
     } catch (e) {
+      Sentry.captureException(e)
       console.error('[onboarding] save-context fetch failed:', e.message)
     } finally {
       setSaving(false)
