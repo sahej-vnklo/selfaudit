@@ -86,30 +86,37 @@ function StepBar({ current }) {
 
 // ─── Step 1 — category ────────────────────────────────────────────────────────
 
-function Step2({ onSelect }) {
+function Step2({ onSelect, loadingTier }) {
   return (
     <div>
       <p style={s.eyebrow}>Step 1 of 3</p>
       <h2 style={s.title}>What industry?</h2>
       <p style={s.sub}>Helps the audit use the right benchmarks.</p>
-      <div style={{
-        display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 28,
-        maxHeight: 340, overflowY: 'auto', paddingRight: 4,
-      }}>
-        {BUSINESS_OPTIONS.map(opt => (
-          <button
-            key={opt}
-            style={s.pill}
-            onClick={() => onSelect(opt)}
-            onMouseEnter={e => Object.assign(e.currentTarget.style, s.pillHover)}
-            onMouseLeave={e => Object.assign(e.currentTarget.style, {
-              background: 'var(--gray-100)', color: 'var(--gray-800)', borderColor: 'var(--gray-200)',
-            })}
-          >
-            {opt}
-          </button>
-        ))}
-      </div>
+      {loadingTier ? (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 36, color: 'var(--gray-400)', fontSize: 14 }}>
+          <div style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid var(--gray-200)', borderTopColor: 'var(--green)', animation: 'spin 0.8s linear infinite', flexShrink: 0 }} />
+          Loading your plan details…
+        </div>
+      ) : (
+        <div style={{
+          display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 28,
+          maxHeight: 340, overflowY: 'auto', paddingRight: 4,
+        }}>
+          {BUSINESS_OPTIONS.map(opt => (
+            <button
+              key={opt}
+              style={s.pill}
+              onClick={() => onSelect(opt)}
+              onMouseEnter={e => Object.assign(e.currentTarget.style, s.pillHover)}
+              onMouseLeave={e => Object.assign(e.currentTarget.style, {
+                background: 'var(--gray-100)', color: 'var(--gray-800)', borderColor: 'var(--gray-200)',
+              })}
+            >
+              {opt}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -215,12 +222,14 @@ function BackLink({ onClick }) {
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function AccountOnboarding({ user, onComplete, onBack }) {
-  const [step,     setStep]     = useState(2)
-  const [category, setCategory] = useState(null)
-  const [domains,  setDomains]  = useState([])
-  const [ctxText,  setCtxText]  = useState('')
-  const [saving,   setSaving]   = useState(false)
-  const [tier,     setTier]     = useState('free')
+  const [step,            setStep]            = useState(2)
+  const [category,        setCategory]        = useState(null)
+  const [domains,         setDomains]         = useState([])
+  const [ctxText,         setCtxText]         = useState('')
+  const [saving,          setSaving]          = useState(false)
+  const [tier,            setTier]            = useState('free')
+  const [tierLoaded,      setTierLoaded]      = useState(false)
+  const [pendingCategory, setPendingCategory] = useState(null)
   const posthog = usePostHog()
 
   // Domains available for Step 3 — filtered by selected industry
@@ -238,9 +247,22 @@ export default function AccountOnboarding({ user, onComplete, onBack }) {
         sb.from('profiles').select('tier').eq('id', user.id).single()
       )
     )
-      .then(({ data }) => { if (data?.tier) setTier(data.tier) })
-      .catch(() => {}) // keep default 'free' tier on any error
+      .then(({ data }) => {
+        setTier(data?.tier ?? 'free')
+        setTierLoaded(true)
+      })
+      .catch(() => {
+        setTierLoaded(true) // unblock with default 'free' tier on any error
+      })
   }, [user])
+
+  // If user clicked an industry before tier resolved, advance to step 3 now
+  useEffect(() => {
+    if (!tierLoaded || pendingCategory === null) return
+    setStep(3)
+    if (!isPaidTier(tier)) setDomains([])
+    setPendingCategory(null)
+  }, [tierLoaded, pendingCategory, tier])
 
   // Paid tiers: animate domains selecting one by one.
   // Portfolio cascades ALL domain labels; business/paid uses the industry-filtered set.
@@ -259,6 +281,11 @@ export default function AccountOnboarding({ user, onComplete, onBack }) {
   const handleCategory = (c) => {
     posthog?.capture('account_onboarding_industry_selected', { industry: c, tier })
     setCategory(c)
+    if (!tierLoaded) {
+      // Tier fetch still in-flight — store intent and advance once it resolves
+      setPendingCategory(c)
+      return
+    }
     setStep(3)
     if (!isPaidTier(tier)) setDomains([])
   }
@@ -324,6 +351,7 @@ export default function AccountOnboarding({ user, onComplete, onBack }) {
           {step === 2 && (
             <Step2
               onSelect={handleCategory}
+              loadingTier={pendingCategory !== null && !tierLoaded}
             />
           )}
 

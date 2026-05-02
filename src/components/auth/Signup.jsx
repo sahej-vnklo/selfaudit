@@ -87,14 +87,18 @@ function SignupForm({ onSuccess, onLogin }) {
           body: JSON.stringify({ action: 'create_user', email: form.email, name: fullName, tier: selectedPlan }),
         }).catch(e => console.warn('[signup] Attio failed:', e.message))
 
-        // 2. Upsert profile row with selected tier — upsert handles the case where
-        // a Supabase trigger already created the row (e.g. handle_new_user), ensuring
-        // tier is always written correctly even if the row pre-exists.
-        await sb.from('profiles').upsert({
-          id:         user.id,
-          name:       fullName,
-          tier:       selectedPlan,
-        }, { onConflict: 'id' }).throwOnError()
+        // 2. Upsert profile row with selected tier.
+        // Wait 300ms first so the handle_new_user trigger has time to create
+        // the row — without this the upsert and trigger can race, leaving tier=null.
+        await new Promise(r => setTimeout(r, 300))
+
+        const { data: profileData, error: profileError } = await sb
+          .from('profiles')
+          .upsert({ id: user.id, name: fullName, tier: selectedPlan }, { onConflict: 'id' })
+          .select('tier')
+          .single()
+        if (profileError) throw profileError
+        console.log('[signup] tier written:', profileData?.tier)
 
         // 3. Create Stripe customer + subscription (all plans require card)
         if (!stripe || !elements) throw new Error('Stripe is not loaded yet. Please try again.')
