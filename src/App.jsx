@@ -185,10 +185,10 @@ export default function App() {
     if (session) { navigate(SCREENS.DASHBOARD); return null }
     return <Login
       onSuccess={(session) => {
-        // Set session immediately so the Dashboard guard doesn't redirect back
-        // before onAuthStateChange has a chance to fire.
+        // Set session immediately so guards don't redirect back to login before
+        // onAuthStateChange fires. Do NOT navigate here — let onAuthStateChange
+        // check onboarding_complete and route to ACCOUNT_ONBOARDING or DASHBOARD.
         if (session) setSession(session)
-        navigate(SCREENS.DASHBOARD)
       }}
       onSignup={() => navigate(SCREENS.SIGNUP)}
     />
