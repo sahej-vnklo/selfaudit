@@ -152,7 +152,7 @@ function UpgradePanel({ type, tierData, userInfo, onDismiss }) {
 // ─── Chat helpers ─────────────────────────────────────────────────────────────
 
 const FIRST_MESSAGE = () =>
-  `Let's start simple. In one sentence — what's the biggest problem you're actually trying to solve right now?`
+  `What's going on in your business right now?`
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
