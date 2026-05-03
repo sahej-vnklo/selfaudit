@@ -181,10 +181,13 @@ function buildServer() {
 // ── Vercel handler ─────────────────────────────────────────────────────────────
 
 export default async function handler(req: any, res: any): Promise<void> {
-  // Auth
-  const adminKey = req.headers["x-tsa-admin-key"];
-  if (!process.env.TSA_ADMIN_KEY || adminKey !== process.env.TSA_ADMIN_KEY) {
-    res.status(401).json({ error: "Unauthorized: missing or invalid x-tsa-admin-key" });
+  // Auth — accept key from query param or header
+  const url = new URL(req.url, 'https://tryselfaudit.com')
+  const keyFromQuery = url.searchParams.get('key')
+  const keyFromHeader = (req.headers?.['x-tsa-admin-key'] as string) || ''
+  const providedKey = keyFromQuery || keyFromHeader
+  if (!process.env.TSA_ADMIN_KEY || providedKey !== process.env.TSA_ADMIN_KEY) {
+    res.status(401).json({ error: "Unauthorized: missing or invalid key" });
     return;
   }
 
