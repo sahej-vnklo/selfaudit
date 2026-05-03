@@ -121,8 +121,10 @@ export default function Report({ userInfo, conversationHistory }) {
               </svg>
               {userInfo.name}
             </span>
-            <span style={styles.metaDot}>·</span>
-            <span style={styles.metaItem}>{userInfo.context}</span>
+            {mode === 'DIAGNOSTIC' && userInfo.context && <>
+              <span style={styles.metaDot}>·</span>
+              <span style={styles.metaItem}>{userInfo.context}</span>
+            </>}
             <span style={styles.metaDot}>·</span>
             <span style={styles.metaItem}>{new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
           </div>

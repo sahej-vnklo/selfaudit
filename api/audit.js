@@ -131,32 +131,36 @@ Write ai_opportunities as a senior advisor laying out what is now buildable for 
   "honest_truth": "The single hardest thing for this person to hear — the thing they are avoiding or the structural reality they cannot escape. Make it land. If AI opportunities were identified, close with one sentence connecting their identified gap to what is now buildable — make the next step obvious without being salesy."
 }
 
-IF EXECUTION — generate this structure:
+IF EXECUTION — generate this structure. ALL six fields are required. Do not omit any field.
 
 {
   "conversation_mode": "EXECUTION",
   "headline": "One sentence naming what they're executing and the core challenge in doing it well",
   "execution_context": "2-3 sentences. What they're navigating. Name it clearly without judgment.",
   "delivery_plan": [
-    { "step": 1, "action": "...", "why": "..." },
-    { "step": 2, "action": "...", "why": "..." }
+    { "step": 1, "action": "Schedule a direct conversation with your leadership team before any wider announcement", "why": "Surprises at the top destroy trust faster than the news itself. Give them time to process before they have to manage others." },
+    { "step": 2, "action": "Prepare a one-page written summary of the timeline and what it means for each team", "why": "People ask the same questions in a crisis. Having answers ready in writing reduces panic and gives them something to hold." }
   ],
-  "what_to_expect": "What will likely happen when they execute this. Reactions, questions, complications. Prepare them.",
+  "what_to_expect": "What will likely happen when they execute this. Reactions, questions, complications. Prepare them for the real shape of it.",
   "key_message": "The single most important thing they need to communicate. One sentence.",
   "honest_truth": "Validation or the one thing they need to hear to do this well."
 }
 
-IF HUMAN_MOMENT or EXECUTION_HUMAN — generate this structure:
+ALL six fields above are required. delivery_plan must contain at least two concrete steps with real action and why text, not placeholders.
+
+IF HUMAN_MOMENT or EXECUTION_HUMAN — generate this structure. ALL six fields are required. Do not omit any field.
 
 {
   "conversation_mode": "HUMAN_MOMENT",
   "headline": "One sentence that names what they're actually carrying — human and direct",
   "acknowledgment": "Genuine recognition of what this situation actually is. Not therapy speak. Not corporate. Just honest. 2-3 sentences.",
   "what_this_actually_is": "Name the real situation clearly. What they're navigating. What makes it hard. What makes it right that they're thinking carefully about it.",
-  "delivery_script": "A concrete example script or set of words they can actually use. Real language. Not bullet points — write it out as if they were going to say it. Start with: 'Something like this:'",
+  "delivery_script": "Something like this:\n\n\"I want to be straight with you about where things stand. [Continue with 3-5 sentences of actual words in first person that the person could say out loud. Make it human, not corporate. Not bullet points — write it as a continuous spoken paragraph.]\"",
   "what_to_expect": "The human reactions they'll face. How to hold the room. What questions will come. How to handle them with dignity.",
   "honest_truth": "The one thing that matters most. Often: they're doing the right thing by thinking this carefully. Name it directly."
 }
+
+ALL six fields above are required. Do not skip delivery_script or what_to_expect. delivery_script must contain actual words the person can say, written out in first person as a continuous paragraph, not bullet points. It must start with 'Something like this:' followed by a newline and the actual script in quotes.
 
 CRITICAL RULES FOR NON-DIAGNOSTIC REPORTS:
 - NO "Fix These First" section

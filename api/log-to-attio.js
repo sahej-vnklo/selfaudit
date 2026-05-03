@@ -124,7 +124,7 @@ export default async function handler(req, res) {
 
       console.log('[log-to-attio] querying person by email')
       const queryResult = await attio('POST', '/objects/people/records/query', {
-        filter: { email_addresses: { $contains: { email_address: email } } },
+        filter: { email_addresses: [{ email_address: { $eq: email } }] },
         limit: 1,
       })
       const person = queryResult?.data?.[0]
@@ -162,7 +162,7 @@ export default async function handler(req, res) {
 
       console.log('[log-to-attio] querying list entry')
       const entriesResult = await attio('POST', `/lists/${LIST_ID}/entries/query`, {
-        filter: { 'record.email_addresses': { $contains: { email_address: email } } },
+        filter: { record: { email_addresses: [{ email_address: { $eq: email } }] } },
         limit: 1,
       })
       const entry = entriesResult?.data?.[0]
