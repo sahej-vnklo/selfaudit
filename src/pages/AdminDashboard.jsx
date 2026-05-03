@@ -170,7 +170,9 @@ function ReportContent({ content }) {
         </div>
       )}
 
-      {domains.length > 0 && (
+      {domains.length === 0 ? (
+        <p style={{ fontSize: 13, color: G.inkFaint, fontStyle: 'italic' }}>No domain breakdown available.</p>
+      ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {domains.map((d, i) => {
             const sc = STATUS_COLORS[d.status] ?? { bg: G.bg, color: G.inkMuted }
@@ -218,6 +220,7 @@ function ReportContent({ content }) {
 }
 
 // ─── User List ────────────────────────────────────────────────────────────────
+
 
 function UserList({ onSelectUser }) {
   const [users, setUsers]     = useState([])
