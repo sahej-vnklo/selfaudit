@@ -61,7 +61,7 @@ serve(async (req: Request) => {
     data: {
       values: {
         email_addresses: [{ email_address: email }],
-        name: { first, last },
+        name: { first_name: first, last_name: last, full_name: name },
       },
     },
     matching_attribute: "email_addresses",
