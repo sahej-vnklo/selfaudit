@@ -117,6 +117,9 @@ export default function App() {
 
           if (session && event === 'SIGNED_IN') {
             setAuthLoading(false)
+            const currentHash = window.location.hash.replace(/^#\/?/, '')
+            if (currentHash === 'admin') return
+
             const { data: profile } = await sb
               .from('profiles')
               .select('onboarding_complete')
