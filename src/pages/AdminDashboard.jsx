@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
 
-const ADMIN_EMAIL = 'saheje@gmail.com'
+const ADMIN_EMAIL = 'sahej@vnklo.com'
 
 const G = {
   green:      '#1D9E75',
@@ -16,6 +16,8 @@ const G = {
   red:        '#C0392B',
   redLight:   '#FDECEA',
 }
+
+const THIRTY_MIN_MS = 30 * 60 * 1000
 
 function getServiceClient() {
   const url = import.meta.env.VITE_SUPABASE_URL ?? 'https://spinhhzpboojmpndaxue.supabase.co'
@@ -80,6 +82,15 @@ function Badge({ label, bg, color }) {
   )
 }
 
+function Chevron({ open }) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"
+      style={{ flexShrink: 0, transition: 'transform 0.2s', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+      <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  )
+}
+
 const TIER_COLORS = {
   essential: { bg: '#E1F5EE', color: '#0F6E56' },
   business:  { bg: '#E6F1FB', color: '#185FA5' },
@@ -93,12 +104,41 @@ function fmtDate(iso) {
   return new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
 }
 
+// ─── Message thread ───────────────────────────────────────────────────────────
+
+function MessageThread({ rows }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '12px 4px' }}>
+      {rows.map((row, i) => {
+        const isUser = row.role === 'user'
+        return (
+          <div key={row.id ?? i} style={{ display: 'flex', justifyContent: isUser ? 'flex-end' : 'flex-start' }}>
+            <div style={{
+              maxWidth: '76%',
+              background: isUser ? G.green : G.bg,
+              color: isUser ? G.white : G.ink,
+              borderRadius: isUser ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
+              padding: '8px 12px',
+              fontSize: 13,
+              lineHeight: 1.55,
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
+            }}>
+              {row.message || <span style={{ opacity: 0.5, fontStyle: 'italic' }}>empty</span>}
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 // ─── User List ────────────────────────────────────────────────────────────────
 
 function UserList({ onSelectUser }) {
-  const [users, setUsers]   = useState([])
+  const [users, setUsers]     = useState([])
   const [loading, setLoading] = useState(true)
-  const [error, setError]   = useState(null)
+  const [error, setError]     = useState(null)
 
   useEffect(() => {
     async function load() {
@@ -155,11 +195,7 @@ function UserList({ onSelectUser }) {
                   <tr
                     key={u.id ?? i}
                     onClick={() => onSelectUser(u)}
-                    style={{
-                      borderBottom: `1px solid ${G.border}`,
-                      cursor: 'pointer',
-                      transition: 'background 0.12s',
-                    }}
+                    style={{ borderBottom: `1px solid ${G.border}`, cursor: 'pointer', transition: 'background 0.12s' }}
                     onMouseEnter={e => e.currentTarget.style.background = G.bg}
                     onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                   >
@@ -186,10 +222,12 @@ function UserList({ onSelectUser }) {
 // ─── User Detail ──────────────────────────────────────────────────────────────
 
 function UserDetail({ user, onBack }) {
-  const [reports, setReports]   = useState([])
-  const [chats, setChats]       = useState([])
-  const [loading, setLoading]   = useState(true)
-  const [error, setError]       = useState(null)
+  const [reports, setReports]             = useState([])
+  const [chats, setChats]                 = useState([])
+  const [loading, setLoading]             = useState(true)
+  const [error, setError]                 = useState(null)
+  const [expandedReports, setExpandedReports]   = useState(new Set())
+  const [expandedSessions, setExpandedSessions] = useState(new Set())
 
   useEffect(() => {
     async function load() {
@@ -197,8 +235,8 @@ function UserDetail({ user, onBack }) {
       if (!sb) { setError('VITE_SUPABASE_SERVICE_ROLE_KEY not set'); setLoading(false); return }
 
       const [{ data: rData, error: rErr }, { data: cData, error: cErr }] = await Promise.all([
-        sb.from('reports').select('id, title, created_at').eq('user_id', user.id).order('created_at', { ascending: false }),
-        sb.from('chats').select('id, session_id, role, message, created_at').eq('user_id', user.id).order('created_at', { ascending: false }),
+        sb.from('reports').select('id, title, content, created_at').eq('user_id', user.id).order('created_at', { ascending: false }),
+        sb.from('chats').select('id, session_id, role, message, created_at').eq('user_id', user.id).order('created_at', { ascending: true }),
       ])
 
       if (rErr || cErr) setError((rErr ?? cErr).message)
@@ -208,6 +246,46 @@ function UserDetail({ user, onBack }) {
     }
     load()
   }, [user.id])
+
+  // Group chat rows into sessions
+  const sessionMap = chats.reduce((acc, row) => {
+    const key = row.session_id ?? row.id
+    if (!acc[key]) acc[key] = []
+    acc[key].push(row)
+    return acc
+  }, {})
+
+  const sessions = Object.entries(sessionMap).map(([sid, rows]) => {
+    const sorted    = [...rows].sort((a, b) => a.created_at.localeCompare(b.created_at))
+    const userMsg   = sorted.find(r => r.role === 'user')
+    const preview   = (userMsg?.message ?? '').slice(0, 100)
+    const latestTs  = sorted[sorted.length - 1].created_at
+    const earliestTs = sorted[0].created_at
+    return { sid, rows: sorted, preview, count: rows.length, latestTs, date: earliestTs }
+  }).sort((a, b) => b.date.localeCompare(a.date))
+
+  // Match each report to the session whose latest message falls within 30 min before the report
+  const reportToSession = {}
+  const sessionToReport = {}
+  reports.forEach(report => {
+    const reportTs = new Date(report.created_at).getTime()
+    let bestSid  = null
+    let bestDiff = Infinity
+    sessions.forEach(session => {
+      const diff = reportTs - new Date(session.latestTs).getTime()
+      if (diff >= 0 && diff <= THIRTY_MIN_MS && diff < bestDiff) {
+        bestSid  = session.sid
+        bestDiff = diff
+      }
+    })
+    if (bestSid) {
+      reportToSession[report.id]  = bestSid
+      sessionToReport[bestSid]    = report
+    }
+  })
+
+  const toggleReport  = id  => setExpandedReports(prev  => { const n = new Set(prev);  n.has(id)  ? n.delete(id)  : n.add(id);  return n })
+  const toggleSession = sid => setExpandedSessions(prev => { const n = new Set(prev);  n.has(sid) ? n.delete(sid) : n.add(sid); return n })
 
   const tc = TIER_COLORS[user.tier] ?? TIER_COLORS.essential
 
@@ -245,7 +323,7 @@ function UserDetail({ user, onBack }) {
       {error && <ErrorBanner message={error} />}
       {loading ? <Spinner /> : (
         <>
-          {/* Reports */}
+          {/* ── Reports ─────────────────────────────────────────────────── */}
           <section style={{ marginBottom: 36 }}>
             <h3 style={{ fontSize: 16, fontWeight: 700, color: G.ink, marginBottom: 14 }}>
               Reports <span style={{ color: G.inkFaint, fontWeight: 400 }}>({reports.length})</span>
@@ -254,65 +332,124 @@ function UserDetail({ user, onBack }) {
               <p style={{ color: G.inkFaint, fontSize: 14 }}>No reports yet.</p>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {reports.map(r => (
-                  <div key={r.id} style={{
-                    background: G.white, border: `1px solid ${G.border}`,
-                    borderRadius: 8, padding: '12px 16px',
-                    display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8,
-                  }}>
-                    <p style={{ fontSize: 14, fontWeight: 600, color: G.ink }}>{r.title || '(untitled)'}</p>
-                    <p style={{ fontSize: 12, color: G.inkFaint, whiteSpace: 'nowrap' }}>{fmtDate(r.created_at)}</p>
-                  </div>
-                ))}
+                {reports.map(r => {
+                  const open      = expandedReports.has(r.id)
+                  const linkedSid = reportToSession[r.id]
+                  const linkedSession = linkedSid ? sessions.find(s => s.sid === linkedSid) : null
+                  return (
+                    <div key={r.id} style={{
+                      background: G.white, border: `1px solid ${open ? G.green : G.border}`,
+                      borderRadius: 8, overflow: 'hidden', transition: 'border-color 0.15s',
+                    }}>
+                      {/* Header row */}
+                      <div
+                        onClick={() => toggleReport(r.id)}
+                        style={{
+                          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                          padding: '12px 16px', cursor: 'pointer', gap: 12,
+                          background: open ? G.greenLight : 'transparent',
+                          transition: 'background 0.15s',
+                        }}
+                      >
+                        <p style={{ fontSize: 14, fontWeight: 600, color: G.ink, flex: 1 }}>{r.title || '(untitled)'}</p>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+                          <p style={{ fontSize: 12, color: G.inkFaint, whiteSpace: 'nowrap' }}>{fmtDate(r.created_at)}</p>
+                          <Chevron open={open} />
+                        </div>
+                      </div>
+
+                      {/* Expanded: full content + source chat */}
+                      {open && (
+                        <div style={{ padding: '0 16px 16px' }}>
+                          {/* Report content */}
+                          {r.content ? (
+                            <div style={{
+                              fontSize: 13, color: G.inkMuted, lineHeight: 1.65,
+                              whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+                              maxHeight: 400, overflowY: 'auto',
+                              borderTop: `1px solid ${G.border}`, paddingTop: 14, marginTop: 2,
+                            }}>
+                              {r.content}
+                            </div>
+                          ) : (
+                            <p style={{ fontSize: 13, color: G.inkFaint, fontStyle: 'italic', paddingTop: 12 }}>No content stored.</p>
+                          )}
+
+                          {/* Source chat */}
+                          {linkedSession && (
+                            <div style={{ marginTop: 16, borderTop: `1px solid ${G.border}`, paddingTop: 14 }}>
+                              <p style={{ fontSize: 11, fontWeight: 700, color: G.inkFaint, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
+                                Source chat · {linkedSession.count} messages
+                              </p>
+                              <MessageThread rows={linkedSession.rows} />
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             )}
           </section>
 
-          {/* Chats */}
+          {/* ── Chats ───────────────────────────────────────────────────── */}
           <section>
-            {(() => {
-              const sessions = chats.reduce((acc, row) => {
-                const key = row.session_id ?? row.id
-                if (!acc[key]) acc[key] = []
-                acc[key].push(row)
-                return acc
-              }, {})
-              const sessionList = Object.entries(sessions).map(([sid, rows]) => {
-                const userMsg = rows.find(r => r.role === 'user')
-                const preview = (userMsg?.message ?? '').slice(0, 100)
-                const earliest = rows.reduce((min, r) => r.created_at < min ? r.created_at : min, rows[0].created_at)
-                return { sid, preview, count: rows.length, date: earliest }
-              }).sort((a, b) => b.date.localeCompare(a.date))
-
-              return (
-                <>
-                  <h3 style={{ fontSize: 16, fontWeight: 700, color: G.ink, marginBottom: 14 }}>
-                    Chats <span style={{ color: G.inkFaint, fontWeight: 400 }}>({sessionList.length} sessions)</span>
-                  </h3>
-                  {sessionList.length === 0 ? (
-                    <p style={{ color: G.inkFaint, fontSize: 14 }}>No chats yet.</p>
-                  ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                      {sessionList.map(({ sid, preview, count, date }) => (
-                        <div key={sid} style={{
-                          background: G.white, border: `1px solid ${G.border}`,
-                          borderRadius: 8, padding: '12px 16px',
-                          display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16,
-                        }}>
-                          <p style={{ fontSize: 13, color: G.inkMuted, flex: 1 }}>
+            <h3 style={{ fontSize: 16, fontWeight: 700, color: G.ink, marginBottom: 14 }}>
+              Chats <span style={{ color: G.inkFaint, fontWeight: 400 }}>({sessions.length} sessions)</span>
+            </h3>
+            {sessions.length === 0 ? (
+              <p style={{ color: G.inkFaint, fontSize: 14 }}>No chats yet.</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {sessions.map(({ sid, rows, preview, count, date }) => {
+                  const open          = expandedSessions.has(sid)
+                  const linkedReport  = sessionToReport[sid]
+                  return (
+                    <div key={sid} style={{
+                      background: G.white, border: `1px solid ${open ? G.green : G.border}`,
+                      borderRadius: 8, overflow: 'hidden', transition: 'border-color 0.15s',
+                    }}>
+                      {/* Header row */}
+                      <div
+                        onClick={() => toggleSession(sid)}
+                        style={{
+                          display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
+                          padding: '12px 16px', cursor: 'pointer', gap: 12,
+                          background: open ? G.greenLight : 'transparent',
+                          transition: 'background 0.15s',
+                        }}
+                      >
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ fontSize: 13, color: G.inkMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {preview || <span style={{ color: G.inkFaint, fontStyle: 'italic' }}>empty</span>}
                           </p>
-                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
+                          {linkedReport && (
+                            <p style={{ fontSize: 12, color: G.green, fontWeight: 600, marginTop: 4 }}>
+                              → {linkedReport.title || '(untitled report)'}
+                            </p>
+                          )}
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+                          <div style={{ textAlign: 'right' }}>
                             <p style={{ fontSize: 12, color: G.inkFaint, whiteSpace: 'nowrap' }}>{fmtDate(date)}</p>
                             <p style={{ fontSize: 11, color: G.inkFaint }}>{count} msg{count !== 1 ? 's' : ''}</p>
                           </div>
+                          <Chevron open={open} />
                         </div>
-                      ))}
+                      </div>
+
+                      {/* Expanded: message thread */}
+                      {open && (
+                        <div style={{ borderTop: `1px solid ${G.border}`, padding: '0 16px 12px' }}>
+                          <MessageThread rows={rows} />
+                        </div>
+                      )}
                     </div>
-                  )}
-                </>
-              )
-            })()}
+                  )
+                })}
+              </div>
+            )}
           </section>
         </>
       )}
