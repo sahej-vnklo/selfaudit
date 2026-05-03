@@ -62,7 +62,6 @@ serve(async (req: Request) => {
       values: {
         email_addresses: [{ email_address: email }],
         name: { first, last },
-        ...(industry ? { company_industry: [{ value: industry }] } : {}),
       },
     },
     matching_attribute: "email_addresses",
