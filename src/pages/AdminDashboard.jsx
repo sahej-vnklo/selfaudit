@@ -18,9 +18,9 @@ const G = {
 }
 
 function getServiceClient() {
-  const url = import.meta.env.VITE_SUPABASE_URL
+  const url = import.meta.env.VITE_SUPABASE_URL ?? 'https://spinhhzpboojmpndaxue.supabase.co'
   const key = import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY
-  if (!url || !key) return null
+  if (!key) return null
   return createClient(url, key, { auth: { persistSession: false } })
 }
 
