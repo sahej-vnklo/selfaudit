@@ -218,7 +218,54 @@ export default async function handler(req, res) {
 
     if (isReport) {
       const clean = text.replace(/```json|```/g, '').trim()
-      return res.status(200).json({ report: JSON.parse(clean) })
+      let report = JSON.parse(clean)
+
+      const requiredHumanMoment = ['headline','acknowledgment','what_this_actually_is','delivery_script','what_to_expect','honest_truth']
+      const requiredExecution   = ['headline','execution_context','delivery_plan','what_to_expect','key_message','honest_truth']
+
+      const mode     = report.conversation_mode
+      const required = mode === 'HUMAN_MOMENT' ? requiredHumanMoment
+                     : mode === 'EXECUTION'    ? requiredExecution
+                     : null
+
+      if (required) {
+        const missing = required.filter(f => !report[f])
+        if (missing.length > 0) {
+          console.log(`[audit] ${mode} report missing fields: ${missing.join(', ')} — retrying`)
+          try {
+            const retryMessages = [
+              ...finalMessages,
+              { role: 'assistant', content: text },
+              {
+                role: 'user',
+                content: `Your response was missing these required fields: ${missing.join(', ')}. Regenerate the complete JSON with ALL fields populated. Every field must be a non-empty string.`,
+              },
+            ]
+            const retryResponse = await fetch(CLAUDE_API, {
+              method: 'POST',
+              headers,
+              body: JSON.stringify({
+                model: 'claude-sonnet-4-20250514',
+                max_tokens: 2048,
+                system: buildSystemPrompt(industry, domain),
+                messages: retryMessages,
+              }),
+            })
+            if (retryResponse.ok) {
+              const retryData  = await retryResponse.json()
+              const retryClean = retryData.content[0].text.replace(/```json|```/g, '').trim()
+              report = JSON.parse(retryClean)
+              console.log(`[audit] retry succeeded for ${mode}`)
+            } else {
+              console.warn(`[audit] retry API call failed: ${retryResponse.status}`)
+            }
+          } catch (retryErr) {
+            console.warn('[audit] retry failed:', retryErr.message)
+          }
+        }
+      }
+
+      return res.status(200).json({ report })
     }
 
     return res.status(200).json({ text })
