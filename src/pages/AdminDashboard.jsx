@@ -145,6 +145,152 @@ const URGENCY_COLORS = {
   immediate: { bg: '#FDECEA', color: '#C0392B' },
 }
 
+function SectionLabel({ children }) {
+  return (
+    <p style={{ fontSize: 11, fontWeight: 700, color: G.inkFaint, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>
+      {children}
+    </p>
+  )
+}
+
+function TextSection({ label, text, italic }) {
+  if (!text) return null
+  return (
+    <div>
+      <SectionLabel>{label}</SectionLabel>
+      <p style={{ fontSize: 14, color: G.inkMuted, lineHeight: 1.65, fontStyle: italic ? 'italic' : 'normal' }}>{text}</p>
+    </div>
+  )
+}
+
+function ReportSchemaB({ p }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {p.headline && (
+        <p style={{ fontSize: 17, fontWeight: 700, color: G.ink, lineHeight: 1.4 }}>{p.headline}</p>
+      )}
+      <TextSection label="Acknowledgment"       text={p.acknowledgment} />
+      <TextSection label="What This Actually Is" text={p.what_this_actually_is} />
+      {p.delivery_script && (
+        <div>
+          <SectionLabel>Delivery Script</SectionLabel>
+          <div style={{
+            background: '#F0EFEB', borderRadius: 8, padding: '12px 14px',
+            fontSize: 13, color: G.ink, lineHeight: 1.7,
+            fontFamily: 'ui-monospace, SFMono-Regular, monospace',
+            whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+          }}>
+            {p.delivery_script}
+          </div>
+        </div>
+      )}
+      <TextSection label="What To Expect" text={p.what_to_expect} />
+      <TextSection label="Honest Truth"   text={p.honest_truth} italic />
+    </div>
+  )
+}
+
+function ReportSchemaA({ p }) {
+  const domains          = p.domains          ?? []
+  const non_ai_fixes     = p.non_ai_fixes     ?? []
+  const ai_opportunities = p.ai_opportunities ?? []
+  const priority_actions = p.priority_actions ?? []
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {p.headline && (
+        <p style={{ fontSize: 17, fontWeight: 700, color: G.ink, lineHeight: 1.4 }}>{p.headline}</p>
+      )}
+
+      <TextSection label="Verdict" text={p.overall_verdict} />
+
+      {/* Domains */}
+      <div>
+        <SectionLabel>Domains</SectionLabel>
+        {domains.length === 0 ? (
+          <p style={{ fontSize: 13, color: G.inkFaint, fontStyle: 'italic' }}>No domain breakdown available.</p>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {domains.map((d, i) => {
+              const sc = STATUS_COLORS[d.status] ?? { bg: G.bg, color: G.inkMuted }
+              const uc = URGENCY_COLORS[d.urgency] ?? { bg: G.bg, color: G.inkFaint }
+              return (
+                <div key={i} style={{ background: G.bg, border: `1px solid ${G.border}`, borderRadius: 8, padding: '12px 14px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: G.ink }}>{d.name}</p>
+                    {d.status && (
+                      <span style={{ background: sc.bg, color: sc.color, borderRadius: 100, padding: '2px 9px', fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap' }}>
+                        {d.status.replace(/_/g, ' ')}
+                      </span>
+                    )}
+                  </div>
+                  {d.finding && <p style={{ fontSize: 13, color: G.inkMuted, lineHeight: 1.55, marginBottom: d.action ? 6 : 0 }}>{d.finding}</p>}
+                  {d.action && (
+                    <p style={{ fontSize: 13, color: G.ink, lineHeight: 1.55, marginBottom: d.urgency ? 6 : 0 }}>
+                      <span style={{ fontWeight: 600 }}>→ Action:</span> {d.action}
+                    </p>
+                  )}
+                  {d.urgency && (
+                    <span style={{ display: 'inline-block', background: uc.bg, color: uc.color, borderRadius: 100, padding: '2px 9px', fontSize: 11, fontWeight: 600 }}>
+                      {d.urgency}
+                    </span>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Non-AI Fixes */}
+      {non_ai_fixes.length > 0 && (
+        <div>
+          <SectionLabel>Non-AI Fixes</SectionLabel>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {non_ai_fixes.map((item, i) => (
+              <div key={i} style={{ background: G.bg, border: `1px solid ${G.border}`, borderRadius: 8, padding: '10px 14px' }}>
+                {item.issue && <p style={{ fontSize: 13, fontWeight: 700, color: G.ink, marginBottom: 4 }}>{item.issue}</p>}
+                {item.fix   && <p style={{ fontSize: 13, color: G.inkMuted, lineHeight: 1.55 }}>{item.fix}</p>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* AI Opportunities */}
+      {ai_opportunities.length > 0 && (
+        <div>
+          <SectionLabel>AI Opportunities</SectionLabel>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {ai_opportunities.map((item, i) => (
+              <div key={i} style={{ background: G.bg, border: `1px solid ${G.border}`, borderRadius: 8, padding: '10px 14px' }}>
+                {item.area && <p style={{ fontSize: 13, fontWeight: 700, color: G.ink, marginBottom: 4 }}>{item.area}</p>}
+                {item.why  && <p style={{ fontSize: 13, color: G.inkMuted, lineHeight: 1.55 }}>{item.why}</p>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Priority Actions */}
+      {priority_actions.length > 0 && (
+        <div>
+          <SectionLabel>Priority Actions</SectionLabel>
+          <ol style={{ paddingLeft: 20, margin: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {priority_actions.map((item, i) => (
+              <li key={i} style={{ fontSize: 13, color: G.inkMuted, lineHeight: 1.55 }}>
+                {typeof item === 'string' ? item : (item.action ?? item.text ?? JSON.stringify(item))}
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+
+      <TextSection label="Honest Truth" text={p.honest_truth} italic />
+    </div>
+  )
+}
+
 function ReportContent({ content }) {
   if (!content) return <p style={{ fontSize: 13, color: G.inkFaint, fontStyle: 'italic' }}>No content stored.</p>
 
@@ -155,68 +301,9 @@ function ReportContent({ content }) {
     return <pre style={{ fontSize: 12, color: G.inkMuted, whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: 1.6 }}>{content}</pre>
   }
 
-  const { headline, overall_verdict, domains = [] } = parsed
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      {headline && (
-        <p style={{ fontSize: 17, fontWeight: 700, color: G.ink, lineHeight: 1.4 }}>{headline}</p>
-      )}
-
-      {overall_verdict && (
-        <div>
-          <p style={{ fontSize: 11, fontWeight: 700, color: G.inkFaint, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Verdict</p>
-          <p style={{ fontSize: 14, color: G.inkMuted, lineHeight: 1.65 }}>{overall_verdict}</p>
-        </div>
-      )}
-
-      {domains.length === 0 ? (
-        <p style={{ fontSize: 13, color: G.inkFaint, fontStyle: 'italic' }}>No domain breakdown available.</p>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {domains.map((d, i) => {
-            const sc = STATUS_COLORS[d.status] ?? { bg: G.bg, color: G.inkMuted }
-            const uc = URGENCY_COLORS[d.urgency] ?? { bg: G.bg, color: G.inkFaint }
-            return (
-              <div key={i} style={{
-                background: G.bg, border: `1px solid ${G.border}`,
-                borderRadius: 8, padding: '12px 14px',
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                  <p style={{ fontSize: 13, fontWeight: 700, color: G.ink }}>{d.name}</p>
-                  {d.status && (
-                    <span style={{
-                      background: sc.bg, color: sc.color,
-                      borderRadius: 100, padding: '2px 9px', fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap',
-                    }}>
-                      {d.status.replace('_', ' ')}
-                    </span>
-                  )}
-                </div>
-                {d.finding && (
-                  <p style={{ fontSize: 13, color: G.inkMuted, lineHeight: 1.55, marginBottom: d.action ? 6 : 0 }}>{d.finding}</p>
-                )}
-                {d.action && (
-                  <p style={{ fontSize: 13, color: G.ink, lineHeight: 1.55, marginBottom: d.urgency ? 6 : 0 }}>
-                    <span style={{ fontWeight: 600 }}>→ Action:</span> {d.action}
-                  </p>
-                )}
-                {d.urgency && (
-                  <span style={{
-                    display: 'inline-block',
-                    background: uc.bg, color: uc.color,
-                    borderRadius: 100, padding: '2px 9px', fontSize: 11, fontWeight: 600,
-                  }}>
-                    {d.urgency}
-                  </span>
-                )}
-              </div>
-            )
-          })}
-        </div>
-      )}
-    </div>
-  )
+  return parsed.conversation_mode === 'EXECUTION_HUMAN'
+    ? <ReportSchemaB p={parsed} />
+    : <ReportSchemaA p={parsed} />
 }
 
 // ─── User List ────────────────────────────────────────────────────────────────
