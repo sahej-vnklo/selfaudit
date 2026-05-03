@@ -133,6 +133,90 @@ function MessageThread({ rows }) {
   )
 }
 
+// ─── Report content renderer ─────────────────────────────────────────────────
+
+const STATUS_COLORS = {
+  critical:   { bg: '#FDECEA', color: '#C0392B' },
+  needs_work: { bg: '#FEF3E2', color: '#B7600A' },
+  good:       { bg: '#E1F5EE', color: '#0F6E56' },
+}
+
+const URGENCY_COLORS = {
+  immediate: { bg: '#FDECEA', color: '#C0392B' },
+}
+
+function ReportContent({ content }) {
+  if (!content) return <p style={{ fontSize: 13, color: G.inkFaint, fontStyle: 'italic' }}>No content stored.</p>
+
+  let parsed
+  try {
+    parsed = typeof content === 'string' ? JSON.parse(content) : content
+  } catch {
+    return <pre style={{ fontSize: 12, color: G.inkMuted, whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: 1.6 }}>{content}</pre>
+  }
+
+  const { headline, overall_verdict, domains = [] } = parsed
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {headline && (
+        <p style={{ fontSize: 17, fontWeight: 700, color: G.ink, lineHeight: 1.4 }}>{headline}</p>
+      )}
+
+      {overall_verdict && (
+        <div>
+          <p style={{ fontSize: 11, fontWeight: 700, color: G.inkFaint, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Verdict</p>
+          <p style={{ fontSize: 14, color: G.inkMuted, lineHeight: 1.65 }}>{overall_verdict}</p>
+        </div>
+      )}
+
+      {domains.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {domains.map((d, i) => {
+            const sc = STATUS_COLORS[d.status] ?? { bg: G.bg, color: G.inkMuted }
+            const uc = URGENCY_COLORS[d.urgency] ?? { bg: G.bg, color: G.inkFaint }
+            return (
+              <div key={i} style={{
+                background: G.bg, border: `1px solid ${G.border}`,
+                borderRadius: 8, padding: '12px 14px',
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: G.ink }}>{d.name}</p>
+                  {d.status && (
+                    <span style={{
+                      background: sc.bg, color: sc.color,
+                      borderRadius: 100, padding: '2px 9px', fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap',
+                    }}>
+                      {d.status.replace('_', ' ')}
+                    </span>
+                  )}
+                </div>
+                {d.finding && (
+                  <p style={{ fontSize: 13, color: G.inkMuted, lineHeight: 1.55, marginBottom: d.action ? 6 : 0 }}>{d.finding}</p>
+                )}
+                {d.action && (
+                  <p style={{ fontSize: 13, color: G.ink, lineHeight: 1.55, marginBottom: d.urgency ? 6 : 0 }}>
+                    <span style={{ fontWeight: 600 }}>→ Action:</span> {d.action}
+                  </p>
+                )}
+                {d.urgency && (
+                  <span style={{
+                    display: 'inline-block',
+                    background: uc.bg, color: uc.color,
+                    borderRadius: 100, padding: '2px 9px', fontSize: 11, fontWeight: 600,
+                  }}>
+                    {d.urgency}
+                  </span>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── User List ────────────────────────────────────────────────────────────────
 
 function UserList({ onSelectUser }) {
@@ -362,18 +446,9 @@ function UserDetail({ user, onBack }) {
                       {open && (
                         <div style={{ padding: '0 16px 16px' }}>
                           {/* Report content */}
-                          {r.content ? (
-                            <div style={{
-                              fontSize: 13, color: G.inkMuted, lineHeight: 1.65,
-                              whiteSpace: 'pre-wrap', wordBreak: 'break-word',
-                              maxHeight: 400, overflowY: 'auto',
-                              borderTop: `1px solid ${G.border}`, paddingTop: 14, marginTop: 2,
-                            }}>
-                              {r.content}
-                            </div>
-                          ) : (
-                            <p style={{ fontSize: 13, color: G.inkFaint, fontStyle: 'italic', paddingTop: 12 }}>No content stored.</p>
-                          )}
+                          <div style={{ borderTop: `1px solid ${G.border}`, paddingTop: 14, marginTop: 2 }}>
+                            <ReportContent content={r.content} />
+                          </div>
 
                           {/* Source chat */}
                           {linkedSession && (
