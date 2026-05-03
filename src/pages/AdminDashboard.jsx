@@ -197,8 +197,8 @@ function UserDetail({ user, onBack }) {
       if (!sb) { setError('VITE_SUPABASE_SERVICE_ROLE_KEY not set'); setLoading(false); return }
 
       const [{ data: rData, error: rErr }, { data: cData, error: cErr }] = await Promise.all([
-        sb.from('reports').select('id, title, industry, created_at').eq('user_id', user.id).order('created_at', { ascending: false }),
-        sb.from('chats').select('id, created_at, messages').eq('user_id', user.id).order('created_at', { ascending: false }),
+        sb.from('reports').select('id, title, created_at').eq('user_id', user.id).order('created_at', { ascending: false }),
+        sb.from('chats').select('id, session_id, role, message, created_at').eq('user_id', user.id).order('created_at', { ascending: false }),
       ])
 
       if (rErr || cErr) setError((rErr ?? cErr).message)
@@ -260,10 +260,7 @@ function UserDetail({ user, onBack }) {
                     borderRadius: 8, padding: '12px 16px',
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8,
                   }}>
-                    <div>
-                      <p style={{ fontSize: 14, fontWeight: 600, color: G.ink }}>{r.title || '(untitled)'}</p>
-                      {r.industry && <p style={{ fontSize: 12, color: G.inkMuted, marginTop: 2 }}>{r.industry}</p>}
-                    </div>
+                    <p style={{ fontSize: 14, fontWeight: 600, color: G.ink }}>{r.title || '(untitled)'}</p>
                     <p style={{ fontSize: 12, color: G.inkFaint, whiteSpace: 'nowrap' }}>{fmtDate(r.created_at)}</p>
                   </div>
                 ))}
@@ -273,37 +270,49 @@ function UserDetail({ user, onBack }) {
 
           {/* Chats */}
           <section>
-            <h3 style={{ fontSize: 16, fontWeight: 700, color: G.ink, marginBottom: 14 }}>
-              Chats <span style={{ color: G.inkFaint, fontWeight: 400 }}>({chats.length})</span>
-            </h3>
-            {chats.length === 0 ? (
-              <p style={{ color: G.inkFaint, fontSize: 14 }}>No chats yet.</p>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {chats.map(c => {
-                  const preview = (() => {
-                    try {
-                      const msgs = typeof c.messages === 'string' ? JSON.parse(c.messages) : c.messages
-                      const first = Array.isArray(msgs) ? msgs[0] : null
-                      const text = first?.content ?? first?.text ?? ''
-                      return typeof text === 'string' ? text.slice(0, 100) : ''
-                    } catch { return '' }
-                  })()
-                  return (
-                    <div key={c.id} style={{
-                      background: G.white, border: `1px solid ${G.border}`,
-                      borderRadius: 8, padding: '12px 16px',
-                      display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16,
-                    }}>
-                      <p style={{ fontSize: 13, color: G.inkMuted, flex: 1 }}>
-                        {preview || <span style={{ color: G.inkFaint, fontStyle: 'italic' }}>empty</span>}
-                      </p>
-                      <p style={{ fontSize: 12, color: G.inkFaint, whiteSpace: 'nowrap' }}>{fmtDate(c.created_at)}</p>
+            {(() => {
+              const sessions = chats.reduce((acc, row) => {
+                const key = row.session_id ?? row.id
+                if (!acc[key]) acc[key] = []
+                acc[key].push(row)
+                return acc
+              }, {})
+              const sessionList = Object.entries(sessions).map(([sid, rows]) => {
+                const userMsg = rows.find(r => r.role === 'user')
+                const preview = (userMsg?.message ?? '').slice(0, 100)
+                const earliest = rows.reduce((min, r) => r.created_at < min ? r.created_at : min, rows[0].created_at)
+                return { sid, preview, count: rows.length, date: earliest }
+              }).sort((a, b) => b.date.localeCompare(a.date))
+
+              return (
+                <>
+                  <h3 style={{ fontSize: 16, fontWeight: 700, color: G.ink, marginBottom: 14 }}>
+                    Chats <span style={{ color: G.inkFaint, fontWeight: 400 }}>({sessionList.length} sessions)</span>
+                  </h3>
+                  {sessionList.length === 0 ? (
+                    <p style={{ color: G.inkFaint, fontSize: 14 }}>No chats yet.</p>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {sessionList.map(({ sid, preview, count, date }) => (
+                        <div key={sid} style={{
+                          background: G.white, border: `1px solid ${G.border}`,
+                          borderRadius: 8, padding: '12px 16px',
+                          display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16,
+                        }}>
+                          <p style={{ fontSize: 13, color: G.inkMuted, flex: 1 }}>
+                            {preview || <span style={{ color: G.inkFaint, fontStyle: 'italic' }}>empty</span>}
+                          </p>
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
+                            <p style={{ fontSize: 12, color: G.inkFaint, whiteSpace: 'nowrap' }}>{fmtDate(date)}</p>
+                            <p style={{ fontSize: 11, color: G.inkFaint }}>{count} msg{count !== 1 ? 's' : ''}</p>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  )
-                })}
-              </div>
-            )}
+                  )}
+                </>
+              )
+            })()}
           </section>
         </>
       )}
