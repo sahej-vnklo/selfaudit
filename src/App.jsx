@@ -9,6 +9,7 @@ import Login from './components/auth/Login.jsx'
 import Signup from './components/auth/Signup.jsx'
 import Dashboard from './components/Dashboard.jsx'
 import AccountOnboarding from './components/AccountOnboarding.jsx'
+import AdminDashboard from './pages/AdminDashboard.jsx'
 
 const SCREENS = {
   LANDING:             'landing',
@@ -19,11 +20,13 @@ const SCREENS = {
   SIGNUP:              'signup',
   DASHBOARD:           'dashboard',
   ACCOUNT_ONBOARDING:  'account_onboarding',
+  ADMIN:               'admin',
 }
 
 const HASH_SCREENS = new Set([
   SCREENS.LOGIN, SCREENS.SIGNUP,
   SCREENS.DASHBOARD, SCREENS.ACCOUNT_ONBOARDING,
+  SCREENS.ADMIN,
 ])
 
 const DASHBOARD_SECTION_HASHES = new Set(['home', 'reports', 'billing', 'account'])
@@ -34,6 +37,7 @@ function screenFromHash(isAuthenticated = false) {
   if (h === 'signup' || h.startsWith('signup?')) return SCREENS.SIGNUP
   if (h === 'dashboard')          return SCREENS.DASHBOARD
   if (h === 'account_onboarding') return SCREENS.ACCOUNT_ONBOARDING
+  if (h === 'admin')              return SCREENS.ADMIN
   // Dashboard section hashes (#billing, #reports, etc.) must not exit the dashboard
   if (isAuthenticated && DASHBOARD_SECTION_HASHES.has(h)) return SCREENS.DASHBOARD
   return null
@@ -213,6 +217,13 @@ export default function App() {
       user={session.user}
       onComplete={() => navigate(SCREENS.DASHBOARD)}
       onBack={() => navigate(SCREENS.LANDING)}
+    />
+  }
+
+  if (screen === SCREENS.ADMIN) {
+    return <AdminDashboard
+      session={session}
+      onUnauthorized={() => navigate(SCREENS.LANDING)}
     />
   }
 
