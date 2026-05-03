@@ -13,8 +13,8 @@ declare
   _service_key text;
   _payload jsonb;
 begin
-  _edge_url    := current_setting('app.settings.supabase_url', true) || '/functions/v1/sync-to-attio';
-  _service_key := current_setting('app.settings.service_role_key', true);
+  _edge_url    := 'https://spinhhzpboojmpndaxue.supabase.co/functions/v1/sync-to-attio';
+  _service_key := 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNwaW5oaHpwYm9vam1wbmRheHVlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NzA2ODg1MCwiZXhwIjoyMDkyNjQ0ODUwfQ.doCtW3vG9H_YRzxujXdYfnwZhdH4VlD910rIHOumGO8';
 
   _payload := jsonb_build_object(
     'id',         NEW.id,
