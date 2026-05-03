@@ -179,16 +179,62 @@ export default function Landing({ onStart }) {
             lineHeight: 1.05, letterSpacing: '-2px',
             marginBottom: 28, maxWidth: 800, marginLeft: 'auto', marginRight: 'auto',
           }}>
-            The business audit that<br />
-            <em style={{ color: C.accent, fontStyle: 'italic', fontWeight: 500 }}>actually tells you the truth.</em>
+            <span style={{ color: C.ink }}>You&apos;ve heard all the advice.</span><br />
+            <em style={{ color: C.accent, fontStyle: 'italic', fontWeight: 500 }}>Now get your answer.</em>
           </h1>
           <p style={{ fontSize: 19, color: C.inkSoft, maxWidth: 620, margin: '0 auto 40px' }}>
-            5 minutes. Every department. Every blind spot. A ruthless diagnostic of what&apos;s broken in your business — and exactly what to do about it.
+            Most business owners are solving the wrong problem. SelfAudit finds the real one — in one conversation.
           </p>
           <Btn label="Start your free audit" onClick={onStart} />
           <div style={{ marginTop: 16, fontSize: 13, color: C.inkMuted }}>
-            No signup · No credit card · First audit free
+            Free for your first audit. No card needed. Takes 3 minutes.
           </div>
+        </div>
+      </section>
+
+      {/* AI clarity section */}
+      <section style={{ padding: '100px 0', background: '#1A1A1A', color: '#F8F7F4' }}>
+        <div style={wrap}>
+          <h2 style={{
+            fontFamily: serif, fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: 700,
+            lineHeight: 1.1, letterSpacing: '-1.5px', marginBottom: 24,
+            textAlign: 'center',
+          }}>
+            AI won&apos;t save your business.<br />
+            <em style={{ color: C.accent, fontStyle: 'italic', fontWeight: 500 }}>Clarity will.</em>
+          </h2>
+          <p style={{ fontSize: 18, color: '#B0AFA9', maxWidth: 620, margin: '0 auto 60px', textAlign: 'center', lineHeight: 1.6 }}>
+            Every owner we&apos;ve talked to had the same problem: too much advice, not enough signal. SelfAudit doesn&apos;t add to the noise — it cuts through it.
+          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, maxWidth: 860, margin: '0 auto 40px' }}>
+            <div style={{
+              background: '#252525', border: '1px solid #333', borderRadius: 16, padding: '32px 28px',
+            }}>
+              <div style={{ fontSize: 13, fontWeight: 600, letterSpacing: '0.08em', color: '#7A7A7A', textTransform: 'uppercase', marginBottom: 16 }}>Fix these yourself</div>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {['Weak positioning', 'Pricing that doesn\'t hold', 'Leads going cold', 'Team misalignment', 'No clear roadmap'].map(item => (
+                  <li key={item} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 15, color: '#D4D2CC' }}>
+                    <span style={{ color: C.accent, fontSize: 18 }}>→</span> {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div style={{
+              background: '#252525', border: '1px solid #333', borderRadius: 16, padding: '32px 28px',
+            }}>
+              <div style={{ fontSize: 13, fontWeight: 600, letterSpacing: '0.08em', color: '#7A7A7A', textTransform: 'uppercase', marginBottom: 16 }}>Where AI actually helps</div>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {['Diagnosing the root problem', 'Spotting blind spots you\'re too close to see', 'Structuring a clear action plan', 'Pressure-testing your assumptions', 'Giving you the truth without the politics'].map(item => (
+                  <li key={item} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 15, color: '#D4D2CC' }}>
+                    <span style={{ color: C.accent, fontSize: 18 }}>✓</span> {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          <p style={{ textAlign: 'center', fontSize: 14, color: '#7A7A7A' }}>
+            One conversation. One honest read. That&apos;s the whole product.
+          </p>
         </div>
       </section>
 
@@ -402,6 +448,18 @@ export default function Landing({ onStart }) {
           If your audit surfaces real AI opportunities, we can help you implement.
         </div>
       </footer>
+
+      {/* Floating social proof pill */}
+      <div style={{
+        position: 'fixed', bottom: 24, left: 24, zIndex: 50,
+        background: C.ink, color: '#F8F7F4',
+        padding: '10px 18px', borderRadius: 100,
+        fontSize: 13, fontWeight: 500,
+        boxShadow: '0 4px 20px rgba(0,0,0,0.18)',
+        pointerEvents: 'none',
+      }}>
+        ✦ 500+ audits completed
+      </div>
 
     </div>
   )

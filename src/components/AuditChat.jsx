@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { sendMessage } from '../lib/audit.js'
 
 const FIRST_MESSAGE = (context) =>
-  `I'm here to audit — no agenda, no AI evangelism. Just honest clarity.\n\nYou're looking at: **${context}**\n\nLet's start simple. In one sentence — what's the biggest problem you're actually trying to solve right now?`
+  `I'm here to audit — no agenda, no AI evangelism. Just honest clarity.\n\nYou're looking at: **${context}**\n\nWhat's going on in your business right now?`
 
 export default function AuditChat({ userInfo, apiKey, onReportReady, conversationHistory, setConversationHistory }) {
   const [input, setInput] = useState('')
