@@ -135,6 +135,7 @@ const IconSignOut = () => (
 
 export default function Dashboard({ user, onStartAudit, onSignOut }) {
   const [profile,        setProfile]        = useState(null)
+  const [reports,        setReports]        = useState([])
   const [reportsLoading, setReportsLoading] = useState(true)
   const [billing,        setBilling]        = useState(null)
   const [billingLoading, setBillingLoading] = useState(false)
@@ -216,6 +217,14 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
             setProfile(retry.data)
           }
         }
+
+        // Fetch reports after profile resolves
+        const { data: rData } = await sb
+          .from('reports')
+          .select('id, title, content, created_at')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+        if (!cancelled) setReports(rData ?? [])
       } catch (err) {
         console.error('[dashboard] profile fetch threw:', err?.message ?? err)
       } finally {
@@ -352,6 +361,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
             badge={badge}
             context={profile?.context || ''}
             reportsLoading={reportsLoading}
+            reports={reports}
             onStartAudit={startAudit}
           />
         )}
@@ -365,7 +375,12 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
               </div>
               <button style={s.newAuditBtn} onClick={startAudit}>New audit →</button>
             </div>
-            {reportsLoading ? <ReportSkeletons /> : <EmptyReports onStartAudit={startAudit} />}
+            {reportsLoading
+              ? <ReportSkeletons />
+              : reports.length > 0
+                ? <ReportList reports={reports} />
+                : <EmptyReports onStartAudit={startAudit} />
+            }
           </div>
         )}
 
@@ -566,7 +581,12 @@ function AccountSection({ user, profile, onProfileChange, onSignOut }) {
 
       </div>
 
-      {/* ── 2. Delete account ───────────────────────────────────────────── */}
+      {/* ── 2. Developer Tools (admin only) ────────────────────────────── */}
+      {email === 'sahej@vnklo.com' && (
+        <DevToolsCard user={user} profile={profile} onProfileChange={onProfileChange} />
+      )}
+
+      {/* ── 3. Delete account ───────────────────────────────────────────── */}
       <div style={{ marginTop: 28 }}>
         <span style={acct.deleteNudge}>Want to delete your account? </span>
         <button style={acct.deleteLink} onClick={() => { setShowDelete(true); setDeleteConf(''); setDeleteError('') }}>
@@ -700,7 +720,7 @@ const acct = {
 
 // ─── Home section ─────────────────────────────────────────────────────────────
 
-function HomeSection({ name, tier, industry, domain, badge, context, reportsLoading, onStartAudit }) {
+function HomeSection({ name, tier, industry, domain, badge, context, reportsLoading, reports, onStartAudit }) {
   return (
     <div style={s.content}>
       {/* Page header */}
@@ -732,7 +752,12 @@ function HomeSection({ name, tier, industry, domain, badge, context, reportsLoad
       {/* Recent reports */}
       <div style={{ marginTop: 28 }}>
         <div style={s.sectionLabel}>Recent reports</div>
-        {reportsLoading ? <ReportSkeletons /> : <EmptyReports onStartAudit={onStartAudit} />}
+        {reportsLoading
+          ? <ReportSkeletons />
+          : reports.length > 0
+            ? <ReportList reports={reports.slice(0, 3)} />
+            : <EmptyReports onStartAudit={onStartAudit} />
+        }
       </div>
     </div>
   )
@@ -827,6 +852,272 @@ function EmptyReports({ onStartAudit }) {
     <div style={s.emptyReports}>
       <div style={s.emptyReportsText}>Run your first audit to see your report here.</div>
       <button style={s.emptyReportsBtn} onClick={onStartAudit}>Start audit →</button>
+    </div>
+  )
+}
+
+// ─── DevTools card (admin only) ──────────────────────────────────────────────
+
+function DevToolsCard({ user, profile, onProfileChange }) {
+  const [saving, setSaving] = useState(null)
+  const current = normalizeTier(profile?.tier)
+
+  const switchTier = async (tier) => {
+    setSaving(tier)
+    try {
+      const sb = await initSupabase()
+      await sb.from('profiles').update({ tier }).eq('id', user.id)
+      onProfileChange({ tier })
+    } catch (e) {
+      console.error('[devtools] tier switch failed:', e?.message)
+    } finally {
+      setSaving(null)
+    }
+  }
+
+  const tiers = ['essential', 'business', 'portfolio']
+  const tierColors = {
+    essential: { bg: '#E1F5EE', color: '#0F6E56', active: '#0F6E56' },
+    business:  { bg: '#E6F1FB', color: '#185FA5', active: '#185FA5' },
+    portfolio: { bg: '#EEEDFE', color: '#534AB7', active: '#534AB7' },
+  }
+
+  return (
+    <div style={{ marginTop: 28, background: '#FFFBE6', border: '1px solid #F0D96A', borderRadius: 12, padding: '18px 22px' }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: '#8A6D00', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>
+        Developer Tools — Testing only
+      </div>
+      <p style={{ fontSize: 12, color: '#8A6D00', marginBottom: 14 }}>Tier switcher — changes your profile tier for testing.</p>
+      <div style={{ display: 'flex', gap: 8 }}>
+        {tiers.map(t => {
+          const tc = tierColors[t]
+          const isCurrent = current === t
+          return (
+            <button
+              key={t}
+              onClick={() => switchTier(t)}
+              disabled={!!saving}
+              style={{
+                background: isCurrent ? tc.active : tc.bg,
+                color: isCurrent ? '#fff' : tc.color,
+                border: 'none', borderRadius: 8,
+                padding: '7px 16px', fontSize: 13, fontWeight: 600,
+                cursor: saving ? 'not-allowed' : 'pointer',
+                opacity: saving && saving !== t ? 0.5 : 1,
+                textTransform: 'capitalize',
+                transition: 'opacity 0.15s',
+              }}
+            >
+              {saving === t ? 'Saving…' : t}
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+// ─── Report content renderer ──────────────────────────────────────────────────
+
+const REPORT_STATUS_COLORS = {
+  critical:   { bg: '#FDECEA', color: '#C0392B' },
+  needs_work: { bg: '#FEF3E2', color: '#B7600A' },
+  good:       { bg: '#E1F5EE', color: '#0F6E56' },
+}
+
+function DashSectionLabel({ children }) {
+  return (
+    <p style={{ fontSize: 11, fontWeight: 700, color: G.inkFaint, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>
+      {children}
+    </p>
+  )
+}
+
+function DashTextSection({ label, text, italic }) {
+  if (!text) return null
+  return (
+    <div>
+      <DashSectionLabel>{label}</DashSectionLabel>
+      <p style={{ fontSize: 14, color: G.inkMuted, lineHeight: 1.65, fontStyle: italic ? 'italic' : 'normal' }}>{text}</p>
+    </div>
+  )
+}
+
+function DashReportSchemaB({ p }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      {p.headline && <p style={{ fontSize: 16, fontWeight: 700, color: G.ink, lineHeight: 1.4 }}>{p.headline}</p>}
+      <DashTextSection label="Acknowledgment"       text={p.acknowledgment} />
+      <DashTextSection label="What This Actually Is" text={p.what_this_actually_is} />
+      {p.delivery_script && (
+        <div>
+          <DashSectionLabel>Delivery Script</DashSectionLabel>
+          <div style={{
+            background: '#F0EFEB', borderRadius: 8, padding: '12px 14px',
+            fontSize: 13, color: G.ink, lineHeight: 1.7,
+            fontFamily: 'ui-monospace, SFMono-Regular, monospace',
+            whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+          }}>
+            {p.delivery_script}
+          </div>
+        </div>
+      )}
+      <DashTextSection label="What To Expect" text={p.what_to_expect} />
+      <DashTextSection label="Honest Truth"   text={p.honest_truth} italic />
+    </div>
+  )
+}
+
+function DashReportSchemaA({ p }) {
+  const domains          = p.domains          ?? []
+  const non_ai_fixes     = p.non_ai_fixes     ?? []
+  const ai_opportunities = p.ai_opportunities ?? []
+  const priority_actions = p.priority_actions ?? []
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {p.headline && <p style={{ fontSize: 16, fontWeight: 700, color: G.ink, lineHeight: 1.4 }}>{p.headline}</p>}
+      <DashTextSection label="Verdict" text={p.overall_verdict} />
+
+      <div>
+        <DashSectionLabel>Domains</DashSectionLabel>
+        {domains.length === 0 ? (
+          <p style={{ fontSize: 13, color: G.inkFaint, fontStyle: 'italic' }}>No domain breakdown available.</p>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {domains.map((d, i) => {
+              const sc = REPORT_STATUS_COLORS[d.status] ?? { bg: G.bg, color: G.inkMuted }
+              const uc = d.urgency === 'immediate' ? { bg: '#FDECEA', color: '#C0392B' } : { bg: G.bg, color: G.inkFaint }
+              return (
+                <div key={i} style={{ background: G.bg, border: `1px solid ${G.border}`, borderRadius: 8, padding: '12px 14px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                    <p style={{ fontSize: 13, fontWeight: 700, color: G.ink }}>{d.name}</p>
+                    {d.status && (
+                      <span style={{ background: sc.bg, color: sc.color, borderRadius: 100, padding: '2px 9px', fontSize: 11, fontWeight: 600, whiteSpace: 'nowrap' }}>
+                        {d.status.replace(/_/g, ' ')}
+                      </span>
+                    )}
+                  </div>
+                  {d.finding && <p style={{ fontSize: 13, color: G.inkMuted, lineHeight: 1.55, marginBottom: d.action ? 6 : 0 }}>{d.finding}</p>}
+                  {d.action && (
+                    <p style={{ fontSize: 13, color: G.ink, lineHeight: 1.55, marginBottom: d.urgency ? 6 : 0 }}>
+                      <span style={{ fontWeight: 600 }}>→ Action:</span> {d.action}
+                    </p>
+                  )}
+                  {d.urgency && (
+                    <span style={{ display: 'inline-block', background: uc.bg, color: uc.color, borderRadius: 100, padding: '2px 9px', fontSize: 11, fontWeight: 600 }}>
+                      {d.urgency}
+                    </span>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+
+      {non_ai_fixes.length > 0 && (
+        <div>
+          <DashSectionLabel>Non-AI Fixes</DashSectionLabel>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {non_ai_fixes.map((item, i) => (
+              <div key={i} style={{ background: G.bg, border: `1px solid ${G.border}`, borderRadius: 8, padding: '10px 14px' }}>
+                {item.issue && <p style={{ fontSize: 13, fontWeight: 700, color: G.ink, marginBottom: 4 }}>{item.issue}</p>}
+                {item.fix   && <p style={{ fontSize: 13, color: G.inkMuted, lineHeight: 1.55 }}>{item.fix}</p>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {ai_opportunities.length > 0 && (
+        <div>
+          <DashSectionLabel>AI Opportunities</DashSectionLabel>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {ai_opportunities.map((item, i) => (
+              <div key={i} style={{ background: G.bg, border: `1px solid ${G.border}`, borderRadius: 8, padding: '10px 14px' }}>
+                {item.area && <p style={{ fontSize: 13, fontWeight: 700, color: G.ink, marginBottom: 4 }}>{item.area}</p>}
+                {item.why  && <p style={{ fontSize: 13, color: G.inkMuted, lineHeight: 1.55 }}>{item.why}</p>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {priority_actions.length > 0 && (
+        <div>
+          <DashSectionLabel>Priority Actions</DashSectionLabel>
+          <ol style={{ paddingLeft: 20, margin: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {priority_actions.map((item, i) => (
+              <li key={i} style={{ fontSize: 13, color: G.inkMuted, lineHeight: 1.55 }}>
+                {typeof item === 'string' ? item : (item.action ?? item.text ?? JSON.stringify(item))}
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+
+      <DashTextSection label="Honest Truth" text={p.honest_truth} italic />
+    </div>
+  )
+}
+
+function DashReportContent({ content }) {
+  if (!content) return <p style={{ fontSize: 13, color: G.inkFaint, fontStyle: 'italic' }}>No content stored.</p>
+  let parsed
+  try {
+    parsed = typeof content === 'string' ? JSON.parse(content) : content
+  } catch {
+    return <pre style={{ fontSize: 12, color: G.inkMuted, whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: 1.6 }}>{content}</pre>
+  }
+  return parsed.conversation_mode === 'EXECUTION_HUMAN'
+    ? <DashReportSchemaB p={parsed} />
+    : <DashReportSchemaA p={parsed} />
+}
+
+// ─── Report list + card ───────────────────────────────────────────────────────
+
+function ReportCard({ report }) {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <div style={{
+      background: G.white, border: `1px solid ${open ? G.green : G.border}`,
+      borderRadius: 10, overflow: 'hidden', transition: 'border-color 0.15s',
+    }}>
+      <div
+        onClick={() => setOpen(o => !o)}
+        style={{
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          padding: '13px 18px', cursor: 'pointer', gap: 12,
+          background: open ? G.greenLight : 'transparent',
+          transition: 'background 0.15s',
+        }}
+      >
+        <p style={{ fontSize: 14, fontWeight: 600, color: G.ink, flex: 1 }}>{report.title || '(untitled)'}</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+          <p style={{ fontSize: 12, color: G.inkFaint, whiteSpace: 'nowrap' }}>
+            {report.created_at ? new Date(report.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'}
+          </p>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"
+            style={{ flexShrink: 0, transition: 'transform 0.2s', transform: open ? 'rotate(180deg)' : 'rotate(0deg)', color: G.inkFaint }}>
+            <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </div>
+      </div>
+      {open && (
+        <div style={{ padding: '16px 18px', borderTop: `1px solid ${G.border}` }}>
+          <DashReportContent content={report.content} />
+        </div>
+      )}
+    </div>
+  )
+}
+
+function ReportList({ reports }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {reports.map(r => <ReportCard key={r.id} report={r} />)}
     </div>
   )
 }
