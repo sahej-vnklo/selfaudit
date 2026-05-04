@@ -299,7 +299,7 @@ export default async function handler(req, res) {
               body: JSON.stringify({
                 model: 'claude-sonnet-4-20250514',
                 max_tokens: 2048,
-                system: buildSystemPrompt(industry, domain),
+                system: buildSystemPrompt(industry, domain, userMemory),
                 messages: retryMessages,
               }),
             })
