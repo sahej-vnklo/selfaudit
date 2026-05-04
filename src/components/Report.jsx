@@ -3,6 +3,7 @@ import * as Sentry from '@sentry/react'
 import { generateReport, sendReportEmail } from '../lib/audit.js'
 import { initSupabase } from '../lib/supabase.js'
 import { usePostHog } from '@posthog/react'
+import ExecutionPanel from './ExecutionPanel.jsx'
 
 export default function Report({ userInfo, conversationHistory, sessionId }) {
   const [report, setReport] = useState(null)
@@ -340,6 +341,10 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
             <p style={styles.truthText}>{report.honest_truth}</p>
           </div>
         </Section>
+
+        {mode === 'DIAGNOSTIC' && (
+          <ExecutionPanel report={report} userInfo={userInfo} />
+        )}
 
         {/* Anonymous signup prompt */}
         {!userInfo?.userId && (
