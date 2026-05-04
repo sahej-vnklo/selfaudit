@@ -229,6 +229,37 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: err.message || 'Failed to send' })
     }
 
+    // Fire-and-forget: create HubSpot contact + deal (non-blocking)
+    const HUBSPOT_TOKEN = process.env.HUBSPOT_ACCESS_TOKEN
+    if (HUBSPOT_TOKEN) {
+      ;(async () => {
+        try {
+          // Upsert contact
+          const contactRes = await fetch('https://api.hubapi.com/crm/v3/objects/contacts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${HUBSPOT_TOKEN}` },
+            body: JSON.stringify({ properties: { email: userInfo.email, firstname: userInfo.name, phone: userInfo.phone || '' } }),
+          })
+          if (contactRes.status === 401 || contactRes.status === 403) {
+            console.warn('[send-report] HubSpot auth failed — check private app scopes: crm.objects.contacts.write, crm.objects.deals.write')
+            return
+          }
+
+          // Create deal
+          const dealRes = await fetch('https://api.hubapi.com/crm/v3/objects/deals', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${HUBSPOT_TOKEN}` },
+            body: JSON.stringify({ properties: { dealname: `SelfAudit — ${userInfo.name}`, dealstage: 'appointmentscheduled', pipeline: 'default', description: report.headline || '' } }),
+          })
+          if (dealRes.status === 401 || dealRes.status === 403) {
+            console.warn('[send-report] HubSpot auth failed — check private app scopes: crm.objects.contacts.write, crm.objects.deals.write')
+          }
+        } catch (hubErr) {
+          console.warn('[send-report] HubSpot error:', hubErr.message)
+        }
+      })()
+    }
+
     return res.status(200).json({ success: true })
   } catch (err) {
     return res.status(500).json({ error: err.message })

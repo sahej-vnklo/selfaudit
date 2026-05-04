@@ -221,9 +221,10 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
         // Fetch reports after profile resolves
         const { data: rData } = await sb
           .from('reports')
-          .select('id, title, content, created_at')
+          .select('id, title, content, headline, industry, domain, conversation_mode, created_at')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
+          .limit(10)
         if (!cancelled) setReports(rData ?? [])
       } catch (err) {
         console.error('[dashboard] profile fetch threw:', err?.message ?? err)
@@ -803,16 +804,12 @@ function HomeSection({ user, name, tier, industry, domain, badge, context, repor
       {/* Audit scope card */}
       <ScopeCard tier={tier} industry={industry} domain={domain} context={context} />
 
-      {/* Recent reports */}
-      <div style={{ marginTop: 28 }}>
-        <div style={s.sectionLabel}>Recent reports</div>
-        {reportsLoading
-          ? <ReportSkeletons />
-          : reports.length > 0
-            ? <ReportList reports={reports.slice(0, 3)} />
-            : <EmptyReports onStartAudit={onStartAudit} />
-        }
-      </div>
+      {/* Past Audits */}
+      <PastAuditsSection
+        reports={reports}
+        reportsLoading={reportsLoading}
+        onStartAudit={onStartAudit}
+      />
 
       {/* VNKLO CTA Card */}
       {reports.length > 0 && (
@@ -1184,6 +1181,82 @@ function ScopeCard({ tier, industry, domain, context }) {
           )}
         </div>
       )}
+    </div>
+  )
+}
+
+// ─── Past Audits section ──────────────────────────────────────────────────────
+
+const MODE_BADGE = {
+  DIAGNOSTIC:    { bg: G.metricBg,   color: G.inkFaint  },
+  EXECUTION:     { bg: '#E6F1FB',    color: '#185FA5'   },
+  HUMAN_MOMENT:  { bg: '#EEEDFE',    color: '#534AB7'   },
+  EXECUTION_HUMAN: { bg: '#EEEDFE',  color: '#534AB7'   },
+}
+
+function PastAuditCard({ report }) {
+  const headline = report.headline || report.title || '(untitled)'
+  const scope    = [report.industry, report.domain].filter(Boolean).join(' — ')
+  const mode     = report.conversation_mode ?? 'DIAGNOSTIC'
+  const badge    = MODE_BADGE[mode] ?? MODE_BADGE.DIAGNOSTIC
+  const date     = report.created_at
+    ? new Date(report.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+    : '—'
+
+  return (
+    <div style={{
+      background: G.white,
+      border: `0.5px solid ${G.border}`,
+      borderRadius: 10,
+      padding: '14px 18px',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      gap: 12,
+    }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 14, fontWeight: 600, color: G.ink, marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {headline}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          {scope && (
+            <span style={{ fontSize: 12, color: G.inkMuted }}>{scope}</span>
+          )}
+          {scope && <span style={{ fontSize: 12, color: G.border }}>·</span>}
+          <span style={{
+            fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 100,
+            background: badge.bg, color: badge.color,
+          }}>
+            {mode.replace(/_/g, ' ')}
+          </span>
+        </div>
+      </div>
+      <div style={{ fontSize: 12, color: G.inkFaint, flexShrink: 0, whiteSpace: 'nowrap' }}>
+        {date}
+      </div>
+    </div>
+  )
+}
+
+function PastAuditsSection({ reports, reportsLoading, onStartAudit }) {
+  return (
+    <div style={{ marginTop: 28 }}>
+      <div style={s.sectionLabel}>Past Audits</div>
+      {reportsLoading
+        ? <ReportSkeletons />
+        : reports.length > 0
+          ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {reports.map(r => <PastAuditCard key={r.id} report={r} />)}
+            </div>
+          )
+          : (
+            <div style={s.emptyReports}>
+              <div style={s.emptyReportsText}>No audits yet. Start your first audit.</div>
+              <button style={s.emptyReportsBtn} onClick={onStartAudit}>Start audit →</button>
+            </div>
+          )
+      }
     </div>
   )
 }

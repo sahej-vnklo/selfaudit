@@ -9,6 +9,8 @@ export default function Report({ userInfo, conversationHistory }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [shareState, setShareState] = useState('idle') // idle | sending | sent | error
+  const [downloadState, setDownloadState] = useState('idle') // idle | downloading
+  const contentRef = React.useRef(null)
   const posthog = usePostHog()
 
   React.useEffect(() => {
@@ -21,17 +23,28 @@ export default function Report({ userInfo, conversationHistory }) {
         setReport(r)
 
         if (userInfo?.userId) {
-          initSupabase().then(sb => sb.from('reports').insert({
-            user_id:           userInfo.userId,
-            title:             r.headline,
-            content:           JSON.stringify(r),
-            domains:           r.domains?.map(d => d.name) ?? [],
-            report_data:       r,
-            industry:          userInfo.industry,
-            domain:            userInfo.domain,
-            conversation_mode: r.conversation_mode,
-            headline:          r.headline,
-          })).catch(e => console.warn('[reports] save failed:', e?.message))
+          initSupabase().then(async sb => {
+            await sb.from('reports').insert({
+              user_id:           userInfo.userId,
+              title:             r.headline,
+              content:           JSON.stringify(r),
+              domains:           r.domains?.map(d => d.name) ?? [],
+              report_data:       r,
+              industry:          userInfo.industry,
+              domain:            userInfo.domain,
+              conversation_mode: r.conversation_mode,
+              headline:          r.headline,
+            }).catch(e => console.warn('[reports] save failed:', e?.message))
+
+            const contextUpdate = [
+              r.headline,
+              r.overall_verdict ?? r.execution_context ?? r.acknowledgment ?? '',
+            ].filter(Boolean).join(' — ')
+            sb.from('profiles')
+              .update({ context: contextUpdate })
+              .eq('id', userInfo.userId)
+              .catch(e => console.warn('[profiles] context update failed:', e?.message))
+          })
 
           const attioBase = { method: 'POST', headers: { 'Content-Type': 'application/json' } }
           fetch('/api/log-to-attio', {
@@ -69,6 +82,25 @@ export default function Report({ userInfo, conversationHistory }) {
     }
     build()
   }, [])
+
+  const handleDownload = async () => {
+    if (downloadState !== 'idle' || !contentRef.current) return
+    setDownloadState('downloading')
+    try {
+      const html2canvas = (await import('html2canvas')).default
+      const { jsPDF } = await import('jspdf')
+      const canvas = await html2canvas(contentRef.current, { scale: 2, useCORS: true, backgroundColor: '#ffffff' })
+      const imgData = canvas.toDataURL('image/png')
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: [canvas.width / 2, canvas.height / 2] })
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width / 2, canvas.height / 2)
+      const slug = (report.headline || 'report').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '').slice(0, 60)
+      pdf.save(`selfaudit-report-${slug}.pdf`)
+    } catch (e) {
+      console.warn('[pdf] download failed:', e.message)
+    } finally {
+      setDownloadState('idle')
+    }
+  }
 
   const handleShare = async () => {
     if (shareState !== 'idle') return
@@ -108,10 +140,19 @@ export default function Report({ userInfo, conversationHistory }) {
         <div style={{...styles.logo, cursor: 'pointer'}} onClick={() => window.location.reload()}>
           self<span style={{ color: 'var(--green)' }}>audit</span>
         </div>
-        <div style={styles.navRight}>Audit Report</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <button
+            style={{ ...styles.downloadBtn, opacity: downloadState === 'downloading' ? 0.6 : 1 }}
+            onClick={handleDownload}
+            disabled={downloadState === 'downloading'}
+          >
+            {downloadState === 'downloading' ? 'Downloading...' : 'Download Report'}
+          </button>
+          <div style={styles.navRight}>Audit Report</div>
+        </div>
       </nav>
 
-      <div style={styles.content}>
+      <div ref={contentRef} style={styles.content}>
 
         {/* Header — shared across all modes */}
         <div style={styles.reportHeader}>
@@ -353,6 +394,12 @@ const styles = {
   },
   logo: { fontSize: 16, fontWeight: 500, letterSpacing: '-0.4px' },
   navRight: { fontSize: 12, color: 'var(--gray-400)' },
+  downloadBtn: {
+    fontSize: 12, fontWeight: 500, color: 'var(--gray-600)',
+    background: 'none', border: '0.5px solid var(--gray-200)',
+    borderRadius: 6, padding: '6px 12px', cursor: 'pointer',
+    transition: 'border-color 0.15s',
+  },
   content: { maxWidth: 680, margin: '0 auto', padding: '2.5rem 1.5rem 4rem' },
   reportHeader: {
     marginBottom: '3rem', paddingBottom: '2rem',
