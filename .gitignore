@@ -5,3 +5,5 @@ package-lock.json
 .env.local
 .env.*.local
 .claude/
+.DS_Store
+**/.DS_Store
