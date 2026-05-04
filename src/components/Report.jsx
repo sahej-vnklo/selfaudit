@@ -24,6 +24,7 @@ export default function Report({ userInfo, conversationHistory }) {
 
         if (userInfo?.userId) {
           initSupabase().then(async sb => {
+            // Save report
             await sb.from('reports').insert({
               user_id:           userInfo.userId,
               title:             r.headline,
@@ -36,12 +37,26 @@ export default function Report({ userInfo, conversationHistory }) {
               headline:          r.headline,
             }).catch(e => console.warn('[reports] save failed:', e?.message))
 
-            const contextUpdate = [
+            // Append to context — fetch existing first so history accumulates
+            const newEntry = [
               r.headline,
               r.overall_verdict ?? r.execution_context ?? r.acknowledgment ?? '',
             ].filter(Boolean).join(' — ')
+
+            const { data: profile } = await sb
+              .from('profiles')
+              .select('context')
+              .eq('id', userInfo.userId)
+              .single()
+              .catch(() => ({ data: null }))
+
+            const existing = profile?.context ? profile.context.trim() : ''
+            const updatedContext = existing
+              ? `${existing}\n\n[Audit ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}] ${newEntry}`
+              : `[Audit ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}] ${newEntry}`
+
             sb.from('profiles')
-              .update({ context: contextUpdate })
+              .update({ context: updatedContext })
               .eq('id', userInfo.userId)
               .catch(e => console.warn('[profiles] context update failed:', e?.message))
           })
