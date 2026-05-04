@@ -281,7 +281,9 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
     }
   }
 
-  const startAudit = () => onStartAudit({
+  const [goalModal, setGoalModal] = useState(false)
+
+  const baseAuditInfo = () => ({
     name:     user?.user_metadata?.name || user?.email?.split('@')[0] || 'User',
     email:    user?.email || '',
     phone:    '',
@@ -292,6 +294,12 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
     domain:   profile?.domain   || null,
   })
 
+  const startAudit = () => onStartAudit(baseAuditInfo())
+
+  const startGoalAudit = (goalData) => {
+    onStartAudit({ ...baseAuditInfo(), goalMode: true, ...goalData })
+  }
+
   const tier     = normalizeTier(profile?.tier)
   const industry = profile?.industry || null
   const domain   = profile?.domain   || null
@@ -299,6 +307,13 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
 
   return (
     <div style={s.shell}>
+
+      {goalModal && (
+        <GoalCaptureModal
+          onClose={() => setGoalModal(false)}
+          onStart={startGoalAudit}
+        />
+      )}
 
       {/* ── Sidebar ──────────────────────────────────────────────────────────── */}
       <aside style={{ ...s.sidebar, width: isCollapsed ? 56 : 240 }}>
@@ -365,6 +380,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
             reportsLoading={reportsLoading}
             reports={reports}
             onStartAudit={startAudit}
+            onStartGoalAudit={() => setGoalModal(true)}
           />
         )}
 
@@ -375,7 +391,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
                 <h1 style={s.pageTitle}>Reports</h1>
                 <p style={s.pageSub}>Your saved audit reports.</p>
               </div>
-              <button style={s.newAuditBtn} onClick={startAudit}>New audit →</button>
+              <AuditStartButtons onDiagnose={startAudit} onGoal={() => setGoalModal(true)} />
             </div>
             {reportsLoading
               ? <ReportSkeletons />
@@ -720,6 +736,175 @@ const acct = {
   },
 }
 
+// ─── Goal Mode components ─────────────────────────────────────────────────────
+
+function AuditStartButtons({ onDiagnose, onGoal }) {
+  return (
+    <div style={gm.btnRow}>
+      <button style={gm.diagnoseBtn} onClick={onDiagnose}>Diagnose a problem</button>
+      <button style={gm.goalBtn}     onClick={onGoal}>Map a goal →</button>
+    </div>
+  )
+}
+
+const GOAL_CATEGORIES = ['Revenue', 'Growth', 'Operations', 'Team', 'Exit']
+
+function GoalCaptureModal({ onClose, onStart }) {
+  const [goal,         setGoal]         = useState('')
+  const [category,     setCategory]     = useState('')
+  const [timeline,     setTimeline]     = useState('')
+  const [baseline,     setBaseline]     = useState('')
+  const [error,        setError]        = useState('')
+
+  const submit = () => {
+    if (!goal.trim()) { setError('Tell us your goal first.'); return }
+    if (!timeline.trim()) { setError('Add a timeline.'); return }
+    onStart({
+      goal:          goal.trim(),
+      goalCategory:  category,
+      goalTimeline:  timeline.trim(),
+      goalBaseline:  baseline.trim(),
+    })
+  }
+
+  return (
+    <div style={gm.overlay} onClick={e => { if (e.target === e.currentTarget) onClose() }}>
+      <div style={gm.modal}>
+        <button style={gm.closeBtn} onClick={onClose} aria-label="Close">✕</button>
+        <div style={gm.modalEyebrow}>Goal Mode</div>
+        <h2 style={gm.modalTitle}>Map a goal</h2>
+        <p style={gm.modalSub}>Define where you want to get to and we'll identify the gap between here and there.</p>
+
+        <div style={gm.field}>
+          <label style={gm.label}>What's your goal? <span style={{ color: G.green }}>*</span></label>
+          <input
+            style={gm.input}
+            value={goal}
+            onChange={e => { setGoal(e.target.value); setError('') }}
+            placeholder='e.g. "Double revenue to $1M ARR", "Reduce churn below 3%"'
+            autoFocus
+          />
+        </div>
+
+        <div style={gm.field}>
+          <label style={gm.label}>Category</label>
+          <div style={gm.categoryRow}>
+            {GOAL_CATEGORIES.map(c => (
+              <button
+                key={c}
+                style={{ ...gm.categoryPill, ...(category === c ? gm.categoryActive : {}) }}
+                onClick={() => setCategory(cat => cat === c ? '' : c)}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div style={gm.field}>
+          <label style={gm.label}>Timeline <span style={{ color: G.green }}>*</span></label>
+          <input
+            style={gm.input}
+            value={timeline}
+            onChange={e => { setTimeline(e.target.value); setError('') }}
+            placeholder='e.g. "by end of Q3 2025", "within 6 months"'
+          />
+        </div>
+
+        <div style={gm.field}>
+          <label style={gm.label}>Where are you now?</label>
+          <input
+            style={gm.input}
+            value={baseline}
+            onChange={e => setBaseline(e.target.value)}
+            placeholder='e.g. "$420K ARR, growing 5% MoM, 8% churn"'
+          />
+          <p style={gm.hint}>Optional — the more specific, the sharper the gap analysis.</p>
+        </div>
+
+        {error && <p style={gm.errorText}>{error}</p>}
+
+        <button style={gm.startBtn} onClick={submit}>
+          Start gap audit →
+        </button>
+      </div>
+    </div>
+  )
+}
+
+const gm = {
+  btnRow: {
+    display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0,
+  },
+  diagnoseBtn: {
+    fontSize: 13, fontWeight: 500, padding: '9px 16px',
+    borderRadius: 8, border: `1px solid ${G.border}`,
+    background: G.white, color: G.ink, cursor: 'pointer',
+    whiteSpace: 'nowrap', transition: 'border-color 0.15s',
+  },
+  goalBtn: {
+    background: G.green, color: 'white',
+    fontSize: 13, fontWeight: 500, padding: '9px 16px',
+    borderRadius: 8, border: 'none', cursor: 'pointer',
+    flexShrink: 0, whiteSpace: 'nowrap',
+    transition: 'background 0.15s',
+  },
+  overlay: {
+    position: 'fixed', inset: 0, zIndex: 300,
+    background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(2px)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    padding: '1rem',
+  },
+  modal: {
+    background: G.white, borderRadius: 16, padding: '2rem',
+    width: '100%', maxWidth: 480, position: 'relative',
+    boxShadow: '0 12px 40px rgba(0,0,0,0.18)',
+    maxHeight: '90vh', overflowY: 'auto',
+  },
+  closeBtn: {
+    position: 'absolute', top: 16, right: 16,
+    background: 'none', border: 'none', cursor: 'pointer',
+    fontSize: 14, color: G.inkFaint, padding: 4, lineHeight: 1,
+  },
+  modalEyebrow: {
+    fontSize: 11, letterSpacing: '1px', textTransform: 'uppercase',
+    color: G.green, marginBottom: 6,
+  },
+  modalTitle: {
+    fontSize: 20, fontWeight: 500, color: G.ink,
+    margin: '0 0 6px', letterSpacing: '-0.3px',
+  },
+  modalSub: {
+    fontSize: 13, color: G.inkMuted, lineHeight: 1.6,
+    margin: '0 0 24px',
+  },
+  field: { marginBottom: '1.25rem' },
+  label: { display: 'block', fontSize: 13, fontWeight: 500, color: G.ink, marginBottom: 6 },
+  input: {
+    width: '100%', padding: '10px 12px',
+    border: `1px solid ${G.border}`, borderRadius: 8,
+    fontSize: 14, color: G.ink, background: G.white,
+    outline: 'none', boxSizing: 'border-box',
+    fontFamily: 'inherit',
+  },
+  hint: { fontSize: 11, color: G.inkFaint, marginTop: 4 },
+  categoryRow: { display: 'flex', flexWrap: 'wrap', gap: 6 },
+  categoryPill: {
+    fontSize: 12, padding: '5px 12px', borderRadius: 20,
+    border: `1px solid ${G.border}`, background: G.white,
+    color: G.inkMuted, cursor: 'pointer', transition: 'all 0.15s',
+  },
+  categoryActive: {
+    background: G.ink, color: G.white, borderColor: G.ink,
+  },
+  startBtn: {
+    width: '100%', padding: 13, background: G.green, color: 'white',
+    fontSize: 14, fontWeight: 500, borderRadius: 8,
+    border: 'none', cursor: 'pointer', marginTop: 8,
+  },
+  errorText: { fontSize: 12, color: '#A32D2D', marginBottom: 8 },
+}
+
 // ─── Home section helpers ─────────────────────────────────────────────────────
 
 function parseReportContent(content) {
@@ -739,7 +924,7 @@ function computeHealthScore(domains) {
 
 // ─── Home section ─────────────────────────────────────────────────────────────
 
-function HomeSection({ user, name, tier, industry, domain, badge, context, reportsLoading, reports, onStartAudit }) {
+function HomeSection({ user, name, tier, industry, domain, badge, context, reportsLoading, reports, onStartAudit, onStartGoalAudit }) {
   const [dismissedBanner, setDismissedBanner] = useState(false)
   const issuesRef = useRef(null)
 
@@ -768,7 +953,7 @@ function HomeSection({ user, name, tier, industry, domain, badge, context, repor
           <h1 style={s.pageTitle}>{getGreeting()}{name ? `, ${name}` : ''}.</h1>
           <p style={s.pageSub}>Your audits and reports live here.</p>
         </div>
-        <button style={s.newAuditBtn} onClick={onStartAudit}>New audit →</button>
+        <AuditStartButtons onDiagnose={onStartAudit} onGoal={onStartGoalAudit} />
       </div>
 
       {/* Metric cards */}

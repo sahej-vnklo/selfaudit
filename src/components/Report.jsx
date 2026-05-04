@@ -19,7 +19,13 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
         const apiMessages = conversationHistory
           .filter(m => m.role !== 'system')
           .map(m => ({ role: m.role, content: m.content }))
-        const r = await generateReport(apiMessages, { userId: userInfo?.userId })
+        const r = await generateReport(apiMessages, {
+          userId:       userInfo?.userId,
+          goalMode:     userInfo?.goalMode     ?? false,
+          goal:         userInfo?.goal         ?? '',
+          goalTimeline: userInfo?.goalTimeline ?? '',
+          goalBaseline: userInfo?.goalBaseline ?? '',
+        })
         setReport(r)
 
         if (userInfo?.userId) {
@@ -205,6 +211,10 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
 
         {/* DIAGNOSTIC sections */}
         {mode === 'DIAGNOSTIC' && <>
+          {report.goal_gap_analysis && (
+            <GoalGapPanel gap={report.goal_gap_analysis} />
+          )}
+
           <Section title="Domain Findings">
             <div style={styles.domainsGrid}>
               {report.domains?.map((d, i) => (
@@ -386,6 +396,64 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
           This report is for your eyes only and is displayed on-screen. Built by <a href="https://vnklo.com" target="_blank" rel="noopener" style={{ color: 'var(--green)' }}>Vnklo</a>.
         </p>
 
+      </div>
+    </div>
+  )
+}
+
+function GoalGapPanel({ gap }) {
+  const timelineColor = (() => {
+    const t = (gap.realistic_timeline || '').toLowerCase()
+    if (t.includes('not achievable') || t.includes('unrealistic') || t.includes('too short') || t.includes('unlikely')) return '#A32D2D'
+    if (t.includes('tight') || t.includes('challenging') || t.includes('aggressive') || t.includes('stretch')) return '#BA7517'
+    return '#1D9E75'
+  })()
+  const timelineBg = timelineColor === '#A32D2D' ? '#FCEBEB' : timelineColor === '#BA7517' ? '#FAEEDA' : '#E1F5EE'
+
+  const fastestMoves = gap.fastest_path
+    ? gap.fastest_path.split(/\n|(?<=\.)\s+(?=\d\.|\d\)|-|•)/).map(s => s.replace(/^[\d\.\)\-•\s]+/, '').trim()).filter(Boolean)
+    : []
+
+  return (
+    <div style={gg.panel}>
+      <div style={gg.eyebrow}>Goal Gap Analysis</div>
+
+      <div style={gg.goalRow}>
+        <div style={gg.goalLabel}>Goal</div>
+        <div style={gg.goalText}>{gap.goal}</div>
+      </div>
+
+      <div style={gg.row}>
+        <div style={gg.half}>
+          <div style={gg.blockLabel}>Where you are now</div>
+          <p style={gg.blockText}>{gap.current_position}</p>
+        </div>
+        <div style={gg.half}>
+          <div style={gg.blockLabel}>What's missing</div>
+          <p style={gg.blockText}>{gap.gap}</p>
+        </div>
+      </div>
+
+      <div style={gg.fastestBlock}>
+        <div style={gg.blockLabel}>Fastest path</div>
+        <div style={gg.moveList}>
+          {fastestMoves.length > 0
+            ? fastestMoves.map((move, i) => (
+                <div key={i} style={gg.move}>
+                  <div style={gg.moveNum}>{i + 1}</div>
+                  <div style={gg.moveText}>{move}</div>
+                </div>
+              ))
+            : <p style={gg.blockText}>{gap.fastest_path}</p>
+          }
+        </div>
+      </div>
+
+      <div style={{ ...gg.timelineBlock, background: timelineBg, borderColor: timelineColor }}>
+        <div style={{ ...gg.timelineLabel, color: timelineColor }}>Timeline reality check</div>
+        <p style={{ ...gg.blockText, color: timelineColor === '#1D9E75' ? '#0F6E56' : timelineColor === '#BA7517' ? '#854F0B' : '#7A1A1A' }}>
+          {gap.realistic_timeline}
+        </p>
       </div>
     </div>
   )
@@ -584,7 +652,7 @@ const styles = {
     borderTopColor: 'var(--green)',
     animation: 'spin 0.8s linear infinite'
   },
-  disclaimer: { fontSize: 11, color: 'var(--gray-400)', textAlign: 'center', lineHeight: 1.6 },
+  disclaimer:  { fontSize: 11, color: 'var(--gray-400)', textAlign: 'center', lineHeight: 1.6 },
   loadingPage: { minHeight: '100vh', background: 'var(--white)' },
   loadingBody: {
     display: 'flex', flexDirection: 'column', alignItems: 'center',
@@ -592,4 +660,66 @@ const styles = {
   },
   loadingTitle: { fontSize: 18, fontFamily: 'var(--serif)', fontWeight: 400, color: 'var(--black)' },
   loadingSubtitle: { fontSize: 13, color: 'var(--gray-400)' }
+}
+
+const gg = {
+  panel: {
+    marginBottom: '2.5rem', borderRadius: 'var(--radius)',
+    border: '1.5px solid var(--green)', overflow: 'hidden',
+  },
+  eyebrow: {
+    background: 'var(--green)', color: 'white',
+    fontSize: 11, fontWeight: 500, letterSpacing: '0.7px', textTransform: 'uppercase',
+    padding: '8px 18px',
+  },
+  goalRow: {
+    background: 'var(--green-light)', padding: '14px 18px',
+    display: 'flex', alignItems: 'baseline', gap: 10,
+    borderBottom: '0.5px solid var(--green-mid)',
+  },
+  goalLabel: {
+    fontSize: 11, fontWeight: 500, color: 'var(--green-dark)',
+    textTransform: 'uppercase', letterSpacing: '0.5px', flexShrink: 0,
+  },
+  goalText: {
+    fontSize: 15, fontWeight: 500, color: 'var(--green-dark)', lineHeight: 1.5,
+  },
+  row: {
+    display: 'grid', gridTemplateColumns: '1fr 1fr',
+    gap: 0, borderBottom: '0.5px solid var(--gray-200)',
+  },
+  half: {
+    padding: '14px 18px',
+    borderRight: '0.5px solid var(--gray-200)',
+  },
+  fastestBlock: {
+    padding: '14px 18px',
+    borderBottom: '0.5px solid var(--gray-200)',
+  },
+  blockLabel: {
+    fontSize: 11, fontWeight: 500, color: 'var(--gray-400)',
+    textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 8,
+  },
+  blockText: {
+    fontSize: 13, color: 'var(--gray-700)', lineHeight: 1.65, margin: 0,
+  },
+  moveList: { display: 'flex', flexDirection: 'column', gap: 8 },
+  move: { display: 'flex', gap: 10, alignItems: 'flex-start' },
+  moveNum: {
+    width: 20, height: 20, borderRadius: '50%',
+    background: 'var(--black)', color: 'white',
+    fontSize: 10, fontWeight: 500, flexShrink: 0,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    marginTop: 1,
+  },
+  moveText: { fontSize: 13, color: 'var(--gray-800)', lineHeight: 1.6 },
+  timelineBlock: {
+    padding: '14px 18px',
+    borderRadius: '0 0 var(--radius) var(--radius)',
+    border: 'none', borderTop: '0.5px solid',
+  },
+  timelineLabel: {
+    fontSize: 11, fontWeight: 500,
+    textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 6,
+  },
 }

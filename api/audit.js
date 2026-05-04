@@ -50,7 +50,7 @@ async function fetchUserMemory(userId) {
   }
 }
 
-function buildSystemPrompt(industry, domain, userMemory) {
+function buildSystemPrompt(industry, domain, userMemory, goalMode, goal, goalTimeline, goalBaseline) {
   const base = `You are SelfAudit — a brutally honest, senior-level business and life advisor. Your job is to audit any situation a user brings — business, startup, side project, personal goals, career, anything.
 
 CORE RULES:
@@ -108,6 +108,22 @@ QUESTIONING FRAMEWORK — adapt based on what you detect:
 
 You are not here to make people feel good. You are here to give them clarity they cannot get anywhere else. Earn that standard on every exchange.`
 
+  const goalBlock = goalMode ? `
+
+GOAL CONTEXT:
+User's goal: ${goal}
+Timeline: ${goalTimeline}
+Current baseline: ${goalBaseline}
+
+GOAL MODE RULES:
+- The user has declared a specific goal. Your job is to identify the GAP between where they are now and where they need to be to hit that goal.
+- Do NOT treat this as a problem audit. It is a gap audit.
+- First 2-3 questions: map their current state across the key systems that affect this goal (revenue, ops, sales, product, team — whichever apply). Make each question sharp and specific to their stated goal.
+- Then: identify which specific gaps, if closed, would have the highest impact on reaching their goal by their stated timeline.
+- When you write the report: priority_actions must be ordered by "what moves this specific goal fastest" — not just by severity.
+- honest_truth must close with: "To hit [their goal] by [their timeline], the single most important move is [X]." Name the specific move. Not a category — the actual thing they need to do.
+- Your opening message must reference their specific goal and timeline directly, not just ask "what's going on?" Start with something like: "So you want to [goal] by [timeline] — let's map where you actually are."` : ''
+
   const scopeBlock = (!industry || !domain) ? '' : `
 
 AUDIT CONTEXT:
@@ -122,10 +138,27 @@ If the user raises something from a completely different industry: acknowledge i
 
   const memoryBlock = userMemory ? `\n\n---\n${userMemory}` : ''
 
-  return base + scopeBlock + memoryBlock
+  return base + goalBlock + scopeBlock + memoryBlock
 }
 
-const REPORT_PROMPT = `Based on this entire conversation, generate a report.
+function buildReportPrompt(goalMode) {
+  const goalGapField = goalMode ? `
+  "goal_gap_analysis": {
+    "goal": "Restate their specific goal in one clear, concrete sentence",
+    "current_position": "Honest 1-2 sentence assessment of where they actually stand right now relative to that goal",
+    "gap": "What specific capabilities, systems, or changes are missing to reach the goal — be precise",
+    "fastest_path": "The 2-3 moves that close the gap fastest. Name the actual move, not the category. 'Rebuild your onboarding sequence to activate users in under 10 minutes' is a pass. 'Improve onboarding' is a fail.",
+    "realistic_timeline": "Honest assessment of whether their stated timeline is achievable and why. If it is unrealistic, say so directly — do not soften it."
+  },` : ''
+
+  const goalGapInstruction = goalMode ? `
+
+GOAL MODE REPORT INSTRUCTION:
+Since this was a Goal Mode audit, you MUST include the "goal_gap_analysis" field in the JSON.
+priority_actions must be ranked by "what moves this specific goal fastest" — not just by severity.
+The honest_truth field must close with: "To hit [their goal] by [their timeline], the single most important move is [specific action]."` : ''
+
+  return `Based on this entire conversation, generate a report.
 
 FORMAT YOUR RESPONSE AS VALID JSON ONLY. No markdown, no backticks, no preamble. Just the JSON object.
 
@@ -180,6 +213,7 @@ Write ai_opportunities as a senior advisor laying out what is now buildable for 
     "Action 3"
   ],
   "honest_truth": "The single hardest thing for this person to hear — the thing they are avoiding or the structural reality they cannot escape. Make it land. If AI opportunities were identified, close with one sentence connecting their identified gap to what is now buildable — make the next step obvious without being salesy."
+  ${goalGapField}
 }
 
 IF EXECUTION — generate this structure. ALL six fields are required. Do not omit any field.
@@ -218,14 +252,15 @@ CRITICAL RULES FOR NON-DIAGNOSTIC REPORTS:
 - NO AI opportunities section
 - NO domain findings with status ratings
 - NO priority actions list
-- The report is not a diagnostic. It is support for a human navigating something real.`
+- The report is not a diagnostic. It is support for a human navigating something real.${goalGapInstruction}`
+}
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { type, messages, industry, domain, userId } = req.body
+  const { type, messages, industry, domain, userId, goalMode, goal, goalTimeline, goalBaseline } = req.body
   if (!type || !messages) {
     return res.status(400).json({ error: 'Missing type or messages' })
   }
@@ -237,7 +272,7 @@ export default async function handler(req, res) {
 
   const isReport = type === 'report'
   const finalMessages = isReport
-    ? [...messages, { role: 'user', content: REPORT_PROMPT }]
+    ? [...messages, { role: 'user', content: buildReportPrompt(goalMode) }]
     : messages
 
   const headers = {
@@ -254,8 +289,8 @@ export default async function handler(req, res) {
       headers,
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: isReport ? 2048 : 1024,
-        system: buildSystemPrompt(industry, domain, userMemory),
+        max_tokens: isReport ? 2500 : 1024,
+        system: buildSystemPrompt(industry, domain, userMemory, goalMode, goal, goalTimeline, goalBaseline),
         messages: finalMessages,
       }),
     })
@@ -298,8 +333,8 @@ export default async function handler(req, res) {
               headers,
               body: JSON.stringify({
                 model: 'claude-sonnet-4-20250514',
-                max_tokens: 2048,
-                system: buildSystemPrompt(industry, domain, userMemory),
+                max_tokens: 2500,
+                system: buildSystemPrompt(industry, domain, userMemory, goalMode, goal, goalTimeline, goalBaseline),
                 messages: retryMessages,
               }),
             })
