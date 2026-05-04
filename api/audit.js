@@ -1,4 +1,14 @@
 // v2 - serverless only
+//
+// SAFETY/CONTROL LAYER (Layer 4):
+// - Only analyze what the user provides
+// - Do not invent company data
+// - Work with partial info — ask only when it blocks a decision
+// - Mark assumptions explicitly
+// - User stays in control of what gets analyzed
+// - No auto-actions to external tools yet (execution is copy-ready drafts)
+// - Store feedback on user acceptance/rejection for future improvement
+
 import { createClient } from '@supabase/supabase-js'
 
 const CLAUDE_API = 'https://api.anthropic.com/v1/messages'
@@ -113,16 +123,48 @@ You are not here to make people feel good. You are here to give them clarity the
 GOAL CONTEXT:
 User's goal: ${goal}
 Timeline: ${goalTimeline}
-Current baseline: ${goalBaseline}
+Current baseline: ${goalBaseline || 'not provided'}
 
-GOAL MODE RULES:
-- The user has declared a specific goal. Your job is to identify the GAP between where they are now and where they need to be to hit that goal.
-- Do NOT treat this as a problem audit. It is a gap audit.
-- First 2-3 questions: map their current state across the key systems that affect this goal (revenue, ops, sales, product, team — whichever apply). Make each question sharp and specific to their stated goal.
-- Then: identify which specific gaps, if closed, would have the highest impact on reaching their goal by their stated timeline.
-- When you write the report: priority_actions must be ordered by "what moves this specific goal fastest" — not just by severity.
-- honest_truth must close with: "To hit [their goal] by [their timeline], the single most important move is [X]." Name the specific move. Not a category — the actual thing they need to do.
-- Your opening message must reference their specific goal and timeline directly, not just ask "what's going on?" Start with something like: "So you want to [goal] by [timeline] — let's map where you actually are."` : ''
+BUSINESS STATE MODEL — build and maintain this internally throughout the conversation:
+As the user shares information, populate this internal model:
+  revenue_streams: list of active revenue sources
+  core_offer: what they sell and to whom
+  target_customer: who buys and why
+  funnel_stages: how deals/users move from awareness to paid
+  conversion_bottlenecks: where they lose people
+  retention_churn_signals: what causes drop-off or repeat purchase
+  team_ownership: who owns what, headcount, key gaps
+  operational_blockers: what slows them down day to day
+  pricing_structure: how they price, tiers, discounts
+  current_constraints: cash, time, people, market
+  stated_goal: ${goal}
+  baseline_current_position: ${goalBaseline || 'not provided — ask early'}
+  assumptions_unverified: anything you inferred but haven't confirmed
+
+Populate each field from conversation. Leave blank only if genuinely not discussed.
+Mark inferences explicitly: e.g. "Assuming ~$X MRR based on their description — not confirmed."
+
+LAYER 2 RULES (GOAL MODE):
+
+You are running a GAP AUDIT, not a problem chat.
+
+1. Build the business-state model above from the conversation. Update it as you learn more.
+2. Compare current state vs goal explicitly. Name the gap — not vaguely, but specifically:
+   - FAIL: "pricing is wrong"
+   - PASS: "missing usage-based tier in pricing model — current flat rate caps revenue at existing seat count"
+3. Identify MISSING CAPABILITIES — what the business literally lacks to reach the goal:
+   - Not "improve onboarding"
+   - But "missing automated activation sequence: no in-app trigger for users who don't complete setup in 48h"
+4. Rank by IMPACT (for this goal), URGENCY (given timeline), COST (to fix), DEPENDENCY (what blocks what).
+   Explain why one move outranks another — not just the ranking, the reasoning.
+5. Provide a HONEST TIMELINE REALITY CHECK. If their timeline is unrealistic, say it directly and explain why.
+   Do not soften it. "Doubling revenue in 2 weeks is not achievable — this is a 90-day restructure at minimum."
+6. Work with PARTIAL INFO. If something is missing, mark it as an assumption and proceed with the best-supported
+   recommendation. Only ask for clarification when it blocks a real decision.
+7. You are producing a DECISION-GRADE GAP ANALYSIS. Behave like a structured consultant, not a freeform chatbot.
+8. Opening message must reference their specific goal and timeline: "So you want to [goal] by [timeline] — let's map where you actually are."
+9. priority_actions in the report must be ranked by "what moves this specific goal fastest" — not by severity.
+10. honest_truth must close: "To hit [their goal] by [their timeline], the single most important move is [specific action]."` : ''
 
   const scopeBlock = (!industry || !domain) ? '' : `
 
@@ -142,21 +184,54 @@ If the user raises something from a completely different industry: acknowledge i
 }
 
 function buildReportPrompt(goalMode) {
-  const goalGapField = goalMode ? `
+  const goalGapField = goalMode ? `,
   "goal_gap_analysis": {
     "goal": "Restate their specific goal in one clear, concrete sentence",
     "current_position": "Honest 1-2 sentence assessment of where they actually stand right now relative to that goal",
-    "gap": "What specific capabilities, systems, or changes are missing to reach the goal — be precise",
-    "fastest_path": "The 2-3 moves that close the gap fastest. Name the actual move, not the category. 'Rebuild your onboarding sequence to activate users in under 10 minutes' is a pass. 'Improve onboarding' is a fail.",
-    "realistic_timeline": "Honest assessment of whether their stated timeline is achievable and why. If it is unrealistic, say so directly — do not soften it."
-  },` : ''
+    "gap": "What specific capabilities, systems, or changes are missing to reach the goal. Be precise — name the actual missing thing, not the category.",
+    "fastest_path": "The 2-3 moves that close the gap fastest. Name the actual move, not the category. PASS: 'Rebuild onboarding to activate users in under 10 minutes via in-app trigger sequence.' FAIL: 'Improve onboarding.'",
+    "realistic_timeline": "Honest narrative on whether their stated timeline is achievable and why. Do not soften if unrealistic."
+  },
+  "business_state": {
+    "revenue_streams": ["list of active revenue sources from conversation"],
+    "core_offer": "what they sell, to whom, and at what price — from conversation",
+    "target_customer": "who buys and why — from conversation",
+    "funnel_stages": ["stages from awareness to paid — from conversation"],
+    "conversion_bottlenecks": ["where they lose people — from conversation"],
+    "retention_churn_signals": ["what causes drop-off or repeat purchase — from conversation"],
+    "team_ownership": "who owns what, headcount, key gaps — from conversation",
+    "operational_blockers": ["what slows them down day to day — from conversation"],
+    "pricing_structure": "how they price, tiers, discounts — from conversation",
+    "current_constraints": ["cash, time, people, market constraints — from conversation"],
+    "assumptions_unverified": ["anything inferred but not confirmed — flag these explicitly, e.g. 'Assuming ~$X MRR based on description — not confirmed'"]
+  },
+  "missing_capabilities": [
+    "One specific missing capability per item. PASS: 'Automated email sequence triggered when trial user hasn't set up integration after 48h.' FAIL: 'Better email marketing.'"
+  ],
+  "ranking_logic": {
+    "impact": "high | medium | low — for reaching the stated goal specifically",
+    "urgency": "immediate | this_quarter | strategic — given the stated timeline",
+    "cost": "low | medium | high — estimated effort and resource cost to fix",
+    "dependency": "what this move is blocked by, or 'none'"
+  },
+  "timeline_feasibility": "feasible | tight | unrealistic — [one sentence explaining exactly why, referencing their goal and timeline directly]",
+  "confidence_level": "high | medium | low — [one sentence: what evidence this is based on and what's missing]"` : ''
 
   const goalGapInstruction = goalMode ? `
 
-GOAL MODE REPORT INSTRUCTION:
-Since this was a Goal Mode audit, you MUST include the "goal_gap_analysis" field in the JSON.
-priority_actions must be ranked by "what moves this specific goal fastest" — not just by severity.
-The honest_truth field must close with: "To hit [their goal] by [their timeline], the single most important move is [specific action]."` : ''
+GOAL MODE REPORT RULES — ALL of these are required when goalMode is active:
+
+1. goal_gap_analysis: include with all 5 sub-fields populated
+2. business_state: extract from conversation — use "not discussed" only if genuinely absent; flag inferences in assumptions_unverified
+3. missing_capabilities: list specific missing capabilities — not categories, not advice. Each item must name the actual thing that doesn't exist yet.
+4. ranking_logic: assess the top-priority gap by impact/urgency/cost/dependency
+5. timeline_feasibility: must start with exactly "feasible", "tight", or "unrealistic" then a dash then one honest sentence
+6. confidence_level: must start with exactly "high", "medium", or "low" then a dash then one sentence on evidence basis
+7. priority_actions: ranked by "what moves this specific goal fastest"
+8. honest_truth: must close with "To hit [their goal] by [their timeline], the single most important move is [specific action]."
+
+SPECIFICITY REQUIREMENT: Every finding must name the actual thing, not the category.
+SAFETY: Only use what the user told you. Flag assumptions. Do not invent data.` : ''
 
   return `Based on this entire conversation, generate a report.
 
@@ -289,7 +364,7 @@ export default async function handler(req, res) {
       headers,
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: isReport ? 2500 : 1024,
+        max_tokens: isReport ? (goalMode ? 4000 : 2500) : 1024,
         system: buildSystemPrompt(industry, domain, userMemory, goalMode, goal, goalTimeline, goalBaseline),
         messages: finalMessages,
       }),
@@ -309,10 +384,12 @@ export default async function handler(req, res) {
 
       const requiredHumanMoment = ['headline','acknowledgment','what_this_actually_is','delivery_script','what_to_expect','honest_truth']
       const requiredExecution   = ['headline','execution_context','delivery_plan','what_to_expect','key_message','honest_truth']
+      const requiredGoalMode    = ['goal_gap_analysis','missing_capabilities','ranking_logic','timeline_feasibility','confidence_level']
 
       const mode     = report.conversation_mode
-      const required = mode === 'HUMAN_MOMENT' ? requiredHumanMoment
-                     : mode === 'EXECUTION'    ? requiredExecution
+      const required = mode === 'HUMAN_MOMENT'              ? requiredHumanMoment
+                     : mode === 'EXECUTION'                 ? requiredExecution
+                     : (mode === 'DIAGNOSTIC' && goalMode)  ? requiredGoalMode
                      : null
 
       if (required) {
@@ -333,7 +410,7 @@ export default async function handler(req, res) {
               headers,
               body: JSON.stringify({
                 model: 'claude-sonnet-4-20250514',
-                max_tokens: 2500,
+                max_tokens: goalMode ? 4000 : 2500,
                 system: buildSystemPrompt(industry, domain, userMemory, goalMode, goal, goalTimeline, goalBaseline),
                 messages: retryMessages,
               }),

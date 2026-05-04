@@ -212,7 +212,13 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
         {/* DIAGNOSTIC sections */}
         {mode === 'DIAGNOSTIC' && <>
           {report.goal_gap_analysis && (
-            <GoalGapPanel gap={report.goal_gap_analysis} />
+            <GoalGapPanel
+              gap={report.goal_gap_analysis}
+              missingCapabilities={report.missing_capabilities}
+              rankingLogic={report.ranking_logic}
+              timelineFeasibility={report.timeline_feasibility}
+              confidenceLevel={report.confidence_level}
+            />
           )}
 
           <Section title="Domain Findings">
@@ -401,39 +407,74 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
   )
 }
 
-function GoalGapPanel({ gap }) {
-  const timelineColor = (() => {
+function GoalGapPanel({ gap, missingCapabilities, rankingLogic, timelineFeasibility, confidenceLevel }) {
+  // Resolve timeline status — prefer structured field, fall back to text parsing
+  const feasibilityEnum = (() => {
+    if (timelineFeasibility) {
+      const l = timelineFeasibility.toLowerCase()
+      if (l.startsWith('unrealistic')) return 'unrealistic'
+      if (l.startsWith('tight'))       return 'tight'
+      if (l.startsWith('feasible'))    return 'feasible'
+    }
     const t = (gap.realistic_timeline || '').toLowerCase()
-    if (t.includes('not achievable') || t.includes('unrealistic') || t.includes('too short') || t.includes('unlikely')) return '#A32D2D'
-    if (t.includes('tight') || t.includes('challenging') || t.includes('aggressive') || t.includes('stretch')) return '#BA7517'
-    return '#1D9E75'
+    if (t.includes('not achievable') || t.includes('unrealistic') || t.includes('too short') || t.includes('unlikely')) return 'unrealistic'
+    if (t.includes('tight') || t.includes('challenging') || t.includes('aggressive') || t.includes('stretch'))          return 'tight'
+    return 'feasible'
   })()
-  const timelineBg = timelineColor === '#A32D2D' ? '#FCEBEB' : timelineColor === '#BA7517' ? '#FAEEDA' : '#E1F5EE'
+  const feasColor = feasibilityEnum === 'unrealistic' ? '#A32D2D' : feasibilityEnum === 'tight' ? '#BA7517' : '#1D9E75'
+  const feasBg    = feasibilityEnum === 'unrealistic' ? '#FCEBEB' : feasibilityEnum === 'tight' ? '#FAEEDA' : '#E1F5EE'
+  const feasText  = timelineFeasibility || gap.realistic_timeline
+  const feasBodyColor = feasColor === '#1D9E75' ? '#0F6E56' : feasColor === '#BA7517' ? '#854F0B' : '#7A1A1A'
 
+  // Confidence
+  const confEnum = (() => {
+    if (!confidenceLevel) return null
+    const l = confidenceLevel.toLowerCase()
+    if (l.startsWith('high'))   return 'high'
+    if (l.startsWith('medium')) return 'medium'
+    if (l.startsWith('low'))    return 'low'
+    return null
+  })()
+  const confColor   = confEnum === 'high' ? '#1D9E75' : confEnum === 'medium' ? '#BA7517' : '#A32D2D'
+  const confDetail  = confidenceLevel ? confidenceLevel.replace(/^(high|medium|low)\s*[—–\-]\s*/i, '') : ''
+
+  // Parse fastest path into numbered items
   const fastestMoves = gap.fastest_path
     ? gap.fastest_path.split(/\n|(?<=\.)\s+(?=\d\.|\d\)|-|•)/).map(s => s.replace(/^[\d\.\)\-•\s]+/, '').trim()).filter(Boolean)
     : []
+
+  const caps = Array.isArray(missingCapabilities) ? missingCapabilities.filter(Boolean) : []
+
+  const rankCells = rankingLogic ? [
+    { label: 'Impact',     value: rankingLogic.impact     },
+    { label: 'Urgency',    value: rankingLogic.urgency    },
+    { label: 'Cost',       value: rankingLogic.cost       },
+    { label: 'Blocked by', value: rankingLogic.dependency },
+  ].filter(r => r.value) : []
 
   return (
     <div style={gg.panel}>
       <div style={gg.eyebrow}>Goal Gap Analysis</div>
 
+      {/* Goal */}
       <div style={gg.goalRow}>
         <div style={gg.goalLabel}>Goal</div>
         <div style={gg.goalText}>{gap.goal}</div>
       </div>
 
+      {/* Current position + gap */}
       <div style={gg.row}>
         <div style={gg.half}>
           <div style={gg.blockLabel}>Where you are now</div>
           <p style={gg.blockText}>{gap.current_position}</p>
         </div>
-        <div style={gg.half}>
+        <div style={{ ...gg.half, borderRight: 'none' }}>
           <div style={gg.blockLabel}>What's missing</div>
           <p style={gg.blockText}>{gap.gap}</p>
         </div>
       </div>
 
+      {/* Fastest path */}
       <div style={gg.fastestBlock}>
         <div style={gg.blockLabel}>Fastest path</div>
         <div style={gg.moveList}>
@@ -449,11 +490,51 @@ function GoalGapPanel({ gap }) {
         </div>
       </div>
 
-      <div style={{ ...gg.timelineBlock, background: timelineBg, borderColor: timelineColor }}>
-        <div style={{ ...gg.timelineLabel, color: timelineColor }}>Timeline reality check</div>
-        <p style={{ ...gg.blockText, color: timelineColor === '#1D9E75' ? '#0F6E56' : timelineColor === '#BA7517' ? '#854F0B' : '#7A1A1A' }}>
-          {gap.realistic_timeline}
-        </p>
+      {/* Missing capabilities */}
+      {caps.length > 0 && (
+        <div style={gg.capsBlock}>
+          <div style={gg.blockLabel}>Missing capabilities</div>
+          <div style={gg.capList}>
+            {caps.map((cap, i) => (
+              <div key={i} style={gg.capItem}>
+                <div style={gg.capDot} />
+                <div style={gg.capText}>{cap}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Ranking */}
+      {rankCells.length > 0 && (
+        <div style={gg.rankBlock}>
+          <div style={gg.blockLabel}>Ranking</div>
+          <div style={gg.rankRow}>
+            {rankCells.map(r => (
+              <div key={r.label} style={gg.rankCell}>
+                <div style={gg.rankLabel}>{r.label}</div>
+                <div style={gg.rankValue}>{r.value}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Timeline feasibility */}
+      <div style={{ ...gg.timelineBlock, background: feasBg, borderTop: `0.5px solid ${feasColor}` }}>
+        <div style={gg.timelineHeader}>
+          <span style={{ ...gg.feasBadge, background: feasColor }}>{feasibilityEnum}</span>
+          <div style={{ ...gg.blockLabel, margin: 0 }}>Timeline</div>
+        </div>
+        <p style={{ ...gg.blockText, color: feasBodyColor }}>{feasText}</p>
+
+        {confEnum && (
+          <div style={gg.confRow}>
+            <span style={{ ...gg.confDot, background: confColor }} />
+            <span style={{ ...gg.confLabel, color: confColor }}>Confidence: {confEnum}</span>
+            {confDetail && <span style={gg.confDetail}>{confDetail}</span>}
+          </div>
+        )}
       </div>
     </div>
   )
@@ -716,10 +797,46 @@ const gg = {
   timelineBlock: {
     padding: '14px 18px',
     borderRadius: '0 0 var(--radius) var(--radius)',
-    border: 'none', borderTop: '0.5px solid',
+  },
+  timelineHeader: {
+    display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6,
+  },
+  feasBadge: {
+    fontSize: 10, fontWeight: 700, color: 'white',
+    padding: '2px 8px', borderRadius: 4,
+    textTransform: 'uppercase', letterSpacing: '0.6px', flexShrink: 0,
   },
   timelineLabel: {
     fontSize: 11, fontWeight: 500,
     textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 6,
   },
+  capsBlock: {
+    padding: '14px 18px',
+    borderBottom: '0.5px solid var(--gray-200)',
+  },
+  capList: { display: 'flex', flexDirection: 'column', gap: 8 },
+  capItem: { display: 'flex', gap: 10, alignItems: 'flex-start' },
+  capDot: {
+    width: 6, height: 6, borderRadius: '50%',
+    background: 'var(--black)', flexShrink: 0, marginTop: 5,
+  },
+  capText: { fontSize: 13, color: 'var(--gray-800)', lineHeight: 1.6 },
+  rankBlock: {
+    padding: '14px 18px',
+    borderBottom: '0.5px solid var(--gray-200)',
+  },
+  rankRow: { display: 'flex', gap: 6, flexWrap: 'wrap' },
+  rankCell: {
+    flex: '1 1 90px', padding: '8px 12px',
+    background: 'var(--gray-100)', borderRadius: 6,
+  },
+  rankLabel: {
+    fontSize: 10, fontWeight: 500, color: 'var(--gray-400)',
+    textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 3,
+  },
+  rankValue: { fontSize: 12, fontWeight: 500, color: 'var(--black)' },
+  confRow: { display: 'flex', alignItems: 'center', gap: 6, marginTop: 10, flexWrap: 'wrap' },
+  confDot: { width: 7, height: 7, borderRadius: '50%', flexShrink: 0 },
+  confLabel: { fontSize: 12, fontWeight: 500 },
+  confDetail: { fontSize: 12, color: 'var(--gray-500)' },
 }
