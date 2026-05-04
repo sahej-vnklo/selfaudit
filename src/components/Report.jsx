@@ -11,7 +11,6 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
   const [error, setError] = useState(null)
   const [shareState, setShareState] = useState('idle') // idle | sending | sent | error
   const [downloadState, setDownloadState] = useState('idle') // idle | downloading
-  const contentRef = React.useRef(null)
   const posthog = usePostHog()
 
   React.useEffect(() => {
@@ -30,29 +29,19 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
         setReport(r)
 
         if (userInfo?.userId) {
+          fetch('/api/save-report', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userId:    userInfo.userId,
+              sessionId,
+              report:    r,
+              industry:  userInfo.industry,
+              domain:    userInfo.domain,
+            }),
+          }).catch(e => console.warn('[save-report] failed:', e?.message))
+
           initSupabase().then(async sb => {
-            // Save report
-            await sb.from('reports').insert({
-              user_id:           userInfo.userId,
-              session_id:        sessionId ?? null,
-              title:             r.headline,
-              content:           JSON.stringify(r),
-              domains:           r.domains?.map(d => d.name) ?? [],
-              report_data:       r,
-              industry:          userInfo.industry,
-              domain:            userInfo.domain,
-              conversation_mode: r.conversation_mode,
-              headline:          r.headline,
-            }).catch(e => console.warn('[reports] save failed:', e?.message))
-
-            // Update audit_session with resolved conversation_mode
-            if (sessionId) {
-              sb.from('audit_sessions')
-                .update({ conversation_mode: r.conversation_mode ?? null })
-                .eq('session_id', sessionId)
-                .catch(e => console.warn('[audit_sessions] mode update failed:', e?.message))
-            }
-
             // Append to context — fetch existing first so history accumulates
             const newEntry = [
               r.headline,
@@ -114,23 +103,23 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
     build()
   }, [])
 
-  const handleDownload = async () => {
-    if (downloadState !== 'idle' || !contentRef.current) return
+  const handleDownload = () => {
+    if (downloadState !== 'idle') return
     setDownloadState('downloading')
     try {
-      const html2canvas = (await import('html2canvas')).default
-      const { jsPDF } = await import('jspdf')
-      const hiddenEls = contentRef.current.querySelectorAll('[data-pdf-hide]')
-      hiddenEls.forEach(el => el.style.display = 'none')
-      const canvas = await html2canvas(contentRef.current, { scale: 2, useCORS: true, backgroundColor: '#ffffff' })
-      hiddenEls.forEach(el => el.style.display = '')
-      const imgData = canvas.toDataURL('image/png')
-      const pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: [canvas.width / 2, canvas.height / 2] })
-      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width / 2, canvas.height / 2)
+      const html = buildReportHtml(report, userInfo)
+      const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
       const slug = (report.headline || 'report').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '').slice(0, 60)
-      pdf.save(`selfaudit-report-${slug}.pdf`)
+      a.href = url
+      a.download = `selfaudit-report-${slug}.html`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
     } catch (e) {
-      console.warn('[pdf] download failed:', e.message)
+      console.warn('[download] failed:', e.message)
     } finally {
       setDownloadState('idle')
     }
@@ -186,7 +175,7 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
         </div>
       </nav>
 
-      <div ref={contentRef} style={styles.content}>
+      <div style={styles.content}>
 
         {/* Header — shared across all modes */}
         <div style={styles.reportHeader}>
@@ -410,6 +399,202 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
       </div>
     </div>
   )
+}
+
+function buildReportHtml(report, userInfo) {
+  const mode = report.conversation_mode ?? 'DIAGNOSTIC'
+  const date = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+
+  const e = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+
+  const sec = (title, body) => `<div class="section"><div class="section-title">${e(title)}</div>${body}</div>`
+
+  const statusColor = { strong: '#1D9E75', needs_work: '#BA7517', critical: '#A32D2D' }
+  const statusBg    = { strong: '#E1F5EE', needs_work: '#FAEEDA', critical: '#FCEBEB' }
+  const statusLabel = { strong: 'Strong', needs_work: 'Needs Work', critical: 'Critical' }
+
+  const headerSub = mode === 'DIAGNOSTIC' ? report.overall_verdict
+    : mode === 'EXECUTION' ? report.execution_context
+    : report.acknowledgment
+
+  let body = `
+    <div style="margin-bottom:40px;padding-bottom:28px;border-bottom:0.5px solid #e0e0e0;">
+      <span class="label">Your Audit Report</span>
+      <h1>${e(report.headline)}</h1>
+      ${headerSub ? `<p class="verdict">${e(headerSub)}</p>` : ''}
+      <div class="meta">${e(userInfo?.name ?? '')} · ${e(date)}</div>
+    </div>`
+
+  if (mode === 'DIAGNOSTIC') {
+    if (report.goal_gap_analysis) {
+      const gap = report.goal_gap_analysis
+      const feasText = report.timeline_feasibility || gap.realistic_timeline || ''
+      const fl = feasText.toLowerCase()
+      const fe = fl.startsWith('unrealistic') ? 'unrealistic' : fl.startsWith('tight') ? 'tight' : 'feasible'
+      const fc = fe === 'unrealistic' ? '#A32D2D' : fe === 'tight' ? '#BA7517' : '#1D9E75'
+      const fb = fe === 'unrealistic' ? '#FCEBEB' : fe === 'tight' ? '#FAEEDA' : '#E1F5EE'
+      const caps = Array.isArray(report.missing_capabilities) ? report.missing_capabilities.filter(Boolean) : []
+      const rankCells = report.ranking_logic ? [
+        { label: 'Impact', value: report.ranking_logic.impact },
+        { label: 'Urgency', value: report.ranking_logic.urgency },
+        { label: 'Cost', value: report.ranking_logic.cost },
+        { label: 'Blocked by', value: report.ranking_logic.dependency },
+      ].filter(r => r.value) : []
+      const moves = gap.fastest_path
+        ? gap.fastest_path.split(/\n|(?<=\.)\s+(?=\d\.|\d\)|-|•)/).map(s => s.replace(/^[\d.\)\-•\s]+/, '').trim()).filter(Boolean)
+        : []
+
+      body += `
+        <div class="gg-panel">
+          <div class="gg-eyebrow">Goal Gap Analysis</div>
+          <div class="gg-goal"><span class="gg-goal-label">Goal</span><span class="gg-goal-text">${e(gap.goal)}</span></div>
+          <div class="gg-row">
+            <div class="gg-half"><div class="gg-label">Where you are now</div><p class="gg-text">${e(gap.current_position)}</p></div>
+            <div class="gg-half" style="border-right:none"><div class="gg-label">What's missing</div><p class="gg-text">${e(gap.gap)}</p></div>
+          </div>
+          <div class="gg-block">
+            <div class="gg-label">Fastest path</div>
+            <div class="move-list">${moves.length > 0
+              ? moves.map((m, i) => `<div class="move"><div class="move-num">${i + 1}</div><div class="move-text">${e(m)}</div></div>`).join('')
+              : `<p class="gg-text">${e(gap.fastest_path)}</p>`
+            }</div>
+          </div>
+          ${caps.length > 0 ? `<div class="gg-block"><div class="gg-label">Missing capabilities</div><div class="cap-list">${caps.map(c => `<div class="cap-item"><div class="cap-dot"></div><div class="cap-text">${e(c)}</div></div>`).join('')}</div></div>` : ''}
+          ${rankCells.length > 0 ? `<div class="gg-block"><div class="gg-label">Ranking</div><div class="rank-row">${rankCells.map(r => `<div class="rank-cell"><div class="rank-label">${e(r.label)}</div><div class="rank-val">${e(r.value)}</div></div>`).join('')}</div></div>` : ''}
+          <div class="tl-block" style="background:${fb};border-top:0.5px solid ${fc}">
+            <div class="tl-header"><span class="tl-badge" style="background:${fc}">${fe}</span><span class="tl-lbl">Timeline</span></div>
+            <p class="gg-text">${e(feasText)}</p>
+          </div>
+        </div>`
+    }
+
+    if (report.domains?.length > 0) {
+      body += sec('Domain Findings', `<div class="domain-grid">${report.domains.map(d => `
+        <div class="domain-card" style="border-top:3px solid ${statusColor[d.status] ?? '#888'}">
+          <div class="domain-top">
+            <span class="domain-name">${e(d.name)}</span>
+            <span class="badge" style="background:${statusBg[d.status] ?? '#eee'};color:${statusColor[d.status] ?? '#888'}">${statusLabel[d.status] ?? d.status}</span>
+          </div>
+          <p class="finding">${e(d.finding)}</p>
+          <p class="act">→ ${e(d.action)}</p>
+        </div>`).join('')}</div>`)
+    }
+
+    if (report.non_ai_fixes?.length > 0) {
+      body += sec('Fix These First', report.non_ai_fixes.map(f => `
+        <div class="fix-item"><div class="fix-issue">${e(f.issue)}</div><div class="fix-sol">${e(f.fix)}</div></div>`).join(''))
+    }
+
+    if (report.ai_opportunities?.length > 0) {
+      body += sec("What's Now Possible", report.ai_opportunities.map(a => `
+        <div class="ai-item"><div class="ai-area">${e(a.area)}</div><div class="ai-why">${e(a.why)}</div></div>`).join(''))
+    }
+
+    if (report.priority_actions?.length > 0) {
+      body += sec('Priority Actions', `<div class="actions-list">${report.priority_actions.map((a, i) => `
+        <div class="action-row"><div class="action-num">${i + 1}</div><div class="action-text">${e(a)}</div></div>`).join('')}</div>`)
+    }
+  }
+
+  if (mode === 'EXECUTION') {
+    if (report.delivery_plan?.length > 0) {
+      body += sec('Delivery Plan', `<div class="plan-list">${report.delivery_plan.map(s => `
+        <div class="plan-item"><div class="plan-step">${s.step}</div><div><div class="plan-action">${e(s.action)}</div><div class="plan-why">${e(s.why)}</div></div></div>`).join('')}</div>`)
+    }
+    if (report.what_to_expect) body += sec('What to Expect', `<p class="prose">${e(report.what_to_expect)}</p>`)
+    if (report.key_message)    body += sec('Key Message', `<div class="key-msg"><p>${e(report.key_message)}</p></div>`)
+  }
+
+  if (mode === 'HUMAN_MOMENT') {
+    if (report.what_this_actually_is) body += sec('What This Actually Is', `<p class="prose">${e(report.what_this_actually_is)}</p>`)
+    if (report.delivery_script)       body += sec('What to Say', `<div class="script"><p>${e(report.delivery_script)}</p></div>`)
+    if (report.what_to_expect)        body += sec('What to Expect', `<p class="prose">${e(report.what_to_expect)}</p>`)
+  }
+
+  body += sec('The Honest Truth', `<div class="truth"><p>${e(report.honest_truth)}</p></div>`)
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SelfAudit Report — ${e(report.headline)}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fff;color:#111;font-size:14px;line-height:1.6}
+.wrap{max-width:680px;margin:0 auto;padding:48px 32px 80px}
+.label{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:#1D9E75;margin-bottom:12px;display:block}
+h1{font-size:28px;font-weight:400;line-height:1.2;margin-bottom:14px;color:#111}
+.verdict{font-size:15px;color:#555;line-height:1.7;margin-bottom:14px}
+.meta{font-size:12px;color:#888}
+.section{margin-bottom:36px}
+.section-title{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:#888;margin-bottom:14px;font-weight:500}
+.domain-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.domain-card{border:.5px solid #e0e0e0;border-radius:8px;padding:14px 16px}
+.domain-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.domain-name{font-size:13px;font-weight:500}
+.badge{font-size:11px;padding:2px 9px;border-radius:100px;font-weight:500}
+.finding{font-size:13px;color:#555;line-height:1.6;margin-bottom:6px}
+.act{font-size:12px;color:#333;font-style:italic}
+.fix-item{background:#FAEEDA;border-radius:8px;padding:14px 16px;border:.5px solid #FAC775;margin-bottom:10px}
+.fix-issue{font-size:13px;font-weight:500;color:#854F0B;margin-bottom:4px}
+.fix-sol{font-size:13px;color:#333;line-height:1.6}
+.ai-item{background:#E1F5EE;border-radius:8px;padding:14px 16px;border:.5px solid #9FE1CB;margin-bottom:10px}
+.ai-area{font-size:13px;font-weight:500;color:#0F6E56;margin-bottom:4px}
+.ai-why{font-size:13px;color:#333;line-height:1.6}
+.actions-list{display:flex;flex-direction:column;gap:10px}
+.action-row{display:flex;gap:12px;align-items:flex-start}
+.action-num{width:22px;height:22px;border-radius:50%;background:#111;color:#fff;font-size:11px;font-weight:500;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.action-text{font-size:14px;color:#333;line-height:1.6}
+.truth{background:#111;border-radius:8px;padding:24px}
+.truth p{font-size:15px;color:#fff;line-height:1.7}
+.plan-list{display:flex;flex-direction:column;gap:12px}
+.plan-item{display:flex;gap:14px;align-items:flex-start}
+.plan-step{width:26px;height:26px;border-radius:50%;background:#111;color:#fff;font-size:12px;font-weight:500;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.plan-action{font-size:14px;font-weight:500;color:#111;margin-bottom:3px}
+.plan-why{font-size:13px;color:#555;line-height:1.6}
+.prose{font-size:14px;color:#555;line-height:1.75}
+.key-msg{background:#111;border-radius:8px;padding:20px 24px}
+.key-msg p{font-size:16px;color:#fff;line-height:1.6}
+.script{background:#f9f9f9;border-left:3px solid #1D9E75;border-radius:0 8px 8px 0;padding:20px 24px}
+.script p{font-size:14px;color:#333;line-height:1.8;white-space:pre-wrap}
+.gg-panel{border:1.5px solid #1D9E75;border-radius:8px;overflow:hidden;margin-bottom:36px}
+.gg-eyebrow{background:#1D9E75;color:#fff;font-size:11px;font-weight:500;letter-spacing:.7px;text-transform:uppercase;padding:8px 18px}
+.gg-goal{background:#E1F5EE;padding:14px 18px;display:flex;gap:10px;align-items:baseline;border-bottom:.5px solid #9FE1CB}
+.gg-goal-label{font-size:11px;font-weight:500;color:#0F6E56;text-transform:uppercase;flex-shrink:0}
+.gg-goal-text{font-size:15px;font-weight:500;color:#0F6E56}
+.gg-row{display:grid;grid-template-columns:1fr 1fr;border-bottom:.5px solid #e0e0e0}
+.gg-half{padding:14px 18px;border-right:.5px solid #e0e0e0}
+.gg-block{padding:14px 18px;border-bottom:.5px solid #e0e0e0}
+.gg-label{font-size:11px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.gg-text{font-size:13px;color:#555;line-height:1.65}
+.move-list{display:flex;flex-direction:column;gap:8px}
+.move{display:flex;gap:10px;align-items:flex-start}
+.move-num{width:20px;height:20px;border-radius:50%;background:#111;color:#fff;font-size:10px;font-weight:500;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.move-text{font-size:13px;color:#333;line-height:1.6}
+.cap-list{display:flex;flex-direction:column;gap:8px}
+.cap-item{display:flex;gap:10px;align-items:flex-start}
+.cap-dot{width:6px;height:6px;border-radius:50%;background:#111;flex-shrink:0;margin-top:5px}
+.cap-text{font-size:13px;color:#333;line-height:1.6}
+.rank-row{display:flex;gap:6px;flex-wrap:wrap}
+.rank-cell{flex:1 1 90px;padding:8px 12px;background:#f3f3f3;border-radius:6px}
+.rank-label{font-size:10px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.rank-val{font-size:12px;font-weight:500;color:#111}
+.tl-block{padding:14px 18px}
+.tl-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.tl-badge{font-size:10px;font-weight:700;color:#fff;padding:2px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.6px}
+.tl-lbl{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.5px;color:#888}
+footer{font-size:11px;color:#aaa;text-align:center;margin-top:48px}
+@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style>
+</head>
+<body>
+<div class="wrap">
+${body}
+<footer>SelfAudit report · Built by <a href="https://vnklo.com" style="color:#1D9E75">Vnklo</a></footer>
+</div>
+</body>
+</html>`
 }
 
 function GoalGapPanel({ gap, missingCapabilities, rankingLogic, timelineFeasibility, confidenceLevel }) {
