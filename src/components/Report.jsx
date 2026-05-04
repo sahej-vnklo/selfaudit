@@ -104,7 +104,10 @@ export default function Report({ userInfo, conversationHistory }) {
     try {
       const html2canvas = (await import('html2canvas')).default
       const { jsPDF } = await import('jspdf')
+      const hiddenEls = contentRef.current.querySelectorAll('[data-pdf-hide]')
+      hiddenEls.forEach(el => el.style.display = 'none')
       const canvas = await html2canvas(contentRef.current, { scale: 2, useCORS: true, backgroundColor: '#ffffff' })
+      hiddenEls.forEach(el => el.style.display = '')
       const imgData = canvas.toDataURL('image/png')
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: [canvas.width / 2, canvas.height / 2] })
       pdf.addImage(imgData, 'PNG', 0, 0, canvas.width / 2, canvas.height / 2)
@@ -313,8 +316,24 @@ export default function Report({ userInfo, conversationHistory }) {
           </div>
         </Section>
 
+        {/* Anonymous signup prompt */}
+        {!userInfo?.userId && (
+          <div data-pdf-hide style={styles.anonPrompt}>
+            <div style={styles.anonLeft}>
+              <p style={styles.anonTitle}>Your report won't be saved.</p>
+              <p style={styles.anonBody}>Create a free account to save this report, track your progress, and get smarter audits every time — SelfAudit remembers your business context across sessions.</p>
+            </div>
+            <div style={styles.anonRight}>
+              <button style={styles.anonBtn} onClick={() => { window.location.hash = 'signup' }}>
+                Create free account →
+              </button>
+              <a href="#login" style={styles.anonSignIn}>Already have an account? Sign in</a>
+            </div>
+          </div>
+        )}
+
         {/* Share CTA */}
-        <div style={styles.shareCta}>
+        <div data-pdf-hide style={styles.shareCta}>
           <div style={styles.shareCard}>
             <div style={styles.shareLeft}>
               <p style={styles.shareTitle}>Want to act on this?</p>
@@ -501,7 +520,31 @@ const styles = {
     padding: '1.5rem'
   },
   truthText: { fontSize: 15, color: 'white', lineHeight: 1.7, margin: 0 },
-  shareCta: { marginTop: '3rem', marginBottom: '1.5rem' },
+  anonPrompt: {
+    marginTop: '3rem', marginBottom: '1rem',
+    borderLeft: '3px solid var(--green)',
+    background: 'var(--gray-50, #F9F9F9)',
+    borderRadius: '0 var(--radius) var(--radius) 0',
+    padding: '1.25rem 1.5rem',
+    display: 'flex', gap: '1.5rem',
+    alignItems: 'center', flexWrap: 'wrap',
+  },
+  anonLeft: { flex: 1, minWidth: 200 },
+  anonTitle: { fontSize: 14, fontWeight: 600, color: 'var(--black)', marginBottom: 6 },
+  anonBody: { fontSize: 13, color: 'var(--gray-600)', lineHeight: 1.6 },
+  anonRight: { flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8 },
+  anonBtn: {
+    display: 'inline-flex', alignItems: 'center',
+    background: 'var(--green)', color: 'white',
+    fontSize: 13, fontWeight: 500, padding: '9px 18px',
+    borderRadius: 'var(--radius)', border: 'none', cursor: 'pointer',
+    whiteSpace: 'nowrap',
+  },
+  anonSignIn: {
+    fontSize: 12, color: 'var(--gray-400)', textDecoration: 'none',
+    cursor: 'pointer',
+  },
+  shareCta: { marginTop: '1rem', marginBottom: '1.5rem' },
   shareCard: {
     border: '1.5px solid var(--green)', borderRadius: 'var(--radius)',
     padding: '1.5rem', display: 'flex', gap: '1.5rem',
