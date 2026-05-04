@@ -278,7 +278,28 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
           domain: tierData?.domain ?? userInfo?.domain,
           tier: tierData?.tier ?? userInfo?.tier,
         })
-        setTimeout(() => onReportReady(finalHistory), 1200)
+
+        const sessionId = sessionIdRef.current
+        if (userInfo?.userId) {
+          const goalInput = finalHistory.find(m => m.role === 'user')?.content ?? ''
+          initSupabase().then(sb => {
+            sb.from('audit_sessions').insert({
+              user_id:    userInfo.userId,
+              session_id: sessionId,
+              goal_input: goalInput,
+              industry:   tierData?.industry ?? userInfo?.industry ?? null,
+              domain:     tierData?.domain   ?? userInfo?.domain   ?? null,
+            }).catch(e => console.warn('[audit_sessions] save failed:', e?.message))
+
+            const msgs = finalHistory
+              .filter(m => m.role !== 'system')
+              .map(m => ({ session_id: sessionId, role: m.role, content: m.content }))
+            sb.from('audit_messages').insert(msgs)
+              .catch(e => console.warn('[audit_messages] save failed:', e?.message))
+          }).catch(() => {})
+        }
+
+        setTimeout(() => onReportReady(finalHistory, sessionId), 1200)
       }
     } catch (err) {
       Sentry.captureException(err)

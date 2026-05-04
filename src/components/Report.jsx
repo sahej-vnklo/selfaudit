@@ -4,7 +4,7 @@ import { generateReport, sendReportEmail } from '../lib/audit.js'
 import { initSupabase } from '../lib/supabase.js'
 import { usePostHog } from '@posthog/react'
 
-export default function Report({ userInfo, conversationHistory }) {
+export default function Report({ userInfo, conversationHistory, sessionId }) {
   const [report, setReport] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -27,6 +27,7 @@ export default function Report({ userInfo, conversationHistory }) {
             // Save report
             await sb.from('reports').insert({
               user_id:           userInfo.userId,
+              session_id:        sessionId ?? null,
               title:             r.headline,
               content:           JSON.stringify(r),
               domains:           r.domains?.map(d => d.name) ?? [],
@@ -36,6 +37,14 @@ export default function Report({ userInfo, conversationHistory }) {
               conversation_mode: r.conversation_mode,
               headline:          r.headline,
             }).catch(e => console.warn('[reports] save failed:', e?.message))
+
+            // Update audit_session with resolved conversation_mode
+            if (sessionId) {
+              sb.from('audit_sessions')
+                .update({ conversation_mode: r.conversation_mode ?? null })
+                .eq('session_id', sessionId)
+                .catch(e => console.warn('[audit_sessions] mode update failed:', e?.message))
+            }
 
             // Append to context — fetch existing first so history accumulates
             const newEntry = [

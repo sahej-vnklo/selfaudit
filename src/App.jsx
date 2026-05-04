@@ -47,6 +47,7 @@ export default function App() {
   const [screen,              setScreen]              = useState(screenFromHash() ?? SCREENS.LANDING)
   const [userInfo,            setUserInfo]            = useState(null)
   const [conversationHistory, setConversationHistory] = useState([])
+  const [auditSessionId,      setAuditSessionId]      = useState(null)
   const [session,             setSession]             = useState(null)
   const [authLoading,         setAuthLoading]         = useState(true)
 
@@ -166,7 +167,7 @@ export default function App() {
     }
     navigate(SCREENS.AUDIT)
   }
-  const handleReportReady = (history) => { setConversationHistory(history); navigate(SCREENS.REPORT) }
+  const handleReportReady = (history, sessionId) => { setConversationHistory(history); setAuditSessionId(sessionId ?? null); navigate(SCREENS.REPORT) }
   const handleSignOut = () => {
     // Use the client if it's already initialized — don't await initSupabase()
     // because it may still be pending and will silently hang the button click.
@@ -269,6 +270,7 @@ export default function App() {
         <Report
           userInfo={userInfo}
           conversationHistory={conversationHistory}
+          sessionId={auditSessionId}
         />
       )}
     </>
