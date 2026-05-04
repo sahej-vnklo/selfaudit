@@ -1,11 +1,8 @@
-export async function sendMessage(messages, { industry, domain } = {}) {
-  const headers = { 'Content-Type': 'application/json' }
-  console.log('HEADERS BEING SENT:', JSON.stringify(headers))
-
+export async function sendMessage(messages, { industry, domain, userId } = {}) {
   const response = await fetch('/api/audit', {
     method: 'POST',
-    headers,
-    body: JSON.stringify({ type: 'chat', messages, industry, domain }),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type: 'chat', messages, industry, domain, userId }),
   })
 
   if (!response.ok) {
@@ -17,14 +14,11 @@ export async function sendMessage(messages, { industry, domain } = {}) {
   return data.text
 }
 
-export async function generateReport(messages) {
-  const headers = { 'Content-Type': 'application/json' }
-  console.log('HEADERS BEING SENT:', JSON.stringify(headers))
-
+export async function generateReport(messages, { userId } = {}) {
   const response = await fetch('/api/audit', {
     method: 'POST',
-    headers,
-    body: JSON.stringify({ type: 'report', messages }),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type: 'report', messages, userId }),
   })
 
   if (!response.ok) {
@@ -37,12 +31,9 @@ export async function generateReport(messages) {
 }
 
 export async function sendReportEmail({ userInfo, report }) {
-  const headers = { 'Content-Type': 'application/json' }
-  console.log('HEADERS BEING SENT:', JSON.stringify(headers))
-
   const response = await fetch('/api/send-report', {
     method: 'POST',
-    headers,
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ userInfo, report }),
   })
 

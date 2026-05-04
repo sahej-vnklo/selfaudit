@@ -1,7 +1,56 @@
 // v2 - serverless only
+import { createClient } from '@supabase/supabase-js'
+
 const CLAUDE_API = 'https://api.anthropic.com/v1/messages'
 
-function buildSystemPrompt(industry, domain) {
+const supabase = createClient(
+  process.env.VITE_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  { auth: { persistSession: false } }
+)
+
+async function fetchUserMemory(userId) {
+  if (!userId) return ''
+  try {
+    const [profileRes, reportsRes] = await Promise.all([
+      supabase.from('profiles').select('context').eq('id', userId).single(),
+      supabase.from('reports')
+        .select('headline, conversation_mode, industry, domain, created_at')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(3),
+    ])
+
+    const context     = profileRes.data?.context ?? ''
+    const pastReports = reportsRes.data ?? []
+
+    if (!context && pastReports.length === 0) return ''
+
+    const lines = ['USER MEMORY:']
+
+    if (context) {
+      lines.push(`Context they shared about their business: ${context}`)
+    }
+
+    if (pastReports.length > 0) {
+      lines.push('')
+      lines.push('Past audits (most recent first):')
+      for (const r of pastReports) {
+        const date = r.created_at ? new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'
+        const mode = r.conversation_mode ?? 'DIAGNOSTIC'
+        const ind  = r.industry ?? '—'
+        const dom  = r.domain   ?? '—'
+        lines.push(`${r.headline ?? '(untitled)'} — ${ind} / ${dom} — ${mode} — ${date}`)
+      }
+    }
+
+    return lines.join('\n')
+  } catch {
+    return ''
+  }
+}
+
+function buildSystemPrompt(industry, domain, userMemory) {
   const base = `You are SelfAudit — a brutally honest, senior-level business and life advisor. Your job is to audit any situation a user brings — business, startup, side project, personal goals, career, anything.
 
 CORE RULES:
@@ -59,9 +108,7 @@ QUESTIONING FRAMEWORK — adapt based on what you detect:
 
 You are not here to make people feel good. You are here to give them clarity they cannot get anywhere else. Earn that standard on every exchange.`
 
-  if (!industry || !domain) return base
-
-  return base + `
+  const scopeBlock = (!industry || !domain) ? '' : `
 
 AUDIT CONTEXT:
 Industry: ${industry}
@@ -72,6 +119,10 @@ Stay focused on ${domain} for a ${industry} business throughout. Do not question
 If the user raises something from a completely different industry: acknowledge it in one sentence, ask one sharp ${domain}-focused question, and end your message with [SCOPE_LIMIT] on its own line.
 
 [SCOPE_LIMIT] must fire every time you redirect scope. Never add it otherwise.`
+
+  const memoryBlock = userMemory ? `\n\n---\n${userMemory}` : ''
+
+  return base + scopeBlock + memoryBlock
 }
 
 const REPORT_PROMPT = `Based on this entire conversation, generate a report.
@@ -174,7 +225,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { type, messages, industry, domain } = req.body
+  const { type, messages, industry, domain, userId } = req.body
   if (!type || !messages) {
     return res.status(400).json({ error: 'Missing type or messages' })
   }
@@ -194,7 +245,8 @@ export default async function handler(req, res) {
     'x-api-key': apiKey,
     'anthropic-version': '2023-06-01',
   }
-  console.log('HEADERS BEING SENT:', JSON.stringify({ ...headers, 'x-api-key': '[REDACTED]' }))
+
+  const userMemory = await fetchUserMemory(userId)
 
   try {
     const response = await fetch(CLAUDE_API, {
@@ -203,7 +255,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: isReport ? 2048 : 1024,
-        system: buildSystemPrompt(industry, domain),
+        system: buildSystemPrompt(industry, domain, userMemory),
         messages: finalMessages,
       }),
     })

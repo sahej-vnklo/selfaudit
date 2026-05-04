@@ -17,15 +17,20 @@ export default function Report({ userInfo, conversationHistory }) {
         const apiMessages = conversationHistory
           .filter(m => m.role !== 'system')
           .map(m => ({ role: m.role, content: m.content }))
-        const r = await generateReport(apiMessages)
+        const r = await generateReport(apiMessages, { userId: userInfo?.userId })
         setReport(r)
 
         if (userInfo?.userId) {
           initSupabase().then(sb => sb.from('reports').insert({
-            user_id: userInfo.userId,
-            title:   r.headline,
-            content: JSON.stringify(r),
-            domains: r.domains?.map(d => d.name) ?? [],
+            user_id:           userInfo.userId,
+            title:             r.headline,
+            content:           JSON.stringify(r),
+            domains:           r.domains?.map(d => d.name) ?? [],
+            report_data:       r,
+            industry:          userInfo.industry,
+            domain:            userInfo.domain,
+            conversation_mode: r.conversation_mode,
+            headline:          r.headline,
           })).catch(e => console.warn('[reports] save failed:', e?.message))
 
           const attioBase = { method: 'POST', headers: { 'Content-Type': 'application/json' } }

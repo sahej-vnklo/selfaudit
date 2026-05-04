@@ -187,10 +187,8 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
         .eq('id', userInfo.userId)
       )
       .then(({ data, error }) => {
-        console.log('AUDIT CHAT PROFILE:', data, error)
         const row = data?.[0]
         if (row) {
-          console.log('TIER DATA:', { tier: row.tier, industry: row.industry, domain: row.domain })
           setTierData(row)
         }
       })
@@ -250,6 +248,7 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
       const response = await sendMessage(apiMessages, {
         industry: tierData?.industry ?? userInfo?.industry,
         domain:   tierData?.domain   ?? userInfo?.domain,
+        userId:   userInfo?.userId,
       })
       const isReady      = response.includes('[READY_FOR_REPORT]')
       const isScopeLimit = response.includes('[SCOPE_LIMIT]')
