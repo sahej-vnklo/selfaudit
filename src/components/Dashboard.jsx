@@ -354,6 +354,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
 
         {section === 'home' && (
           <HomeSection
+            user={user}
             name={name}
             tier={tier}
             industry={industry}
@@ -718,11 +719,48 @@ const acct = {
   },
 }
 
+// ─── Home section helpers ─────────────────────────────────────────────────────
+
+function parseReportContent(content) {
+  if (!content) return null
+  try { return typeof content === 'string' ? JSON.parse(content) : content } catch { return null }
+}
+
+function computeHealthScore(domains) {
+  if (!domains || domains.length === 0) return 0
+  const sum = domains.reduce((acc, d) => {
+    if (d.status === 'critical')   return acc + 30
+    if (d.status === 'needs_work') return acc + 60
+    return acc + 85
+  }, 0)
+  return Math.round(sum / domains.length)
+}
+
 // ─── Home section ─────────────────────────────────────────────────────────────
 
-function HomeSection({ name, tier, industry, domain, badge, context, reportsLoading, reports, onStartAudit }) {
+function HomeSection({ user, name, tier, industry, domain, badge, context, reportsLoading, reports, onStartAudit }) {
+  const [dismissedBanner, setDismissedBanner] = useState(false)
+  const issuesRef = useRef(null)
+
+  const latestReport  = reports[0] ?? null
+  const latestContent = latestReport ? parseReportContent(latestReport.content) : null
+  const latestDomains = latestContent?.domains ?? []
+
+  const showBanner = reports.length > 0 && !dismissedBanner && latestReport &&
+    (Date.now() - new Date(latestReport.created_at).getTime()) > 24 * 60 * 60 * 1000
+
   return (
     <div style={s.content}>
+      {/* Re-engagement banner */}
+      {showBanner && (
+        <ReEngagementBanner
+          report={latestReport}
+          domains={latestDomains}
+          onDismiss={() => setDismissedBanner(true)}
+          onUpdateStatus={() => issuesRef.current?.scrollIntoView({ behavior: 'smooth' })}
+        />
+      )}
+
       {/* Page header */}
       <div style={s.pageHeader}>
         <div>
@@ -746,6 +784,22 @@ function HomeSection({ name, tier, industry, domain, badge, context, reportsLoad
         />
       </div>
 
+      {/* Business Health Score Card */}
+      {latestDomains.length > 0 && (
+        <BusinessHealthScoreCard
+          reports={reports}
+          latestDomains={latestDomains}
+          onStartAudit={onStartAudit}
+        />
+      )}
+
+      {/* Open Issues Tracker */}
+      {latestDomains.length > 0 && (
+        <div ref={issuesRef} style={{ marginTop: 16 }}>
+          <OpenIssuesTracker report={latestReport} domains={latestDomains} />
+        </div>
+      )}
+
       {/* Audit scope card */}
       <ScopeCard tier={tier} industry={industry} domain={domain} context={context} />
 
@@ -759,6 +813,319 @@ function HomeSection({ name, tier, industry, domain, badge, context, reportsLoad
             : <EmptyReports onStartAudit={onStartAudit} />
         }
       </div>
+
+      {/* VNKLO CTA Card */}
+      {reports.length > 0 && (
+        <VnkloCTACard user={user} reports={reports} />
+      )}
+    </div>
+  )
+}
+
+// ─── Re-engagement banner ─────────────────────────────────────────────────────
+
+function ReEngagementBanner({ report, domains, onDismiss, onUpdateStatus }) {
+  const badCount = domains.filter(d => d.status === 'critical' || d.status === 'needs_work').length
+  const daysAgo  = Math.floor((Date.now() - new Date(report.created_at).getTime()) / (1000 * 60 * 60 * 24))
+
+  return (
+    <div style={{
+      background: 'linear-gradient(135deg, #0c4e54 0%, #01696f 100%)',
+      borderRadius: 12,
+      padding: '20px 24px',
+      display: 'flex',
+      alignItems: 'center',
+      gap: 16,
+      marginBottom: 24,
+    }}>
+      <div style={{
+        width: 40, height: 40, borderRadius: '50%',
+        background: 'rgba(255,255,255,0.15)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: 20, flexShrink: 0,
+      }}>
+        👋
+      </div>
+
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'rgba(255,255,255,0.6)', marginBottom: 4 }}>
+          Back for a check-in?
+        </div>
+        <div style={{ fontSize: 16, fontWeight: 700, color: '#fff', marginBottom: 3 }}>
+          Your last audit flagged {badCount} critical/needs_work {badCount === 1 ? 'issue' : 'issues'} — any progress?
+        </div>
+        <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>
+          {report.title} · done {daysAgo} {daysAgo === 1 ? 'day' : 'days'} ago
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+        <button
+          onClick={onDismiss}
+          style={{
+            background: 'none',
+            border: '1px solid rgba(255,255,255,0.5)',
+            color: '#fff',
+            fontSize: 12, fontWeight: 500,
+            padding: '8px 14px', borderRadius: 8, cursor: 'pointer',
+          }}
+        >
+          Dismiss
+        </button>
+        <button
+          onClick={onUpdateStatus}
+          style={{
+            background: '#fff',
+            border: 'none',
+            color: '#0c4e54',
+            fontSize: 12, fontWeight: 600,
+            padding: '8px 14px', borderRadius: 8, cursor: 'pointer',
+          }}
+        >
+          Update Status →
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ─── Business Health Score Card ───────────────────────────────────────────────
+
+function BusinessHealthScoreCard({ reports, latestDomains, onStartAudit }) {
+  const score     = computeHealthScore(latestDomains)
+  const prevDoms  = reports.length > 1 ? (parseReportContent(reports[1].content)?.domains ?? []) : null
+  const prevScore = prevDoms !== null ? computeHealthScore(prevDoms) : null
+  const delta     = prevScore !== null ? score - prevScore : null
+
+  const r    = 20
+  const cx   = 25
+  const cy   = 25
+  const circ = 2 * Math.PI * r
+
+  const statusColor = (status) => {
+    if (status === 'critical')   return '#C0392B'
+    if (status === 'needs_work') return '#B7600A'
+    return '#0F6E56'
+  }
+
+  const domainScore = (d) => {
+    if (d.status === 'critical')   return 30
+    if (d.status === 'needs_work') return 60
+    return 85
+  }
+
+  return (
+    <div style={{ background: G.white, border: `0.5px solid ${G.border}`, borderRadius: 12, padding: '20px', marginBottom: 0, marginTop: 16 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <span style={{ fontSize: 14, fontWeight: 600, color: G.ink }}>Business Health Score</span>
+        <button
+          onClick={onStartAudit}
+          style={{
+            background: 'none', border: `0.5px solid ${G.border}`, borderRadius: 8,
+            fontSize: 12, fontWeight: 500, color: G.green,
+            padding: '6px 14px', cursor: 'pointer',
+          }}
+        >
+          Run New Audit →
+        </button>
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
+        <svg width="50" height="50" viewBox="0 0 50 50">
+          <circle cx={cx} cy={cy} r={r} fill="none" stroke={G.border} strokeWidth="4" />
+          <circle
+            cx={cx} cy={cy} r={r}
+            fill="none"
+            stroke={G.green}
+            strokeWidth="4"
+            strokeDasharray={`${(score / 100) * circ} ${circ}`}
+            strokeDashoffset={0}
+            strokeLinecap="round"
+            transform={`rotate(-90 ${cx} ${cy})`}
+          />
+        </svg>
+        <div>
+          <span style={{ fontSize: 28, fontWeight: 700, color: G.ink, fontFamily: 'ui-monospace, monospace', letterSpacing: '-1px' }}>{score}</span>
+          <span style={{ fontSize: 14, color: G.inkFaint, fontFamily: 'ui-monospace, monospace' }}>/100</span>
+          {delta !== null && (
+            <div style={{ fontSize: 12, color: delta >= 0 ? G.greenDark : '#C0392B', fontWeight: 500, marginTop: 2 }}>
+              {delta >= 0 ? `↑ Up from ${prevScore}` : `↓ Down from ${prevScore}`}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {latestDomains.slice(0, 4).length > 0 && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+          {latestDomains.slice(0, 4).map((d, i) => {
+            const ds    = domainScore(d)
+            const color = statusColor(d.status)
+            return (
+              <div key={i} style={{ background: '#F9F8F5', border: `0.5px solid ${G.border}`, borderRadius: 8, padding: '12px' }}>
+                <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.5px', color: G.inkFaint, marginBottom: 4 }}>{d.name}</div>
+                <div style={{ fontSize: 22, fontWeight: 700, color: G.ink, fontFamily: 'ui-monospace, monospace', marginBottom: 6 }}>{ds}</div>
+                <div style={{ height: 4, background: G.border, borderRadius: 2, overflow: 'hidden', marginBottom: 6 }}>
+                  <div style={{ height: '100%', width: `${ds}%`, background: color, borderRadius: 2 }} />
+                </div>
+                <span style={{
+                  fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 100,
+                  background: d.status === 'critical' ? '#FDECEA' : d.status === 'needs_work' ? '#FEF3E2' : '#E1F5EE',
+                  color,
+                }}>
+                  {d.status?.replace(/_/g, ' ') ?? 'good'}
+                </span>
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Open Issues Tracker ──────────────────────────────────────────────────────
+
+function OpenIssuesTracker({ report, domains }) {
+  const getKey = (domainName) => `tsa_issue_${report.id}_${domainName}`
+
+  const [statuses, setStatuses] = useState(() => {
+    const init = {}
+    domains.forEach(d => {
+      init[d.name] = localStorage.getItem(`tsa_issue_${report.id}_${d.name}`) || 'open'
+    })
+    return init
+  })
+
+  const cycleStatus = (domainName) => {
+    const cur  = statuses[domainName] || 'open'
+    const next = cur === 'open' ? 'in_progress' : cur === 'in_progress' ? 'resolved' : 'open'
+    localStorage.setItem(getKey(domainName), next)
+    setStatuses(prev => ({ ...prev, [domainName]: next }))
+  }
+
+  const openCount     = Object.values(statuses).filter(s => s === 'open').length
+  const resolvedCount = Object.values(statuses).filter(s => s === 'resolved').length
+
+  const dotColor = (status) => {
+    if (status === 'critical')   return '#C0392B'
+    if (status === 'needs_work') return '#B7600A'
+    return '#0F6E56'
+  }
+
+  const chipStyle = (status) => {
+    if (status === 'open')        return { background: '#FDECEA', color: '#C0392B' }
+    if (status === 'in_progress') return { background: '#FEF3E2', color: '#B7600A' }
+    return { background: '#E1F5EE', color: '#0F6E56' }
+  }
+
+  return (
+    <div style={{ background: G.white, border: `0.5px solid ${G.border}`, borderRadius: 12, overflow: 'hidden' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 18px', borderBottom: `0.5px solid ${G.border}` }}>
+        <span style={{ fontSize: 14, fontWeight: 600, color: G.ink }}>Open Issues</span>
+        <span style={{ fontSize: 12, color: G.inkFaint }}>{openCount} open · {resolvedCount} resolved</span>
+      </div>
+      <div>
+        {domains.map((d, i) => {
+          const issueStatus = statuses[d.name] || 'open'
+          const chip        = chipStyle(issueStatus)
+          const isResolved  = issueStatus === 'resolved'
+          return (
+            <div
+              key={i}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '12px 18px',
+                borderBottom: i < domains.length - 1 ? `0.5px solid ${G.border}` : 'none',
+              }}
+            >
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: dotColor(d.status), flexShrink: 0 }} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: G.ink }}>{d.name}</div>
+                {d.finding && (
+                  <div style={{ fontSize: 11, color: G.inkFaint, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {d.finding}
+                  </div>
+                )}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 9px', borderRadius: 100, background: chip.background, color: chip.color }}>
+                  {issueStatus.replace(/_/g, ' ')}
+                </span>
+                {isResolved ? (
+                  <span style={{ fontSize: 14, color: '#0F6E56' }}>✓</span>
+                ) : (
+                  <button
+                    onClick={() => cycleStatus(d.name)}
+                    style={{
+                      background: 'none', border: `0.5px solid ${G.border}`,
+                      borderRadius: 6, fontSize: 11, fontWeight: 500,
+                      color: G.inkMuted, padding: '4px 10px', cursor: 'pointer',
+                    }}
+                  >
+                    {issueStatus === 'open' ? 'Mark Progress' : 'Update'}
+                  </button>
+                )}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+// ─── VNKLO CTA card ───────────────────────────────────────────────────────────
+
+function VnkloCTACard({ user, reports }) {
+  const [shared,  setShared]  = useState(false)
+  const [sharing, setSharing] = useState(false)
+
+  const handleShare = async () => {
+    if (!user?.id || !reports[0]?.id) return
+    setSharing(true)
+    try {
+      const sb = await initSupabase()
+      await sb.from('profiles').update({
+        shared_with_vnklo: true,
+        shared_report_id: reports[0].id,
+      }).eq('id', user.id)
+      setShared(true)
+    } catch (e) {
+      console.error('[vnklo-cta] share failed:', e?.message)
+    } finally {
+      setSharing(false)
+    }
+  }
+
+  return (
+    <div style={{ background: '#1A1A1A', borderRadius: 12, padding: '20px 24px', marginTop: 24 }}>
+      <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'rgba(255,255,255,0.4)', marginBottom: 6 }}>
+        Ready to fix this?
+      </div>
+      <div style={{ fontSize: 15, fontWeight: 700, color: '#fff', marginBottom: 4 }}>
+        Get a free strategy call with VNKLO
+      </div>
+      <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginBottom: 14 }}>
+        Share your audit — an AI consultant will map out exactly what to fix and how.
+      </div>
+      {shared ? (
+        <div style={{ fontSize: 13, fontWeight: 500, color: G.green }}>
+          ✓ Sent! We'll be in touch within 24h.
+        </div>
+      ) : (
+        <button
+          onClick={handleShare}
+          disabled={sharing}
+          style={{
+            width: '100%', background: '#fff', border: 'none',
+            color: '#1A1A1A', fontSize: 13, fontWeight: 600,
+            padding: '11px', borderRadius: 8, cursor: sharing ? 'not-allowed' : 'pointer',
+            opacity: sharing ? 0.7 : 1,
+          }}
+        >
+          {sharing ? 'Sharing…' : 'Share Report with VNKLO →'}
+        </button>
+      )}
     </div>
   )
 }
