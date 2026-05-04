@@ -226,7 +226,7 @@ export default function Landing({ onStart, onSignUp, session }) {
             <em style={{ color: C.accent, fontStyle: 'italic', fontWeight: 500 }}>wishes they had.</em>
           </h1>
           <p style={{ fontSize: 19, color: C.inkSoft, maxWidth: 680, margin: '0 auto 24px' }}>
-            Trained on how the best operate. Studied the playbooks of founders you read about — how they scaled, what they avoided, where they almost broke. Bring it any decision, any month: pricing, hiring, product, capital. Get the read someone three levels above you would give.
+            We've seen what breaks. We've seen what scales. Now we've put it in one place.
           </p>
           <p style={{ fontFamily: serif, fontStyle: 'italic', fontSize: 20, color: C.ink, maxWidth: 680, margin: '0 auto 40px' }}>
             On call. On your side. On a flat fee.
