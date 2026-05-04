@@ -9,13 +9,15 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing data' })
   }
 
-  const RESEND_API_KEY = process.env.RESEND_API_KEY
+  const RESEND_API_KEY  = process.env.RESEND_API_KEY
+  const HUBSPOT_API_KEY = process.env.HUBSPOT_API_KEY
+
   if (!RESEND_API_KEY) {
     return res.status(500).json({ error: 'Resend API key not configured' })
   }
 
   const statusColor = { strong: '#1D9E75', needs_work: '#BA7517', critical: '#A32D2D' }
-  const statusBg = { strong: '#E1F5EE', needs_work: '#FAEEDA', critical: '#FCEBEB' }
+  const statusBg    = { strong: '#E1F5EE', needs_work: '#FAEEDA', critical: '#FCEBEB' }
   const statusLabel = { strong: 'Strong', needs_work: 'Needs Work', critical: 'Critical' }
 
   const emailHTML = `
@@ -74,14 +76,14 @@ export default async function handler(req, res) {
           <span class="badge" style="background:${statusBg[d.status] || '#eee'};color:${statusColor[d.status] || '#888'}">${statusLabel[d.status] || d.status}</span>
         </div>
         <div class="domain-text">${d.finding}</div>
-        <div class="domain-action">→ ${d.action}</div>
+        <div class="domain-action">\u2192 ${d.action}</div>
       </div>
     `).join('')}
   </div>
 
   ${(report.non_ai_fixes || []).length > 0 ? `
   <div class="section">
-    <h2>Fix These First — No AI Needed</h2>
+    <h2>Fix These First \u2014 No AI Needed</h2>
     ${report.non_ai_fixes.map(f => `
       <div class="fix">
         <div class="fix-issue">${f.issue}</div>
@@ -117,11 +119,95 @@ export default async function handler(req, res) {
   </div>
 
   <div class="footer">
-    Sent via SelfAudit — tryselfaudit.com · Built by Vnklo
+    Sent via SelfAudit \u2014 tryselfaudit.com \u00b7 Built by Vnklo
   </div>
 </body>
 </html>`
 
+  // ── HubSpot upsert contact + create deal ──────────────────────────────────
+  if (HUBSPOT_API_KEY) {
+    try {
+      const hsHeaders = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${HUBSPOT_API_KEY}`,
+      }
+
+      // 1. Upsert contact by email
+      const nameParts  = (userInfo.name || '').trim().split(' ')
+      const firstName  = nameParts[0] || ''
+      const lastName   = nameParts.slice(1).join(' ') || ''
+
+      const contactRes = await fetch('https://api.hubapi.com/crm/v3/objects/contacts', {
+        method: 'POST',
+        headers: hsHeaders,
+        body: JSON.stringify({
+          properties: {
+            email:      userInfo.email,
+            firstname:  firstName,
+            lastname:   lastName,
+            phone:      userInfo.phone || '',
+            hs_lead_status: 'NEW',
+          },
+        }),
+      })
+
+      let contactId
+      if (contactRes.ok) {
+        const contactData = await contactRes.json()
+        contactId = contactData.id
+      } else {
+        // contact may already exist — fetch by email
+        const searchRes = await fetch(
+          `https://api.hubapi.com/crm/v3/objects/contacts/${encodeURIComponent(userInfo.email)}?idProperty=email`,
+          { headers: hsHeaders }
+        )
+        if (searchRes.ok) {
+          const existing = await searchRes.json()
+          contactId = existing.id
+        }
+      }
+
+      // 2. Build deal name + description from report
+      const aiAreas = (report.ai_opportunities || []).map(a => a.area).join(', ')
+      const dealName = `${userInfo.name} — SelfAudit Lead`
+      const dealNote = [
+        `Audit headline: ${report.headline}`,
+        report.overall_verdict ? `Verdict: ${report.overall_verdict}` : '',
+        aiAreas ? `AI opportunities: ${aiAreas}` : '',
+        `Industry: ${userInfo.industry || '—'} / Domain: ${userInfo.domain || '—'}`,
+        `Source: SelfAudit (user clicked Share with Vnklo)`,
+      ].filter(Boolean).join('\n')
+
+      // 3. Create deal in VNKLO High Ticket pipeline — first stage
+      const dealRes = await fetch('https://api.hubapi.com/crm/v3/objects/deals', {
+        method: 'POST',
+        headers: hsHeaders,
+        body: JSON.stringify({
+          properties: {
+            dealname:   dealName,
+            pipeline:   'default',
+            dealstage:  'appointmentscheduled',
+            description: dealNote,
+            lead_source: 'SELF_AUDIT',
+          },
+        }),
+      })
+
+      // 4. Associate deal with contact if both exist
+      if (dealRes.ok && contactId) {
+        const dealData = await dealRes.json()
+        await fetch(
+          `https://api.hubapi.com/crm/v3/objects/deals/${dealData.id}/associations/contacts/${contactId}/deal_to_contact`,
+          { method: 'PUT', headers: hsHeaders }
+        ).catch(() => {})
+      }
+    } catch (hsErr) {
+      // HubSpot failure must not block the email
+      console.warn('[send-report] HubSpot error:', hsErr.message)
+    }
+  }
+
+  // ── Send email via Resend ─────────────────────────────────────────────────
   try {
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -133,7 +219,7 @@ export default async function handler(req, res) {
         from: 'SelfAudit <audit@tryselfaudit.com>',
         to: ['sales@vnklo.com'],
         reply_to: userInfo.email,
-        subject: `Audit Report — ${userInfo.name} | ${userInfo.context || 'General Audit'}`,
+        subject: `Audit Report \u2014 ${userInfo.name} | ${userInfo.context || 'General Audit'}`,
         html: emailHTML,
       }),
     })
