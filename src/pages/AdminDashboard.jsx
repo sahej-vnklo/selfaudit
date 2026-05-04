@@ -17,7 +17,17 @@ const G = {
   redLight:   '#FDECEA',
 }
 
+// Admin shell accent (new design tokens)
+const AG  = '#01696f'
+const AGL = '#E0F2EE'
+
 const THIRTY_MIN_MS = 30 * 60 * 1000
+
+function normTier(t) {
+  if (t === 'paid') return 'business'
+  if (t === 'free') return 'essential'
+  return t || 'essential'
+}
 
 function getServiceClient() {
   const url = import.meta.env.VITE_SUPABASE_URL ?? 'https://spinhhzpboojmpndaxue.supabase.co'
@@ -34,7 +44,7 @@ function Spinner() {
       <div style={{
         width: 28, height: 28, borderRadius: '50%',
         border: `3px solid ${G.border}`,
-        borderTopColor: G.green,
+        borderTopColor: AG,
         animation: 'spin 0.7s linear infinite',
       }} />
     </div>
@@ -63,7 +73,7 @@ function BackButton({ onClick }) {
         color: G.inkMuted, cursor: 'pointer', marginBottom: 24,
         transition: 'border-color 0.15s',
       }}
-      onMouseEnter={e => e.currentTarget.style.borderColor = G.green}
+      onMouseEnter={e => e.currentTarget.style.borderColor = AG}
       onMouseLeave={e => e.currentTarget.style.borderColor = G.border}
     >
       ← Back to users
@@ -204,7 +214,6 @@ function ReportSchemaA({ p }) {
 
       <TextSection label="Verdict" text={p.overall_verdict} />
 
-      {/* Domains */}
       <div>
         <SectionLabel>Domains</SectionLabel>
         {domains.length === 0 ? (
@@ -242,7 +251,6 @@ function ReportSchemaA({ p }) {
         )}
       </div>
 
-      {/* Non-AI Fixes */}
       {non_ai_fixes.length > 0 && (
         <div>
           <SectionLabel>Non-AI Fixes</SectionLabel>
@@ -257,7 +265,6 @@ function ReportSchemaA({ p }) {
         </div>
       )}
 
-      {/* AI Opportunities */}
       {ai_opportunities.length > 0 && (
         <div>
           <SectionLabel>AI Opportunities</SectionLabel>
@@ -272,7 +279,6 @@ function ReportSchemaA({ p }) {
         </div>
       )}
 
-      {/* Priority Actions */}
       {priority_actions.length > 0 && (
         <div>
           <SectionLabel>Priority Actions</SectionLabel>
@@ -306,13 +312,15 @@ function ReportContent({ content }) {
     : <ReportSchemaA p={parsed} />
 }
 
-// ─── User List ────────────────────────────────────────────────────────────────
-
+// ─── User List (restyled — data fetch unchanged) ──────────────────────────────
 
 function UserList({ onSelectUser }) {
-  const [users, setUsers]     = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError]     = useState(null)
+  const [users,      setUsers]      = useState([])
+  const [loading,    setLoading]    = useState(true)
+  const [error,      setError]      = useState(null)
+  const [search,     setSearch]     = useState('')
+  const [tierFilter, setTierFilter] = useState('all')
+  const [hoveredRow, setHoveredRow] = useState(null)
 
   useEffect(() => {
     async function load() {
@@ -326,62 +334,118 @@ function UserList({ onSelectUser }) {
     load()
   }, [])
 
-  const cols = [
-    { key: 'name',         label: 'Name',     width: '16%' },
-    { key: 'email',        label: 'Email',    width: '22%' },
-    { key: 'tier',         label: 'Tier',     width: '11%' },
-    { key: 'industry',     label: 'Industry', width: '16%' },
-    { key: 'domain',       label: 'Domain',   width: '14%' },
-    { key: 'report_count', label: 'Reports',  width: '9%'  },
-    { key: 'created_at',   label: 'Joined',   width: '12%' },
-  ]
+  const filtered = users.filter(u => {
+    const q = search.toLowerCase()
+    const matchSearch = !q ||
+      (u.name     ?? '').toLowerCase().includes(q) ||
+      (u.email    ?? '').toLowerCase().includes(q) ||
+      (u.industry ?? '').toLowerCase().includes(q)
+    const matchTier = tierFilter === 'all' || normTier(u.tier) === tierFilter
+    return matchSearch && matchTier
+  })
+
+  const statusDot = u => {
+    if ((u.report_count ?? 0) > 0) return '#0F6E56'
+    if (u.industry)                 return '#B7600A'
+    return G.inkFaint
+  }
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <h2 style={{ fontSize: 22, fontWeight: 700, color: G.ink }}>All Users</h2>
-        <span style={{ fontSize: 14, color: G.inkMuted }}>{users.length} total</span>
+      {/* Search + tier filter row */}
+      <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 16, flexWrap: 'wrap' }}>
+        <input
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="Search by name, email, or industry…"
+          style={{
+            flex: 1, minWidth: 180, padding: '7px 12px', fontSize: 13,
+            border: `1px solid ${G.border}`, borderRadius: 8,
+            background: G.bg, color: G.ink, outline: 'none', fontFamily: 'inherit',
+          }}
+        />
+        <div style={{ display: 'flex', gap: 6 }}>
+          {['all', 'essential', 'business', 'portfolio'].map(t => (
+            <button
+              key={t}
+              onClick={() => setTierFilter(t)}
+              style={{
+                padding: '5px 12px', fontSize: 11, fontWeight: 600,
+                borderRadius: 20, border: `1px solid ${tierFilter === t ? AG : G.border}`,
+                background: tierFilter === t ? AGL : G.white,
+                color: tierFilter === t ? AG : G.inkMuted,
+                cursor: 'pointer', textTransform: 'capitalize',
+              }}
+            >
+              {t === 'all' ? 'All' : t.charAt(0).toUpperCase() + t.slice(1)}
+            </button>
+          ))}
+        </div>
+        <span style={{ fontSize: 12, color: G.inkFaint, flexShrink: 0 }}>{filtered.length} users</span>
       </div>
 
       {error && <ErrorBanner message={error} />}
       {loading ? <Spinner /> : (
         <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead>
-              <tr style={{ borderBottom: `2px solid ${G.border}` }}>
-                {cols.map(c => (
-                  <th key={c.key} style={{
-                    width: c.width, padding: '10px 12px', textAlign: 'left',
-                    fontWeight: 600, color: G.inkMuted, whiteSpace: 'nowrap',
+              <tr style={{ borderBottom: `1px solid ${G.border}` }}>
+                {['Name', 'Email', 'Tier', 'Industry', 'Domain', 'Reports', 'Joined', ''].map((label, i) => (
+                  <th key={i} style={{
+                    padding: '8px 12px', textAlign: 'left',
+                    fontWeight: 600, color: G.inkFaint, fontSize: 10,
+                    textTransform: 'uppercase', letterSpacing: '0.4px', whiteSpace: 'nowrap',
                   }}>
-                    {c.label}
+                    {label}
                   </th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {users.length === 0 && (
-                <tr><td colSpan={cols.length} style={{ padding: '32px 12px', textAlign: 'center', color: G.inkFaint }}>No users found.</td></tr>
+              {filtered.length === 0 && (
+                <tr>
+                  <td colSpan={8} style={{ padding: '32px 12px', textAlign: 'center', color: G.inkFaint }}>
+                    No users found.
+                  </td>
+                </tr>
               )}
-              {users.map((u, i) => {
-                const tc = TIER_COLORS[u.tier] ?? TIER_COLORS.essential
+              {filtered.map((u, i) => {
+                const tc        = TIER_COLORS[u.tier] ?? TIER_COLORS.essential
+                const dotColor  = statusDot(u)
+                const isHovered = hoveredRow === (u.id ?? i)
                 return (
                   <tr
                     key={u.id ?? i}
                     onClick={() => onSelectUser(u)}
-                    style={{ borderBottom: `1px solid ${G.border}`, cursor: 'pointer', transition: 'background 0.12s' }}
-                    onMouseEnter={e => e.currentTarget.style.background = G.bg}
-                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                    onMouseEnter={() => setHoveredRow(u.id ?? i)}
+                    onMouseLeave={() => setHoveredRow(null)}
+                    style={{
+                      borderBottom: `1px solid ${G.border}`, cursor: 'pointer',
+                      background: isHovered ? G.bg : 'transparent',
+                      transition: 'background 0.1s',
+                    }}
                   >
-                    <td style={{ padding: '12px 12px', color: G.ink, fontWeight: 500 }}>{u.name || '—'}</td>
-                    <td style={{ padding: '12px 12px', color: G.inkMuted }}>{u.email}</td>
-                    <td style={{ padding: '12px 12px' }}>
-                      {u.tier ? <Badge label={u.tier} bg={tc.bg} color={tc.color} /> : '—'}
+                    <td style={{ padding: '10px 12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div style={{ width: 6, height: 6, borderRadius: '50%', background: dotColor, flexShrink: 0 }} />
+                        <span style={{ color: G.ink, fontWeight: 500 }}>{u.name || '—'}</span>
+                      </div>
                     </td>
-                    <td style={{ padding: '12px 12px', color: G.inkMuted }}>{u.industry || '—'}</td>
-                    <td style={{ padding: '12px 12px', color: G.inkMuted }}>{u.domain || '—'}</td>
-                    <td style={{ padding: '12px 12px', color: G.ink, textAlign: 'center', fontWeight: 600 }}>{u.report_count ?? 0}</td>
-                    <td style={{ padding: '12px 12px', color: G.inkMuted, whiteSpace: 'nowrap' }}>{fmtDate(u.created_at)}</td>
+                    <td style={{ padding: '10px 12px', color: G.inkMuted }}>{u.email}</td>
+                    <td style={{ padding: '10px 12px' }}>
+                      {u.tier
+                        ? <Badge label={normTier(u.tier)} bg={tc.bg} color={tc.color} />
+                        : <span style={{ color: G.inkFaint }}>—</span>}
+                    </td>
+                    <td style={{ padding: '10px 12px', color: G.inkMuted }}>{u.industry || '—'}</td>
+                    <td style={{ padding: '10px 12px', color: G.inkMuted }}>{u.domain || '—'}</td>
+                    <td style={{ padding: '10px 12px', textAlign: 'center', color: G.ink, fontWeight: 600, fontFamily: '"DM Mono", ui-monospace, monospace' }}>
+                      {u.report_count ?? 0}
+                    </td>
+                    <td style={{ padding: '10px 12px', color: G.inkMuted, whiteSpace: 'nowrap' }}>{fmtDate(u.created_at)}</td>
+                    <td style={{ padding: '10px 12px', textAlign: 'right', width: 56 }}>
+                      {isHovered && <span style={{ fontSize: 12, color: AG, fontWeight: 600 }}>View →</span>}
+                    </td>
                   </tr>
                 )
               })}
@@ -396,10 +460,10 @@ function UserList({ onSelectUser }) {
 // ─── User Detail ──────────────────────────────────────────────────────────────
 
 function UserDetail({ user, onBack }) {
-  const [reports, setReports]             = useState([])
-  const [chats, setChats]                 = useState([])
-  const [loading, setLoading]             = useState(true)
-  const [error, setError]                 = useState(null)
+  const [reports, setReports]                   = useState([])
+  const [chats, setChats]                       = useState([])
+  const [loading, setLoading]                   = useState(true)
+  const [error, setError]                       = useState(null)
   const [expandedReports, setExpandedReports]   = useState(new Set())
   const [expandedSessions, setExpandedSessions] = useState(new Set())
 
@@ -421,7 +485,6 @@ function UserDetail({ user, onBack }) {
     load()
   }, [user.id])
 
-  // Group chat rows into sessions
   const sessionMap = chats.reduce((acc, row) => {
     const key = row.session_id ?? row.id
     if (!acc[key]) acc[key] = []
@@ -430,15 +493,14 @@ function UserDetail({ user, onBack }) {
   }, {})
 
   const sessions = Object.entries(sessionMap).map(([sid, rows]) => {
-    const sorted    = [...rows].sort((a, b) => a.created_at.localeCompare(b.created_at))
-    const userMsg   = sorted.find(r => r.role === 'user')
-    const preview   = (userMsg?.message ?? '').slice(0, 100)
-    const latestTs  = sorted[sorted.length - 1].created_at
+    const sorted     = [...rows].sort((a, b) => a.created_at.localeCompare(b.created_at))
+    const userMsg    = sorted.find(r => r.role === 'user')
+    const preview    = (userMsg?.message ?? '').slice(0, 100)
+    const latestTs   = sorted[sorted.length - 1].created_at
     const earliestTs = sorted[0].created_at
     return { sid, rows: sorted, preview, count: rows.length, latestTs, date: earliestTs }
   }).sort((a, b) => b.date.localeCompare(a.date))
 
-  // Match each report to the session whose latest message falls within 30 min before the report
   const reportToSession = {}
   const sessionToReport = {}
   reports.forEach(report => {
@@ -453,13 +515,13 @@ function UserDetail({ user, onBack }) {
       }
     })
     if (bestSid) {
-      reportToSession[report.id]  = bestSid
-      sessionToReport[bestSid]    = report
+      reportToSession[report.id] = bestSid
+      sessionToReport[bestSid]   = report
     }
   })
 
-  const toggleReport  = id  => setExpandedReports(prev  => { const n = new Set(prev);  n.has(id)  ? n.delete(id)  : n.add(id);  return n })
-  const toggleSession = sid => setExpandedSessions(prev => { const n = new Set(prev);  n.has(sid) ? n.delete(sid) : n.add(sid); return n })
+  const toggleReport  = id  => setExpandedReports(prev  => { const n = new Set(prev); n.has(id)  ? n.delete(id)  : n.add(id);  return n })
+  const toggleSession = sid => setExpandedSessions(prev => { const n = new Set(prev); n.has(sid) ? n.delete(sid) : n.add(sid); return n })
 
   const tc = TIER_COLORS[user.tier] ?? TIER_COLORS.essential
 
@@ -467,7 +529,6 @@ function UserDetail({ user, onBack }) {
     <div>
       <BackButton onClick={onBack} />
 
-      {/* User info card */}
       <div style={{
         background: G.white, border: `1px solid ${G.border}`,
         borderRadius: 12, padding: '24px 28px', marginBottom: 32,
@@ -497,7 +558,6 @@ function UserDetail({ user, onBack }) {
       {error && <ErrorBanner message={error} />}
       {loading ? <Spinner /> : (
         <>
-          {/* ── Reports ─────────────────────────────────────────────────── */}
           <section style={{ marginBottom: 36 }}>
             <h3 style={{ fontSize: 16, fontWeight: 700, color: G.ink, marginBottom: 14 }}>
               Reports <span style={{ color: G.inkFaint, fontWeight: 400 }}>({reports.length})</span>
@@ -507,21 +567,20 @@ function UserDetail({ user, onBack }) {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {reports.map(r => {
-                  const open      = expandedReports.has(r.id)
-                  const linkedSid = reportToSession[r.id]
+                  const open          = expandedReports.has(r.id)
+                  const linkedSid     = reportToSession[r.id]
                   const linkedSession = linkedSid ? sessions.find(s => s.sid === linkedSid) : null
                   return (
                     <div key={r.id} style={{
-                      background: G.white, border: `1px solid ${open ? G.green : G.border}`,
+                      background: G.white, border: `1px solid ${open ? AG : G.border}`,
                       borderRadius: 8, overflow: 'hidden', transition: 'border-color 0.15s',
                     }}>
-                      {/* Header row */}
                       <div
                         onClick={() => toggleReport(r.id)}
                         style={{
                           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                           padding: '12px 16px', cursor: 'pointer', gap: 12,
-                          background: open ? G.greenLight : 'transparent',
+                          background: open ? AGL : 'transparent',
                           transition: 'background 0.15s',
                         }}
                       >
@@ -531,16 +590,11 @@ function UserDetail({ user, onBack }) {
                           <Chevron open={open} />
                         </div>
                       </div>
-
-                      {/* Expanded: full content + source chat */}
                       {open && (
                         <div style={{ padding: '0 16px 16px' }}>
-                          {/* Report content */}
                           <div style={{ borderTop: `1px solid ${G.border}`, paddingTop: 14, marginTop: 2 }}>
                             <ReportContent content={r.content} />
                           </div>
-
-                          {/* Source chat */}
                           {linkedSession && (
                             <div style={{ marginTop: 16, borderTop: `1px solid ${G.border}`, paddingTop: 14 }}>
                               <p style={{ fontSize: 11, fontWeight: 700, color: G.inkFaint, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
@@ -558,7 +612,6 @@ function UserDetail({ user, onBack }) {
             )}
           </section>
 
-          {/* ── Chats ───────────────────────────────────────────────────── */}
           <section>
             <h3 style={{ fontSize: 16, fontWeight: 700, color: G.ink, marginBottom: 14 }}>
               Chats <span style={{ color: G.inkFaint, fontWeight: 400 }}>({sessions.length} sessions)</span>
@@ -568,20 +621,19 @@ function UserDetail({ user, onBack }) {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {sessions.map(({ sid, rows, preview, count, date }) => {
-                  const open          = expandedSessions.has(sid)
-                  const linkedReport  = sessionToReport[sid]
+                  const open         = expandedSessions.has(sid)
+                  const linkedReport = sessionToReport[sid]
                   return (
                     <div key={sid} style={{
-                      background: G.white, border: `1px solid ${open ? G.green : G.border}`,
+                      background: G.white, border: `1px solid ${open ? AG : G.border}`,
                       borderRadius: 8, overflow: 'hidden', transition: 'border-color 0.15s',
                     }}>
-                      {/* Header row */}
                       <div
                         onClick={() => toggleSession(sid)}
                         style={{
                           display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
                           padding: '12px 16px', cursor: 'pointer', gap: 12,
-                          background: open ? G.greenLight : 'transparent',
+                          background: open ? AGL : 'transparent',
                           transition: 'background 0.15s',
                         }}
                       >
@@ -590,7 +642,7 @@ function UserDetail({ user, onBack }) {
                             {preview || <span style={{ color: G.inkFaint, fontStyle: 'italic' }}>empty</span>}
                           </p>
                           {linkedReport && (
-                            <p style={{ fontSize: 12, color: G.green, fontWeight: 600, marginTop: 4 }}>
+                            <p style={{ fontSize: 12, color: AG, fontWeight: 600, marginTop: 4 }}>
                               → {linkedReport.title || '(untitled report)'}
                             </p>
                           )}
@@ -603,8 +655,6 @@ function UserDetail({ user, onBack }) {
                           <Chevron open={open} />
                         </div>
                       </div>
-
-                      {/* Expanded: message thread */}
                       {open && (
                         <div style={{ borderTop: `1px solid ${G.border}`, padding: '0 16px 12px' }}>
                           <MessageThread rows={rows} />
@@ -622,10 +672,414 @@ function UserDetail({ user, onBack }) {
   )
 }
 
+// ─── SVG Icons ────────────────────────────────────────────────────────────────
+
+const IconGrid = () => (
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+    <rect x="1" y="1" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.4"/>
+    <rect x="8" y="1" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.4"/>
+    <rect x="1" y="8" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.4"/>
+    <rect x="8" y="8" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.4"/>
+  </svg>
+)
+
+const IconPerson = () => (
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+    <circle cx="7" cy="4.5" r="2.5" stroke="currentColor" strokeWidth="1.4"/>
+    <path d="M1.5 12.5C1.5 10.01 4.02 8 7 8C9.98 8 12.5 10.01 12.5 12.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+  </svg>
+)
+
+const IconDoc = () => (
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+    <rect x="2.5" y="1" width="9" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.4"/>
+    <path d="M5 5H9M5 7.5H9M5 10H7.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+  </svg>
+)
+
+const IconFunnel = () => (
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+    <path d="M1.5 2.5H12.5L8.5 7.5V12L5.5 10V7.5L1.5 2.5Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
+  </svg>
+)
+
+const IconGear = () => (
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+    <circle cx="7" cy="7" r="2" stroke="currentColor" strokeWidth="1.4"/>
+    <path d="M7 1.5V2.5M7 11.5V12.5M12.5 7H11.5M2.5 7H1.5M10.95 3.05L10.24 3.76M3.76 10.24L3.05 10.95M10.95 10.95L10.24 10.24M3.76 3.76L3.05 3.05" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+  </svg>
+)
+
+// ─── Sidebar ──────────────────────────────────────────────────────────────────
+
+const NAV_ITEMS = [
+  { key: 'dashboard', label: 'Dashboard',   Icon: IconGrid,   badge: null },
+  { key: 'users',     label: 'Users',       Icon: IconPerson, badge: 'userCount' },
+  { key: 'reports',   label: 'Reports',     Icon: IconDoc,    badge: 'reportCount' },
+  { key: 'leads',     label: 'VNKLO Leads', Icon: IconFunnel, badge: 'vnkloCount' },
+  { key: 'settings',  label: 'Settings',    Icon: IconGear,   badge: null },
+]
+
+function AdminSidebar({ navSection, onNav, session, userCount, reportCount, vnkloCount }) {
+  const counts = { userCount, reportCount, vnkloCount }
+  return (
+    <aside style={{
+      width: 216, flexShrink: 0, height: '100vh',
+      background: G.white, borderRight: `1px solid ${G.border}`,
+      display: 'flex', flexDirection: 'column',
+      padding: '20px 0 16px',
+    }}>
+      {/* Logo + admin badge */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', marginBottom: 28 }}>
+        <span style={{ fontSize: 16, fontWeight: 700, color: G.ink, letterSpacing: '-0.4px' }}>
+          self<span style={{ color: AG }}>audit</span>
+        </span>
+        <span style={{
+          fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px',
+          background: AGL, color: AG, borderRadius: 6, padding: '3px 8px',
+        }}>
+          Admin
+        </span>
+      </div>
+
+      {/* Nav */}
+      <nav style={{ flex: 1, padding: '0 10px' }}>
+        {NAV_ITEMS.map(({ key, label, Icon, badge }) => {
+          const active = navSection === key
+          const count  = badge ? counts[badge] : null
+          return (
+            <button
+              key={key}
+              onClick={() => onNav(key)}
+              style={{
+                width: '100%', display: 'flex', alignItems: 'center', gap: 9,
+                padding: '8px 10px', borderRadius: 8, marginBottom: 2,
+                background: active ? AGL : 'none', border: 'none', cursor: 'pointer',
+                fontSize: 13, fontWeight: 500,
+                color: active ? AG : G.inkMuted, textAlign: 'left',
+              }}
+            >
+              <span style={{ color: active ? AG : G.inkFaint, display: 'flex', flexShrink: 0 }}>
+                <Icon />
+              </span>
+              <span style={{ flex: 1 }}>{label}</span>
+              {count != null && count > 0 && (
+                <span style={{
+                  fontSize: 10, fontWeight: 700, minWidth: 18, textAlign: 'center',
+                  background: active ? 'rgba(1,105,111,0.12)' : '#F0EFEB',
+                  color: active ? AG : G.inkFaint,
+                  borderRadius: 10, padding: '1px 6px',
+                }}>
+                  {count}
+                </span>
+              )}
+            </button>
+          )
+        })}
+      </nav>
+
+      {/* Session info */}
+      <div style={{ padding: '12px 16px 0', borderTop: `1px solid ${G.border}` }}>
+        <div style={{ fontSize: 12, fontWeight: 600, color: G.ink }}>Sahej</div>
+        <div style={{ fontSize: 11, color: G.inkFaint, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {session.user.email}
+        </div>
+      </div>
+    </aside>
+  )
+}
+
+// ─── Topbar ───────────────────────────────────────────────────────────────────
+
+function AdminTopbar({ title }) {
+  const today = new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
+  return (
+    <div style={{
+      height: 56, flexShrink: 0,
+      background: G.white, borderBottom: `1px solid ${G.border}`,
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      padding: '0 28px',
+    }}>
+      <span style={{ fontSize: 15, fontWeight: 600, color: G.ink }}>{title}</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <span style={{ fontSize: 12, color: G.inkFaint }}>{today}</span>
+        <button style={{
+          background: 'none', border: `1px solid ${G.border}`, borderRadius: 8,
+          fontSize: 12, fontWeight: 500, color: G.inkMuted,
+          padding: '6px 14px', cursor: 'pointer', fontFamily: 'inherit',
+        }}>
+          Export CSV
+        </button>
+        <button style={{
+          background: AG, border: 'none', borderRadius: 8,
+          fontSize: 12, fontWeight: 500, color: G.white,
+          padding: '6px 14px', cursor: 'pointer', fontFamily: 'inherit',
+        }}>
+          Invite User
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ─── KPI Row ──────────────────────────────────────────────────────────────────
+
+function KpiRow({ users, vnkloLeads, chatSessions, loading }) {
+  const totalUsers   = users.length
+  const totalReports = users.reduce((s, u) => s + (u.report_count ?? 0), 0)
+  const chatRate     = chatSessions > 0
+    ? `${((totalReports / chatSessions) * 100).toFixed(0)}%`
+    : '—'
+
+  const kpis = [
+    {
+      label: 'Total Users',
+      value: loading ? '—' : totalUsers,
+      delta: loading ? '—' : `${totalUsers} total`,
+      up: true,
+    },
+    {
+      label: 'Reports Generated',
+      value: loading ? '—' : totalReports,
+      delta: loading ? '—' : `${totalReports} total`,
+      up: true,
+    },
+    {
+      label: 'Chat → Report Rate',
+      value: loading ? '—' : chatRate,
+      delta: loading ? '—' : chatSessions > 0 ? `${chatSessions} sessions` : 'no sessions',
+      up: null,
+    },
+    {
+      label: 'VNKLO Leads',
+      value: loading ? '—' : vnkloLeads,
+      delta: loading ? '—' : vnkloLeads > 0 ? 'shared' : 'none yet',
+      up: vnkloLeads > 0 ? true : null,
+    },
+  ]
+
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 18 }}>
+      {kpis.map((k, i) => (
+        <div key={i} style={{ background: G.white, border: `1px solid ${G.border}`, borderRadius: 12, padding: '16px 18px' }}>
+          <div style={{ fontSize: 10, color: G.inkFaint, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 10 }}>
+            {k.label}
+          </div>
+          <div style={{ fontSize: 26, fontWeight: 700, color: G.ink, fontFamily: '"DM Mono", ui-monospace, monospace', letterSpacing: '-1px', lineHeight: 1, marginBottom: 8 }}>
+            {k.value}
+          </div>
+          <span style={{
+            fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 100,
+            background: k.up === true ? AGL : k.up === false ? G.redLight : '#F0EFEB',
+            color:      k.up === true ? AG   : k.up === false ? G.red      : G.inkFaint,
+          }}>
+            {k.delta}
+          </span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// ─── Conversion Funnel ────────────────────────────────────────────────────────
+
+function ConversionFunnel({ users, vnkloLeads }) {
+  const total     = users.length
+  const started   = users.filter(u => u.industry).length
+  const gotReport = users.filter(u => (u.report_count ?? 0) > 0).length
+
+  const steps = [
+    { label: 'Signed up',         count: total },
+    { label: 'Started audit',     count: started },
+    { label: 'Got report',        count: gotReport },
+    { label: 'Shared with VNKLO', count: vnkloLeads },
+  ]
+
+  return (
+    <div style={{ background: G.white, border: `1px solid ${G.border}`, borderRadius: 12, padding: '18px 20px', marginBottom: 18 }}>
+      <div style={{ fontSize: 12, fontWeight: 600, color: G.ink, marginBottom: 16 }}>Conversion Funnel</div>
+      <div style={{ display: 'flex', alignItems: 'stretch' }}>
+        {steps.map((step, i) => {
+          const pct     = total > 0 ? Math.round((step.count / total) * 100) : 0
+          const prev    = steps[i - 1]
+          const dropPct = prev && prev.count > 0
+            ? Math.round(((prev.count - step.count) / prev.count) * 100)
+            : 0
+          return (
+            <React.Fragment key={i}>
+              {i > 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 6px', gap: 4, flexShrink: 0 }}>
+                  <span style={{ fontSize: 12, color: G.inkFaint }}>→</span>
+                  {dropPct > 0 && (
+                    <span style={{ fontSize: 9, fontWeight: 700, color: G.red, background: G.redLight, padding: '1px 5px', borderRadius: 4 }}>
+                      ↓{dropPct}%
+                    </span>
+                  )}
+                </div>
+              )}
+              <div style={{ flex: 1, textAlign: 'center', background: G.bg, borderRadius: 10, padding: '14px 8px' }}>
+                <div style={{ fontSize: 22, fontWeight: 700, color: G.ink, fontFamily: '"DM Mono", monospace', letterSpacing: '-0.5px', lineHeight: 1 }}>
+                  {step.count}
+                </div>
+                <div style={{ fontSize: 11, color: AG, fontWeight: 600, marginTop: 4 }}>{pct}%</div>
+                <div style={{ fontSize: 11, color: G.inkMuted, marginTop: 3, lineHeight: 1.3 }}>{step.label}</div>
+              </div>
+            </React.Fragment>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+// ─── Right Panel ──────────────────────────────────────────────────────────────
+
+function RightPanel({ users, vnkloLeads, chatSessions, recentReports, loading }) {
+  const totalUsers   = users.length
+  const totalReports = users.reduce((s, u) => s + (u.report_count ?? 0), 0)
+  const chatRate     = chatSessions > 0
+    ? `${((totalReports / chatSessions) * 100).toFixed(0)}%`
+    : '—'
+  const avgReports   = totalUsers > 0 ? (totalReports / totalUsers).toFixed(1) : '0'
+
+  const now           = Date.now()
+  const weekAgo       = now - 7 * 24 * 60 * 60 * 1000
+  const signupsThisWk = users.filter(u => u.created_at && new Date(u.created_at).getTime() > weekAgo).length
+
+  const tierCounts = {
+    essential: users.filter(u => normTier(u.tier) === 'essential').length,
+    business:  users.filter(u => normTier(u.tier) === 'business').length,
+    portfolio: users.filter(u => normTier(u.tier) === 'portfolio').length,
+  }
+  const mrr = tierCounts.essential * 49 + tierCounts.business * 99 + tierCounts.portfolio * 299
+
+  const TIER_CFG = [
+    { key: 'essential', label: 'Essential', price: 49,  color: '#0F6E56' },
+    { key: 'business',  label: 'Business',  price: 99,  color: '#185FA5' },
+    { key: 'portfolio', label: 'Portfolio', price: 299, color: '#534AB7' },
+  ]
+
+  // Recent activity: merge recent reports + recent signups, sort by date
+  const reportActivity = recentReports.slice(0, 4).map(r => ({
+    type: 'report', label: r.title || 'Untitled report', date: r.created_at,
+  }))
+  const signupActivity = users.slice(0, 3).map(u => ({
+    type: 'signup', label: `${u.name || u.email} signed up`, date: u.created_at,
+  }))
+  const activity = [...reportActivity, ...signupActivity]
+    .filter(e => e.date)
+    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .slice(0, 5)
+
+  const Card = ({ children }) => (
+    <div style={{ background: G.white, border: `1px solid ${G.border}`, borderRadius: 12, padding: '16px 18px', marginBottom: 14 }}>
+      {children}
+    </div>
+  )
+
+  const KvRow = ({ label, value, last }) => (
+    <div style={{
+      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+      padding: '7px 0', borderBottom: last ? 'none' : `1px solid ${G.border}`,
+    }}>
+      <span style={{ fontSize: 12, color: G.inkMuted }}>{label}</span>
+      <span style={{ fontSize: 12, fontWeight: 600, color: G.ink, fontFamily: '"DM Mono", monospace' }}>{value}</span>
+    </div>
+  )
+
+  const healthRows = [
+    ['Chat → report rate', chatRate],
+    ['Avg reports / user', avgReports],
+    ['Signups this week',  signupsThisWk],
+    ['VNKLO conversions',  vnkloLeads],
+    ['Total sessions',     chatSessions],
+  ]
+
+  return (
+    <div style={{ width: 300, flexShrink: 0 }}>
+      {/* Platform Health */}
+      <Card>
+        <div style={{ fontSize: 12, fontWeight: 600, color: G.ink, marginBottom: 10 }}>Platform Health</div>
+        {healthRows.map(([l, v], i) => <KvRow key={l} label={l} value={v} last={i === healthRows.length - 1} />)}
+      </Card>
+
+      {/* Tier Distribution & MRR */}
+      <Card>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 14 }}>
+          <span style={{ fontSize: 12, fontWeight: 600, color: G.ink }}>Tier Distribution</span>
+          <span style={{ fontSize: 14, fontWeight: 700, color: AG, fontFamily: '"DM Mono", monospace' }}>
+            ${mrr.toLocaleString()}<span style={{ fontSize: 10, fontWeight: 500, color: G.inkFaint }}>/mo</span>
+          </span>
+        </div>
+        {TIER_CFG.map(tc => {
+          const count = tierCounts[tc.key]
+          const pct   = totalUsers > 0 ? (count / totalUsers) * 100 : 0
+          return (
+            <div key={tc.key} style={{ marginBottom: 10 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                <span style={{ fontSize: 11, color: G.inkMuted }}>{tc.label}</span>
+                <span style={{ fontSize: 11, fontWeight: 600, color: G.ink, fontFamily: '"DM Mono", monospace' }}>
+                  {count} · ${(count * tc.price).toLocaleString()}
+                </span>
+              </div>
+              <div style={{ height: 4, background: G.bg, borderRadius: 2, overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${pct}%`, background: tc.color, borderRadius: 2, transition: 'width 0.4s' }} />
+              </div>
+            </div>
+          )
+        })}
+      </Card>
+
+      {/* Recent Activity */}
+      <Card>
+        <div style={{ fontSize: 12, fontWeight: 600, color: G.ink, marginBottom: 10 }}>Recent Activity</div>
+        {loading ? (
+          <div style={{ fontSize: 12, color: G.inkFaint, padding: '8px 0' }}>Loading…</div>
+        ) : activity.length === 0 ? (
+          <div style={{ fontSize: 12, color: G.inkFaint, padding: '8px 0' }}>No recent activity.</div>
+        ) : (
+          activity.map((ev, i) => (
+            <div key={i} style={{
+              display: 'flex', gap: 8, alignItems: 'flex-start',
+              padding: '7px 0',
+              borderBottom: i < activity.length - 1 ? `1px solid ${G.border}` : 'none',
+            }}>
+              <div style={{
+                width: 6, height: 6, borderRadius: '50%', flexShrink: 0, marginTop: 4,
+                background: ev.type === 'signup' ? AG : '#534AB7',
+              }} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 12, color: G.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {ev.label}
+                </div>
+                <div style={{ fontSize: 10, color: G.inkFaint, marginTop: 2 }}>{fmtDate(ev.date)}</div>
+              </div>
+            </div>
+          ))
+        )}
+      </Card>
+    </div>
+  )
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
+const NAV_TITLE = {
+  dashboard: 'Dashboard',
+  users:     'Users',
+  reports:   'Reports',
+  leads:     'VNKLO Leads',
+  settings:  'Settings',
+}
+
 export default function AdminDashboard({ session, onUnauthorized }) {
-  const [selectedUser, setSelectedUser] = useState(null)
+  const [selectedUser,  setSelectedUser]  = useState(null)
+  const [navSection,    setNavSection]    = useState('dashboard')
+  const [users,         setUsers]         = useState([])
+  const [loadingStats,  setLoadingStats]  = useState(true)
+  const [vnkloLeads,    setVnkloLeads]    = useState(0)
+  const [chatSessions,  setChatSessions]  = useState(0)
+  const [recentReports, setRecentReports] = useState([])
 
   useEffect(() => {
     if (!session || session.user?.email !== ADMIN_EMAIL) {
@@ -633,36 +1087,88 @@ export default function AdminDashboard({ session, onUnauthorized }) {
     }
   }, [session, onUnauthorized])
 
+  useEffect(() => {
+    if (!session || session.user?.email !== ADMIN_EMAIL) return
+    ;(async () => {
+      const sb = getServiceClient()
+      if (!sb) { setLoadingStats(false); return }
+
+      const { data } = await sb
+        .from('admin_user_overview').select('*').order('created_at', { ascending: false })
+      setUsers(data ?? [])
+
+      const [chatRes, vnkloRes, reportsRes] = await Promise.allSettled([
+        sb.from('chats').select('session_id', { count: 'exact', head: true }),
+        sb.from('profiles').select('id', { count: 'exact', head: true }).eq('shared_with_vnklo', true),
+        sb.from('reports').select('id, title, created_at').order('created_at', { ascending: false }).limit(5),
+      ])
+      if (chatRes.status    === 'fulfilled') setChatSessions(chatRes.value.count ?? 0)
+      if (vnkloRes.status   === 'fulfilled') setVnkloLeads(vnkloRes.value.count ?? 0)
+      if (reportsRes.status === 'fulfilled') setRecentReports(reportsRes.value.data ?? [])
+      setLoadingStats(false)
+    })()
+  }, [session]) // eslint-disable-line react-hooks/exhaustive-deps
+
   if (!session || session.user?.email !== ADMIN_EMAIL) return null
 
-  return (
-    <div style={{ minHeight: '100vh', background: G.bg, fontFamily: 'var(--sans, DM Sans, system-ui, sans-serif)' }}>
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '32px 24px' }}>
-        {/* Header */}
-        <div style={{
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          marginBottom: 32, paddingBottom: 20, borderBottom: `1px solid ${G.border}`,
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{
-              background: G.greenLight, color: G.greenDark,
-              borderRadius: 8, padding: '4px 10px', fontSize: 11,
-              fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em',
-            }}>Admin</span>
-            <h1 style={{ fontSize: 20, fontWeight: 700, color: G.ink }}>TSA Dashboard</h1>
-          </div>
-          <p style={{ fontSize: 13, color: G.inkFaint }}>{session.user.email}</p>
-        </div>
+  const totalReports = users.reduce((s, u) => s + (u.report_count ?? 0), 0)
 
-        {/* Content */}
-        <div style={{
-          background: G.white, border: `1px solid ${G.border}`,
-          borderRadius: 12, padding: '28px 32px',
-        }}>
-          {selectedUser
-            ? <UserDetail user={selectedUser} onBack={() => setSelectedUser(null)} />
-            : <UserList onSelectUser={setSelectedUser} />
-          }
+  const handleNav = (s) => { setNavSection(s); setSelectedUser(null) }
+
+  return (
+    <div style={{
+      display: 'flex', height: '100vh', overflow: 'hidden',
+      background: G.bg,
+      fontFamily: '"DM Sans", system-ui, -apple-system, sans-serif',
+    }}>
+      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+
+      <AdminSidebar
+        navSection={navSection}
+        onNav={handleNav}
+        session={session}
+        userCount={users.length}
+        reportCount={totalReports}
+        vnkloCount={vnkloLeads}
+      />
+
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
+        <AdminTopbar title={selectedUser ? 'User Detail' : (NAV_TITLE[navSection] ?? 'Dashboard')} />
+
+        <div style={{ flex: 1, overflowY: 'auto', padding: '24px 28px' }}>
+          {selectedUser ? (
+            <UserDetail user={selectedUser} onBack={() => setSelectedUser(null)} />
+          ) : navSection === 'dashboard' ? (
+            <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
+              {/* Main column */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <KpiRow
+                  users={users}
+                  vnkloLeads={vnkloLeads}
+                  chatSessions={chatSessions}
+                  loading={loadingStats}
+                />
+                <ConversionFunnel users={users} vnkloLeads={vnkloLeads} />
+                <div style={{ background: G.white, border: `1px solid ${G.border}`, borderRadius: 12, padding: '20px 24px' }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: G.ink, marginBottom: 14 }}>User Table</div>
+                  <UserList onSelectUser={setSelectedUser} />
+                </div>
+              </div>
+
+              {/* Right panel */}
+              <RightPanel
+                users={users}
+                vnkloLeads={vnkloLeads}
+                chatSessions={chatSessions}
+                recentReports={recentReports}
+                loading={loadingStats}
+              />
+            </div>
+          ) : (
+            <div style={{ background: G.white, border: `1px solid ${G.border}`, borderRadius: 12, padding: '28px 32px' }}>
+              <UserList onSelectUser={setSelectedUser} />
+            </div>
+          )}
         </div>
       </div>
     </div>
