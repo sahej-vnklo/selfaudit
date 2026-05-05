@@ -162,11 +162,12 @@ const FIRST_MESSAGE = (userInfo) => {
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function AuditChat({ userInfo, onReportReady, conversationHistory, setConversationHistory }) {
-  const [input,        setInput]        = useState('')
-  const [loading,      setLoading]      = useState(false)
-  const [initialized,  setInitialized]  = useState(false)
-  const [tierData,     setTierData]     = useState(null)   // { tier, industry, domain }
-  const [scopePanel,   setScopePanel]   = useState(null)   // 'domain' | 'industry' | null
+  const [input,         setInput]         = useState('')
+  const [loading,       setLoading]       = useState(false)
+  const [initialized,   setInitialized]   = useState(false)
+  const [tierData,      setTierData]      = useState(null)   // { tier, industry, domain }
+  const [scopePanel,    setScopePanel]    = useState(null)   // 'domain' | 'industry' | null
+  const [memoryContext, setMemoryContext] = useState(null)
   const bottomRef   = useRef(null)
   const inputRef    = useRef(null)
   const sessionIdRef = useRef(crypto.randomUUID())
@@ -182,19 +183,35 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
     }
   }, [])
 
-  // Fetch tier/industry/domain for logged-in users via Supabase client
+  // Fetch tier/industry/domain + memory context for logged-in users
   useEffect(() => {
     if (!userInfo?.userId) return
     initSupabase()
-      .then(sb => sb
-        .from('profiles')
-        .select('tier, industry, domain')
-        .eq('id', userInfo.userId)
-      )
-      .then(({ data, error }) => {
+      .then(async sb => {
+        const { data } = await sb
+          .from('profiles')
+          .select('tier, industry, domain')
+          .eq('id', userInfo.userId)
         const row = data?.[0]
-        if (row) {
-          setTierData(row)
+        if (row) setTierData(row)
+
+        // Fetch last 3 memory entries for compounding context — non-blocking
+        try {
+          const { data: memRows } = await sb
+            .from('user_memory')
+            .select('headline, core_problem, priority_actions, status, session_date')
+            .eq('user_id', userInfo.userId)
+            .order('created_at', { ascending: false })
+            .limit(3)
+
+          if (memRows?.length > 0) {
+            const memCtx = memRows.map((m, i) =>
+              `Session ${i + 1} (${new Date(m.session_date).toLocaleDateString()}): ${m.headline}. Core problem: ${m.core_problem}. Top priorities: ${m.priority_actions?.slice(0, 2).join(', ')}. Status: ${m.status}.`
+            ).join('\n')
+            setMemoryContext(memCtx)
+          }
+        } catch {
+          // non-blocking — audit still works without memory context
         }
       })
       .catch(() => {})
@@ -259,6 +276,7 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
         goal:          userInfo?.goal        ?? '',
         goalTimeline:  userInfo?.goalTimeline ?? '',
         goalBaseline:  userInfo?.goalBaseline ?? '',
+        memoryContext,
       })
       const isReady      = response.includes('[READY_FOR_REPORT]')
       const isScopeLimit = response.includes('[SCOPE_LIMIT]')

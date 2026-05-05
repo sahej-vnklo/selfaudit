@@ -958,8 +958,14 @@ function HomeSection({ user, name, tier, industry, domain, badge, context, repor
 
       {/* Metric cards */}
       <div style={s.metricsGrid}>
-        <MetricCard label="Audits run" value="0" />
-        <MetricCard label="Last audit" value="—" />
+        <MetricCard label="Audits run" value={reportsLoading ? '…' : String(reports.length)} />
+        <MetricCard
+          label="Last audit"
+          value={reportsLoading ? '…' : reports.length > 0
+            ? new Date(reports[0].created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+            : '—'
+          }
+        />
         <MetricCard
           label="Plan"
           value={badge.label}
@@ -1695,7 +1701,8 @@ function DashReportContent({ content }) {
   } catch {
     return <pre style={{ fontSize: 12, color: G.inkMuted, whiteSpace: 'pre-wrap', wordBreak: 'break-word', lineHeight: 1.6 }}>{content}</pre>
   }
-  return parsed.conversation_mode === 'EXECUTION_HUMAN'
+  const mode = parsed.conversation_mode
+  return (mode === 'EXECUTION_HUMAN' || mode === 'EXECUTION' || mode === 'HUMAN_MOMENT')
     ? <DashReportSchemaB p={parsed} />
     : <DashReportSchemaA p={parsed} />
 }

@@ -109,7 +109,7 @@ async function fetchUserMemory(userId) {
   }
 }
 
-function buildSystemPrompt(industry, domain, userMemory, goalMode, goal, goalTimeline, goalBaseline) {
+function buildSystemPrompt(industry, domain, userMemory, goalMode, goal, goalTimeline, goalBaseline, memoryContext) {
   const base = `You are SelfAudit — a brutally honest, senior-level business and life advisor. Your job is to audit any situation a user brings — business, startup, side project, personal goals, career, anything.
 
 CORE RULES:
@@ -237,7 +237,9 @@ Do NOT open with "How can I help", "What are you working on", or any generic que
 
   const memoryBlock = userMemory ? `\n\n---\n${userMemory}` : ''
 
-  return base + goalBlock + scopeBlock + memoryBlock + openingRule
+  const memoryContextBlock = memoryContext ? `\n\nMEMORY CONTEXT — This is not a first session. You have worked with this person before. Reference these past findings naturally — act like you already know their business:\n\n${memoryContext}\n\nDo not mention that you have memory or that you are referencing past sessions. Just use the context. Ask follow-up questions that build on what was already diagnosed.` : ''
+
+  return base + goalBlock + scopeBlock + memoryBlock + memoryContextBlock + openingRule
 }
 
 function buildReportPrompt(goalMode) {
@@ -441,7 +443,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { type, messages, industry, domain, userId, goalMode, goal, goalTimeline, goalBaseline } = req.body
+  const { type, messages, industry, domain, userId, goalMode, goal, goalTimeline, goalBaseline, memoryContext } = req.body
   if (!type || !messages) {
     return res.status(400).json({ error: 'Missing type or messages' })
   }
@@ -471,7 +473,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: isReport ? (goalMode ? 4000 : 2500) : 1024,
-        system: buildSystemPrompt(industry, domain, userMemory, goalMode, goal, goalTimeline, goalBaseline),
+        system: buildSystemPrompt(industry, domain, userMemory, goalMode, goal, goalTimeline, goalBaseline, memoryContext),
         messages: finalMessages,
       }),
     })
@@ -519,7 +521,7 @@ export default async function handler(req, res) {
               body: JSON.stringify({
                 model: 'claude-sonnet-4-20250514',
                 max_tokens: goalMode ? 4000 : 2500,
-                system: buildSystemPrompt(industry, domain, userMemory, goalMode, goal, goalTimeline, goalBaseline),
+                system: buildSystemPrompt(industry, domain, userMemory, goalMode, goal, goalTimeline, goalBaseline, memoryContext),
                 messages: retryMessages,
               }),
             })

@@ -1,8 +1,8 @@
-export async function sendMessage(messages, { industry, domain, userId, goalMode, goal, goalTimeline, goalBaseline } = {}) {
+export async function sendMessage(messages, { industry, domain, userId, goalMode, goal, goalTimeline, goalBaseline, memoryContext } = {}) {
   const response = await fetch('/api/audit', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ type: 'chat', messages, industry, domain, userId, goalMode, goal, goalTimeline, goalBaseline }),
+    body: JSON.stringify({ type: 'chat', messages, industry, domain, userId, goalMode, goal, goalTimeline, goalBaseline, memoryContext }),
   })
 
   if (!response.ok) {
