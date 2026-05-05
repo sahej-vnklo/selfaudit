@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { initSupabase } from '../lib/supabase.js'
 import * as Sentry from '@sentry/react'
 import { generateReport, sendReportEmail } from '../lib/audit.js'
 import { usePostHog } from '@posthog/react'
@@ -39,6 +40,22 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
               domain:    userInfo.domain,
             }),
           }).catch(e => console.warn('[save-report] failed:', e?.message))
+
+          // Save to user_memory for Layer 4 compounding intelligence
+          if (r.conversation_mode === 'DIAGNOSTIC') {
+            initSupabase().then(sb => sb.from('user_memory').insert({
+              user_id:          userInfo.userId,
+              headline:         r.headline,
+              core_problem:     r.overall_verdict,
+              root_causes:      r.non_ai_fixes?.map(f => f.issue) ?? [],
+              priority_actions: r.priority_actions ?? [],
+              ai_opportunities: r.ai_opportunities?.map(a => a.area) ?? [],
+              domains_audited:  r.domains?.map(d => d.name) ?? [],
+              business_state:   r.business_state ?? null,
+              ranked_path:      r.ranked_path ?? null,
+              status:           'open',
+            })).catch(e => console.warn('[memory] save failed:', e?.message))
+          }
 
           const attioBase = { method: 'POST', headers: { 'Content-Type': 'application/json' } }
           fetch('/api/log-to-attio', {

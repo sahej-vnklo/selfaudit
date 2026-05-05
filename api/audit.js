@@ -22,50 +22,79 @@ const supabase = createClient(
 async function fetchUserMemory(userId) {
   if (!userId) return ''
   try {
-    const { data: profileData } = await supabase
-      .from('profiles')
-      .select('context')
-      .eq('id', userId)
-      .single()
-
-    const context = profileData?.context ?? ''
-    if (!context) return ''
-
-    // Parse structured entries written by save-report.js
-    const entries = context.split(/(?=\[Audit — )/).map(s => s.trim()).filter(Boolean)
-
-    if (entries.length === 0) return ''
-
-    // Most recent 3 entries, most recent first
-    const recent = entries.slice(-3).reverse()
-
     const lines = ['USER MEMORY (most recent first):']
+    let hasMemory = false
 
-    for (const entry of recent) {
-      lines.push('')
-      const headerMatch = entry.match(/\[Audit — ([^\]]+)\]/)
-      if (!headerMatch) {
-        // Legacy plain-text entry — include briefly
-        const firstLine = entry.split('\n')[0].slice(0, 120)
-        if (firstLine) lines.push(firstLine)
-        continue
-      }
+    // Pull structured memory from user_memory table (Layer 4)
+    const { data: memoryRows } = await supabase
+      .from('user_memory')
+      .select('session_date, headline, core_problem, root_causes, priority_actions, ai_opportunities, domains_audited, business_state, ranked_path, status')
+      .eq('user_id', userId)
+      .order('session_date', { ascending: false })
+      .limit(3)
 
-      const headerParts = headerMatch[1].split(' — ')
-      const date = headerParts[0] ?? ''
-      const mode = headerParts[1] ?? ''
-      const ctx  = headerParts.slice(2).join(' — ')
-      lines.push(`[${[date, mode, ctx].filter(Boolean).join(' — ')}]`)
-
-      for (const line of entry.split('\n').slice(1)) {
-        const l = line.trim()
-        if (!l || l.startsWith('Status:')) continue
-        if (l.startsWith('Headline:'))             lines.push(`Finding:${l.slice(9)}`)
-        else if (l.startsWith('Root causes found:')) lines.push(`Root causes:${l.slice(18)}`)
-        else if (l.startsWith('Key actions given:')) lines.push(`Actions given:${l.slice(18)}`)
-        else lines.push(l)
+    if (memoryRows?.length > 0) {
+      hasMemory = true
+      for (const row of memoryRows) {
+        lines.push('')
+        const date = row.session_date ? new Date(row.session_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''
+        lines.push(`[Audit — ${date}${row.status === 'done' ? ' — resolved' : ''}]`)
+        if (row.headline)         lines.push(`Finding: ${row.headline}`)
+        if (row.core_problem)     lines.push(`Core problem: ${row.core_problem}`)
+        if (row.root_causes?.length)     lines.push(`Root causes: ${row.root_causes.join('; ')}`)
+        if (row.priority_actions?.length) lines.push(`Actions given: ${row.priority_actions.join('; ')}`)
+        if (row.domains_audited?.length)  lines.push(`Domains audited: ${row.domains_audited.join(', ')}`)
+        if (row.business_state?.goal_state) lines.push(`Goal state: ${row.business_state.goal_state}`)
+        if (row.business_state?.gap)        lines.push(`Gap identified: ${row.business_state.gap}`)
+        if (row.ranked_path?.length > 0) {
+          const top = row.ranked_path[0]
+          if (top?.move) lines.push(`Top ranked move: ${top.move} (${top.impact ?? ''} impact, ${top.urgency ?? ''})`)
+        }
       }
     }
+
+    // Fall back to legacy profiles.context if no structured memory
+    if (!hasMemory) {
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('context')
+        .eq('id', userId)
+        .single()
+
+      const context = profileData?.context ?? ''
+      if (context) {
+        const entries = context.split(/(?=\[Audit — )/).map(s => s.trim()).filter(Boolean)
+        const recent = entries.slice(-3).reverse()
+
+        for (const entry of recent) {
+          lines.push('')
+          const headerMatch = entry.match(/\[Audit — ([^\]]+)\]/)
+          if (!headerMatch) {
+            const firstLine = entry.split('\n')[0].slice(0, 120)
+            if (firstLine) { lines.push(firstLine); hasMemory = true }
+            continue
+          }
+
+          hasMemory = true
+          const headerParts = headerMatch[1].split(' — ')
+          const date = headerParts[0] ?? ''
+          const mode = headerParts[1] ?? ''
+          const ctx  = headerParts.slice(2).join(' — ')
+          lines.push(`[${[date, mode, ctx].filter(Boolean).join(' — ')}]`)
+
+          for (const line of entry.split('\n').slice(1)) {
+            const l = line.trim()
+            if (!l || l.startsWith('Status:')) continue
+            if (l.startsWith('Headline:'))             lines.push(`Finding:${l.slice(9)}`)
+            else if (l.startsWith('Root causes found:')) lines.push(`Root causes:${l.slice(18)}`)
+            else if (l.startsWith('Key actions given:')) lines.push(`Actions given:${l.slice(18)}`)
+            else lines.push(l)
+          }
+        }
+      }
+    }
+
+    if (!hasMemory) return ''
 
     lines.push('')
     lines.push('MEMORY RULES:')
@@ -315,9 +344,58 @@ Write ai_opportunities as a senior advisor laying out what is now buildable for 
     "Action 2",
     "Action 3"
   ],
+  "business_state": {
+    "current_state": "2-sentence description of where the business actually is right now — not what they say, what you observed.",
+    "goal_state": "What they're trying to reach. Name it in concrete terms.",
+    "gap": "The specific missing capabilities or decisions standing between current and goal. Name them directly, no fluff.",
+    "missing_capabilities": ["Capability 1", "Capability 2", "Capability 3"]
+  },
+  "ranked_path": [
+    {
+      "move": "The specific action or change",
+      "impact": "high",
+      "urgency": "immediate",
+      "cost": "low",
+      "dependency": null,
+      "rationale": "One sentence: why this ranks here."
+    }
+  ],
+  "timeline_reality": {
+    "goal_timeline_stated": "What timeline they mentioned or implied, if any.",
+    "assessment": "feasible",
+    "honest_take": "One sentence: what's actually achievable and why.",
+    "assumptions": ["Assumption 1 that could break this", "Assumption 2"]
+  },
   "honest_truth": "The single hardest thing for this person to hear — the thing they are avoiding or the structural reality they cannot escape. Make it land. If AI opportunities were identified, close with one sentence connecting their identified gap to what is now buildable — make the next step obvious without being salesy."
   ${goalGapField}
 }
+
+DIAGNOSTIC LAYER 2 FIELD RULES (apply only when generating DIAGNOSTIC reports):
+
+business_state:
+- Always populate all 4 sub-fields, even with partial information
+- If a field is inferred rather than stated, append " [assumption]" to that value
+- missing_capabilities must list specific things that don't exist yet — not categories, not advice
+- Example pass: "No automated follow-up sequence after proposal sent [assumption]"
+- Example fail: "Better sales process"
+
+ranked_path:
+- Minimum 3 moves, maximum 6
+- Order by combined impact + urgency score (high impact + immediate urgency ranks highest)
+- impact: "high" | "medium" | "low"
+- urgency: "immediate" | "this_quarter" | "strategic"
+- cost: "low" | "medium" | "high"
+- dependency: what must be true first, or null if none
+- rationale: one sentence explaining why this ranks where it does
+
+timeline_reality:
+- Always present — even if no timeline was mentioned
+- If no timeline was stated: set goal_timeline_stated to "not mentioned" and assess based on complexity observed
+- assessment must be exactly "feasible", "tight", or "unrealistic"
+- honest_take: one direct sentence — do not soften if unrealistic
+
+These 3 fields (business_state, ranked_path, timeline_reality) appear ONLY in DIAGNOSTIC mode.
+EXECUTION and HUMAN_MOMENT reports must NOT include them.
 
 IF EXECUTION — generate this structure. ALL six fields are required. Do not omit any field.
 
@@ -410,14 +488,16 @@ export default async function handler(req, res) {
       const clean = text.replace(/```json|```/g, '').trim()
       let report = JSON.parse(clean)
 
-      const requiredHumanMoment = ['headline','acknowledgment','what_this_actually_is','delivery_script','what_to_expect','honest_truth']
-      const requiredExecution   = ['headline','execution_context','delivery_plan','what_to_expect','key_message','honest_truth']
-      const requiredGoalMode    = ['goal_gap_analysis','missing_capabilities','ranking_logic','timeline_feasibility','confidence_level']
+      const requiredHumanMoment  = ['headline','acknowledgment','what_this_actually_is','delivery_script','what_to_expect','honest_truth']
+      const requiredExecution    = ['headline','execution_context','delivery_plan','what_to_expect','key_message','honest_truth']
+      const requiredGoalMode     = ['goal_gap_analysis','missing_capabilities','ranking_logic','timeline_feasibility','confidence_level']
+      const requiredDiagnostic   = ['business_state','ranked_path','timeline_reality']
 
       const mode     = report.conversation_mode
-      const required = mode === 'HUMAN_MOMENT'              ? requiredHumanMoment
-                     : mode === 'EXECUTION'                 ? requiredExecution
-                     : (mode === 'DIAGNOSTIC' && goalMode)  ? requiredGoalMode
+      const required = mode === 'HUMAN_MOMENT'             ? requiredHumanMoment
+                     : mode === 'EXECUTION'                ? requiredExecution
+                     : (mode === 'DIAGNOSTIC' && goalMode) ? [...requiredGoalMode, ...requiredDiagnostic]
+                     : mode === 'DIAGNOSTIC'               ? requiredDiagnostic
                      : null
 
       if (required) {
