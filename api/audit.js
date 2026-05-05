@@ -14,8 +14,8 @@ import { createClient } from '@supabase/supabase-js'
 const CLAUDE_API = 'https://api.anthropic.com/v1/messages'
 
 const supabase = createClient(
-  process.env.VITE_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_SERVICE_ROLE_KEY,
   { auth: { persistSession: false } }
 )
 
@@ -58,9 +58,9 @@ async function fetchPatterns(industry, domain) {
   try {
     let query = supabase
       .from('patterns')
-      .select('root_causes, actions_given')
+      .select('root_causes, actions_given, industry, domain')
       .order('created_at', { ascending: false })
-      .limit(10)
+      .limit(8)
 
     if (industry) query = query.eq('industry', industry)
     if (domain)   query = query.eq('domain', domain)
@@ -68,15 +68,14 @@ async function fetchPatterns(industry, domain) {
     const { data } = await query
     if (!data?.length) return ''
 
-    const lines = ['PATTERN INTELLIGENCE (what we\'ve seen in similar businesses):']
+    const lines = ['PATTERN INTELLIGENCE (what fixed similar problems in this industry/domain):']
     for (const row of data) {
-      const causes  = row.root_causes  ?? []
-      const actions = row.actions_given ?? []
-      for (let i = 0; i < causes.length; i++) {
-        if (causes[i]) lines.push(`- ${causes[i]}${actions[i] ? ` → fixed by: ${actions[i]}` : ''}`)
-      }
+      const cause = row.root_causes?.[0]
+      const fix = row.actions_given?.[0]
+      if (cause && fix) lines.push(`- ${cause} → fixed by: ${fix}`)
     }
-
+    lines.push('')
+    lines.push('Use these patterns to sharpen your diagnosis. If you see a matching root cause, reference that this pattern has appeared before and what resolved it.')
     return lines.join('\n')
   } catch {
     return ''

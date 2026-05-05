@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
-  process.env.VITE_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_SERVICE_ROLE_KEY,
   { auth: { persistSession: false } }
 )
 
@@ -144,18 +144,40 @@ export default async function handler(req, res) {
       console.warn('[save-report] business_state upsert failed:', bsErr.message)
     }
 
-    // Pattern tracking — one row per non_ai_fix (max 5), anonymous aggregate
+    // Pattern tracking — best-effort, capped per report
     try {
-      const fixes = (r.non_ai_fixes ?? []).slice(0, 5)
+      const patternRows = []
+      const fixes = Array.isArray(r.non_ai_fixes) ? r.non_ai_fixes : []
+
       for (const f of fixes) {
-        if (!f.issue) continue
-        await supabase.from('patterns').insert({
+        if (patternRows.length >= 5) break
+        if (!f?.issue && !f?.fix) continue
+        patternRows.push({
           industry:          industry ?? null,
           domain:            domain ?? null,
           conversation_mode: r.conversation_mode ?? null,
-          root_causes:       [f.issue],
-          actions_given:     f.fix ? [f.fix] : [],
+          root_causes:       f?.issue ? [f.issue] : [],
+          actions_given:     f?.fix ? [f.fix] : [],
         })
+      }
+
+      if (patternRows.length === 0) {
+        const priorityActions = Array.isArray(r.priority_actions) ? r.priority_actions.slice(0, 3) : []
+        for (const action of priorityActions) {
+          if (patternRows.length >= 5) break
+          if (!action) continue
+          patternRows.push({
+            industry:          industry ?? null,
+            domain:            domain ?? null,
+            conversation_mode: r.conversation_mode ?? null,
+            root_causes:       ['priority_action'],
+            actions_given:     [action],
+          })
+        }
+      }
+
+      if (patternRows.length > 0) {
+        await supabase.from('patterns').insert(patternRows)
       }
     } catch (patternErr) {
       console.warn('[save-report] pattern insert failed:', patternErr.message)
