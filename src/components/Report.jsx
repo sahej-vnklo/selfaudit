@@ -33,11 +33,14 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              userId:    userInfo.userId,
+              userId:       userInfo.userId,
               sessionId,
-              report:    r,
-              industry:  userInfo.industry,
-              domain:    userInfo.domain,
+              report:       r,
+              industry:     userInfo.industry,
+              domain:       userInfo.domain,
+              goalMode:     userInfo.goalMode     ?? false,
+              goalTimeline: userInfo.goalTimeline ?? '',
+              goalBaseline: userInfo.goalBaseline ?? '',
             }),
           }).catch(e => console.warn('[save-report] failed:', e?.message))
 

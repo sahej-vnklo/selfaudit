@@ -42,12 +42,21 @@ function buildMemoryEntry(r, industry, domain) {
   return lines.join('\n')
 }
 
+function goalScoreFromFeasibility(feasibility) {
+  if (!feasibility) return null
+  const f = feasibility.toLowerCase()
+  if (f.startsWith('feasible'))    return 80
+  if (f.startsWith('tight'))       return 50
+  if (f.startsWith('unrealistic')) return 20
+  return null
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { userId, sessionId, report: r, industry, domain } = req.body
+  const { userId, sessionId, report: r, industry, domain, goalTimeline, goalBaseline, goalMode } = req.body
   if (!userId || !r) {
     return res.status(400).json({ error: 'Missing userId or report' })
   }
@@ -93,15 +102,61 @@ export default async function handler(req, res) {
       console.warn('[save-report] memory update failed:', memErr.message)
     }
 
-    // Pattern tracking — anonymous aggregate, best-effort
+    // Business state upsert — extract structured model from report
     try {
-      await supabase.from('patterns').insert({
-        industry:          industry ?? null,
-        domain:            domain ?? null,
-        conversation_mode: r.conversation_mode ?? null,
-        root_causes:       (r.non_ai_fixes ?? []).slice(0, 3).map(f => f.issue).filter(Boolean),
-        actions_given:     (r.priority_actions ?? []).slice(0, 3).filter(Boolean),
-      })
+      const bs = r.business_state ?? {}
+
+      // Fetch existing row to compute goal_score_delta
+      const { data: existing } = await supabase
+        .from('business_state')
+        .select('goal_score')
+        .eq('user_id', userId)
+        .single()
+
+      const prevScore = existing?.goal_score ?? 0
+      const newScore  = goalMode
+        ? (goalScoreFromFeasibility(r.timeline_feasibility) ?? prevScore)
+        : prevScore
+      const delta = newScore - prevScore
+
+      await supabase.from('business_state').upsert({
+        user_id:                userId,
+        revenue_streams:        bs.revenue_streams        ?? [],
+        core_offer:             bs.core_offer             ?? r.overall_verdict ?? null,
+        target_customer:        bs.target_customer        ?? null,
+        funnel_stages:          bs.funnel_stages          ?? [],
+        conversion_bottlenecks: bs.conversion_bottlenecks ?? [],
+        retention_signals:      bs.retention_churn_signals ?? [],
+        team_ownership:         bs.team_ownership         ?? null,
+        operational_blockers:   bs.operational_blockers   ?? [],
+        pricing_structure:      bs.pricing_structure      ?? null,
+        current_constraints:    bs.current_constraints    ?? [],
+        active_goal:            goalMode ? (r.goal_gap_analysis?.goal ?? null) : null,
+        goal_timeline:          goalTimeline              ?? null,
+        goal_baseline:          goalBaseline              ?? null,
+        goal_score:             newScore,
+        goal_score_delta:       delta,
+        last_audit_headline:    r.headline                ?? null,
+        assumptions_unverified: bs.assumptions_unverified ?? [],
+        updated_at:             new Date().toISOString(),
+      }, { onConflict: 'user_id' })
+    } catch (bsErr) {
+      console.warn('[save-report] business_state upsert failed:', bsErr.message)
+    }
+
+    // Pattern tracking — one row per non_ai_fix (max 5), anonymous aggregate
+    try {
+      const fixes = (r.non_ai_fixes ?? []).slice(0, 5)
+      for (const f of fixes) {
+        if (!f.issue) continue
+        await supabase.from('patterns').insert({
+          industry:          industry ?? null,
+          domain:            domain ?? null,
+          conversation_mode: r.conversation_mode ?? null,
+          root_causes:       [f.issue],
+          actions_given:     f.fix ? [f.fix] : [],
+        })
+      }
     } catch (patternErr) {
       console.warn('[save-report] pattern insert failed:', patternErr.message)
     }

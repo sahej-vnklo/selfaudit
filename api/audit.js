@@ -19,6 +19,70 @@ const supabase = createClient(
   { auth: { persistSession: false } }
 )
 
+async function fetchBusinessState(userId) {
+  if (!userId) return ''
+  try {
+    const { data } = await supabase
+      .from('business_state')
+      .select('*')
+      .eq('user_id', userId)
+      .single()
+
+    if (!data) return ''
+
+    const lines = ['STRUCTURED BUSINESS MODEL (verified across sessions):']
+    if (data.core_offer)                      lines.push(`Core offer: ${data.core_offer}`)
+    if (data.target_customer)                 lines.push(`Target customer: ${data.target_customer}`)
+    if (data.revenue_streams?.length)         lines.push(`Revenue streams: ${data.revenue_streams.join(', ')}`)
+    if (data.pricing_structure)               lines.push(`Pricing: ${data.pricing_structure}`)
+    if (data.funnel_stages?.length)           lines.push(`Funnel: ${data.funnel_stages.join(' → ')}`)
+    if (data.conversion_bottlenecks?.length)  lines.push(`Known bottlenecks: ${data.conversion_bottlenecks.join('; ')}`)
+    if (data.operational_blockers?.length)    lines.push(`Operational blockers: ${data.operational_blockers.join('; ')}`)
+    if (data.current_constraints?.length)     lines.push(`Current constraints: ${data.current_constraints.join(', ')}`)
+    if (data.active_goal)                     lines.push(`Active goal: ${data.active_goal}`)
+    if (data.goal_timeline)                   lines.push(`Goal timeline: ${data.goal_timeline}`)
+    if (data.last_audit_headline)             lines.push(`Last audit finding: ${data.last_audit_headline}`)
+    if (data.assumptions_unverified?.length)  lines.push(`Unverified assumptions: ${data.assumptions_unverified.join('; ')}`)
+
+    lines.push('')
+    lines.push('Use this model as ground truth for what you already know about this business. Do not re-ask questions already answered here. Update your understanding if the user corrects any field.')
+
+    return lines.join('\n')
+  } catch {
+    return ''
+  }
+}
+
+async function fetchPatterns(industry, domain) {
+  if (!industry && !domain) return ''
+  try {
+    let query = supabase
+      .from('patterns')
+      .select('root_causes, actions_given')
+      .order('created_at', { ascending: false })
+      .limit(10)
+
+    if (industry) query = query.eq('industry', industry)
+    if (domain)   query = query.eq('domain', domain)
+
+    const { data } = await query
+    if (!data?.length) return ''
+
+    const lines = ['PATTERN INTELLIGENCE (what we\'ve seen in similar businesses):']
+    for (const row of data) {
+      const causes  = row.root_causes  ?? []
+      const actions = row.actions_given ?? []
+      for (let i = 0; i < causes.length; i++) {
+        if (causes[i]) lines.push(`- ${causes[i]}${actions[i] ? ` → fixed by: ${actions[i]}` : ''}`)
+      }
+    }
+
+    return lines.join('\n')
+  } catch {
+    return ''
+  }
+}
+
 async function fetchUserMemory(userId) {
   if (!userId) return ''
   try {
@@ -109,7 +173,7 @@ async function fetchUserMemory(userId) {
   }
 }
 
-function buildSystemPrompt(industry, domain, userMemory, goalMode, goal, goalTimeline, goalBaseline, memoryContext) {
+function buildSystemPrompt(industry, domain, userMemory, goalMode, goal, goalTimeline, goalBaseline, memoryContext, businessState, patterns) {
   const base = `You are SelfAudit — a brutally honest, senior-level business and life advisor. Your job is to audit any situation a user brings — business, startup, side project, personal goals, career, anything.
 
 CORE RULES:
@@ -239,7 +303,10 @@ Do NOT open with "How can I help", "What are you working on", or any generic que
 
   const memoryContextBlock = memoryContext ? `\n\nMEMORY CONTEXT — This is not a first session. You have worked with this person before. Reference these past findings naturally — act like you already know their business:\n\n${memoryContext}\n\nDo not mention that you have memory or that you are referencing past sessions. Just use the context. Ask follow-up questions that build on what was already diagnosed.` : ''
 
-  return base + goalBlock + scopeBlock + memoryBlock + memoryContextBlock + openingRule
+  const businessStateBlock = businessState ? `\n\n---\n${businessState}` : ''
+  const patternsBlock      = patterns      ? `\n\n---\n${patterns}`       : ''
+
+  return base + goalBlock + scopeBlock + memoryBlock + businessStateBlock + patternsBlock + memoryContextBlock + openingRule
 }
 
 function buildReportPrompt(goalMode) {
@@ -464,7 +531,11 @@ export default async function handler(req, res) {
     'anthropic-version': '2023-06-01',
   }
 
-  const userMemory = await fetchUserMemory(userId)
+  const [userMemory, businessState, patterns] = await Promise.all([
+    fetchUserMemory(userId),
+    fetchBusinessState(userId),
+    fetchPatterns(industry, domain),
+  ])
 
   try {
     const response = await fetch(CLAUDE_API, {
@@ -473,7 +544,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: isReport ? (goalMode ? 4000 : 2500) : 1024,
-        system: buildSystemPrompt(industry, domain, userMemory, goalMode, goal, goalTimeline, goalBaseline, memoryContext),
+        system: buildSystemPrompt(industry, domain, userMemory, goalMode, goal, goalTimeline, goalBaseline, memoryContext, businessState, patterns),
         messages: finalMessages,
       }),
     })
@@ -521,7 +592,7 @@ export default async function handler(req, res) {
               body: JSON.stringify({
                 model: 'claude-sonnet-4-20250514',
                 max_tokens: goalMode ? 4000 : 2500,
-                system: buildSystemPrompt(industry, domain, userMemory, goalMode, goal, goalTimeline, goalBaseline, memoryContext),
+                system: buildSystemPrompt(industry, domain, userMemory, goalMode, goal, goalTimeline, goalBaseline, memoryContext, businessState, patterns),
                 messages: retryMessages,
               }),
             })
