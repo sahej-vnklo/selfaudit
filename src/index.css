@@ -1,11 +1,40 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
+  /* Core */
+  --black: #0A0A0A;
+  --surface: #111111;
+  --surface-2: #161616;
+  --surface-3: #1C1C1C;
+  --border: #222222;
+  --border-2: #2A2A2A;
+
+  /* Text */
+  --text-primary: #E8E4DC;
+  --text-secondary: #888888;
+  --text-tertiary: #444444;
+
+  /* Accent — purple */
+  --accent: #6B5CE7;
+  --accent-light: #1A1630;
+  --accent-text: #9D8FF0;
+
+  /* Semantic */
+  --red: #9E3030;
+  --red-bg: #1A0A0A;
+  --red-text: #C05050;
+  --amber: #8A6A1A;
+  --amber-bg: #1A1508;
+  --amber-text: #C9A040;
+  --green: #2D6B45;
+  --green-bg: #0A1A10;
+  --green-text: #4A9E6B;
+
+  /* Keep existing for backward compat */
   --green: #1D9E75;
   --green-dark: #0F6E56;
   --green-light: #E1F5EE;
   --green-mid: #9FE1CB;
-  --black: #0D0D0D;
   --white: #FAFAF8;
   --gray-100: #F4F3EF;
   --gray-200: #E8E6E0;
@@ -14,7 +43,19 @@
   --gray-800: #2C2B28;
   --serif: 'DM Serif Display', Georgia, serif;
   --sans: 'DM Sans', system-ui, sans-serif;
-  --radius: 12px;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-soft: 0 20px 48px rgba(0, 0, 0, 0.28);
+  --shadow-subtle: 0 8px 24px rgba(0, 0, 0, 0.16);
+  --input-bg: #101010;
+  --panel-bg: #141414;
+  --panel-bg-2: #171717;
+  --panel-hover: #1B1B1B;
+  --purple-50: #1A1630;
+  --purple-100: #241E46;
+  --danger: #C05050;
+  --warning: #C9A040;
+  --success: #4A9E6B;
   --radius-sm: 6px;
   --radius-pill: 100px;
 }
@@ -23,8 +64,8 @@ html { scroll-behavior: smooth; }
 
 body {
   font-family: var(--sans);
-  background: var(--white);
-  color: var(--black);
+  background: var(--black);
+  color: var(--text-primary);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }
@@ -33,7 +74,7 @@ button { font-family: var(--sans); cursor: pointer; border: none; outline: none;
 input, textarea { font-family: var(--sans); outline: none; }
 a { text-decoration: none; color: inherit; }
 
-::selection { background: var(--green-light); color: var(--green-dark); }
+::selection { background: var(--accent-light); color: var(--accent-text); }
 
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(16px); }

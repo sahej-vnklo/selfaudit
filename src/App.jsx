@@ -29,7 +29,7 @@ const HASH_SCREENS = new Set([
   SCREENS.ADMIN,
 ])
 
-const DASHBOARD_SECTION_HASHES = new Set(['home', 'reports', 'billing', 'account'])
+const DASHBOARD_SECTION_HASHES = new Set(['home', 'reports', 'intelligence', 'billing', 'account'])
 
 function screenFromHash(isAuthenticated = false) {
   const h = window.location.hash.replace(/^#\/?/, '')

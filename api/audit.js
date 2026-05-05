@@ -82,6 +82,51 @@ async function fetchPatterns(industry, domain) {
   }
 }
 
+async function fetchIntelligenceBrief(userId) {
+  if (!userId) return ''
+  try {
+    const { data } = await supabase
+      .from('intelligence_brief')
+      .select('financial, operational, context')
+      .eq('user_id', userId)
+      .single()
+
+    if (!data) return ''
+
+    const lines = ['INTELLIGENCE BRIEF (hard verified numbers — treat these as ground truth, not assumptions):']
+
+    const f = data.financial || {}
+    const o = data.operational || {}
+    const c = data.context || {}
+
+    if (f.mrr) lines.push(`MRR: $${Number(f.mrr).toLocaleString()}`)
+    if (f.arr) lines.push(`ARR: $${Number(f.arr).toLocaleString()}`)
+    if (f.gross_margin) lines.push(`Gross margin: ${f.gross_margin}%`)
+    if (f.cac) lines.push(`CAC: $${f.cac}`)
+    if (f.ltv) lines.push(`LTV: $${f.ltv} (LTV:CAC ratio: ${f.cac ? (f.ltv / f.cac).toFixed(1) : 'unknown'})`)
+    if (f.churn) lines.push(`Monthly churn: ${f.churn}%`)
+    if (f.burn_rate) lines.push(`Monthly burn: $${Number(f.burn_rate).toLocaleString()}`)
+    if (f.runway || c.runway) lines.push(`Runway: ${f.runway || c.runway} months`)
+    if (o.headcount) lines.push(`Headcount: ${o.headcount}`)
+    if (o.active_customers) lines.push(`Active customers: ${o.active_customers}`)
+    if (o.nps) lines.push(`NPS: ${o.nps}`)
+    if (o.sales_cycle) lines.push(`Sales cycle: ${o.sales_cycle} days`)
+    if (c.funding_stage) lines.push(`Funding stage: ${c.funding_stage}`)
+    if (c.competitors) lines.push(`Competitors: ${c.competitors}`)
+    if (c.biggest_risk) lines.push(`Stated biggest risk: ${c.biggest_risk}`)
+    if (c.current_focus) lines.push(`Current focus: ${c.current_focus}`)
+
+    if (lines.length === 1) return ''
+
+    lines.push('')
+    lines.push('Use these numbers directly in your analysis. Do not ask for information already provided here. Flag any metrics that indicate structural problems (e.g. LTV:CAC below 3x, churn above 5% monthly, burn with less than 6 months runway).')
+
+    return lines.join('\n')
+  } catch {
+    return ''
+  }
+}
+
 async function fetchUserMemory(userId) {
   if (!userId) return ''
   try {
@@ -172,7 +217,7 @@ async function fetchUserMemory(userId) {
   }
 }
 
-function buildSystemPrompt(industry, domain, userMemory, goalMode, goal, goalTimeline, goalBaseline, memoryContext, businessState, patterns) {
+function buildSystemPrompt(industry, domain, intelligenceBrief, userMemory, goalMode, goal, goalTimeline, goalBaseline, memoryContext, businessState, patterns) {
   const base = `You are SelfAudit — a brutally honest, senior-level business and life advisor. Your job is to audit any situation a user brings — business, startup, side project, personal goals, career, anything.
 
 CORE RULES:
@@ -298,14 +343,14 @@ Use this exact format: "[Specific past finding] — is that still the main thing
 Examples: "Last time we flagged your demo-to-close rate dropping — has that moved?" or "You were working on hitting $100k MRR — are you still on that path, or has the focus changed?"
 Do NOT open with "How can I help", "What are you working on", or any generic question. You already know this business. Act like it.` : ''
 
+  const intelligenceBriefBlock = intelligenceBrief ? `\n\n---\n${intelligenceBrief}` : ''
   const memoryBlock = userMemory ? `\n\n---\n${userMemory}` : ''
-
   const memoryContextBlock = memoryContext ? `\n\nMEMORY CONTEXT — This is not a first session. You have worked with this person before. Reference these past findings naturally — act like you already know their business:\n\n${memoryContext}\n\nDo not mention that you have memory or that you are referencing past sessions. Just use the context. Ask follow-up questions that build on what was already diagnosed.` : ''
 
   const businessStateBlock = businessState ? `\n\n---\n${businessState}` : ''
   const patternsBlock      = patterns      ? `\n\n---\n${patterns}`       : ''
 
-  return base + goalBlock + scopeBlock + memoryBlock + businessStateBlock + patternsBlock + memoryContextBlock + openingRule
+  return base + goalBlock + scopeBlock + intelligenceBriefBlock + memoryBlock + businessStateBlock + patternsBlock + memoryContextBlock + openingRule
 }
 
 function buildReportPrompt(goalMode) {
@@ -530,7 +575,8 @@ export default async function handler(req, res) {
     'anthropic-version': '2023-06-01',
   }
 
-  const [userMemory, businessState, patterns] = await Promise.all([
+  const [intelligenceBrief, userMemory, businessState, patterns] = await Promise.all([
+    fetchIntelligenceBrief(userId),
     fetchUserMemory(userId),
     fetchBusinessState(userId),
     fetchPatterns(industry, domain),
@@ -543,7 +589,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: isReport ? (goalMode ? 4000 : 2500) : 1024,
-        system: buildSystemPrompt(industry, domain, userMemory, goalMode, goal, goalTimeline, goalBaseline, memoryContext, businessState, patterns),
+        system: buildSystemPrompt(industry, domain, intelligenceBrief, userMemory, goalMode, goal, goalTimeline, goalBaseline, memoryContext, businessState, patterns),
         messages: finalMessages,
       }),
     })
@@ -591,7 +637,7 @@ export default async function handler(req, res) {
               body: JSON.stringify({
                 model: 'claude-sonnet-4-20250514',
                 max_tokens: goalMode ? 4000 : 2500,
-                system: buildSystemPrompt(industry, domain, userMemory, goalMode, goal, goalTimeline, goalBaseline, memoryContext, businessState, patterns),
+                system: buildSystemPrompt(industry, domain, intelligenceBrief, userMemory, goalMode, goal, goalTimeline, goalBaseline, memoryContext, businessState, patterns),
                 messages: retryMessages,
               }),
             })
