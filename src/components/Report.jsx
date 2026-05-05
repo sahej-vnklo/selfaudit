@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import * as Sentry from '@sentry/react'
 import { generateReport, sendReportEmail } from '../lib/audit.js'
-import { initSupabase } from '../lib/supabase.js'
 import { usePostHog } from '@posthog/react'
 import ExecutionPanel from './ExecutionPanel.jsx'
 
@@ -40,31 +39,6 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
               domain:    userInfo.domain,
             }),
           }).catch(e => console.warn('[save-report] failed:', e?.message))
-
-          initSupabase().then(async sb => {
-            // Append to context — fetch existing first so history accumulates
-            const newEntry = [
-              r.headline,
-              r.overall_verdict ?? r.execution_context ?? r.acknowledgment ?? '',
-            ].filter(Boolean).join(' — ')
-
-            const { data: profile } = await sb
-              .from('profiles')
-              .select('context')
-              .eq('id', userInfo.userId)
-              .single()
-              .catch(() => ({ data: null }))
-
-            const existing = profile?.context ? profile.context.trim() : ''
-            const updatedContext = existing
-              ? `${existing}\n\n[Audit ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}] ${newEntry}`
-              : `[Audit ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}] ${newEntry}`
-
-            sb.from('profiles')
-              .update({ context: updatedContext })
-              .eq('id', userInfo.userId)
-              .catch(e => console.warn('[profiles] context update failed:', e?.message))
-          })
 
           const attioBase = { method: 'POST', headers: { 'Content-Type': 'application/json' } }
           fetch('/api/log-to-attio', {

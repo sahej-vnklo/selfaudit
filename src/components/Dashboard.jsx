@@ -221,7 +221,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
         // Fetch reports after profile resolves
         const { data: rData } = await sb
           .from('reports')
-          .select('id, title, content, headline, industry, domain, conversation_mode, created_at')
+          .select('id, title, content, headline, industry, domain, conversation_mode, status, created_at')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
           .limit(10)
@@ -396,7 +396,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
             {reportsLoading
               ? <ReportSkeletons />
               : reports.length > 0
-                ? <ReportList reports={reports} />
+                ? <ReportList reports={reports} userId={user?.id} />
                 : <EmptyReports onStartAudit={startAudit} />
             }
           </div>
@@ -1702,8 +1702,31 @@ function DashReportContent({ content }) {
 
 // ─── Report list + card ───────────────────────────────────────────────────────
 
-function ReportCard({ report }) {
-  const [open, setOpen] = useState(false)
+function ReportCard({ report, userId }) {
+  const [open,     setOpen]     = useState(false)
+  const [status,   setStatus]   = useState(report.status ?? 'unknown')
+  const [updating, setUpdating] = useState(false)
+
+  const updateStatus = async (e, newStatus) => {
+    e.stopPropagation()
+    if (updating) return
+    setUpdating(true)
+    try {
+      const sb = await initSupabase()
+      await sb.from('reports').update({ status: newStatus }).eq('id', report.id)
+      setStatus(newStatus)
+    } catch (err) {
+      console.warn('[report-status] update failed:', err.message)
+    } finally {
+      setUpdating(false)
+    }
+  }
+
+  const statusPill = {
+    unknown:  { bg: '#F3F3F3',   color: G.inkFaint  },
+    ongoing:  { bg: '#FEF3E2',   color: '#B7600A'   },
+    resolved: { bg: G.greenLight, color: G.greenDark },
+  }[status] ?? { bg: '#F3F3F3', color: G.inkFaint }
 
   return (
     <div style={{
@@ -1719,8 +1742,63 @@ function ReportCard({ report }) {
           transition: 'background 0.15s',
         }}
       >
-        <p style={{ fontSize: 14, fontWeight: 600, color: G.ink, flex: 1 }}>{report.title || '(untitled)'}</p>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+        <p style={{ fontSize: 14, fontWeight: 600, color: G.ink, flex: 1, minWidth: 0,
+          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {report.title || '(untitled)'}
+        </p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          {/* Status pill */}
+          <span style={{
+            fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 100,
+            background: statusPill.bg, color: statusPill.color, whiteSpace: 'nowrap',
+          }}>
+            {status === 'unknown' ? 'not followed up' : status}
+          </span>
+          {/* Mark as done */}
+          {status !== 'resolved' && (
+            <button
+              onClick={e => updateStatus(e, 'resolved')}
+              disabled={updating}
+              style={{
+                fontSize: 11, fontWeight: 500, color: G.greenDark,
+                background: G.greenLight, border: 'none',
+                borderRadius: 6, padding: '3px 9px', cursor: 'pointer',
+                opacity: updating ? 0.5 : 1, whiteSpace: 'nowrap',
+              }}
+            >
+              Done ✓
+            </button>
+          )}
+          {/* Still open */}
+          {status === 'unknown' && (
+            <button
+              onClick={e => updateStatus(e, 'ongoing')}
+              disabled={updating}
+              style={{
+                fontSize: 11, fontWeight: 500, color: '#B7600A',
+                background: '#FEF3E2', border: 'none',
+                borderRadius: 6, padding: '3px 9px', cursor: 'pointer',
+                opacity: updating ? 0.5 : 1, whiteSpace: 'nowrap',
+              }}
+            >
+              Still open
+            </button>
+          )}
+          {/* Reopen from resolved */}
+          {status === 'resolved' && (
+            <button
+              onClick={e => updateStatus(e, 'ongoing')}
+              disabled={updating}
+              style={{
+                fontSize: 11, fontWeight: 500, color: G.inkFaint,
+                background: 'none', border: `0.5px solid ${G.border}`,
+                borderRadius: 6, padding: '3px 9px', cursor: 'pointer',
+                opacity: updating ? 0.5 : 1, whiteSpace: 'nowrap',
+              }}
+            >
+              Reopen
+            </button>
+          )}
           <p style={{ fontSize: 12, color: G.inkFaint, whiteSpace: 'nowrap' }}>
             {report.created_at ? new Date(report.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'}
           </p>
@@ -1739,10 +1817,10 @@ function ReportCard({ report }) {
   )
 }
 
-function ReportList({ reports }) {
+function ReportList({ reports, userId }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      {reports.map(r => <ReportCard key={r.id} report={r} />)}
+      {reports.map(r => <ReportCard key={r.id} report={r} userId={userId} />)}
     </div>
   )
 }

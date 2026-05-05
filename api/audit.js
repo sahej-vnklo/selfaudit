@@ -22,37 +22,57 @@ const supabase = createClient(
 async function fetchUserMemory(userId) {
   if (!userId) return ''
   try {
-    const [profileRes, reportsRes] = await Promise.all([
-      supabase.from('profiles').select('context').eq('id', userId).single(),
-      supabase.from('reports')
-        .select('headline, conversation_mode, industry, domain, created_at')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(3),
-    ])
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('context')
+      .eq('id', userId)
+      .single()
 
-    const context     = profileRes.data?.context ?? ''
-    const pastReports = reportsRes.data ?? []
+    const context = profileData?.context ?? ''
+    if (!context) return ''
 
-    if (!context && pastReports.length === 0) return ''
+    // Parse structured entries written by save-report.js
+    const entries = context.split(/(?=\[Audit — )/).map(s => s.trim()).filter(Boolean)
 
-    const lines = ['USER MEMORY:']
+    if (entries.length === 0) return ''
 
-    if (context) {
-      lines.push(`Context they shared about their business: ${context}`)
-    }
+    // Most recent 3 entries, most recent first
+    const recent = entries.slice(-3).reverse()
 
-    if (pastReports.length > 0) {
+    const lines = ['USER MEMORY (most recent first):']
+
+    for (const entry of recent) {
       lines.push('')
-      lines.push('Past audits (most recent first):')
-      for (const r of pastReports) {
-        const date = r.created_at ? new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'
-        const mode = r.conversation_mode ?? 'DIAGNOSTIC'
-        const ind  = r.industry ?? '—'
-        const dom  = r.domain   ?? '—'
-        lines.push(`${r.headline ?? '(untitled)'} — ${ind} / ${dom} — ${mode} — ${date}`)
+      const headerMatch = entry.match(/\[Audit — ([^\]]+)\]/)
+      if (!headerMatch) {
+        // Legacy plain-text entry — include briefly
+        const firstLine = entry.split('\n')[0].slice(0, 120)
+        if (firstLine) lines.push(firstLine)
+        continue
+      }
+
+      const headerParts = headerMatch[1].split(' — ')
+      const date = headerParts[0] ?? ''
+      const mode = headerParts[1] ?? ''
+      const ctx  = headerParts.slice(2).join(' — ')
+      lines.push(`[${[date, mode, ctx].filter(Boolean).join(' — ')}]`)
+
+      for (const line of entry.split('\n').slice(1)) {
+        const l = line.trim()
+        if (!l || l.startsWith('Status:')) continue
+        if (l.startsWith('Headline:'))             lines.push(`Finding:${l.slice(9)}`)
+        else if (l.startsWith('Root causes found:')) lines.push(`Root causes:${l.slice(18)}`)
+        else if (l.startsWith('Key actions given:')) lines.push(`Actions given:${l.slice(18)}`)
+        else lines.push(l)
       }
     }
+
+    lines.push('')
+    lines.push('MEMORY RULES:')
+    lines.push('- Reference past findings naturally when relevant: "Last time we identified X — has that changed?"')
+    lines.push('- Do not re-ask questions already answered in past sessions')
+    lines.push('- If the user\'s stated problem contradicts past findings, surface the contradiction directly')
+    lines.push('- If this is their 2nd+ audit, open with one sentence referencing a specific past finding')
 
     return lines.join('\n')
   } catch {
@@ -178,9 +198,17 @@ If the user raises something from a completely different industry: acknowledge i
 
 [SCOPE_LIMIT] must fire every time you redirect scope. Never add it otherwise.`
 
+  const openingRule = userMemory ? `
+
+OPENING RULE (memory exists — this overrides all other opening instructions):
+Your very first message MUST reference one specific finding from their past audits in USER MEMORY above.
+Use this exact format: "[Specific past finding] — is that still the main thing you're working on, or has something shifted?"
+Examples: "Last time we flagged your demo-to-close rate dropping — has that moved?" or "You were working on hitting $100k MRR — are you still on that path, or has the focus changed?"
+Do NOT open with "How can I help", "What are you working on", or any generic question. You already know this business. Act like it.` : ''
+
   const memoryBlock = userMemory ? `\n\n---\n${userMemory}` : ''
 
-  return base + goalBlock + scopeBlock + memoryBlock
+  return base + goalBlock + scopeBlock + memoryBlock + openingRule
 }
 
 function buildReportPrompt(goalMode) {
