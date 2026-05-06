@@ -111,7 +111,7 @@ function SignupForm({ onSuccess, onLogin }) {
     const hash = window.location.hash.replace(/^#\/?/, '')
     if (hash.startsWith('signup?plan=')) {
       const plan = hash.split('plan=')[1]
-      if (['essential', 'business', 'portfolio'].includes(plan)) return plan
+      if (['essential', 'business'].includes(plan)) return plan
     }
     return 'essential'
   })
@@ -355,9 +355,8 @@ function SignupForm({ onSuccess, onLogin }) {
 }
 
 const SIGNUP_PLANS = [
-  { key: 'essential', name: 'Essential', price: '$49' },
-  { key: 'business',  name: 'Business',  price: '$99',  popular: true },
-  { key: 'portfolio', name: 'Portfolio', price: '$299' },
+  { key: 'essential', name: 'Foundation', price: '$29' },
+  { key: 'business',  name: 'Intelligence',  price: '$99',  popular: true },
 ]
 
 function StripeField({ label, children }) {

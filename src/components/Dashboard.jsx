@@ -171,35 +171,28 @@ const BUSINESS_OPTIONS = [
 ]
 
 const TIER_BADGE = {
-  essential: { bg: 'var(--accent-light)', color: 'var(--accent-text)', label: 'Essential' },
-  business: { bg: 'var(--surface3)', color: 'var(--blue)', label: 'Business' },
-  portfolio: { bg: 'var(--surface3)', color: 'var(--violet)', label: 'Portfolio' },
-  free: { bg: 'var(--accent-light)', color: 'var(--accent-text)', label: 'Essential' },
-  paid: { bg: 'var(--surface3)', color: 'var(--blue)', label: 'Business' },
+  essential: { bg: 'var(--accent-light)', color: 'var(--accent-text)', label: 'Foundation' },
+  business: { bg: 'var(--surface3)', color: 'var(--blue)', label: 'Intelligence' },
+  portfolio: { bg: 'var(--surface3)', color: 'var(--violet)', label: 'Intelligence' },
+  free: { bg: 'var(--accent-light)', color: 'var(--accent-text)', label: 'Foundation' },
+  paid: { bg: 'var(--surface3)', color: 'var(--blue)', label: 'Intelligence' },
 }
 
 const TIERS = [
   {
     key: 'essential',
-    name: 'Essential',
-    price: '$49',
+    name: 'Foundation',
+    price: '$29',
     desc: 'One domain. Unlimited audits. Your dedicated department head.',
     features: ['1 industry, 1 domain', 'Unlimited audits on that domain', 'Full drill-down audit', 'Complete written report', 'Root cause diagnosis', 'Fix-first priority list', 'Email delivery'],
   },
   {
     key: 'business',
-    name: 'Business',
+    name: 'Intelligence',
     price: '$99',
     popular: true,
     desc: 'Every function of your business, fully audited. No blind spots.',
-    features: ['Everything in Essential', 'All domains for your industry', 'AI opportunity breakdown', 'Re-audit anytime — track progress'],
-  },
-  {
-    key: 'portfolio',
-    name: 'Portfolio',
-    price: '$299',
-    desc: 'Every industry. Every domain. Built for those who operate at scale.',
-    features: ['Everything in Business', 'All industries & domains', 'Multiple businesses', 'First access to new features', 'Priority Vnklo AI access'],
+    features: ['Everything in Foundation', 'All domains for your industry', 'AI opportunity breakdown', 'Re-audit anytime — track progress'],
   },
 ]
 
@@ -279,17 +272,32 @@ function extractGoalFromContext(context) {
   return { goal: goalMatch?.[1]?.trim() || '', progress: null, timeline: '' }
 }
 
-function extractGoalState(profile, reports) {
+function extractGoalState(profile, reports, businessState) {
+  const savedScore = typeof businessState?.goal_score === 'number' ? businessState.goal_score : null
   const fromProfile = extractGoalFromContext(profile?.context)
-  if (fromProfile.goal) return fromProfile
+  if (fromProfile.goal) {
+    return {
+      ...fromProfile,
+      progress: savedScore ?? fromProfile.progress,
+    }
+  }
 
   for (const report of reports) {
     const parsed = parseReportContent(report.content)
     if (!parsed) continue
     const goal = parsed.goal_gap_analysis?.goal || parsed.business_state?.goal_state || parsed.business_state?.active_goal || ''
-    const progress = parsed.business_state?.progress_pct ?? parsed.goal_gap_analysis?.progress_pct ?? null
     const timeline = parsed.timeline_feasibility || parsed.goal_gap_analysis?.realistic_timeline || parsed.timeline_reality?.honest_take || ''
-    if (goal) return { goal, progress: typeof progress === 'number' ? progress : null, timeline }
+    const timelineText = String(timeline || '').trim().toLowerCase()
+    const fallbackProgress = savedScore != null
+      ? savedScore
+      : timelineText.startsWith('feasible')
+        ? 80
+        : timelineText.startsWith('tight')
+          ? 50
+          : timelineText.startsWith('unrealistic')
+            ? 20
+            : null
+    if (goal) return { goal, progress: fallbackProgress, timeline }
   }
 
   return { goal: '', progress: null, timeline: '' }
@@ -624,7 +632,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
               )}
               <div style={styles.tierGrid}>
                 {TIERS.map((item) => (
-                  <TierCard key={item.key} tier={item} currentTier={tier} userId={user?.id} email={user?.email} />
+                  <TierCard key={item.key} tier={item} currentTier={tier === 'portfolio' ? 'business' : tier} userId={user?.id} email={user?.email} />
                 ))}
               </div>
             </PageShell>
@@ -672,7 +680,7 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
   const alertDomain = flaggedDomains[0]
   const healthScore = latestDomains.length ? computeHealthScore(latestDomains) : null
   const openIssuesCount = flaggedDomains.length
-  const goalState = extractGoalState(profile, reports)
+  const goalState = extractGoalState(profile, reports, businessState)
   const lastReportDate = latestReport?.created_at
     ? new Date(latestReport.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     : '—'

@@ -7,7 +7,6 @@ import Report from './components/Report.jsx'
 import Login from './components/auth/Login.jsx'
 import Signup from './components/auth/Signup.jsx'
 import Dashboard from './components/Dashboard.jsx'
-import AccountOnboarding from './components/AccountOnboarding.jsx'
 import AdminDashboard from './pages/AdminDashboard.jsx'
 
 const SCREENS = {
@@ -34,7 +33,7 @@ function screenFromHash(isAuthenticated = false) {
   if (h === 'login')              return SCREENS.LOGIN
   if (h === 'signup' || h.startsWith('signup?')) return SCREENS.SIGNUP
   if (h === 'dashboard')          return SCREENS.DASHBOARD
-  if (h === 'account_onboarding') return SCREENS.ACCOUNT_ONBOARDING
+  if (h === 'account_onboarding') return isAuthenticated ? SCREENS.DASHBOARD : SCREENS.LOGIN
   if (h === 'admin')              return SCREENS.ADMIN
   // Dashboard section hashes (#billing, #reports, etc.) must not exit the dashboard
   if (isAuthenticated && DASHBOARD_SECTION_HASHES.has(h)) return SCREENS.DASHBOARD
@@ -124,18 +123,7 @@ export default function App() {
             setAuthLoading(false)
             const currentHash = window.location.hash.replace(/^#\/?/, '')
             if (currentHash === 'admin') return
-
-            const { data: profile } = await sb
-              .from('profiles')
-              .select('onboarding_complete')
-              .eq('id', session.user.id)
-              .single()
-
-            if (profile && !profile.onboarding_complete) {
-              navigate(SCREENS.ACCOUNT_ONBOARDING)
-            } else if (profile?.onboarding_complete) {
-              navigate(SCREENS.DASHBOARD)
-            }
+            navigate(SCREENS.DASHBOARD)
           }
         })
 
@@ -212,9 +200,6 @@ export default function App() {
     if (session) { navigate(SCREENS.DASHBOARD); return null }
     return <Login
       onSuccess={(session) => {
-        // Set session immediately so guards don't redirect back to login before
-        // onAuthStateChange fires. Do NOT navigate here — let onAuthStateChange
-        // check onboarding_complete and route to ACCOUNT_ONBOARDING or DASHBOARD.
         if (session) setSession(session)
       }}
       onSignup={() => navigate(SCREENS.SIGNUP)}
@@ -225,10 +210,10 @@ export default function App() {
     if (session) { navigate(SCREENS.DASHBOARD); return null }
     return <Signup
       onSuccess={(session) => {
-        // Set session immediately so the AccountOnboarding guard doesn't
-        // redirect back to login before onAuthStateChange has fired.
-        if (session) setSession(session)
-        navigate(SCREENS.ACCOUNT_ONBOARDING)
+        if (session) {
+          setSession(session)
+          navigate(SCREENS.DASHBOARD)
+        }
       }}
       onLogin={() => navigate(SCREENS.LOGIN)}
     />
@@ -236,11 +221,8 @@ export default function App() {
 
   if (screen === SCREENS.ACCOUNT_ONBOARDING) {
     if (!session) { navigate(SCREENS.LOGIN); return null }
-    return <AccountOnboarding
-      user={session.user}
-      onComplete={() => navigate(SCREENS.DASHBOARD)}
-      onBack={() => navigate(SCREENS.LANDING)}
-    />
+    navigate(SCREENS.DASHBOARD)
+    return null
   }
 
   if (screen === SCREENS.ADMIN) {
