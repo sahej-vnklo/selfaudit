@@ -162,6 +162,14 @@ const DOMAIN_MAP = {
   Other: ['Strategy', 'Operations', 'Sales', 'Marketing', 'Finance', 'People & Culture', 'Technology', 'Customer Experience'],
 }
 
+const BUSINESS_OPTIONS = [
+  'SaaS', 'Agency', 'Retail', 'E-commerce', 'Restaurant / Food',
+  'Healthcare', 'Legal', 'Real Estate', 'Construction', 'Manufacturing',
+  'Logistics', 'Education', 'Finance / Accounting', 'Insurance',
+  'Consulting', 'Marketing', 'Media / Publishing', 'Travel / Hospitality',
+  'Nonprofit', 'Freelancer / Solo', 'Other',
+]
+
 const TIER_BADGE = {
   essential: { bg: 'var(--accent-light)', color: 'var(--accent-text)', label: 'Essential' },
   business: { bg: 'var(--surface3)', color: 'var(--blue)', label: 'Business' },
@@ -291,6 +299,8 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
   const theme = localStorage.getItem('sa-theme') || 'dark'
   const themeVars = getThemeVars(theme)
   const [profile, setProfile] = useState(null)
+  const [businessState, setBusinessState] = useState(null)
+  const [businessStateLoading, setBusinessStateLoading] = useState(true)
   const [reports, setReports] = useState([])
   const [reportsLoading, setReportsLoading] = useState(true)
   const [billing, setBilling] = useState(null)
@@ -299,6 +309,8 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
   const [portalLoading, setPortalLoading] = useState(false)
   const [section, setSection] = useState(() => getSectionFromHash())
   const [goalModal, setGoalModal] = useState(false)
+  const [scopeSetupOpen, setScopeSetupOpen] = useState(false)
+  const pendingAuditRef = useRef(null)
 
   const name = profile?.name?.trim() || user?.user_metadata?.name?.trim() || ''
   const email = user?.email || ''
@@ -399,6 +411,49 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
     })()
   }, [billing, profile?.stripe_customer_id, profile?.stripe_subscription_id, section])
 
+  useEffect(() => {
+    if (!user?.id) {
+      setBusinessStateLoading(false)
+      return
+    }
+
+    let cancelled = false
+
+    ;(async () => {
+      setBusinessStateLoading(true)
+      try {
+        const sb = await initSupabase()
+        const { data, error } = await sb
+          .from('business_state')
+          .select('*')
+          .eq('user_id', user.id)
+          .single()
+
+        if (cancelled) return
+        if (error) {
+          if (error.code !== 'PGRST116') {
+            console.error('[dashboard] business_state fetch error:', error.message)
+          }
+          setBusinessState(null)
+          return
+        }
+
+        setBusinessState(data || null)
+      } catch (error) {
+        if (!cancelled) {
+          console.error('[dashboard] business_state fetch threw:', error?.message ?? error)
+          setBusinessState(null)
+        }
+      } finally {
+        if (!cancelled) setBusinessStateLoading(false)
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [user?.id])
+
   const navigateSection = (nextSection) => {
     history.pushState({ section: nextSection }, '', `#${nextSection}`)
     setSection(nextSection)
@@ -415,8 +470,22 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
     domain: profile?.domain || null,
   })
 
-  const startAudit = () => onStartAudit(baseAuditInfo())
-  const startGoalAudit = (goalData) => onStartAudit({ ...baseAuditInfo(), goalMode: true, ...goalData })
+  const ensureScopeThen = (next) => {
+    if (profile?.industry) {
+      next({ industry: profile.industry, domain: profile?.domain || null })
+      return
+    }
+    pendingAuditRef.current = next
+    setScopeSetupOpen(true)
+  }
+
+  const startAudit = () => {
+    ensureScopeThen((scope) => onStartAudit({ ...baseAuditInfo(), ...scope }))
+  }
+
+  const startGoalAudit = (goalData) => {
+    ensureScopeThen((scope) => onStartAudit({ ...baseAuditInfo(), ...scope, goalMode: true, ...goalData }))
+  }
 
   const openPortal = async () => {
     if (!profile?.stripe_customer_id) return
@@ -447,7 +516,25 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
   return (
     <div style={{ ...themeVars, ...styles.shell }}>
       {goalModal && (
-        <GoalCaptureModal onClose={() => setGoalModal(false)} onStart={startGoalAudit} />
+        <GoalCaptureModal onClose={() => setGoalModal(false)} onStart={(goalData) => {
+          setGoalModal(false)
+          startGoalAudit(goalData)
+        }} />
+      )}
+      {scopeSetupOpen && (
+        <AuditScopeSetupModal
+          user={user}
+          onClose={() => {
+            setScopeSetupOpen(false)
+            pendingAuditRef.current = null
+          }}
+          onSaved={(scope) => {
+            setProfile((prev) => ({ ...(prev || {}), ...scope }))
+            setScopeSetupOpen(false)
+            pendingAuditRef.current?.(scope)
+            pendingAuditRef.current = null
+          }}
+        />
       )}
 
       <aside style={styles.sidebar}>
@@ -491,6 +578,8 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
             <HomeSection
               user={user}
               profile={profile}
+              businessState={businessState}
+              businessStateLoading={businessStateLoading}
               reports={reports}
               reportsLoading={reportsLoading}
               onStartAudit={startAudit}
@@ -572,7 +661,7 @@ function PageShell({ title, sub, actions, children }) {
   )
 }
 
-function HomeSection({ user, profile, reports, reportsLoading, onStartAudit, onStartGoalAudit }) {
+function HomeSection({ user, profile, businessState, businessStateLoading, reports, reportsLoading, onStartAudit, onStartGoalAudit }) {
   const issuesRef = useRef(null)
   const latestReport = reports[0] || null
   const latestContent = latestReport ? parseReportContent(latestReport.content) : null
@@ -642,7 +731,7 @@ function HomeSection({ user, profile, reports, reportsLoading, onStartAudit, onS
         <div style={styles.rightColumn}>
           <BusinessHealthPanel latestDomains={latestDomains} />
           {goalState.goal && <GoalPanel goalState={goalState} />}
-          <ScopePanel tier={normalizeTier(profile?.tier)} industry={profile?.industry} domain={profile?.domain} context={profile?.context} />
+          <BusinessStateCard user={user} businessState={businessState} loading={businessStateLoading} />
           {reports.length > 0 && <VnkloCTACard user={user} reports={reports} />}
         </div>
       </div>
@@ -664,10 +753,7 @@ function KpiCard({ label, value, delta, tone }) {
 function OpenIssuesPanel({ report, domains }) {
   if (!report || domains.length === 0) {
     return (
-      <PanelCard
-        title="open issues"
-        right={<button type="button" style={styles.inlineLink}>view all</button>}
-      >
+      <PanelCard title="open issues">
         <EmptyPanel message="Run an audit to populate issue tracking." />
       </PanelCard>
     )
@@ -679,23 +765,33 @@ function OpenIssuesPanel({ report, domains }) {
 }
 
 function AuditHistoryPanel({ reports, reportsLoading }) {
+  const [expanded, setExpanded] = useState(false)
+
   return (
-    <PanelCard
-      title="audit history"
-      right={<div style={styles.panelMeta}>{reports.length} saved</div>}
-    >
-      {reportsLoading ? (
-        <ReportSkeletons compact />
-      ) : reports.length === 0 ? (
-        <EmptyPanel message="No past audits yet." />
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {reports.map((report) => (
-            <AuditHistoryRow key={report.id} report={report} />
-          ))}
+    <div style={styles.panelCard}>
+      <button type="button" style={styles.panelToggle} onClick={() => setExpanded((prev) => !prev)}>
+        <div style={styles.panelTitle}>audit history</div>
+        <div style={styles.panelToggleRight}>
+          <span style={styles.panelCountBadge}>{reports.length}</span>
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.18s ease', color: G.textFaint }}>
+            <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
         </div>
+      </button>
+      {expanded && (
+        reportsLoading ? (
+          <ReportSkeletons compact />
+        ) : reports.length === 0 ? (
+          <EmptyPanel message="No past audits yet." />
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {reports.slice(0, 3).map((report) => (
+              <AuditHistoryRow key={report.id} report={report} />
+            ))}
+          </div>
+        )
       )}
-    </PanelCard>
+    </div>
   )
 }
 
@@ -774,25 +870,191 @@ function GoalPanel({ goalState }) {
   )
 }
 
-function ScopePanel({ tier, industry, domain, context }) {
-  const businessDomains = tier === 'business' && industry ? DOMAIN_MAP[industry] || [] : []
-  const pills = tier === 'business' ? businessDomains.slice(0, 5) : domain ? [domain] : []
+function formatAuditUpdateLabel(updatedAt) {
+  if (!updatedAt) return 'latest'
+  return new Date(updatedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })
+}
+
+function looksAssumed(value) {
+  if (Array.isArray(value)) return value.some((item) => String(item || '').includes('[assumption]'))
+  return String(value || '').includes('[assumption]')
+}
+
+function displayBusinessStateValue(value, emptySeparator = ', ') {
+  if (Array.isArray(value)) return value.filter(Boolean).join(emptySeparator)
+  return typeof value === 'string' ? value.trim() : ''
+}
+
+function parseBusinessStateList(value, mode) {
+  if (!value.trim()) return []
+  if (mode === 'funnel') {
+    return value
+      .split(/\n|→|->/)
+      .map((item) => item.trim())
+      .filter(Boolean)
+  }
+  if (mode === 'blockers') {
+    return value
+      .split(/\n|;/)
+      .map((item) => item.trim())
+      .filter(Boolean)
+  }
+  return value
+    .split(/\n|,/)
+    .map((item) => item.trim())
+    .filter(Boolean)
+}
+
+function BusinessStateValue({ value, emptyLabel = 'Not discussed yet', separator = ', ' }) {
+  const rendered = displayBusinessStateValue(value, separator)
+  const assumed = looksAssumed(value)
+  if (!rendered) {
+    return <div style={styles.businessStateEmpty}>{emptyLabel}</div>
+  }
+  return <div style={{ ...styles.businessStateValue, ...(assumed ? styles.businessStateAssumed : {}) }}>{rendered}</div>
+}
+
+function BusinessStateCard({ user, businessState, loading }) {
+  const [editing, setEditing] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [draft, setDraft] = useState({
+    core_offer: '',
+    revenue_streams: '',
+    operational_blockers: '',
+    target_customer: '',
+    funnel_stages: '',
+  })
+  const [savedState, setSavedState] = useState(businessState)
+
+  useEffect(() => {
+    setSavedState(businessState)
+  }, [businessState])
+
+  useEffect(() => {
+    if (!editing) {
+      setDraft({
+        core_offer: savedState?.core_offer || '',
+        revenue_streams: displayBusinessStateValue(savedState?.revenue_streams, ', '),
+        operational_blockers: displayBusinessStateValue(savedState?.operational_blockers, '; '),
+        target_customer: savedState?.target_customer || '',
+        funnel_stages: displayBusinessStateValue(savedState?.funnel_stages, ' → '),
+      })
+    }
+  }, [editing, savedState])
+
+  const subtitle = `Updated after ${formatAuditUpdateLabel(savedState?.updated_at)} audit`
+
+  const save = async () => {
+    if (!user?.id) return
+    setSaving(true)
+    try {
+      const sb = await initSupabase()
+      const payload = {
+        user_id: user.id,
+        core_offer: draft.core_offer.trim(),
+        revenue_streams: parseBusinessStateList(draft.revenue_streams, 'streams'),
+        operational_blockers: parseBusinessStateList(draft.operational_blockers, 'blockers'),
+        target_customer: draft.target_customer.trim(),
+        funnel_stages: parseBusinessStateList(draft.funnel_stages, 'funnel'),
+        updated_at: new Date().toISOString(),
+      }
+      const { data, error } = await sb
+        .from('business_state')
+        .upsert(payload, { onConflict: 'user_id' })
+        .select('*')
+        .single()
+
+      if (error) throw error
+      setSavedState(data || payload)
+      setEditing(false)
+    } catch (error) {
+      console.error('[dashboard] business_state save failed:', error?.message ?? error)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const cancel = () => {
+    setEditing(false)
+    setDraft({
+      core_offer: savedState?.core_offer || '',
+      revenue_streams: displayBusinessStateValue(savedState?.revenue_streams, ', '),
+      operational_blockers: displayBusinessStateValue(savedState?.operational_blockers, '; '),
+      target_customer: savedState?.target_customer || '',
+      funnel_stages: displayBusinessStateValue(savedState?.funnel_stages, ' → '),
+    })
+  }
+
   return (
-    <PanelCard title="scope">
-      <div style={{ fontSize: 14, color: G.textSecondary }}>
-        {industry ? (tier === 'essential' && domain ? `${industry} / ${domain}` : industry) : 'No scope saved yet'}
+    <div style={styles.businessStateCard}>
+      <div style={styles.panelHeader}>
+        <div>
+          <div style={styles.businessStateTitle}>What we know</div>
+          <div style={styles.businessStateSub}>{subtitle}</div>
+        </div>
+        {editing ? (
+          <div style={styles.businessStateActions}>
+            <button type="button" style={styles.businessStateGhostBtn} onClick={cancel} disabled={saving}>Cancel</button>
+            <button type="button" style={styles.businessStateSaveBtn} onClick={save} disabled={saving}>
+              {saving ? 'Saving…' : 'Save'}
+            </button>
+          </div>
+        ) : (
+          <button type="button" style={styles.businessStateEditBtn} onClick={() => setEditing(true)}>
+            edit
+          </button>
+        )}
       </div>
-      {typeof context === 'string' && context.trim() && (
-        <p style={{ fontSize: 12, color: G.textSecondary, lineHeight: 1.6, marginTop: 10 }}>{context}</p>
-      )}
-      {pills.length > 0 && (
-        <div style={styles.scopePills}>
-          {pills.map((pill) => (
-            <span key={pill} style={styles.scopePill}>{pill}</span>
-          ))}
+
+      {loading ? (
+        <div style={styles.emptyPanel}>Loading business context…</div>
+      ) : editing ? (
+        <div style={styles.businessStateGrid}>
+          <BusinessStateEditor label="Core offer" value={draft.core_offer} onChange={(value) => setDraft((prev) => ({ ...prev, core_offer: value }))} />
+          <BusinessStateEditor label="Revenue streams" value={draft.revenue_streams} onChange={(value) => setDraft((prev) => ({ ...prev, revenue_streams: value }))} />
+          <BusinessStateEditor label="Operational blockers" value={draft.operational_blockers} onChange={(value) => setDraft((prev) => ({ ...prev, operational_blockers: value }))} />
+          <BusinessStateEditor label="Target customer" value={draft.target_customer} onChange={(value) => setDraft((prev) => ({ ...prev, target_customer: value }))} />
+          <BusinessStateEditor label="Funnel stages" value={draft.funnel_stages} onChange={(value) => setDraft((prev) => ({ ...prev, funnel_stages: value }))} />
+        </div>
+      ) : (
+        <div style={styles.businessStateGrid}>
+          <div>
+            <div style={styles.businessStateLabel}>Core offer</div>
+            <BusinessStateValue value={savedState?.core_offer} />
+          </div>
+          <div>
+            <div style={styles.businessStateLabel}>Revenue streams</div>
+            <BusinessStateValue value={savedState?.revenue_streams} separator=", " />
+          </div>
+          <div>
+            <div style={styles.businessStateLabel}>Operational blockers</div>
+            <BusinessStateValue value={savedState?.operational_blockers} separator="; " />
+          </div>
+          <div>
+            <div style={styles.businessStateLabel}>Target customer</div>
+            <BusinessStateValue value={savedState?.target_customer} />
+          </div>
+          <div>
+            <div style={styles.businessStateLabel}>Funnel stages</div>
+            <BusinessStateValue value={savedState?.funnel_stages} separator=" → " />
+          </div>
         </div>
       )}
-    </PanelCard>
+    </div>
+  )
+}
+
+function BusinessStateEditor({ label, value, onChange }) {
+  return (
+    <label style={styles.businessStateEditorShell}>
+      <div style={styles.businessStateLabel}>{label}</div>
+      <textarea
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        rows={3}
+        style={styles.businessStateTextarea}
+      />
+    </label>
   )
 }
 
@@ -1139,6 +1401,102 @@ function GoalCaptureModal({ onClose, onStart }) {
   )
 }
 
+function AuditScopeSetupModal({ user, onClose, onSaved }) {
+  const [industry, setIndustry] = useState('')
+  const [domain, setDomain] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+
+  const domainOptions = industry ? DOMAIN_MAP[industry] || [] : []
+
+  const submit = async () => {
+    if (!industry) {
+      setError('Pick your industry first.')
+      return
+    }
+    if (!domain) {
+      setError('Pick the domain you want to audit.')
+      return
+    }
+
+    setSaving(true)
+    try {
+      const sb = await initSupabase()
+      const { error: updateError } = await sb
+        .from('profiles')
+        .update({ industry, domain })
+        .eq('id', user.id)
+
+      if (updateError) throw updateError
+      onSaved({ industry, domain })
+    } catch (updateError) {
+      console.error('[dashboard] scope setup failed:', updateError?.message ?? updateError)
+      setError('Could not save your audit setup. Please try again.')
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div style={gm.overlay} onClick={(event) => { if (event.target === event.currentTarget) onClose() }}>
+      <div style={gm.modal}>
+        <button type="button" style={gm.closeBtn} onClick={onClose} aria-label="Close">
+          ✕
+        </button>
+        <div style={gm.eyebrow}>Audit setup</div>
+        <h2 style={gm.title}>Before we start</h2>
+        <p style={gm.sub}>Pick your industry and the part of the business you want this audit to focus on.</p>
+
+        <div style={gm.field}>
+          <label style={gm.label}>Industry <span style={{ color: G.accentText }}>*</span></label>
+          <div style={gm.categoryRow}>
+            {BUSINESS_OPTIONS.map((option) => (
+              <button
+                type="button"
+                key={option}
+                style={{ ...gm.categoryPill, ...(industry === option ? gm.categoryActive : {}) }}
+                onClick={() => {
+                  setIndustry(option)
+                  setDomain('')
+                  setError('')
+                }}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {industry && (
+          <div style={gm.field}>
+            <label style={gm.label}>Domain <span style={{ color: G.accentText }}>*</span></label>
+            <div style={styles.scopeSetupGrid}>
+              {domainOptions.map((option) => (
+                <button
+                  type="button"
+                  key={option}
+                  style={{ ...styles.scopeSetupPill, ...(domain === option ? styles.scopeSetupPillActive : {}) }}
+                  onClick={() => {
+                    setDomain(option)
+                    setError('')
+                  }}
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {error && <p style={gm.error}>{error}</p>}
+
+        <button type="button" style={gm.startBtn} onClick={submit} disabled={saving}>
+          {saving ? 'Saving…' : 'Start audit'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 function OpenIssuesTracker({ report, domains }) {
   const getKey = (domainName) => `tsa_issue_${report.id}_${domainName}`
   const [statuses, setStatuses] = useState(() => {
@@ -1156,16 +1514,13 @@ function OpenIssuesTracker({ report, domains }) {
     setStatuses((prev) => ({ ...prev, [domainName]: next }))
   }
 
-  const rows = domains.map((domain) => ({
+  const rows = domains.slice(0, 3).map((domain) => ({
     ...domain,
     issueStatus: statuses[domain.name] || 'open',
   }))
 
   return (
-    <PanelCard
-      title="open issues"
-      right={<button type="button" style={styles.inlineLink}>view all</button>}
-    >
+    <PanelCard title="open issues">
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {rows.map((domain) => (
           <button
@@ -1950,6 +2305,35 @@ const styles = {
     fontSize: 11,
     color: G.textFaint,
   },
+  panelToggle: {
+    width: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
+    background: 'transparent',
+    border: 'none',
+    color: 'inherit',
+    cursor: 'pointer',
+    padding: 0,
+    marginBottom: 12,
+  },
+  panelToggleRight: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+  },
+  panelCountBadge: {
+    minWidth: 22,
+    height: 22,
+    borderRadius: 999,
+    padding: '0 8px',
+    display: 'grid',
+    placeItems: 'center',
+    background: G.surface,
+    color: G.textSecondary,
+    fontSize: 11,
+  },
   inlineLink: {
     border: 'none',
     background: 'transparent',
@@ -2103,6 +2487,119 @@ const styles = {
     marginTop: 10,
     fontSize: 11,
     color: G.textFaint,
+  },
+  businessStateCard: {
+    background: G.surface2,
+    border: `1.5px solid ${G.accent}`,
+    borderRadius: 8,
+    padding: 14,
+  },
+  businessStateSub: {
+    marginTop: 5,
+    fontSize: 12,
+    color: G.textSecondary,
+  },
+  businessStateTitle: {
+    fontSize: 15,
+    color: G.text,
+    letterSpacing: '-0.02em',
+  },
+  businessStateGrid: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 12,
+  },
+  businessStateLabel: {
+    fontSize: 10,
+    color: G.textFaint,
+    textTransform: 'uppercase',
+    letterSpacing: '0.08em',
+    marginBottom: 6,
+  },
+  businessStateValue: {
+    fontSize: 13,
+    color: G.textSecondary,
+    lineHeight: 1.6,
+  },
+  businessStateEmpty: {
+    fontSize: 13,
+    color: G.textFaint,
+    fontStyle: 'italic',
+    lineHeight: 1.6,
+  },
+  businessStateAssumed: {
+    color: G.textFaint,
+    fontStyle: 'italic',
+  },
+  businessStateEditBtn: {
+    border: `0.5px solid ${G.border2}`,
+    background: 'transparent',
+    color: G.textSecondary,
+    borderRadius: 6,
+    padding: '5px 10px',
+    fontSize: 12,
+    cursor: 'pointer',
+  },
+  businessStateActions: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+  },
+  businessStateGhostBtn: {
+    border: `0.5px solid ${G.border2}`,
+    background: 'transparent',
+    color: G.textSecondary,
+    borderRadius: 6,
+    padding: '6px 10px',
+    fontSize: 12,
+    cursor: 'pointer',
+  },
+  businessStateSaveBtn: {
+    border: 'none',
+    background: G.accent,
+    color: G.white,
+    borderRadius: 6,
+    padding: '6px 10px',
+    fontSize: 12,
+    cursor: 'pointer',
+  },
+  businessStateEditorShell: {
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  businessStateTextarea: {
+    width: '100%',
+    minHeight: 74,
+    resize: 'vertical',
+    background: G.surface,
+    border: `0.5px solid ${G.border2}`,
+    borderRadius: 8,
+    padding: '10px 12px',
+    color: G.text,
+    fontSize: 13,
+    lineHeight: 1.5,
+    fontFamily: 'inherit',
+    boxSizing: 'border-box',
+  },
+  scopeSetupGrid: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: 8,
+  },
+  scopeSetupPill: {
+    fontSize: 12,
+    padding: '9px 12px',
+    borderRadius: 8,
+    border: `0.5px solid ${G.border2}`,
+    background: G.surface,
+    color: G.textSecondary,
+    cursor: 'pointer',
+    textAlign: 'left',
+  },
+  scopeSetupPillActive: {
+    background: G.accentLight,
+    color: G.accentText,
+    borderColor: G.accent,
   },
   scopePills: {
     display: 'flex',
