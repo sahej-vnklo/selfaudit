@@ -539,7 +539,6 @@ function GrowthOSCard({ onSignUp, C }) {
           { icon: '🔔', label: 'Integrations', sub: 'Slack, Teams, Discord, weekly digest, scheduled re-audits' },
         ].map(item => (
           <div key={item.label} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
-            <span style={{ fontSize: 20, lineHeight: 1.4, flexShrink: 0 }}>{item.icon}</span>
             <div>
               <div style={{ fontSize: 15, fontWeight: 600, color: C.ink, marginBottom: 2 }}>{item.label}</div>
               <div style={{ fontSize: 13, color: C.inkMuted }}>{item.sub}</div>
@@ -972,7 +971,6 @@ export default function Landing({ onStart, onSignUp, session }) {
               },
             ].map(item => (
               <div key={item.title} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, padding: 28 }}>
-                <div style={{ fontSize: 28, marginBottom: 18 }}>{item.icon}</div>
                 <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 12, letterSpacing: '-0.02em', color: C.ink }}>{item.title}</h3>
                 <p style={{ color: C.inkSoft, fontSize: 15, margin: 0 }}>{item.body}</p>
               </div>
