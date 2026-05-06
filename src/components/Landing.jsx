@@ -409,7 +409,7 @@ function DiagnosticLoop({ C }) {
           await sleep(22)
         }
 
-        await sleep(500)
+        await sleep(2000)
         setDisplayQ('')
         setDisplayA('')
         setPhase('typing-q')
