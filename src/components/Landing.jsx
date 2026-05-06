@@ -308,30 +308,67 @@ function FeatureList({ items, color, iconColor, icon = '✓' }) {
 // ── Diagnostic Loop ───────────────────────────────────────────────────────────
 
 function DiagnosticLoop({ C }) {
+  const [displayQ, setDisplayQ] = useState('')
+  const [displayA, setDisplayA] = useState('')
+  const [phase, setPhase] = useState('typing-q')
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [phase, setPhase] = useState('question') // 'question' | 'answer'
-  const [paused, setPaused] = useState(false)
+  const [isPaused, setIsPaused] = useState(false)
   const [expanded, setExpanded] = useState(false)
-  const intervalRef = useRef(null)
+  const pausedRef = useRef(false)
 
   const thread = diagnosticThreads[currentIndex]
 
   useEffect(() => {
-    if (paused || expanded) return
-    intervalRef.current = setInterval(() => {
-      setPhase((p) => {
-        if (p === 'question') return 'answer'
-        setCurrentIndex((i) => (i + 1) % diagnosticThreads.length)
-        return 'question'
-      })
-    }, 2200)
-    return () => clearInterval(intervalRef.current)
-  }, [paused, expanded, currentIndex])
+    let cancelled = false
+    let index = 0
+
+    const sleep = (ms) => new Promise(r => setTimeout(r, ms))
+
+    const runLoop = async () => {
+      while (!cancelled) {
+        const currentThread = diagnosticThreads[index % diagnosticThreads.length]
+
+        setCurrentIndex(index % diagnosticThreads.length)
+
+        setPhase('typing-q')
+        setDisplayA('')
+        for (let i = 0; i <= currentThread.q.length; i++) {
+          if (cancelled) return
+          while (pausedRef.current) await sleep(100)
+          setDisplayQ(currentThread.q.slice(0, i))
+          await sleep(28)
+        }
+
+        await sleep(400)
+
+        setPhase('typing-a')
+        for (let i = 0; i <= currentThread.a.length; i++) {
+          if (cancelled) return
+          while (pausedRef.current) await sleep(100)
+          setDisplayA(currentThread.a.slice(0, i))
+          await sleep(22)
+        }
+
+        await sleep(500)
+        setDisplayQ('')
+        setDisplayA('')
+        setPhase('typing-q')
+
+        await sleep(300)
+
+        index = (index + 1) % diagnosticThreads.length
+        setCurrentIndex(index)
+      }
+    }
+
+    runLoop()
+    return () => { cancelled = true }
+  }, [])
 
   return (
     <div
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => { if (!expanded) setPaused(false) }}
+      onMouseEnter={() => { pausedRef.current = true; setIsPaused(true) }}
+      onMouseLeave={() => { if (!expanded) { pausedRef.current = false; setIsPaused(false) } }}
       style={{ maxWidth: 720, margin: '0 auto', cursor: 'pointer' }}
       onClick={() => setExpanded(!expanded)}
     >
@@ -361,10 +398,10 @@ function DiagnosticLoop({ C }) {
             selfaudit · intelligence engine
           </div>
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}>
-            {!expanded && !paused && (
+            {!expanded && !isPaused && (
               <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#28CA41', animation: 'pulse 1.5s infinite' }} />
             )}
-            <span style={{ fontSize: 11, color: C.inkFaint }}>{paused ? 'PAUSED' : expanded ? 'EXPANDED' : 'LIVE'}</span>
+            <span style={{ fontSize: 11, color: C.inkFaint }}>{isPaused ? 'PAUSED' : 'LIVE'}</span>
           </div>
         </div>
 
@@ -393,10 +430,8 @@ function DiagnosticLoop({ C }) {
             fontWeight: 600,
             color: C.ink,
             lineHeight: 1.35,
-            opacity: phase === 'question' || phase === 'answer' ? 1 : 0,
-            transition: 'opacity 0.4s ease',
           }}>
-            {thread.q}
+            {displayQ}
           </div>
         </div>
 
@@ -404,8 +439,6 @@ function DiagnosticLoop({ C }) {
         <div style={{
           padding: '14px 22px 20px',
           borderTop: `1px solid ${C.border}`,
-          opacity: phase === 'answer' ? 1 : 0,
-          transition: 'opacity 0.5s ease',
           minHeight: 72,
         }}>
           <div style={{ fontSize: 13, color: C.inkMuted, marginBottom: 6 }}>Intelligence verdict</div>
@@ -415,7 +448,7 @@ function DiagnosticLoop({ C }) {
             fontWeight: 600,
             lineHeight: 1.5,
           }}>
-            {thread.a}
+            {displayA}
           </div>
         </div>
 
