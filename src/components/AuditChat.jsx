@@ -162,10 +162,42 @@ const FIRST_MESSAGE = (userInfo) => {
   return `What's going on in your business right now?`
 }
 
+const CONTACT_PROMPT_TEXT = "One thing before we go deeper — what's your name and email? I'll send you the full report when we're done. (e.g. Jane Smith, jane@company.com)"
+const CONTACT_RETRY_TEXT = "I didn't catch a valid email — just drop your name and email so I can send the report. (e.g. Jane Smith, jane@company.com)"
+const CONTACT_CONFIRM_TEXT = "Got it. Let's keep going."
+const EMAIL_REGEX = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/
+
+function isContactMetaMessage(msg) {
+  return !!(msg?.isContactPrompt || msg?.isContactReply || msg?.isContactRetry || msg?.isContactConfirmation)
+}
+
 function toApiMessages(history) {
   return history
-    .filter(m => m.role !== 'system')
+    .filter(m => m.role !== 'system' && !isContactMetaMessage(m))
     .map(m => ({ role: m.role, content: m.content }))
+}
+
+function parseContactReply(text) {
+  const emailMatch = text.match(EMAIL_REGEX)
+  if (!emailMatch) return null
+
+  const email = emailMatch[0]
+  let name = ''
+
+  if (text.includes(',')) {
+    name = text.split(',')[0].trim()
+  }
+
+  if (!name) {
+    name = text
+      .replace(email, '')
+      .replace(/[<>()[\]]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .replace(/^[,\s-]+|[,\s-]+$/g, '')
+      .trim()
+  }
+
+  return { name, email }
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
@@ -177,10 +209,22 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
   const [tierData,      setTierData]      = useState(null)   // { tier, industry, domain }
   const [scopePanel,    setScopePanel]    = useState(null)   // 'domain' | 'industry' | null
   const [memoryContext, setMemoryContext] = useState(null)
+  const [contactInfo, setContactInfo] = useState({
+    name: userInfo?.name || '',
+    email: userInfo?.email || '',
+    collected: !!(userInfo?.name && userInfo?.email) || !!userInfo?.userId,
+  })
+  const [collectingContact, setCollectingContact] = useState(false)
+  const awaitingContactRef = useRef(false)
   const bottomRef   = useRef(null)
   const inputRef    = useRef(null)
   const sessionIdRef = useRef(crypto.randomUUID())
   const posthog     = usePostHog()
+  const resolvedUserInfo = React.useMemo(() => ({
+    ...userInfo,
+    name: contactInfo.name || userInfo?.name || '',
+    email: contactInfo.email || userInfo?.email || '',
+  }), [userInfo, contactInfo])
 
   useEffect(() => {
     if (!initialized) {
@@ -259,13 +303,48 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
     if (!text || loading) return
 
     setInput('')
-    const userMsg = { role: 'user', content: text, display: text }
+    const isContactReply = awaitingContactRef.current
+    const userMsg = { role: 'user', content: text, display: text, ...(isContactReply ? { isContactReply: true } : {}) }
     const newHistory = [...conversationHistory, userMsg]
     setConversationHistory(newHistory)
 
+    if (isContactReply) {
+      const parsed = parseContactReply(text)
+
+      if (parsed?.email) {
+        const nextContactInfo = {
+          name: parsed.name || '',
+          email: parsed.email,
+          collected: true,
+        }
+
+        setContactInfo(nextContactInfo)
+        setCollectingContact(false)
+        awaitingContactRef.current = false
+        setConversationHistory([...newHistory, {
+          role: 'assistant',
+          content: CONTACT_CONFIRM_TEXT,
+          display: CONTACT_CONFIRM_TEXT,
+          isContactConfirmation: true,
+        }])
+      } else {
+        setCollectingContact(true)
+        setConversationHistory([...newHistory, {
+          role: 'assistant',
+          content: CONTACT_RETRY_TEXT,
+          display: CONTACT_RETRY_TEXT,
+          isContactRetry: true,
+          isContactPrompt: true,
+        }])
+      }
+
+      inputRef.current?.focus()
+      return
+    }
+
     setLoading(true)
 
-    const messageIndex = newHistory.filter(m => m.role === 'user').length
+    const messageIndex = newHistory.filter(m => m.role === 'user' && !m.isContactReply).length
     posthog?.capture('audit_message_sent', {
       message_index: messageIndex,
       industry: tierData?.industry ?? userInfo?.industry,
@@ -277,13 +356,13 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
       const apiMessages = toApiMessages(newHistory)
 
       const response = await sendMessage(apiMessages, {
-        industry:      tierData?.industry     ?? userInfo?.industry,
-        domain:        tierData?.domain       ?? userInfo?.domain,
-        userId:        userInfo?.userId,
-        goalMode:      userInfo?.goalMode ?? false,
-        goal:          userInfo?.goal ?? '',
-        goalTimeline:  userInfo?.goalTimeline ?? '',
-        goalBaseline:  userInfo?.goalBaseline ?? '',
+        industry:      tierData?.industry     ?? resolvedUserInfo?.industry,
+        domain:        tierData?.domain       ?? resolvedUserInfo?.domain,
+        userId:        resolvedUserInfo?.userId,
+        goalMode:      resolvedUserInfo?.goalMode ?? false,
+        goal:          resolvedUserInfo?.goal ?? '',
+        goalTimeline:  resolvedUserInfo?.goalTimeline ?? '',
+        goalBaseline:  resolvedUserInfo?.goalBaseline ?? '',
         memoryContext,
       })
       const isReady      = response.includes('[READY_FOR_REPORT]')
@@ -294,12 +373,23 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
         .trim()
 
       const assistantMsg = { role: 'assistant', content: cleanResponse, display: cleanResponse }
-      const finalHistory = [...newHistory, assistantMsg]
+      let finalHistory = [...newHistory, assistantMsg]
+      const assistantCount = finalHistory.filter(m => m.role === 'assistant' && !isContactMetaMessage(m)).length
+      if (!contactInfo.collected && !awaitingContactRef.current && assistantCount >= 2) {
+        awaitingContactRef.current = true
+        setCollectingContact(true)
+        finalHistory = [...finalHistory, {
+          role: 'assistant',
+          content: CONTACT_PROMPT_TEXT,
+          display: CONTACT_PROMPT_TEXT,
+          isContactPrompt: true,
+        }]
+      }
       setConversationHistory(finalHistory)
 
-      if (userInfo?.userId) {
+      if (resolvedUserInfo?.userId) {
         const sessionId = sessionIdRef.current
-        const userId = userInfo.userId
+        const userId = resolvedUserInfo.userId
         initSupabase().then(sb => sb.from('chats').insert([
           { user_id: userId, session_id: sessionId, role: 'user',      message: text },
           { user_id: userId, session_id: sessionId, role: 'assistant', message: cleanResponse },
@@ -308,24 +398,24 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
 
       if (isScopeLimit) setScopePanel('domain')
       if (isReady) {
-        const reportHistory = finalHistory
+        const reportHistory = finalHistory.filter(m => !isContactMetaMessage(m))
         posthog?.capture('audit_report_ready', {
           message_count: reportHistory.filter(m => m.role === 'user').length,
-          industry: tierData?.industry ?? userInfo?.industry,
-          domain: tierData?.domain ?? userInfo?.domain,
-          tier: tierData?.tier ?? userInfo?.tier,
+          industry: tierData?.industry ?? resolvedUserInfo?.industry,
+          domain: tierData?.domain ?? resolvedUserInfo?.domain,
+          tier: tierData?.tier ?? resolvedUserInfo?.tier,
         })
 
         const sessionId = sessionIdRef.current
-        if (userInfo?.userId) {
+        if (resolvedUserInfo?.userId) {
           const goalInput = reportHistory.find(m => m.role === 'user')?.content ?? ''
           initSupabase().then(sb => {
             sb.from('audit_sessions').insert({
-              user_id:    userInfo.userId,
+              user_id:    resolvedUserInfo.userId,
               session_id: sessionId,
               goal_input: goalInput,
-              industry:   tierData?.industry ?? userInfo?.industry ?? null,
-              domain:     tierData?.domain   ?? userInfo?.domain   ?? null,
+              industry:   tierData?.industry ?? resolvedUserInfo?.industry ?? null,
+              domain:     tierData?.domain   ?? resolvedUserInfo?.domain   ?? null,
             }).catch(e => console.warn('[audit_sessions] save failed:', e?.message))
 
             const msgs = reportHistory
@@ -336,7 +426,7 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
           }).catch(() => {})
         }
 
-        setTimeout(() => onReportReady(reportHistory, sessionId, null), 1200)
+        setTimeout(() => onReportReady(reportHistory, sessionId, contactInfo.collected ? contactInfo : null), 1200)
       }
     } catch (err) {
       Sentry.captureException(err)
@@ -366,7 +456,7 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
         <UpgradePanel
           type={scopePanel}
           tierData={tierData}
-          userInfo={userInfo}
+          userInfo={resolvedUserInfo}
           onDismiss={() => { setScopePanel(null); inputRef.current?.focus() }}
         />
       )}
