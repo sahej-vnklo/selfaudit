@@ -55,18 +55,23 @@ export default function App() {
     if (HASH_SCREENS.has(s)) {
       window.location.hash = s
     } else {
-      history.replaceState(null, '', window.location.pathname)
+      history.pushState({ screen: s }, '', window.location.pathname)
     }
   }, [])
 
-  // ── Respond to hash changes (back/forward, logo clicks) ───────────────────
+  // ── Respond to history changes (back/forward, logo clicks) ────────────────
   useEffect(() => {
-    const onHashChange = () => {
+    const syncScreenFromLocation = () => {
       const s = screenFromHash(!!session)
       setScreen(s ?? SCREENS.LANDING)
     }
-    window.addEventListener('hashchange', onHashChange)
-    return () => window.removeEventListener('hashchange', onHashChange)
+
+    window.addEventListener('hashchange', syncScreenFromLocation)
+    window.addEventListener('popstate', syncScreenFromLocation)
+    return () => {
+      window.removeEventListener('hashchange', syncScreenFromLocation)
+      window.removeEventListener('popstate', syncScreenFromLocation)
+    }
   }, [session])
 
   // ── Auth state listener ───────────────────────────────────────────────────
