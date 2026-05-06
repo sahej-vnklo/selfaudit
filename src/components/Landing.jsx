@@ -214,13 +214,21 @@ const freeFeatures = [
 
 const typewriterStatements = [
   "Sales are flat but I don't know why.",
-  "We keep hiring but the team still feels broken.",
+  'I want to hit $500k revenue next quarter.',
+  'We keep hiring but the team still feels broken.',
+  'I want to scale to 3 new markets in 12 months.',
   'Revenue is growing but margins keep shrinking.',
+  'My goal is to cut operational costs by 30%.',
   'My best people are burning out.',
+  'I want to build a business I can exit in 3 years.',
   "We're busy but never making progress.",
+  'I want to double our recurring revenue this year.',
   "Customers churn after 60 days and I can't figure out why.",
+  "My goal is $1M ARR — I need to know what's blocking it.",
   "I think we need AI but I'm not sure where.",
+  'I want to be investor-ready in 6 months.',
   'Our ops are a mess and nobody owns anything.',
+  'I want to go from 10 to 50 employees without breaking culture.',
 ]
 
 // ── Sub-components ────────────────────────────────────────────────────────────
@@ -682,15 +690,16 @@ export default function Landing({ onStart, onSignUp, session }) {
       <section style={{ padding: '112px 0 100px', textAlign: 'center', background: theme === 'dark' ? 'radial-gradient(circle at top, rgba(74,127,168,0.15), transparent 34%)' : 'radial-gradient(circle at top, rgba(140,74,66,0.08), transparent 34%)' }}>
         <div style={wrap}>
           <div style={{ fontSize: 12, letterSpacing: '0.18em', textTransform: 'uppercase', color: C.accentText, fontWeight: 600, marginBottom: 24 }}>
-            Not another AI consultant. Your new business nervous system.
+            Your problems. Your goals. Your next move. One system.
           </div>
 
           <h1 style={{ fontFamily: serif, fontSize: 'clamp(38px, 5.5vw, 68px)', fontWeight: 700, lineHeight: 1.02, letterSpacing: '-0.05em', margin: '0 auto 24px', maxWidth: 860, color: C.ink }}>
-            Stop treating symptoms.<br />Find out what's actually broken.
+            Your problems, diagnosed. Your goals, reverse-engineered.<br />
+            Your blind spots, exposed. Your next move, decided.
           </h1>
 
           <p style={{ fontSize: 20, color: C.inkSoft, maxWidth: 600, margin: '0 auto 48px', lineHeight: 1.6 }}>
-            Tell us where it hurts. We'll tell you why — and what to do first.
+            One system. Root-cause diagnosis, goal gap analysis, and a real execution plan — end to end.
           </p>
 
           {/* Interactive Input Bar */}
@@ -745,7 +754,7 @@ export default function Landing({ onStart, onSignUp, session }) {
                 onMouseEnter={e => e.currentTarget.style.background = C.accentDark}
                 onMouseLeave={e => e.currentTarget.style.background = C.accent}
               >
-                Diagnose →
+                Let&apos;s go →
               </button>
             </div>
             <div style={{ marginTop: 14, fontSize: 13, color: C.inkMuted }}>
