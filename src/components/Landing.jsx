@@ -127,20 +127,20 @@ const diagnosticThreads = [
 
 const intelligencePillars = [
   {
-    title: 'Trained on the hard stuff.',
-    body: 'We ingested the playbooks of scaled businesses and studied exactly where the ones that failed went wrong. That pattern library is not available to a human consultant charging $400/hr.',
+    title: 'Built on how businesses actually fail.',
+    body: 'We studied the playbooks of scaled businesses and the exact points where failed ones went wrong. That failure library is not something a $400/hr consultant has access to.',
   },
   {
-    title: 'No conflict of interest. Ever.',
-    body: 'Most consultants are incentivised to keep you as a client. Our Intelligence Layer is incentivised to solve the problem and get you to the next stage — even if that means telling you something brutal.',
+    title: 'Incentivised to solve it. Not to extend it.',
+    body: 'Consultants stay paid by staying needed. Our system is built to close the problem and move you to the next stage — even if that means telling you something uncomfortable.',
   },
   {
-    title: 'Cross-domain systems view.',
-    body: 'Businesses fail because they apply a marketing fix to a pricing problem. We map dependencies across your entire operation. If the leak is in Finance, we don\'t look at your Ads.',
+    title: "A pricing problem won't show up in your ads. We look everywhere.",
+    body: 'Businesses fail because they apply the wrong fix to the wrong layer. We map dependencies across your full operation before we tell you where to look.',
   },
   {
-    title: 'The moat compounds over time.',
-    body: 'Every audit feeds the Intelligence Layer. The more you use it, the more precise the pattern recognition. Unlike a consultant, our system gets smarter every time you engage.',
+    title: 'Every audit makes the next one smarter.',
+    body: "Each audit feeds the intelligence layer. The more you engage, the more precisely it understands your business trajectory, weak points, and patterns — unlike any consultant you'll ever hire.",
   },
 ]
 
@@ -693,7 +693,7 @@ export default function Landing({ onStart, onSignUp, session }) {
             Your problems. Your goals. Your next move. One system.
           </div>
 
-          <h1 style={{ fontFamily: serif, fontSize: 'clamp(38px, 5.5vw, 68px)', fontWeight: 700, lineHeight: 1.02, letterSpacing: '-0.05em', margin: '0 auto 24px', maxWidth: 860, color: C.ink }}>
+          <h1 style={{ fontFamily: serif, fontSize: 'clamp(28px, 3.8vw, 52px)', fontWeight: 700, lineHeight: 1.02, letterSpacing: '-0.05em', margin: '0 auto 24px', maxWidth: 1000, color: C.ink }}>
             Your problems, diagnosed. Your goals, reverse-engineered.<br />
             Your blind spots, exposed. Your next move, decided.
           </h1>
@@ -809,7 +809,7 @@ export default function Landing({ onStart, onSignUp, session }) {
           <p style={{ textAlign: 'center', fontSize: 18, color: C.inkSoft, maxWidth: 640, margin: '0 auto 56px' }}>
             We're not "honest." We're technically superior. Here's why.
           </p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 28, maxWidth: 1040, margin: '0 auto' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20, maxWidth: 1040, margin: '0 auto' }}>
             {intelligencePillars.map(pillar => (
               <div key={pillar.title} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, padding: 28 }}>
                 <div style={{ color: C.accentText, fontSize: 20, marginBottom: 16 }}>→</div>
