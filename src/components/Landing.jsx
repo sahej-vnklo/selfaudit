@@ -726,12 +726,43 @@ export default function Landing({ onStart, onSignUp, session }) {
             Your problems. Your goals. Your next move. One system.
           </div>
 
-          <h1 style={{ fontFamily: serif, fontSize: 'clamp(28px, 3.8vw, 52px)', fontWeight: 700, lineHeight: 1.02, letterSpacing: '-0.05em', margin: '0 auto 24px', maxWidth: 1000, color: C.ink }}>
-            Your problems, diagnosed. Your goals, reverse-engineered.<br />
-            Your blind spots, exposed. Your next move, decided.
+          <h1 style={{
+            fontFamily: serif,
+            fontSize: 'clamp(42px, 5.5vw, 72px)',
+            fontWeight: 700,
+            lineHeight: 1.05,
+            letterSpacing: '-0.04em',
+            textAlign: 'center',
+            margin: '0 auto 16px',
+            color: C.ink,
+          }}>
+            Your problems, diagnosed.<br />
+            Your goals, reverse-engineered.
           </h1>
 
-          <p style={{ fontSize: 20, color: C.inkSoft, maxWidth: 600, margin: '0 auto 48px', lineHeight: 1.6 }}>
+          <p style={{
+            fontFamily: serif,
+            fontSize: 'clamp(22px, 3vw, 36px)',
+            fontWeight: 400,
+            lineHeight: 1.2,
+            letterSpacing: '-0.02em',
+            textAlign: 'center',
+            margin: '0 auto 14px',
+            color: C.inkSoft,
+            maxWidth: 860,
+          }}>
+            Your blind spots, exposed. Your next move, decided.
+          </p>
+
+          <p style={{
+            fontSize: 16,
+            color: C.inkMuted,
+            maxWidth: 580,
+            margin: '0 auto 48px',
+            lineHeight: 1.6,
+            textAlign: 'center',
+            fontWeight: 400,
+          }}>
             One system. Root-cause diagnosis, goal gap analysis, and a real execution plan — end to end.
           </p>
 
