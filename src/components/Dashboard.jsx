@@ -2,34 +2,140 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { initSupabase } from '../lib/supabase.js'
 import IntelligenceBrief from './IntelligenceBrief.jsx'
 
+const THEMES = {
+  dark: {
+    bg: '#0F1520',
+    surface: '#141D2B',
+    surface2: '#111827',
+    surface3: '#1A2535',
+    panel: '#141D2B',
+    panelAlt: '#111827',
+    border: '#1E2D42',
+    border2: '#243247',
+    text: '#E8E2D8',
+    textSecondary: '#B8B0A4',
+    textMuted: '#7A8FA8',
+    textFaint: '#4A6080',
+    accent: '#4A7FA8',
+    accentLight: '#1A2535',
+    accentText: '#8FBAD8',
+    red: '#C05050',
+    redBg: '#1A0A0A',
+    redText: '#C05050',
+    amber: '#8C6A30',
+    amberBg: '#1A1508',
+    amberText: '#C9A040',
+    green: '#4A9E6B',
+    greenBg: '#0A1A10',
+    greenText: '#4A9E6B',
+    blue: '#5B7FA6',
+    violet: '#7A6AAE',
+    sand: '#A67A5B',
+    white: '#F5F0E8',
+    overlay: 'rgba(3,7,16,0.6)',
+    overlaySoft: 'rgba(0,0,0,0.35)',
+  },
+  light: {
+    bg: '#F5F0E8',
+    surface: '#EDE6DC',
+    surface2: '#E8DFD3',
+    surface3: '#E2D8CC',
+    panel: '#EDE6DC',
+    panelAlt: '#E8DFD3',
+    border: '#C4B4A4',
+    border2: '#BAA898',
+    text: '#1A1410',
+    textSecondary: '#5C4840',
+    textMuted: '#6B5040',
+    textFaint: '#8A6A58',
+    accent: '#8C4A42',
+    accentLight: '#F0E4E0',
+    accentText: '#7A3C36',
+    red: '#B85C5C',
+    redBg: '#F5E8E8',
+    redText: '#8C2A2A',
+    amber: '#8C6A30',
+    amberBg: '#F5F0E0',
+    amberText: '#7A5A10',
+    green: '#4A9E6B',
+    greenBg: '#E8F5EE',
+    greenText: '#1A6B3A',
+    blue: '#5B7FA6',
+    violet: '#7A6AAE',
+    sand: '#A67A5B',
+    white: '#FFFFFF',
+    overlay: 'rgba(26,20,16,0.22)',
+    overlaySoft: 'rgba(58,34,18,0.12)',
+  },
+}
+
 const G = {
-  black: '#0A0A0A',
-  surface: '#111111',
-  surface2: '#161616',
-  surface3: '#1C1C1C',
-  panel: '#141414',
-  panelAlt: '#171717',
-  border: '#222222',
-  border2: '#2A2A2A',
-  text: '#E8E4DC',
-  textSecondary: '#888888',
-  textMuted: '#666666',
-  textFaint: '#444444',
-  accent: '#6B5CE7',
-  accentLight: '#1A1630',
-  accentText: '#9D8FF0',
-  red: '#9E3030',
-  redBg: '#1A0A0A',
-  redText: '#C05050',
-  amber: '#8A6A1A',
-  amberBg: '#1A1508',
-  amberText: '#C9A040',
-  green: '#2D6B45',
-  greenBg: '#0A1A10',
-  greenText: '#4A9E6B',
-  blue: '#5B7FA6',
-  violet: '#7A5BA6',
-  sand: '#A67A5B',
+  black: 'var(--bg)',
+  surface: 'var(--surface)',
+  surface2: 'var(--surface2)',
+  surface3: 'var(--surface3)',
+  panel: 'var(--panel)',
+  panelAlt: 'var(--panel-alt)',
+  border: 'var(--border)',
+  border2: 'var(--border2)',
+  text: 'var(--text)',
+  textSecondary: 'var(--text-secondary)',
+  textMuted: 'var(--text-muted)',
+  textFaint: 'var(--text-faint)',
+  accent: 'var(--accent)',
+  accentLight: 'var(--accent-light)',
+  accentText: 'var(--accent-text)',
+  red: 'var(--red)',
+  redBg: 'var(--red-bg)',
+  redText: 'var(--red-text)',
+  amber: 'var(--amber)',
+  amberBg: 'var(--amber-bg)',
+  amberText: 'var(--amber-text)',
+  green: 'var(--green)',
+  greenBg: 'var(--green-bg)',
+  greenText: 'var(--green-text)',
+  blue: 'var(--blue)',
+  violet: 'var(--violet)',
+  sand: 'var(--sand)',
+  white: 'var(--white)',
+  overlay: 'var(--overlay)',
+  overlaySoft: 'var(--overlay-soft)',
+}
+
+function getThemeVars(theme) {
+  const C = THEMES[theme] || THEMES.dark
+  return {
+    '--bg': C.bg,
+    '--surface': C.surface,
+    '--surface2': C.surface2,
+    '--surface3': C.surface3,
+    '--panel': C.panel,
+    '--panel-alt': C.panelAlt,
+    '--border': C.border,
+    '--border2': C.border2,
+    '--text': C.text,
+    '--text-secondary': C.textSecondary,
+    '--text-muted': C.textMuted,
+    '--text-faint': C.textFaint,
+    '--accent': C.accent,
+    '--accent-light': C.accentLight,
+    '--accent-text': C.accentText,
+    '--red': C.red,
+    '--red-bg': C.redBg,
+    '--red-text': C.redText,
+    '--amber': C.amber,
+    '--amber-bg': C.amberBg,
+    '--amber-text': C.amberText,
+    '--green': C.green,
+    '--green-bg': C.greenBg,
+    '--green-text': C.greenText,
+    '--blue': C.blue,
+    '--violet': C.violet,
+    '--sand': C.sand,
+    '--white': C.white,
+    '--overlay': C.overlay,
+    '--overlay-soft': C.overlaySoft,
+  }
 }
 
 const DOMAIN_MAP = {
@@ -57,11 +163,11 @@ const DOMAIN_MAP = {
 }
 
 const TIER_BADGE = {
-  essential: { bg: '#1A1630', color: '#9D8FF0', label: 'Essential' },
-  business: { bg: '#141D28', color: '#8EB8E3', label: 'Business' },
-  portfolio: { bg: '#241C35', color: '#D2B6FF', label: 'Portfolio' },
-  free: { bg: '#1A1630', color: '#9D8FF0', label: 'Essential' },
-  paid: { bg: '#141D28', color: '#8EB8E3', label: 'Business' },
+  essential: { bg: 'var(--accent-light)', color: 'var(--accent-text)', label: 'Essential' },
+  business: { bg: 'var(--surface3)', color: 'var(--blue)', label: 'Business' },
+  portfolio: { bg: 'var(--surface3)', color: 'var(--violet)', label: 'Portfolio' },
+  free: { bg: 'var(--accent-light)', color: 'var(--accent-text)', label: 'Essential' },
+  paid: { bg: 'var(--surface3)', color: 'var(--blue)', label: 'Business' },
 }
 
 const TIERS = [
@@ -182,6 +288,8 @@ function extractGoalState(profile, reports) {
 }
 
 export default function Dashboard({ user, onStartAudit, onSignOut }) {
+  const theme = localStorage.getItem('sa-theme') || 'dark'
+  const themeVars = getThemeVars(theme)
   const [profile, setProfile] = useState(null)
   const [reports, setReports] = useState([])
   const [reportsLoading, setReportsLoading] = useState(true)
@@ -337,7 +445,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
   }
 
   return (
-    <div style={styles.shell}>
+    <div style={{ ...themeVars, ...styles.shell }}>
       {goalModal && (
         <GoalCaptureModal onClose={() => setGoalModal(false)} onStart={startGoalAudit} />
       )}
@@ -606,7 +714,7 @@ function BusinessHealthPanel({ latestDomains }) {
           <div style={styles.healthHeader}>
             <div style={styles.donutWrap}>
               <svg width="64" height="64" viewBox="0 0 64 64">
-                <circle cx="32" cy="32" r={radius} fill="none" stroke="#1E1E1E" strokeWidth="5" />
+                <circle cx="32" cy="32" r={radius} fill="none" stroke={G.border} strokeWidth="5" />
                 <circle
                   cx="32"
                   cy="32"
@@ -654,7 +762,7 @@ function GoalPanel({ goalState }) {
   const progress = typeof goalState.progress === 'number' ? Math.max(0, Math.min(100, goalState.progress)) : 0
   return (
     <PanelCard title="active goal">
-      <div style={{ fontSize: 14, color: '#C8C4BC', lineHeight: 1.5 }}>{goalState.goal}</div>
+      <div style={{ fontSize: 14, color: G.textSecondary, lineHeight: 1.5 }}>{goalState.goal}</div>
       <div style={styles.goalTrack}>
         <div style={{ ...styles.goalFill, width: `${progress}%` }} />
       </div>
@@ -671,7 +779,7 @@ function ScopePanel({ tier, industry, domain, context }) {
   const pills = tier === 'business' ? businessDomains.slice(0, 5) : domain ? [domain] : []
   return (
     <PanelCard title="scope">
-      <div style={{ fontSize: 14, color: '#C8C4BC' }}>
+      <div style={{ fontSize: 14, color: G.textSecondary }}>
         {industry ? (tier === 'essential' && domain ? `${industry} / ${domain}` : industry) : 'No scope saved yet'}
       </div>
       {typeof context === 'string' && context.trim() && (
@@ -1086,7 +1194,7 @@ function OpenIssuesTracker({ report, domains }) {
 function issueStatusStyle(status) {
   if (status === 'resolved') return { background: G.greenBg, color: G.greenText }
   if (status === 'in_progress') return { background: G.amberBg, color: G.amberText }
-  return { background: '#2A1010', color: G.redText }
+  return { background: G.redBg, color: G.redText }
 }
 
 function AuditHistoryRow({ report }) {
@@ -1621,7 +1729,7 @@ const styles = {
     borderRadius: 10,
     border: 'none',
     background: 'transparent',
-    color: '#555555',
+    color: G.textSecondary,
     display: 'grid',
     placeItems: 'center',
     cursor: 'pointer',
@@ -1679,7 +1787,7 @@ const styles = {
   },
   breadcrumb: {
     fontSize: 12,
-    color: '#333333',
+    color: G.textMuted,
     whiteSpace: 'nowrap',
   },
   topbarActions: {
@@ -1699,7 +1807,7 @@ const styles = {
   },
   primaryButton: {
     background: G.accent,
-    color: '#fff',
+    color: G.white,
     borderRadius: 6,
     padding: '5px 14px',
     fontSize: 12,
@@ -1707,7 +1815,7 @@ const styles = {
     cursor: 'pointer',
   },
   main: {
-    background: '#0F0F0F',
+    background: G.black,
     flex: 1,
     overflowY: 'auto',
     padding: 20,
@@ -1737,7 +1845,7 @@ const styles = {
   },
   alertBar: {
     background: G.amberBg,
-    border: '0.5px solid #3D2E0A',
+    border: `0.5px solid ${G.amber}`,
     borderRadius: 8,
     padding: '10px 14px',
     display: 'flex',
@@ -1781,7 +1889,7 @@ const styles = {
   },
   kpiCard: {
     background: G.panel,
-    border: '0.5px solid #1E1E1E',
+    border: `0.5px solid ${G.border}`,
     borderRadius: 8,
     padding: 14,
     minWidth: 0,
@@ -1873,7 +1981,7 @@ const styles = {
   },
   issueTitle: {
     fontSize: 13,
-    color: '#C8C4BC',
+    color: G.textSecondary,
   },
   issueSub: {
     fontSize: 11,
@@ -1962,7 +2070,7 @@ const styles = {
   domainBarTrack: {
     flex: 1,
     height: 3,
-    background: '#1E1E1E',
+    background: G.border,
     borderRadius: 999,
     overflow: 'hidden',
   },
@@ -1979,7 +2087,7 @@ const styles = {
   goalTrack: {
     marginTop: 14,
     height: 4,
-    background: '#1E1E1E',
+    background: G.border,
     borderRadius: 999,
     overflow: 'hidden',
   },
@@ -2036,7 +2144,7 @@ const styles = {
   ctaButton: {
     width: '100%',
     background: G.accent,
-    color: '#fff',
+    color: G.white,
     border: 'none',
     borderRadius: 8,
     padding: '10px 12px',
@@ -2057,7 +2165,7 @@ const styles = {
   },
   emptyReportsBtn: {
     background: G.accent,
-    color: '#fff',
+    color: G.white,
     border: 'none',
     borderRadius: 8,
     padding: '9px 16px',
@@ -2213,7 +2321,7 @@ const styles = {
     top: -11,
     left: 16,
     background: G.accent,
-    color: '#fff',
+    color: G.white,
     borderRadius: 999,
     padding: '3px 10px',
     fontSize: 10,
@@ -2284,7 +2392,7 @@ const styles = {
   },
   tierUpgradeBtn: {
     background: G.accent,
-    color: '#fff',
+    color: G.white,
     border: 'none',
     borderRadius: 8,
     padding: '10px 12px',
@@ -2331,7 +2439,7 @@ const styles = {
   },
   devTierButtonActive: {
     background: G.accent,
-    color: '#fff',
+    color: G.white,
     borderColor: G.accent,
   },
 }
@@ -2406,7 +2514,7 @@ const account = {
   overlay: {
     position: 'fixed',
     inset: 0,
-    background: 'rgba(0,0,0,0.55)',
+    background: G.overlay,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -2419,7 +2527,7 @@ const account = {
     border: `0.5px solid ${G.border}`,
     borderRadius: 14,
     padding: '26px 24px 22px',
-    boxShadow: '0 24px 60px rgba(0,0,0,0.35)',
+    boxShadow: `0 24px 60px ${G.overlaySoft}`,
   },
   modalTitle: {
     fontSize: 16,
@@ -2450,7 +2558,7 @@ const account = {
   modalDelete: {
     background: G.red,
     border: 'none',
-    color: '#fff',
+    color: G.white,
     borderRadius: 8,
     padding: '8px 14px',
     fontSize: 12,
@@ -2463,7 +2571,7 @@ const gm = {
     position: 'fixed',
     inset: 0,
     zIndex: 300,
-    background: 'rgba(0,0,0,0.6)',
+    background: G.overlay,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -2477,7 +2585,7 @@ const gm = {
     width: '100%',
     maxWidth: 480,
     position: 'relative',
-    boxShadow: '0 24px 60px rgba(0,0,0,0.4)',
+    boxShadow: `0 24px 60px ${G.overlaySoft}`,
     maxHeight: '90vh',
     overflowY: 'auto',
   },
@@ -2557,7 +2665,7 @@ const gm = {
     width: '100%',
     padding: 13,
     background: G.accent,
-    color: '#fff',
+    color: G.white,
     fontSize: 14,
     borderRadius: 8,
     border: 'none',

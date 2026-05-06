@@ -1,29 +1,84 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { initSupabase } from '../lib/supabase.js'
 
+const THEMES = {
+  dark: {
+    bg: '#0F1520',
+    surface: '#141D2B',
+    surface2: '#111827',
+    surface3: '#1A2535',
+    border: '#1E2D42',
+    border2: '#243247',
+    text: '#E8E2D8',
+    textSecondary: '#B8B0A4',
+    textMuted: '#7A8FA8',
+    textFaint: '#4A6080',
+    accent: '#4A7FA8',
+    accentLight: '#1A2535',
+    accentText: '#8FBAD8',
+    buttonText: '#E8E2D8',
+    red: '#C05050',
+    redText: '#C05050',
+  },
+  light: {
+    bg: '#F5F0E8',
+    surface: '#EDE6DC',
+    surface2: '#E8DFD3',
+    surface3: '#E2D8CC',
+    border: '#C4B4A4',
+    border2: '#BAA898',
+    text: '#1A1410',
+    textSecondary: '#5C4840',
+    textMuted: '#6B5040',
+    textFaint: '#8A6A58',
+    accent: '#8C4A42',
+    accentLight: '#F0E4E0',
+    accentText: '#7A3C36',
+    buttonText: '#F5F0E8',
+    red: '#8C2A2A',
+    redText: '#8C2A2A',
+  },
+}
+
 const COLORS = {
-  black: '#0A0A0A',
-  surface: '#111111',
-  surface2: '#161616',
-  surface3: '#1C1C1C',
-  border: '#222222',
-  border2: '#2A2A2A',
-  text: '#E8E4DC',
-  textSecondary: '#888888',
-  textMuted: '#666666',
-  textFaint: '#444444',
-  accent: '#6B5CE7',
-  accentLight: '#1A1630',
-  accentText: '#9D8FF0',
-  green: '#2D6B45',
-  greenBg: '#0A1A10',
-  greenText: '#4A9E6B',
-  amber: '#8A6A1A',
-  amberBg: '#1A1508',
-  amberText: '#C9A040',
-  red: '#9E3030',
-  redBg: '#1A0A0A',
-  redText: '#C05050',
+  black: 'var(--bg)',
+  surface: 'var(--surface)',
+  surface2: 'var(--surface2)',
+  surface3: 'var(--surface3)',
+  border: 'var(--border)',
+  border2: 'var(--border2)',
+  text: 'var(--text)',
+  textSecondary: 'var(--text-secondary)',
+  textMuted: 'var(--text-muted)',
+  textFaint: 'var(--text-faint)',
+  accent: 'var(--accent)',
+  accentLight: 'var(--accent-light)',
+  accentText: 'var(--accent-text)',
+  buttonText: 'var(--button-text)',
+  red: 'var(--red)',
+  redText: 'var(--red-text)',
+}
+
+function getThemeVars(theme) {
+  const C = THEMES[theme] || THEMES.dark
+  return {
+    '--bg': C.bg,
+    '--surface': C.surface,
+    '--surface2': C.surface2,
+    '--surface3': C.surface3,
+    '--border': C.border,
+    '--border2': C.border2,
+    '--text': C.text,
+    '--text-secondary': C.textSecondary,
+    '--text-muted': C.textMuted,
+    '--text-faint': C.textFaint,
+    '--accent': C.accent,
+    '--accent-light': C.accentLight,
+    '--accent-text': C.accentText,
+    '--button-text': C.buttonText,
+    '--red': C.red,
+    '--red-text': C.redText,
+  }
 }
 
 const FUNDING_STAGES = ['Bootstrapped', 'Pre-seed', 'Seed', 'Series A', 'Series B+', 'Public']
@@ -151,6 +206,8 @@ function calculateCompletion(financialFields, financial, operational, context, d
 }
 
 export default function IntelligenceBrief({ user, profile, onProfileChange }) {
+  const theme = localStorage.getItem('sa-theme') || 'dark'
+  const themeVars = getThemeVars(theme)
   const [financial, setFinancial] = useState({})
   const [operational, setOperational] = useState({})
   const [context, setContext] = useState({})
@@ -438,7 +495,7 @@ export default function IntelligenceBrief({ user, profile, onProfileChange }) {
   const sectionTitle = `${completionPct}% complete`
 
   return (
-    <div style={{ maxWidth: 980 }}>
+    <div style={{ ...themeVars, maxWidth: 980 }}>
       <div style={pageHeader}>
         <div>
           <h1 style={pageTitle}>Intelligence brief</h1>
@@ -699,7 +756,7 @@ const fieldLabel = {
 
 const saveBtn = {
   background: COLORS.accent,
-  color: '#fff',
+  color: COLORS.buttonText,
   border: 'none',
   borderRadius: 8,
   padding: '9px 14px',

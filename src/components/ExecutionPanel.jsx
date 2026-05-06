@@ -1,5 +1,57 @@
 import React, { useState, useEffect } from 'react'
 
+const THEMES = {
+  dark: {
+    bg: '#0F1520',
+    surface: '#141D2B',
+    border: '#1E2D42',
+    text: '#E8E2D8',
+    textSoft: '#B8B0A4',
+    textMuted: '#7A8FA8',
+    accent: '#4A7FA8',
+    accentSoft: '#1A2535',
+    inputBg: '#111827',
+    error: '#C05050',
+    buttonText: '#E8E2D8',
+    buttonTextSoft: '#B8D0E2',
+    buttonBorder: '#8FBAD8',
+  },
+  light: {
+    bg: '#F5F0E8',
+    surface: '#EDE6DC',
+    border: '#C4B4A4',
+    text: '#1A1410',
+    textSoft: '#5C4840',
+    textMuted: '#6B5040',
+    accent: '#8C4A42',
+    accentSoft: '#F0E4E0',
+    inputBg: '#E8DFD3',
+    error: '#8C2A2A',
+    buttonText: '#F5F0E8',
+    buttonTextSoft: '#F5F0E8',
+    buttonBorder: '#F5F0E8',
+  },
+}
+
+function getThemeVars(theme) {
+  const C = THEMES[theme] || THEMES.dark
+  return {
+    '--bg': C.bg,
+    '--surface': C.surface,
+    '--border': C.border,
+    '--text': C.text,
+    '--text-soft': C.textSoft,
+    '--text-muted': C.textMuted,
+    '--accent': C.accent,
+    '--accent-soft': C.accentSoft,
+    '--input-bg': C.inputBg,
+    '--error': C.error,
+    '--button-text': C.buttonText,
+    '--button-text-soft': C.buttonTextSoft,
+    '--button-border': C.buttonBorder,
+  }
+}
+
 const ARTIFACT_TYPES = ['ACTION_PLAN', 'SOP', 'PROCESS_CHANGE', 'PRICING_MODEL', 'HIRING_BRIEF', 'EMAIL']
 
 const ARTIFACT_LABELS = {
@@ -12,6 +64,8 @@ const ARTIFACT_LABELS = {
 }
 
 export default function ExecutionPanel({ report, userInfo }) {
+  const theme = localStorage.getItem('sa-theme') || 'dark'
+  const themeVars = getThemeVars(theme)
   const [selectedType, setSelectedType]   = useState(null)
   const [generating, setGenerating]       = useState(false)
   const [currentArtifact, setCurrentArtifact] = useState(null)
@@ -86,7 +140,7 @@ export default function ExecutionPanel({ report, userInfo }) {
   const isGenerateDisabled = !selectedType || generating
 
   return (
-    <div style={ep.wrapper} data-pdf-hide>
+    <div style={{ ...themeVars, ...ep.wrapper }} data-pdf-hide>
       <div style={ep.header}>
         <h2 style={ep.sectionTitle}>Turn This Into Action</h2>
         <p style={ep.subtitle}>Generate ready-to-use outputs from your audit findings.</p>
@@ -218,16 +272,16 @@ const ep = {
   wrapper: {
     marginTop: '2.5rem',
     paddingTop: '2.5rem',
-    borderTop: '0.5px solid var(--gray-200)',
+    borderTop: '0.5px solid var(--border)',
     marginBottom: '2.5rem',
   },
   header: { marginBottom: '1.25rem' },
   sectionTitle: {
     fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.8px',
-    color: 'var(--gray-400)', marginBottom: '0.375rem', fontWeight: 500,
+    color: 'var(--text-muted)', marginBottom: '0.375rem', fontWeight: 500,
   },
   subtitle: {
-    fontSize: 14, color: 'var(--gray-600)', lineHeight: 1.6, margin: 0,
+    fontSize: 14, color: 'var(--text-soft)', lineHeight: 1.6, margin: 0,
   },
   pillRow: {
     display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: '1rem',
@@ -237,26 +291,26 @@ const ep = {
     padding: '6px 14px',
     borderRadius: 'var(--radius-pill)',
     fontSize: 13, fontWeight: 500, cursor: 'pointer',
-    border: '1.5px solid var(--gray-200)',
-    background: 'var(--white)', color: 'var(--gray-700)',
+    border: '1.5px solid var(--border)',
+    background: 'var(--surface)', color: 'var(--text-soft)',
     transition: 'border-color 0.1s, background 0.1s, color 0.1s',
     lineHeight: 1,
   },
   pillSelected: {
-    border: '1.5px solid var(--black)',
-    background: 'var(--black)', color: 'white',
+    border: '1.5px solid var(--accent)',
+    background: 'var(--accent)', color: 'var(--button-text)',
   },
   pillDisabled: {
     cursor: 'not-allowed', opacity: 0.55,
   },
   recBadge: {
     fontSize: 10, fontWeight: 600,
-    color: 'var(--green)',
+    color: 'var(--accent)',
     letterSpacing: '0.2px',
   },
   generateBtn: {
     display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-    background: 'var(--green)', color: 'white',
+    background: 'var(--accent)', color: 'var(--button-text)',
     fontSize: 14, fontWeight: 500,
     padding: '10px 20px',
     borderRadius: 'var(--radius)', border: 'none',
@@ -264,90 +318,90 @@ const ep = {
     transition: 'background 0.15s',
   },
   generateBtnDisabled: {
-    background: 'var(--gray-200)', color: 'var(--gray-400)', cursor: 'not-allowed',
+    background: 'var(--border)', color: 'var(--text-muted)', cursor: 'not-allowed',
   },
   generateBtnInner: {
     display: 'inline-flex', alignItems: 'center', gap: 8,
   },
   spinner: {
     width: 14, height: 14, borderRadius: '50%',
-    border: '2px solid rgba(255,255,255,0.3)',
-    borderTopColor: 'white',
+    border: '2px solid var(--button-border)',
+    borderTopColor: 'var(--button-text)',
     animation: 'spin 0.8s linear infinite',
     display: 'inline-block',
   },
   errorMsg: {
-    fontSize: 12, color: '#A32D2D', marginTop: 8,
+    fontSize: 12, color: 'var(--error)', marginTop: 8,
   },
   artifactPanel: {
     marginTop: '1.25rem',
-    border: '1.5px solid var(--green)',
+    border: '1.5px solid var(--accent)',
     borderRadius: 'var(--radius)',
     overflow: 'hidden',
   },
   artifactHeader: {
-    background: 'var(--green)',
+    background: 'var(--accent)',
     padding: '14px 18px',
     display: 'flex', alignItems: 'flex-start',
     justifyContent: 'space-between', gap: 12,
   },
   artifactHeaderCompact: {
-    background: 'var(--green-light)',
-    borderBottom: '0.5px solid var(--green-mid)',
+    background: 'var(--accent-soft)',
+    borderBottom: '0.5px solid var(--border)',
   },
   artifactTitleGroup: { flex: 1, minWidth: 0 },
   artifactTitle: {
-    fontSize: 14, fontWeight: 500, color: 'white',
+    fontSize: 14, fontWeight: 500, color: 'var(--button-text)',
     lineHeight: 1.4, marginBottom: 4,
   },
   artifactSummary: {
-    fontSize: 12, color: 'rgba(255,255,255,0.8)',
+    fontSize: 12, color: 'var(--button-text-soft)',
     fontStyle: 'italic', lineHeight: 1.5,
   },
   copyAllBtn: {
     flexShrink: 0,
-    fontSize: 11, fontWeight: 500, color: 'white',
-    background: 'rgba(255,255,255,0.15)',
-    border: '1px solid rgba(255,255,255,0.3)',
+    fontSize: 11, fontWeight: 500, color: 'var(--button-text)',
+    background: 'var(--accent-soft)',
+    border: '1px solid var(--button-border)',
     borderRadius: 'var(--radius-sm)', padding: '5px 10px',
     cursor: 'pointer', whiteSpace: 'nowrap',
   },
   sectionCard: {
     padding: '14px 18px',
-    borderBottom: '0.5px solid var(--gray-200)',
-    background: 'var(--white)',
+    borderBottom: '0.5px solid var(--border)',
+    background: 'var(--surface)',
   },
   sectionCardLast: {
     padding: '14px 18px',
-    background: 'var(--white)',
+    background: 'var(--surface)',
   },
   sectionCardHeader: {
     display: 'flex', alignItems: 'center',
     justifyContent: 'space-between', marginBottom: 8,
   },
   sectionLabel: {
-    fontSize: 11, fontWeight: 500, color: 'var(--gray-400)',
+    fontSize: 11, fontWeight: 500, color: 'var(--text-muted)',
     textTransform: 'uppercase', letterSpacing: '0.5px',
   },
   copySectionBtn: {
-    fontSize: 11, color: 'var(--gray-500)',
+    fontSize: 11, color: 'var(--text-muted)',
     background: 'none',
-    border: '0.5px solid var(--gray-200)',
+    border: '0.5px solid var(--border)',
     borderRadius: 4, padding: '3px 8px', cursor: 'pointer',
     flexShrink: 0,
   },
   sectionContent: {
-    fontSize: 13, color: 'var(--gray-800)', lineHeight: 1.75,
+    fontSize: 13, color: 'var(--text)', lineHeight: 1.75,
     whiteSpace: 'pre-wrap', margin: 0,
   },
   pastList: {
     marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: 8,
   },
   pastCard: {
-    border: '0.5px solid var(--gray-200)',
+    border: '0.5px solid var(--border)',
     borderRadius: 'var(--radius)',
     overflow: 'hidden',
-    background: 'var(--white)',
+    background: 'var(--surface)',
   },
   pastCardHeader: {
     display: 'flex', alignItems: 'center',
@@ -359,19 +413,19 @@ const ep = {
     display: 'flex', alignItems: 'center', gap: 10, minWidth: 0,
   },
   pastTypeBadge: {
-    fontSize: 10, fontWeight: 600, color: 'var(--green)',
-    background: 'var(--green-light)',
+    fontSize: 10, fontWeight: 600, color: 'var(--accent)',
+    background: 'var(--accent-soft)',
     borderRadius: 4, padding: '2px 7px',
     letterSpacing: '0.2px', flexShrink: 0,
   },
   pastTitle: {
-    fontSize: 13, fontWeight: 500, color: 'var(--black)',
+    fontSize: 13, fontWeight: 500, color: 'var(--text)',
     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
   },
   expandIcon: {
-    fontSize: 9, color: 'var(--gray-400)', flexShrink: 0, marginLeft: 8,
+    fontSize: 9, color: 'var(--text-muted)', flexShrink: 0, marginLeft: 8,
   },
   pastExpanded: {
-    borderTop: '0.5px solid var(--gray-200)',
+    borderTop: '0.5px solid var(--border)',
   },
 }

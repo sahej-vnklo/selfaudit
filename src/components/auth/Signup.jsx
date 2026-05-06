@@ -12,6 +12,67 @@ import {
 import { initSupabase } from '../../lib/supabase.js'
 import { usePostHog } from '@posthog/react'
 
+const THEMES = {
+  dark: {
+    bg: '#0F1520',
+    surface: '#141D2B',
+    surface2: '#111827',
+    border: '#1E2D42',
+    text: '#E8E2D8',
+    textSoft: '#B8B0A4',
+    textMuted: '#7A8FA8',
+    accent: '#4A7FA8',
+    accentSoft: '#1A2535',
+    accentText: '#8FBAD8',
+    inputBg: '#111827',
+    error: '#C05050',
+    danger: '#C05050',
+    placeholder: '#7A8FA8',
+    buttonText: '#E8E2D8',
+    focusRing: 'rgba(74,127,168,0.18)',
+  },
+  light: {
+    bg: '#F5F0E8',
+    surface: '#EDE6DC',
+    surface2: '#E8DFD3',
+    border: '#C4B4A4',
+    text: '#1A1410',
+    textSoft: '#5C4840',
+    textMuted: '#6B5040',
+    accent: '#8C4A42',
+    accentSoft: '#F0E4E0',
+    accentText: '#7A3C36',
+    inputBg: '#E8DFD3',
+    error: '#8C2A2A',
+    danger: '#8C2A2A',
+    placeholder: '#8A6A58',
+    buttonText: '#F5F0E8',
+    focusRing: 'rgba(140,74,66,0.14)',
+  },
+}
+
+function getThemeVars(theme) {
+  const C = THEMES[theme] || THEMES.dark
+  return {
+    '--bg': C.bg,
+    '--surface': C.surface,
+    '--surface2': C.surface2,
+    '--border': C.border,
+    '--text': C.text,
+    '--text-soft': C.textSoft,
+    '--text-muted': C.textMuted,
+    '--accent': C.accent,
+    '--accent-soft': C.accentSoft,
+    '--accent-text': C.accentText,
+    '--input-bg': C.inputBg,
+    '--error': C.error,
+    '--danger': C.danger,
+    '--placeholder': C.placeholder,
+    '--button-text': C.buttonText,
+    '--focus-ring': C.focusRing,
+  }
+}
+
 const stripePromise = fetch('/api/config')
   .then(r => r.ok ? r.json() : Promise.reject())
   .then(cfg => loadStripe(cfg.stripePublishableKey || import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || ''))
@@ -28,6 +89,20 @@ export default function Signup({ onSuccess, onLogin }) {
 function SignupForm({ onSuccess, onLogin }) {
   const stripe   = useStripe()
   const elements = useElements()
+  const theme = localStorage.getItem('sa-theme') || 'dark'
+  const themeVars = getThemeVars(theme)
+  const C = THEMES[theme] || THEMES.dark
+  const stripeStyle = {
+    style: {
+      base: {
+        fontSize: '14px',
+        fontFamily: "'DM Sans', system-ui, sans-serif",
+        color: C.text,
+        '::placeholder': { color: C.placeholder },
+      },
+      invalid: { color: C.danger },
+    },
+  }
 
   const [form, setForm] = useState({
     firstName: '', lastName: '', email: '', password: '', confirmPassword: '',
@@ -146,18 +221,18 @@ function SignupForm({ onSuccess, onLogin }) {
   // Email confirmation pending state
   if (emailSent) {
     return (
-      <div style={s.page}>
+      <div style={{ ...themeVars, ...s.page }}>
         <nav style={s.nav}>
           <div style={s.logo} onClick={() => { window.location.hash = '' }}>
-            self<span style={{ color: 'var(--green)' }}>audit</span>
+            self<span style={{ color: 'var(--accent)' }}>audit</span>
           </div>
         </nav>
         <div style={s.wrap}>
-          <div style={s.card}>
+          <div style={{ ...themeVars, ...s.card }}>
             <p style={s.eyebrow}>Almost there</p>
             <h2 style={s.title}>Check your email</h2>
-            <p style={{ fontSize: 15, color: 'var(--gray-600)', lineHeight: 1.7, marginTop: 12 }}>
-              We sent a confirmation link to <strong style={{ color: 'var(--black)' }}>{form.email}</strong>.
+            <p style={{ fontSize: 15, color: 'var(--text-soft)', lineHeight: 1.7, marginTop: 12 }}>
+              We sent a confirmation link to <strong style={{ color: 'var(--text)' }}>{form.email}</strong>.
               Click it to activate your account, then come back and log in.
             </p>
             <button style={{ ...s.btn, marginTop: 28 }} onClick={onLogin}>
@@ -170,10 +245,10 @@ function SignupForm({ onSuccess, onLogin }) {
   }
 
   return (
-    <div style={s.page}>
+    <div style={{ ...themeVars, ...s.page }}>
       <nav style={s.nav}>
         <div style={s.logo} onClick={() => window.location.hash = ''}>
-          self<span style={{ color: 'var(--green)' }}>audit</span>
+          self<span style={{ color: 'var(--accent)' }}>audit</span>
         </div>
       </nav>
 
@@ -206,7 +281,7 @@ function SignupForm({ onSuccess, onLogin }) {
 
           {/* Plan selector */}
           <div style={{ marginBottom: '1.5rem' }}>
-            <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--gray-600)', marginBottom: 10 }}>
+            <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-soft)', marginBottom: 10 }}>
               Choose plan
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -219,26 +294,26 @@ function SignupForm({ onSuccess, onLogin }) {
                     style={{
                       display: 'flex', alignItems: 'center', gap: 12,
                       padding: '12px 14px', borderRadius: 'var(--radius-sm)',
-                      border: sel ? '1.5px solid var(--green)' : '0.5px solid var(--gray-200)',
-                      background: sel ? 'var(--green-light)' : 'var(--white)',
+                      border: sel ? '1.5px solid var(--accent)' : '0.5px solid var(--border)',
+                      background: sel ? 'var(--accent-soft)' : 'var(--surface)',
                       cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s',
                     }}
                   >
                     <div style={{
                       width: 16, height: 16, borderRadius: '50%', flexShrink: 0,
-                      border: sel ? '5px solid var(--green)' : '1.5px solid var(--gray-200)',
-                      background: 'var(--white)', transition: 'all 0.15s',
+                      border: sel ? '5px solid var(--accent)' : '1.5px solid var(--border)',
+                      background: 'var(--surface)', transition: 'all 0.15s',
                     }} />
                     <div style={{ flex: 1 }}>
-                      <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--black)' }}>{p.name}</span>
+                      <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>{p.name}</span>
                       {p.popular && (
-                        <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 600, background: 'var(--green)', color: 'white', padding: '1px 7px', borderRadius: 100 }}>
+                        <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 600, background: 'var(--accent)', color: 'var(--button-text)', padding: '1px 7px', borderRadius: 100 }}>
                           Popular
                         </span>
                       )}
                     </div>
-                    <span style={{ fontSize: 14, fontWeight: 600, color: sel ? 'var(--green-dark)' : 'var(--gray-800)' }}>
-                      {p.price}<span style={{ fontSize: 12, fontWeight: 400, color: 'var(--gray-600)' }}>/mo</span>
+                    <span style={{ fontSize: 14, fontWeight: 600, color: sel ? 'var(--accent-text)' : 'var(--text)' }}>
+                      {p.price}<span style={{ fontSize: 12, fontWeight: 400, color: 'var(--text-soft)' }}>/mo</span>
                     </span>
                   </button>
                 )
@@ -248,7 +323,7 @@ function SignupForm({ onSuccess, onLogin }) {
 
           {/* Stripe card fields — always shown */}
           <div style={{ paddingBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--gray-600)', marginBottom: 2 }}>
+            <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-soft)', marginBottom: 2 }}>
               Card details
             </div>
             <StripeField label="Card number"><CardNumberElement options={stripeStyle} /></StripeField>
@@ -256,7 +331,7 @@ function SignupForm({ onSuccess, onLogin }) {
               <StripeField label="Expiry"><CardExpiryElement options={stripeStyle} /></StripeField>
               <StripeField label="CVC"><CardCvcElement options={stripeStyle} /></StripeField>
             </div>
-            <p style={{ fontSize: 11, color: 'var(--gray-400)', margin: 0 }}>Secured by Stripe. Card details never stored on our servers.</p>
+            <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: 0 }}>Secured by Stripe. Card details never stored on our servers.</p>
           </div>
 
           {globalError && <p style={s.errorMsg}>{globalError}</p>}
@@ -285,18 +360,6 @@ const SIGNUP_PLANS = [
   { key: 'portfolio', name: 'Portfolio', price: '$299' },
 ]
 
-const stripeStyle = {
-  style: {
-    base: {
-      fontSize: '14px',
-      fontFamily: "'DM Sans', system-ui, sans-serif",
-      color: '#0D0D0D',
-      '::placeholder': { color: '#B0ADA4' },
-    },
-    invalid: { color: '#E24B4A' },
-  },
-}
-
 function StripeField({ label, children }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
@@ -312,7 +375,7 @@ function Field({ label, type, value, onChange, placeholder, error, required, onE
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
       <label style={s.label}>
         {label}
-        {required && <span style={{ color: 'var(--green)', marginLeft: 3 }}>*</span>}
+        {required && <span style={{ color: 'var(--accent)', marginLeft: 3 }}>*</span>}
       </label>
       <input
         style={{ ...s.input, ...(focused ? s.inputFocused : {}), ...(error ? s.inputError : {}) }}
@@ -324,7 +387,7 @@ function Field({ label, type, value, onChange, placeholder, error, required, onE
         onBlur={() => setFocused(false)}
         onKeyDown={e => e.key === 'Enter' && onEnter?.()}
       />
-      {error && <p style={{ fontSize: 12, color: '#A32D2D', margin: 0 }}>{error}</p>}
+      {error && <p style={{ fontSize: 12, color: 'var(--error)', margin: 0 }}>{error}</p>}
     </div>
   )
 }
@@ -336,24 +399,24 @@ function friendlyError(msg) {
 }
 
 const s = {
-  page:        { minHeight: '100vh', background: 'var(--gray-100)' },
-  nav:         { display: 'flex', alignItems: 'center', padding: '1.25rem 2.5rem', background: 'var(--white)', borderBottom: '0.5px solid var(--gray-200)' },
-  logo:        { fontSize: 17, fontWeight: 500, letterSpacing: '-0.5px', cursor: 'pointer' },
+  page:        { minHeight: '100vh', background: 'var(--bg)' },
+  nav:         { display: 'flex', alignItems: 'center', padding: '1.25rem 2.5rem', background: 'var(--surface)', borderBottom: '0.5px solid var(--border)' },
+  logo:        { fontSize: 17, fontWeight: 500, letterSpacing: '-0.5px', cursor: 'pointer', color: 'var(--text)' },
   wrap:        { display: 'flex', justifyContent: 'center', padding: '4rem 1.5rem' },
-  card:        { background: 'var(--white)', borderRadius: 'var(--radius)', border: '0.5px solid var(--gray-200)', padding: '2.5rem', width: '100%', maxWidth: 420, animation: 'fadeUp 0.4s ease' },
+  card:        { background: 'var(--surface)', borderRadius: 'var(--radius)', border: '0.5px solid var(--border)', padding: '2.5rem', width: '100%', maxWidth: 420, animation: 'fadeUp 0.4s ease' },
   header:      { marginBottom: '2rem' },
-  eyebrow:     { fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--green)', marginBottom: 8 },
-  title:       { fontFamily: 'var(--serif)', fontSize: 24, fontWeight: 400, lineHeight: 1.3, marginBottom: 8 },
-  sub:         { fontSize: 14, color: 'var(--gray-600)' },
+  eyebrow:     { fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--accent)', marginBottom: 8 },
+  title:       { fontFamily: 'var(--serif)', fontSize: 24, fontWeight: 400, lineHeight: 1.3, marginBottom: 8, color: 'var(--text)' },
+  sub:         { fontSize: 14, color: 'var(--text-soft)' },
   fields:      { display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '1.5rem' },
   nameRow:     { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' },
-  label:       { fontSize: 13, fontWeight: 500, color: 'var(--gray-800)' },
-  input:       { width: '100%', padding: '10px 12px', border: '0.5px solid var(--gray-200)', borderRadius: 'var(--radius-sm)', fontSize: 14, color: 'var(--black)', background: 'var(--white)', transition: 'border-color 0.15s', boxSizing: 'border-box' },
-  inputFocused:{ borderColor: 'var(--green)', boxShadow: '0 0 0 3px rgba(29,158,117,0.1)' },
-  inputError:  { borderColor: '#E24B4A' },
-  errorMsg:    { fontSize: 13, color: '#A32D2D', marginBottom: '1rem' },
-  btn:         { width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--green)', color: 'white', fontSize: 15, fontWeight: 500, padding: '13px', borderRadius: 'var(--radius)', cursor: 'pointer', border: 'none', transition: 'background 0.15s', marginBottom: '1rem' },
-  privacy:     { fontSize: 11, color: 'var(--gray-400)', textAlign: 'center', lineHeight: 1.5, marginBottom: '1.25rem' },
-  switch:      { fontSize: 13, color: 'var(--gray-600)', textAlign: 'center' },
-  link:        { background: 'none', border: 'none', color: 'var(--green)', fontWeight: 500, cursor: 'pointer', fontSize: 13, padding: 0 },
+  label:       { fontSize: 13, fontWeight: 500, color: 'var(--text)' },
+  input:       { width: '100%', padding: '10px 12px', border: '0.5px solid var(--border)', borderRadius: 'var(--radius-sm)', fontSize: 14, color: 'var(--text)', background: 'var(--input-bg)', transition: 'border-color 0.15s', boxSizing: 'border-box' },
+  inputFocused:{ borderColor: 'var(--accent)', boxShadow: '0 0 0 3px var(--focus-ring)' },
+  inputError:  { borderColor: 'var(--danger)' },
+  errorMsg:    { fontSize: 13, color: 'var(--error)', marginBottom: '1rem' },
+  btn:         { width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--accent)', color: 'var(--button-text)', fontSize: 15, fontWeight: 500, padding: '13px', borderRadius: 'var(--radius)', cursor: 'pointer', border: 'none', transition: 'background 0.15s', marginBottom: '1rem' },
+  privacy:     { fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', lineHeight: 1.5, marginBottom: '1.25rem' },
+  switch:      { fontSize: 13, color: 'var(--text-soft)', textAlign: 'center' },
+  link:        { background: 'none', border: 'none', color: 'var(--accent)', fontWeight: 500, cursor: 'pointer', fontSize: 13, padding: 0 },
 }

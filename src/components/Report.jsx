@@ -5,7 +5,116 @@ import { generateReport, sendReportEmail } from '../lib/audit.js'
 import { usePostHog } from '@posthog/react'
 import ExecutionPanel from './ExecutionPanel.jsx'
 
+const THEMES = {
+  dark: {
+    bg: '#0F1520',
+    surface: '#141D2B',
+    surface2: '#111827',
+    border: '#1E2D42',
+    text: '#E8E2D8',
+    textSoft: '#B8B0A4',
+    textMuted: '#7A8FA8',
+    accent: '#4A7FA8',
+    accentSoft: '#1A2535',
+    accentText: '#8FBAD8',
+    buttonText: '#E8E2D8',
+    success: '#4A9E6B',
+    successBg: '#0A1A10',
+    successText: '#8FD1A7',
+    warning: '#8C6A30',
+    warningBg: '#1A1508',
+    warningText: '#C9A040',
+    danger: '#C05050',
+    dangerBg: '#1A0A0A',
+    dangerText: '#D88787',
+  },
+  light: {
+    bg: '#F5F0E8',
+    surface: '#EDE6DC',
+    surface2: '#E8DFD3',
+    border: '#C4B4A4',
+    text: '#1A1410',
+    textSoft: '#5C4840',
+    textMuted: '#6B5040',
+    accent: '#8C4A42',
+    accentSoft: '#F0E4E0',
+    accentText: '#7A3C36',
+    buttonText: '#F5F0E8',
+    success: '#4A9E6B',
+    successBg: '#E8F5EE',
+    successText: '#1A6B3A',
+    warning: '#8C6A30',
+    warningBg: '#F5F0E0',
+    warningText: '#7A5A10',
+    danger: '#B85C5C',
+    dangerBg: '#F5E8E8',
+    dangerText: '#8C2A2A',
+  },
+}
+
+function getThemeTokens(theme) {
+  return THEMES[theme] || THEMES.dark
+}
+
+function getThemeVars(theme) {
+  const C = getThemeTokens(theme)
+  return {
+    '--bg': C.bg,
+    '--surface': C.surface,
+    '--surface2': C.surface2,
+    '--border': C.border,
+    '--text': C.text,
+    '--text-soft': C.textSoft,
+    '--text-muted': C.textMuted,
+    '--accent': C.accent,
+    '--accent-soft': C.accentSoft,
+    '--accent-text': C.accentText,
+    '--button-text': C.buttonText,
+    '--success': C.success,
+    '--success-bg': C.successBg,
+    '--success-text': C.successText,
+    '--warning': C.warning,
+    '--warning-bg': C.warningBg,
+    '--warning-text': C.warningText,
+    '--danger': C.danger,
+    '--danger-bg': C.dangerBg,
+    '--danger-text': C.dangerText,
+    '--white': C.surface,
+    '--black': C.text,
+    '--gray-50': C.surface2,
+    '--gray-100': C.surface2,
+    '--gray-200': C.border,
+    '--gray-400': C.textMuted,
+    '--gray-500': C.textMuted,
+    '--gray-600': C.textSoft,
+    '--gray-700': C.textSoft,
+    '--gray-800': C.text,
+    '--green': C.accent,
+    '--green-light': C.accentSoft,
+    '--green-mid': C.border,
+    '--green-dark': C.accentText,
+  }
+}
+
+function getStatusStyles(theme) {
+  const C = getThemeTokens(theme)
+  return {
+    color: {
+      strong: C.successText,
+      needs_work: C.warningText,
+      critical: C.dangerText,
+    },
+    bg: {
+      strong: C.successBg,
+      needs_work: C.warningBg,
+      critical: C.dangerBg,
+    },
+  }
+}
+
 export default function Report({ userInfo, conversationHistory, sessionId }) {
+  const theme = localStorage.getItem('sa-theme') || 'dark'
+  const themeVars = getThemeVars(theme)
   const [report, setReport] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -101,7 +210,7 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
     if (downloadState !== 'idle') return
     setDownloadState('downloading')
     try {
-      const html = buildReportHtml(report, userInfo)
+      const html = buildReportHtml(report, userInfo, theme)
       const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
@@ -133,12 +242,11 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
     }
   }
 
-  if (loading) return <LoadingScreen />
-  if (error) return <ErrorScreen error={error} />
+  if (loading) return <LoadingScreen theme={theme} />
+  if (error) return <ErrorScreen error={error} theme={theme} />
 
   const mode = report.conversation_mode ?? 'DIAGNOSTIC'
-  const statusColor = { strong: '#1D9E75', needs_work: '#BA7517', critical: '#A32D2D' }
-  const statusBg = { strong: '#E1F5EE', needs_work: '#FAEEDA', critical: '#FCEBEB' }
+  const { color: statusColor, bg: statusBg } = getStatusStyles(theme)
   const statusLabel = { strong: 'Strong', needs_work: 'Needs Work', critical: 'Critical' }
 
   const headerSubtext = mode === 'DIAGNOSTIC'
@@ -152,10 +260,10 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
     : 'Share this report with Vnklo and we\'ll reach out to talk through next steps. One click.'
 
   return (
-    <div style={styles.page}>
+    <div style={{ ...themeVars, ...styles.page }}>
       <nav style={styles.nav}>
         <div style={{...styles.logo, cursor: 'pointer'}} onClick={() => window.location.reload()}>
-          self<span style={{ color: 'var(--green)' }}>audit</span>
+          self<span style={{ color: 'var(--accent)' }}>audit</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <button
@@ -368,7 +476,7 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
                 </div>
               )}
               {shareState === 'sent' && (
-                <div style={{ ...styles.shareStatus, color: 'var(--green)' }}>
+                <div style={{ ...styles.shareStatus, color: 'var(--accent-text)' }}>
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                     <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.2"/>
                     <path d="M5 8l2.5 2.5L11 5.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -377,7 +485,7 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
                 </div>
               )}
               {shareState === 'error' && (
-                <div style={{ ...styles.shareStatus, color: '#A32D2D', flexDirection: 'column', gap: 6 }}>
+                <div style={{ ...styles.shareStatus, color: 'var(--danger-text)', flexDirection: 'column', gap: 6 }}>
                   <span>Failed to send.</span>
                   <button style={styles.retryBtn} onClick={() => { setShareState('idle') }}>Try again</button>
                 </div>
@@ -387,7 +495,7 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
         </div>
 
         <p style={styles.disclaimer}>
-          This report is for your eyes only and is displayed on-screen. Built by <a href="https://vnklo.com" target="_blank" rel="noopener" style={{ color: 'var(--green)' }}>Vnklo</a>.
+          This report is for your eyes only and is displayed on-screen. Built by <a href="https://vnklo.com" target="_blank" rel="noopener" style={{ color: 'var(--accent)' }}>Vnklo</a>.
         </p>
 
       </div>
@@ -395,16 +503,18 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
   )
 }
 
-function buildReportHtml(report, userInfo) {
+function buildReportHtml(report, userInfo, theme) {
   const mode = report.conversation_mode ?? 'DIAGNOSTIC'
   const date = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+  const C = getThemeTokens(theme)
+  const statusStyles = getStatusStyles(theme)
 
   const e = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
   const sec = (title, body) => `<div class="section"><div class="section-title">${e(title)}</div>${body}</div>`
 
-  const statusColor = { strong: '#1D9E75', needs_work: '#BA7517', critical: '#A32D2D' }
-  const statusBg    = { strong: '#E1F5EE', needs_work: '#FAEEDA', critical: '#FCEBEB' }
+  const statusColor = statusStyles.color
+  const statusBg = statusStyles.bg
   const statusLabel = { strong: 'Strong', needs_work: 'Needs Work', critical: 'Critical' }
 
   const headerSub = mode === 'DIAGNOSTIC' ? report.overall_verdict
@@ -412,7 +522,7 @@ function buildReportHtml(report, userInfo) {
     : report.acknowledgment
 
   let body = `
-    <div style="margin-bottom:40px;padding-bottom:28px;border-bottom:0.5px solid #e0e0e0;">
+    <div style="margin-bottom:40px;padding-bottom:28px;border-bottom:0.5px solid ${C.border};">
       <span class="label">Your Audit Report</span>
       <h1>${e(report.headline)}</h1>
       ${headerSub ? `<p class="verdict">${e(headerSub)}</p>` : ''}
@@ -425,8 +535,8 @@ function buildReportHtml(report, userInfo) {
       const feasText = report.timeline_feasibility || gap.realistic_timeline || ''
       const fl = feasText.toLowerCase()
       const fe = fl.startsWith('unrealistic') ? 'unrealistic' : fl.startsWith('tight') ? 'tight' : 'feasible'
-      const fc = fe === 'unrealistic' ? '#A32D2D' : fe === 'tight' ? '#BA7517' : '#1D9E75'
-      const fb = fe === 'unrealistic' ? '#FCEBEB' : fe === 'tight' ? '#FAEEDA' : '#E1F5EE'
+      const fc = fe === 'unrealistic' ? C.dangerText : fe === 'tight' ? C.warningText : C.successText
+      const fb = fe === 'unrealistic' ? C.dangerBg : fe === 'tight' ? C.warningBg : C.successBg
       const caps = Array.isArray(report.missing_capabilities) ? report.missing_capabilities.filter(Boolean) : []
       const rankCells = report.ranking_logic ? [
         { label: 'Impact', value: report.ranking_logic.impact },
@@ -464,10 +574,10 @@ function buildReportHtml(report, userInfo) {
 
     if (report.domains?.length > 0) {
       body += sec('Domain Findings', `<div class="domain-grid">${report.domains.map(d => `
-        <div class="domain-card" style="border-top:3px solid ${statusColor[d.status] ?? '#888'}">
+        <div class="domain-card" style="border-top:3px solid ${statusColor[d.status] ?? C.textMuted}">
           <div class="domain-top">
             <span class="domain-name">${e(d.name)}</span>
-            <span class="badge" style="background:${statusBg[d.status] ?? '#eee'};color:${statusColor[d.status] ?? '#888'}">${statusLabel[d.status] ?? d.status}</span>
+            <span class="badge" style="background:${statusBg[d.status] ?? C.surface2};color:${statusColor[d.status] ?? C.textMuted}">${statusLabel[d.status] ?? d.status}</span>
           </div>
           <p class="finding">${e(d.finding)}</p>
           <p class="act">→ ${e(d.action)}</p>
@@ -515,83 +625,85 @@ function buildReportHtml(report, userInfo) {
 <title>SelfAudit Report — ${e(report.headline)}</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fff;color:#111;font-size:14px;line-height:1.6}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:${C.bg};color:${C.text};font-size:14px;line-height:1.6}
 .wrap{max-width:680px;margin:0 auto;padding:48px 32px 80px}
-.label{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:#1D9E75;margin-bottom:12px;display:block}
-h1{font-size:28px;font-weight:400;line-height:1.2;margin-bottom:14px;color:#111}
-.verdict{font-size:15px;color:#555;line-height:1.7;margin-bottom:14px}
-.meta{font-size:12px;color:#888}
+.label{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:${C.accent};margin-bottom:12px;display:block}
+h1{font-size:28px;font-weight:400;line-height:1.2;margin-bottom:14px;color:${C.text}}
+.verdict{font-size:15px;color:${C.textSoft};line-height:1.7;margin-bottom:14px}
+.meta{font-size:12px;color:${C.textMuted}}
 .section{margin-bottom:36px}
-.section-title{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:#888;margin-bottom:14px;font-weight:500}
+.section-title{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:${C.textMuted};margin-bottom:14px;font-weight:500}
 .domain-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-.domain-card{border:.5px solid #e0e0e0;border-radius:8px;padding:14px 16px}
+.domain-card{border:.5px solid ${C.border};border-radius:8px;padding:14px 16px;background:${C.surface}}
 .domain-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
 .domain-name{font-size:13px;font-weight:500}
 .badge{font-size:11px;padding:2px 9px;border-radius:100px;font-weight:500}
-.finding{font-size:13px;color:#555;line-height:1.6;margin-bottom:6px}
-.act{font-size:12px;color:#333;font-style:italic}
-.fix-item{background:#FAEEDA;border-radius:8px;padding:14px 16px;border:.5px solid #FAC775;margin-bottom:10px}
-.fix-issue{font-size:13px;font-weight:500;color:#854F0B;margin-bottom:4px}
-.fix-sol{font-size:13px;color:#333;line-height:1.6}
-.ai-item{background:#E1F5EE;border-radius:8px;padding:14px 16px;border:.5px solid #9FE1CB;margin-bottom:10px}
-.ai-area{font-size:13px;font-weight:500;color:#0F6E56;margin-bottom:4px}
-.ai-why{font-size:13px;color:#333;line-height:1.6}
+.finding{font-size:13px;color:${C.textSoft};line-height:1.6;margin-bottom:6px}
+.act{font-size:12px;color:${C.text};font-style:italic}
+.fix-item{background:${C.warningBg};border-radius:8px;padding:14px 16px;border:.5px solid ${C.warning};margin-bottom:10px}
+.fix-issue{font-size:13px;font-weight:500;color:${C.warningText};margin-bottom:4px}
+.fix-sol{font-size:13px;color:${C.text};line-height:1.6}
+.ai-item{background:${C.accentSoft};border-radius:8px;padding:14px 16px;border:.5px solid ${C.border};margin-bottom:10px}
+.ai-area{font-size:13px;font-weight:500;color:${C.accentText};margin-bottom:4px}
+.ai-why{font-size:13px;color:${C.text};line-height:1.6}
 .actions-list{display:flex;flex-direction:column;gap:10px}
 .action-row{display:flex;gap:12px;align-items:flex-start}
-.action-num{width:22px;height:22px;border-radius:50%;background:#111;color:#fff;font-size:11px;font-weight:500;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:1px}
-.action-text{font-size:14px;color:#333;line-height:1.6}
-.truth{background:#111;border-radius:8px;padding:24px}
-.truth p{font-size:15px;color:#fff;line-height:1.7}
+.action-num{width:22px;height:22px;border-radius:50%;background:${C.surface2};color:${C.text};font-size:11px;font-weight:500;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.action-text{font-size:14px;color:${C.text};line-height:1.6}
+.truth{background:${C.surface2};border-radius:8px;padding:24px}
+.truth p{font-size:15px;color:${C.text};line-height:1.7}
 .plan-list{display:flex;flex-direction:column;gap:12px}
 .plan-item{display:flex;gap:14px;align-items:flex-start}
-.plan-step{width:26px;height:26px;border-radius:50%;background:#111;color:#fff;font-size:12px;font-weight:500;flex-shrink:0;display:flex;align-items:center;justify-content:center}
-.plan-action{font-size:14px;font-weight:500;color:#111;margin-bottom:3px}
-.plan-why{font-size:13px;color:#555;line-height:1.6}
-.prose{font-size:14px;color:#555;line-height:1.75}
-.key-msg{background:#111;border-radius:8px;padding:20px 24px}
-.key-msg p{font-size:16px;color:#fff;line-height:1.6}
-.script{background:#f9f9f9;border-left:3px solid #1D9E75;border-radius:0 8px 8px 0;padding:20px 24px}
-.script p{font-size:14px;color:#333;line-height:1.8;white-space:pre-wrap}
-.gg-panel{border:1.5px solid #1D9E75;border-radius:8px;overflow:hidden;margin-bottom:36px}
-.gg-eyebrow{background:#1D9E75;color:#fff;font-size:11px;font-weight:500;letter-spacing:.7px;text-transform:uppercase;padding:8px 18px}
-.gg-goal{background:#E1F5EE;padding:14px 18px;display:flex;gap:10px;align-items:baseline;border-bottom:.5px solid #9FE1CB}
-.gg-goal-label{font-size:11px;font-weight:500;color:#0F6E56;text-transform:uppercase;flex-shrink:0}
-.gg-goal-text{font-size:15px;font-weight:500;color:#0F6E56}
-.gg-row{display:grid;grid-template-columns:1fr 1fr;border-bottom:.5px solid #e0e0e0}
-.gg-half{padding:14px 18px;border-right:.5px solid #e0e0e0}
-.gg-block{padding:14px 18px;border-bottom:.5px solid #e0e0e0}
-.gg-label{font-size:11px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
-.gg-text{font-size:13px;color:#555;line-height:1.65}
+.plan-step{width:26px;height:26px;border-radius:50%;background:${C.surface2};color:${C.text};font-size:12px;font-weight:500;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.plan-action{font-size:14px;font-weight:500;color:${C.text};margin-bottom:3px}
+.plan-why{font-size:13px;color:${C.textSoft};line-height:1.6}
+.prose{font-size:14px;color:${C.textSoft};line-height:1.75}
+.key-msg{background:${C.surface2};border-radius:8px;padding:20px 24px}
+.key-msg p{font-size:16px;color:${C.text};line-height:1.6}
+.script{background:${C.surface2};border-left:3px solid ${C.accent};border-radius:0 8px 8px 0;padding:20px 24px}
+.script p{font-size:14px;color:${C.text};line-height:1.8;white-space:pre-wrap}
+.gg-panel{border:1.5px solid ${C.accent};border-radius:8px;overflow:hidden;margin-bottom:36px}
+.gg-eyebrow{background:${C.accent};color:${C.buttonText};font-size:11px;font-weight:500;letter-spacing:.7px;text-transform:uppercase;padding:8px 18px}
+.gg-goal{background:${C.accentSoft};padding:14px 18px;display:flex;gap:10px;align-items:baseline;border-bottom:.5px solid ${C.border}}
+.gg-goal-label{font-size:11px;font-weight:500;color:${C.accentText};text-transform:uppercase;flex-shrink:0}
+.gg-goal-text{font-size:15px;font-weight:500;color:${C.accentText}}
+.gg-row{display:grid;grid-template-columns:1fr 1fr;border-bottom:.5px solid ${C.border}}
+.gg-half{padding:14px 18px;border-right:.5px solid ${C.border}}
+.gg-block{padding:14px 18px;border-bottom:.5px solid ${C.border}}
+.gg-label{font-size:11px;font-weight:500;color:${C.textMuted};text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.gg-text{font-size:13px;color:${C.textSoft};line-height:1.65}
 .move-list{display:flex;flex-direction:column;gap:8px}
 .move{display:flex;gap:10px;align-items:flex-start}
-.move-num{width:20px;height:20px;border-radius:50%;background:#111;color:#fff;font-size:10px;font-weight:500;flex-shrink:0;display:flex;align-items:center;justify-content:center}
-.move-text{font-size:13px;color:#333;line-height:1.6}
+.move-num{width:20px;height:20px;border-radius:50%;background:${C.surface2};color:${C.text};font-size:10px;font-weight:500;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.move-text{font-size:13px;color:${C.text};line-height:1.6}
 .cap-list{display:flex;flex-direction:column;gap:8px}
 .cap-item{display:flex;gap:10px;align-items:flex-start}
-.cap-dot{width:6px;height:6px;border-radius:50%;background:#111;flex-shrink:0;margin-top:5px}
-.cap-text{font-size:13px;color:#333;line-height:1.6}
+.cap-dot{width:6px;height:6px;border-radius:50%;background:${C.surface2};flex-shrink:0;margin-top:5px}
+.cap-text{font-size:13px;color:${C.text};line-height:1.6}
 .rank-row{display:flex;gap:6px;flex-wrap:wrap}
-.rank-cell{flex:1 1 90px;padding:8px 12px;background:#f3f3f3;border-radius:6px}
-.rank-label{font-size:10px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
-.rank-val{font-size:12px;font-weight:500;color:#111}
+.rank-cell{flex:1 1 90px;padding:8px 12px;background:${C.surface2};border-radius:6px}
+.rank-label{font-size:10px;font-weight:500;color:${C.textMuted};text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.rank-val{font-size:12px;font-weight:500;color:${C.text}}
 .tl-block{padding:14px 18px}
 .tl-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}
-.tl-badge{font-size:10px;font-weight:700;color:#fff;padding:2px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.6px}
-.tl-lbl{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.5px;color:#888}
-footer{font-size:11px;color:#aaa;text-align:center;margin-top:48px}
+.tl-badge{font-size:10px;font-weight:700;color:${C.buttonText};padding:2px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.6px}
+.tl-lbl{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.5px;color:${C.textMuted}}
+footer{font-size:11px;color:${C.textMuted};text-align:center;margin-top:48px}
 @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 </style>
 </head>
 <body>
 <div class="wrap">
 ${body}
-<footer>SelfAudit report · Built by <a href="https://vnklo.com" style="color:#1D9E75">Vnklo</a></footer>
+<footer>SelfAudit report · Built by <a href="https://vnklo.com" style="color:${C.accent}">Vnklo</a></footer>
 </div>
 </body>
 </html>`
 }
 
 function GoalGapPanel({ gap, missingCapabilities, rankingLogic, timelineFeasibility, confidenceLevel }) {
+  const theme = localStorage.getItem('sa-theme') || 'dark'
+  const C = getThemeTokens(theme)
   // Resolve timeline status — prefer structured field, fall back to text parsing
   const feasibilityEnum = (() => {
     if (timelineFeasibility) {
@@ -605,10 +717,10 @@ function GoalGapPanel({ gap, missingCapabilities, rankingLogic, timelineFeasibil
     if (t.includes('tight') || t.includes('challenging') || t.includes('aggressive') || t.includes('stretch'))          return 'tight'
     return 'feasible'
   })()
-  const feasColor = feasibilityEnum === 'unrealistic' ? '#A32D2D' : feasibilityEnum === 'tight' ? '#BA7517' : '#1D9E75'
-  const feasBg    = feasibilityEnum === 'unrealistic' ? '#FCEBEB' : feasibilityEnum === 'tight' ? '#FAEEDA' : '#E1F5EE'
+  const feasColor = feasibilityEnum === 'unrealistic' ? C.dangerText : feasibilityEnum === 'tight' ? C.warningText : C.successText
+  const feasBg    = feasibilityEnum === 'unrealistic' ? C.dangerBg : feasibilityEnum === 'tight' ? C.warningBg : C.successBg
   const feasText  = timelineFeasibility || gap.realistic_timeline
-  const feasBodyColor = feasColor === '#1D9E75' ? '#0F6E56' : feasColor === '#BA7517' ? '#854F0B' : '#7A1A1A'
+  const feasBodyColor = feasColor
 
   // Confidence
   const confEnum = (() => {
@@ -619,7 +731,7 @@ function GoalGapPanel({ gap, missingCapabilities, rankingLogic, timelineFeasibil
     if (l.startsWith('low'))    return 'low'
     return null
   })()
-  const confColor   = confEnum === 'high' ? '#1D9E75' : confEnum === 'medium' ? '#BA7517' : '#A32D2D'
+  const confColor   = confEnum === 'high' ? C.successText : confEnum === 'medium' ? C.warningText : C.dangerText
   const confDetail  = confidenceLevel ? confidenceLevel.replace(/^(high|medium|low)\s*[—–\-]\s*/i, '') : ''
 
   // Parse fastest path into numbered items
@@ -733,11 +845,12 @@ function Section({ title, children }) {
   )
 }
 
-function LoadingScreen() {
+function LoadingScreen({ theme }) {
+  const themeVars = getThemeVars(theme)
   return (
-    <div style={styles.loadingPage}>
+    <div style={{ ...themeVars, ...styles.loadingPage }}>
       <nav style={styles.nav}>
-        <div style={styles.logo}>self<span style={{ color: 'var(--green)' }}>audit</span></div>
+        <div style={styles.logo}>self<span style={{ color: 'var(--accent)' }}>audit</span></div>
       </nav>
       <div style={styles.loadingBody}>
         <div style={styles.spinner} />
@@ -748,25 +861,26 @@ function LoadingScreen() {
   )
 }
 
-function ErrorScreen({ error }) {
+function ErrorScreen({ error, theme }) {
+  const themeVars = getThemeVars(theme)
   return (
-    <div style={styles.loadingPage}>
+    <div style={{ ...themeVars, ...styles.loadingPage }}>
       <nav style={styles.nav}>
-        <div style={styles.logo}>self<span style={{ color: 'var(--green)' }}>audit</span></div>
+        <div style={styles.logo}>self<span style={{ color: 'var(--accent)' }}>audit</span></div>
       </nav>
       <div style={styles.loadingBody}>
-        <p style={{ color: '#A32D2D', fontSize: 14 }}>Failed to generate report: {error}</p>
+        <p style={{ color: 'var(--danger-text)', fontSize: 14 }}>Failed to generate report: {error}</p>
       </div>
     </div>
   )
 }
 
 const styles = {
-  page: { minHeight: '100vh', background: 'var(--white)' },
+  page: { minHeight: '100vh', background: 'var(--bg)' },
   nav: {
     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
     padding: '1rem 2rem', borderBottom: '0.5px solid var(--gray-200)',
-    background: 'var(--white)', position: 'sticky', top: 0, zIndex: 10
+    background: 'var(--surface)', position: 'sticky', top: 0, zIndex: 10
   },
   logo: { fontSize: 16, fontWeight: 500, letterSpacing: '-0.4px' },
   navRight: { fontSize: 12, color: 'var(--gray-400)' },
@@ -783,11 +897,11 @@ const styles = {
   },
   reportLabel: {
     fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.8px',
-    color: 'var(--green)', display: 'block', marginBottom: 12
+    color: 'var(--accent)', display: 'block', marginBottom: 12
   },
   headline: {
     fontFamily: 'var(--serif)', fontSize: 'clamp(24px, 4vw, 32px)',
-    fontWeight: 400, lineHeight: 1.2, marginBottom: 16, color: 'var(--black)'
+    fontWeight: 400, lineHeight: 1.2, marginBottom: 16, color: 'var(--text)'
   },
   verdict: { fontSize: 15, color: 'var(--gray-600)', lineHeight: 1.7, marginBottom: 16 },
   metaRow: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
@@ -804,20 +918,20 @@ const styles = {
     gap: 12
   },
   domainCard: {
-    background: 'var(--white)', border: '0.5px solid var(--gray-200)',
+    background: 'var(--surface)', border: '0.5px solid var(--gray-200)',
     borderRadius: 'var(--radius)', padding: '1rem 1.125rem'
   },
   domainTop: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
-  domainName: { fontSize: 13, fontWeight: 500, color: 'var(--black)' },
+  domainName: { fontSize: 13, fontWeight: 500, color: 'var(--text)' },
   badge: { fontSize: 11, padding: '2px 9px', borderRadius: 'var(--radius-pill)', fontWeight: 500 },
   domainFinding: { fontSize: 13, color: 'var(--gray-600)', lineHeight: 1.6, marginBottom: 8 },
   domainAction: { fontSize: 12, color: 'var(--gray-800)', fontStyle: 'italic', lineHeight: 1.5 },
   fixList: { display: 'flex', flexDirection: 'column', gap: 10 },
   fixItem: {
-    background: '#FAEEDA', borderRadius: 'var(--radius)',
-    padding: '1rem 1.125rem', border: '0.5px solid #FAC775'
+    background: 'var(--warning-bg)', borderRadius: 'var(--radius)',
+    padding: '1rem 1.125rem', border: '0.5px solid var(--warning)'
   },
-  fixIssue: { fontSize: 13, fontWeight: 500, color: '#854F0B', marginBottom: 4 },
+  fixIssue: { fontSize: 13, fontWeight: 500, color: 'var(--warning-text)', marginBottom: 4 },
   fixSolution: { fontSize: 13, color: 'var(--gray-800)', lineHeight: 1.6 },
   aiList: { display: 'flex', flexDirection: 'column', gap: 10 },
   aiItem: {
@@ -830,20 +944,20 @@ const styles = {
   planItem: { display: 'flex', gap: 14, alignItems: 'flex-start' },
   planStep: {
     width: 26, height: 26, borderRadius: '50%',
-    background: 'var(--black)', color: 'white',
+    background: 'var(--surface2)', color: 'var(--text)',
     fontSize: 12, fontWeight: 500, flexShrink: 0,
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     marginTop: 1
   },
-  planAction: { fontSize: 14, fontWeight: 500, color: 'var(--black)', marginBottom: 3 },
+  planAction: { fontSize: 14, fontWeight: 500, color: 'var(--text)', marginBottom: 3 },
   planWhy: { fontSize: 13, color: 'var(--gray-600)', lineHeight: 1.6 },
   prose: { fontSize: 14, color: 'var(--gray-700)', lineHeight: 1.75 },
   keyMessage: {
-    background: 'var(--black)', borderRadius: 'var(--radius)', padding: '1.25rem 1.5rem'
+    background: 'var(--surface2)', borderRadius: 'var(--radius)', padding: '1.25rem 1.5rem'
   },
-  keyMessageText: { fontSize: 16, color: 'white', lineHeight: 1.6, margin: 0, fontFamily: 'var(--serif)', fontWeight: 400 },
+  keyMessageText: { fontSize: 16, color: 'var(--text)', lineHeight: 1.6, margin: 0, fontFamily: 'var(--serif)', fontWeight: 400 },
   scriptBlock: {
-    background: 'var(--gray-50, #F9F9F9)', borderLeft: '3px solid var(--green)',
+    background: 'var(--gray-50)', borderLeft: '3px solid var(--green)',
     borderRadius: '0 var(--radius) var(--radius) 0', padding: '1.25rem 1.5rem'
   },
   scriptText: { fontSize: 14, color: 'var(--gray-800)', lineHeight: 1.8, margin: 0, whiteSpace: 'pre-wrap' },
@@ -851,33 +965,33 @@ const styles = {
   action: { display: 'flex', gap: 12, alignItems: 'flex-start' },
   actionNum: {
     width: 22, height: 22, borderRadius: '50%',
-    background: 'var(--black)', color: 'white',
+    background: 'var(--surface2)', color: 'var(--text)',
     fontSize: 11, fontWeight: 500, flexShrink: 0,
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     marginTop: 1
   },
   actionText: { fontSize: 14, color: 'var(--gray-800)', lineHeight: 1.6 },
   truth: {
-    background: 'var(--black)', borderRadius: 'var(--radius)',
+    background: 'var(--surface2)', borderRadius: 'var(--radius)',
     padding: '1.5rem'
   },
-  truthText: { fontSize: 15, color: 'white', lineHeight: 1.7, margin: 0 },
+  truthText: { fontSize: 15, color: 'var(--text)', lineHeight: 1.7, margin: 0 },
   anonPrompt: {
     marginTop: '3rem', marginBottom: '1rem',
     borderLeft: '3px solid var(--green)',
-    background: 'var(--gray-50, #F9F9F9)',
+    background: 'var(--gray-50)',
     borderRadius: '0 var(--radius) var(--radius) 0',
     padding: '1.25rem 1.5rem',
     display: 'flex', gap: '1.5rem',
     alignItems: 'center', flexWrap: 'wrap',
   },
   anonLeft: { flex: 1, minWidth: 200 },
-  anonTitle: { fontSize: 14, fontWeight: 600, color: 'var(--black)', marginBottom: 6 },
+  anonTitle: { fontSize: 14, fontWeight: 600, color: 'var(--text)', marginBottom: 6 },
   anonBody: { fontSize: 13, color: 'var(--gray-600)', lineHeight: 1.6 },
   anonRight: { flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8 },
   anonBtn: {
     display: 'inline-flex', alignItems: 'center',
-    background: 'var(--green)', color: 'white',
+    background: 'var(--green)', color: 'var(--button-text)',
     fontSize: 13, fontWeight: 500, padding: '9px 18px',
     borderRadius: 'var(--radius)', border: 'none', cursor: 'pointer',
     whiteSpace: 'nowrap',
@@ -893,12 +1007,12 @@ const styles = {
     alignItems: 'center', flexWrap: 'wrap'
   },
   shareLeft: { flex: 1, minWidth: 200 },
-  shareTitle: { fontSize: 15, fontWeight: 500, marginBottom: 6, color: 'var(--black)' },
+  shareTitle: { fontSize: 15, fontWeight: 500, marginBottom: 6, color: 'var(--text)' },
   shareBody: { fontSize: 13, color: 'var(--gray-600)', lineHeight: 1.6 },
   shareRight: { flexShrink: 0 },
   shareBtn: {
     display: 'inline-flex', alignItems: 'center',
-    background: 'var(--green)', color: 'white',
+    background: 'var(--green)', color: 'var(--button-text)',
     fontSize: 14, fontWeight: 500, padding: '11px 20px',
     borderRadius: 'var(--radius)', border: 'none', cursor: 'pointer',
     transition: 'background 0.15s', whiteSpace: 'nowrap'
@@ -918,12 +1032,12 @@ const styles = {
     animation: 'spin 0.8s linear infinite'
   },
   disclaimer:  { fontSize: 11, color: 'var(--gray-400)', textAlign: 'center', lineHeight: 1.6 },
-  loadingPage: { minHeight: '100vh', background: 'var(--white)' },
+  loadingPage: { minHeight: '100vh', background: 'var(--bg)' },
   loadingBody: {
     display: 'flex', flexDirection: 'column', alignItems: 'center',
     justifyContent: 'center', minHeight: '70vh', gap: 16
   },
-  loadingTitle: { fontSize: 18, fontFamily: 'var(--serif)', fontWeight: 400, color: 'var(--black)' },
+  loadingTitle: { fontSize: 18, fontFamily: 'var(--serif)', fontWeight: 400, color: 'var(--text)' },
   loadingSubtitle: { fontSize: 13, color: 'var(--gray-400)' }
 }
 
@@ -933,7 +1047,7 @@ const gg = {
     border: '1.5px solid var(--green)', overflow: 'hidden',
   },
   eyebrow: {
-    background: 'var(--green)', color: 'white',
+    background: 'var(--green)', color: 'var(--button-text)',
     fontSize: 11, fontWeight: 500, letterSpacing: '0.7px', textTransform: 'uppercase',
     padding: '8px 18px',
   },
@@ -972,7 +1086,7 @@ const gg = {
   move: { display: 'flex', gap: 10, alignItems: 'flex-start' },
   moveNum: {
     width: 20, height: 20, borderRadius: '50%',
-    background: 'var(--black)', color: 'white',
+    background: 'var(--surface2)', color: 'var(--text)',
     fontSize: 10, fontWeight: 500, flexShrink: 0,
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     marginTop: 1,
@@ -986,7 +1100,7 @@ const gg = {
     display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6,
   },
   feasBadge: {
-    fontSize: 10, fontWeight: 700, color: 'white',
+    fontSize: 10, fontWeight: 700, color: 'var(--button-text)',
     padding: '2px 8px', borderRadius: 4,
     textTransform: 'uppercase', letterSpacing: '0.6px', flexShrink: 0,
   },
@@ -1002,7 +1116,7 @@ const gg = {
   capItem: { display: 'flex', gap: 10, alignItems: 'flex-start' },
   capDot: {
     width: 6, height: 6, borderRadius: '50%',
-    background: 'var(--black)', flexShrink: 0, marginTop: 5,
+    background: 'var(--surface2)', flexShrink: 0, marginTop: 5,
   },
   capText: { fontSize: 13, color: 'var(--gray-800)', lineHeight: 1.6 },
   rankBlock: {
@@ -1018,7 +1132,7 @@ const gg = {
     fontSize: 10, fontWeight: 500, color: 'var(--gray-400)',
     textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 3,
   },
-  rankValue: { fontSize: 12, fontWeight: 500, color: 'var(--black)' },
+  rankValue: { fontSize: 12, fontWeight: 500, color: 'var(--text)' },
   confRow: { display: 'flex', alignItems: 'center', gap: 6, marginTop: 10, flexWrap: 'wrap' },
   confDot: { width: 7, height: 7, borderRadius: '50%', flexShrink: 0 },
   confLabel: { fontSize: 12, fontWeight: 500 },

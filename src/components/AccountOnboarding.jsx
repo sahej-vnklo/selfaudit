@@ -2,6 +2,55 @@ import React, { useState, useEffect } from 'react'
 import * as Sentry from '@sentry/react'
 import { usePostHog } from '@posthog/react'
 
+const THEMES = {
+  dark: {
+    bg: '#0F1520',
+    surface: '#141D2B',
+    surface2: '#111827',
+    border: '#1E2D42',
+    text: '#E8E2D8',
+    textSoft: '#B8B0A4',
+    textMuted: '#7A8FA8',
+    accent: '#4A7FA8',
+    accentSoft: '#1A2535',
+    accentText: '#8FBAD8',
+    inputBg: '#111827',
+    buttonText: '#E8E2D8',
+  },
+  light: {
+    bg: '#F5F0E8',
+    surface: '#EDE6DC',
+    surface2: '#E8DFD3',
+    border: '#C4B4A4',
+    text: '#1A1410',
+    textSoft: '#5C4840',
+    textMuted: '#6B5040',
+    accent: '#8C4A42',
+    accentSoft: '#F0E4E0',
+    accentText: '#7A3C36',
+    inputBg: '#E8DFD3',
+    buttonText: '#F5F0E8',
+  },
+}
+
+function getThemeVars(theme) {
+  const C = THEMES[theme] || THEMES.dark
+  return {
+    '--bg': C.bg,
+    '--surface': C.surface,
+    '--surface2': C.surface2,
+    '--border': C.border,
+    '--text': C.text,
+    '--text-soft': C.textSoft,
+    '--text-muted': C.textMuted,
+    '--accent': C.accent,
+    '--accent-soft': C.accentSoft,
+    '--accent-text': C.accentText,
+    '--input-bg': C.inputBg,
+    '--button-text': C.buttonText,
+  }
+}
+
 // ─── Data ────────────────────────────────────────────────────────────────────
 
 const DOMAINS = [
@@ -77,7 +126,7 @@ function StepBar({ current }) {
       {[1, 2, 3].map(n => (
         <div key={n} style={{
           flex: 1, height: 3, borderRadius: 3,
-          background: n <= current ? 'var(--green)' : 'var(--gray-200)',
+          background: n <= current ? 'var(--accent)' : 'var(--border)',
           transition: 'background 0.3s ease',
         }} />
       ))}
@@ -94,8 +143,8 @@ function Step2({ onSelect, loadingTier }) {
       <h2 style={s.title}>What industry?</h2>
       <p style={s.sub}>Helps the audit use the right benchmarks.</p>
       {loadingTier ? (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 36, color: 'var(--gray-400)', fontSize: 14 }}>
-          <div style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid var(--gray-200)', borderTopColor: 'var(--green)', animation: 'spin 0.8s linear infinite', flexShrink: 0 }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 36, color: 'var(--text-muted)', fontSize: 14 }}>
+          <div style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid var(--border)', borderTopColor: 'var(--accent)', animation: 'spin 0.8s linear infinite', flexShrink: 0 }} />
           Loading your plan details…
         </div>
       ) : (
@@ -110,7 +159,7 @@ function Step2({ onSelect, loadingTier }) {
               onClick={() => onSelect(opt)}
               onMouseEnter={e => Object.assign(e.currentTarget.style, s.pillHover)}
               onMouseLeave={e => Object.assign(e.currentTarget.style, {
-                background: 'var(--gray-100)', color: 'var(--gray-800)', borderColor: 'var(--gray-200)',
+                background: 'var(--surface)', color: 'var(--text)', borderColor: 'var(--border)',
               })}
             >
               {opt}
@@ -232,6 +281,8 @@ export default function AccountOnboarding({ user, onComplete, onBack }) {
   const [tierLoaded,      setTierLoaded]      = useState(false)
   const [pendingCategory, setPendingCategory] = useState(null)
   const posthog = usePostHog()
+  const theme = localStorage.getItem('sa-theme') || 'dark'
+  const themeVars = getThemeVars(theme)
 
   // Domains available for Step 3 — filtered by selected industry
   const availableDomains = React.useMemo(
@@ -339,12 +390,12 @@ export default function AccountOnboarding({ user, onComplete, onBack }) {
   }
 
   return (
-    <div style={s.page}>
+    <div style={{ ...themeVars, ...s.page }}>
       <nav style={s.nav}>
         <div style={s.logo}>
-          self<span style={{ color: 'var(--green)' }}>audit</span>
+          self<span style={{ color: 'var(--accent)' }}>audit</span>
         </div>
-        <div style={{ fontSize: 13, color: 'var(--gray-600)' }}>Setting up your account</div>
+        <div style={{ fontSize: 13, color: 'var(--text-soft)' }}>Setting up your account</div>
       </nav>
 
       <div style={s.wrap}>
@@ -386,59 +437,59 @@ export default function AccountOnboarding({ user, onComplete, onBack }) {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const s = {
-  page:    { minHeight: '100vh', background: 'var(--gray-100)' },
-  nav:     { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.25rem 2.5rem', background: 'var(--white)', borderBottom: '0.5px solid var(--gray-200)' },
-  logo:    { fontSize: 17, fontWeight: 500, letterSpacing: '-0.5px' },
+  page:    { minHeight: '100vh', background: 'var(--bg)' },
+  nav:     { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.25rem 2.5rem', background: 'var(--surface)', borderBottom: '0.5px solid var(--border)' },
+  logo:    { fontSize: 17, fontWeight: 500, letterSpacing: '-0.5px', color: 'var(--text)' },
   wrap:    { display: 'flex', justifyContent: 'center', padding: '4rem 1.5rem' },
-  card:    { background: 'var(--white)', borderRadius: 'var(--radius)', border: '0.5px solid var(--gray-200)', padding: '2.5rem', width: '100%', animation: 'fadeUp 0.35s ease', transition: 'max-width 0.3s ease' },
+  card:    { background: 'var(--surface)', borderRadius: 'var(--radius)', border: '0.5px solid var(--border)', padding: '2.5rem', width: '100%', animation: 'fadeUp 0.35s ease', transition: 'max-width 0.3s ease' },
 
-  eyebrow: { fontSize: 11, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--green)', fontWeight: 600, marginBottom: 8 },
-  title:   { fontFamily: 'var(--serif)', fontSize: 24, fontWeight: 400, lineHeight: 1.3, marginBottom: 8 },
-  sub:     { fontSize: 14, color: 'var(--gray-600)', lineHeight: 1.6 },
+  eyebrow: { fontSize: 11, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--accent)', fontWeight: 600, marginBottom: 8 },
+  title:   { fontFamily: 'var(--serif)', fontSize: 24, fontWeight: 400, lineHeight: 1.3, marginBottom: 8, color: 'var(--text)' },
+  sub:     { fontSize: 14, color: 'var(--text-soft)', lineHeight: 1.6 },
 
   proBanner: {
     display: 'flex', alignItems: 'center', gap: 8,
-    background: 'var(--green-light)', border: '0.5px solid var(--green)',
+    background: 'var(--accent-soft)', border: '0.5px solid var(--accent)',
     borderRadius: 'var(--radius-sm)', padding: '10px 14px',
-    fontSize: 13, fontWeight: 500, color: 'var(--green-dark)',
+    fontSize: 13, fontWeight: 500, color: 'var(--accent-text)',
     marginBottom: 14, marginTop: 4,
   },
 
   // Step 1 — pills
   pill: {
     padding: '10px 20px', borderRadius: 'var(--radius-pill)',
-    border: '0.5px solid var(--gray-200)', background: 'var(--gray-100)',
-    fontSize: 14, fontWeight: 500, color: 'var(--gray-800)',
+    border: '0.5px solid var(--border)', background: 'var(--input-bg)',
+    fontSize: 14, fontWeight: 500, color: 'var(--text)',
     cursor: 'pointer', transition: 'all 0.15s', whiteSpace: 'nowrap',
   },
-  pillHover: { background: 'var(--green)', color: 'white', borderColor: 'var(--green)' },
+  pillHover: { background: 'var(--accent)', color: 'var(--button-text)', borderColor: 'var(--accent)' },
 
   // Step 3 — domain cards
   domainCard: {
     padding: '14px 16px', borderRadius: 'var(--radius)',
-    border: '0.5px solid var(--gray-200)', background: 'var(--white)',
-    fontSize: 14, fontWeight: 500, color: 'var(--gray-800)',
+    border: '0.5px solid var(--border)', background: 'var(--surface)',
+    fontSize: 14, fontWeight: 500, color: 'var(--text)',
     cursor: 'pointer', textAlign: 'left', position: 'relative',
     transition: 'all 0.18s',
   },
   domainCardActive: {
-    background: 'var(--green-light)', borderColor: 'var(--green)',
-    color: 'var(--green-dark)',
+    background: 'var(--accent-soft)', borderColor: 'var(--accent)',
+    color: 'var(--accent-text)',
   },
   domainCardDisabled: {
     opacity: 0.35, cursor: 'not-allowed',
   },
   domainCheck: {
     position: 'absolute', top: 10, right: 12,
-    fontSize: 11, color: 'var(--green)', fontWeight: 700,
+    fontSize: 11, color: 'var(--accent)', fontWeight: 700,
   },
 
   // Step 4
   textarea: {
     width: '100%', marginTop: 20, padding: '12px 14px',
-    border: '0.5px solid var(--gray-200)', borderRadius: 'var(--radius)',
-    fontSize: 14, color: 'var(--black)', lineHeight: 1.7,
-    resize: 'vertical', background: 'var(--gray-100)',
+    border: '0.5px solid var(--border)', borderRadius: 'var(--radius)',
+    fontSize: 14, color: 'var(--text)', lineHeight: 1.7,
+    resize: 'vertical', background: 'var(--input-bg)',
     fontFamily: 'var(--sans)', minHeight: 120,
     boxSizing: 'border-box',
   },
@@ -446,13 +497,13 @@ const s = {
   // Shared
   btn: {
     width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-    background: 'var(--green)', color: 'white',
+    background: 'var(--accent)', color: 'var(--button-text)',
     fontSize: 15, fontWeight: 500, padding: '13px',
     borderRadius: 'var(--radius)', border: 'none', cursor: 'pointer',
     transition: 'background 0.15s',
   },
   back: {
     display: 'block', marginTop: 16, background: 'none', border: 'none',
-    fontSize: 13, color: 'var(--gray-400)', cursor: 'pointer', padding: 0,
+    fontSize: 13, color: 'var(--text-muted)', cursor: 'pointer', padding: 0,
   },
 }

@@ -2,11 +2,68 @@ import React, { useState } from 'react'
 import { initSupabase } from '../../lib/supabase.js'
 import { usePostHog } from '@posthog/react'
 
+const THEMES = {
+  dark: {
+    bg: '#0F1520',
+    surface: '#141D2B',
+    surface2: '#111827',
+    border: '#1E2D42',
+    text: '#E8E2D8',
+    textSoft: '#B8B0A4',
+    textMuted: '#7A8FA8',
+    accent: '#4A7FA8',
+    accentSoft: '#1A2535',
+    accentText: '#8FBAD8',
+    inputBg: '#111827',
+    error: '#C05050',
+    buttonText: '#E8E2D8',
+    focusRing: 'rgba(74,127,168,0.18)',
+  },
+  light: {
+    bg: '#F5F0E8',
+    surface: '#EDE6DC',
+    surface2: '#E8DFD3',
+    border: '#C4B4A4',
+    text: '#1A1410',
+    textSoft: '#5C4840',
+    textMuted: '#6B5040',
+    accent: '#8C4A42',
+    accentSoft: '#F0E4E0',
+    accentText: '#7A3C36',
+    inputBg: '#E8DFD3',
+    error: '#8C2A2A',
+    buttonText: '#F5F0E8',
+    focusRing: 'rgba(140,74,66,0.14)',
+  },
+}
+
+function getThemeVars(theme) {
+  const C = THEMES[theme] || THEMES.dark
+  return {
+    '--bg': C.bg,
+    '--surface': C.surface,
+    '--surface2': C.surface2,
+    '--border': C.border,
+    '--text': C.text,
+    '--text-soft': C.textSoft,
+    '--text-muted': C.textMuted,
+    '--accent': C.accent,
+    '--accent-soft': C.accentSoft,
+    '--accent-text': C.accentText,
+    '--input-bg': C.inputBg,
+    '--error': C.error,
+    '--button-text': C.buttonText,
+    '--focus-ring': C.focusRing,
+  }
+}
+
 export default function Login({ onSuccess, onSignup }) {
   const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
   const posthog = usePostHog()
+  const theme = localStorage.getItem('sa-theme') || 'dark'
+  const themeVars = getThemeVars(theme)
 
   const update = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
@@ -36,10 +93,10 @@ export default function Login({ onSuccess, onSignup }) {
   }
 
   return (
-    <div style={s.page}>
+    <div style={{ ...themeVars, ...s.page }}>
       <nav style={s.nav}>
         <div style={s.logo} onClick={() => window.location.hash = ''}>
-          self<span style={{ color: 'var(--green)' }}>audit</span>
+          self<span style={{ color: 'var(--accent)' }}>audit</span>
         </div>
       </nav>
 
@@ -98,20 +155,20 @@ function friendlyError(msg) {
 }
 
 const s = {
-  page: { minHeight: '100vh', background: 'var(--gray-100)' },
-  nav: { display: 'flex', alignItems: 'center', padding: '1.25rem 2.5rem', background: 'var(--white)', borderBottom: '0.5px solid var(--gray-200)' },
-  logo: { fontSize: 17, fontWeight: 500, letterSpacing: '-0.5px', cursor: 'pointer' },
+  page: { minHeight: '100vh', background: 'var(--bg)' },
+  nav: { display: 'flex', alignItems: 'center', padding: '1.25rem 2.5rem', background: 'var(--surface)', borderBottom: '0.5px solid var(--border)' },
+  logo: { fontSize: 17, fontWeight: 500, letterSpacing: '-0.5px', cursor: 'pointer', color: 'var(--text)' },
   wrap: { display: 'flex', justifyContent: 'center', padding: '4rem 1.5rem' },
-  card: { background: 'var(--white)', borderRadius: 'var(--radius)', border: '0.5px solid var(--gray-200)', padding: '2.5rem', width: '100%', maxWidth: 420, animation: 'fadeUp 0.4s ease' },
+  card: { background: 'var(--surface)', borderRadius: 'var(--radius)', border: '0.5px solid var(--border)', padding: '2.5rem', width: '100%', maxWidth: 420, animation: 'fadeUp 0.4s ease' },
   header: { marginBottom: '2rem' },
-  eyebrow: { fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--green)', marginBottom: 8 },
-  title: { fontFamily: 'var(--serif)', fontSize: 24, fontWeight: 400, lineHeight: 1.3 },
+  eyebrow: { fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--accent)', marginBottom: 8 },
+  title: { fontFamily: 'var(--serif)', fontSize: 24, fontWeight: 400, lineHeight: 1.3, color: 'var(--text)' },
   fields: { display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '1.5rem' },
-  label: { fontSize: 13, fontWeight: 500, color: 'var(--gray-800)' },
-  input: { width: '100%', padding: '10px 12px', border: '0.5px solid var(--gray-200)', borderRadius: 'var(--radius-sm)', fontSize: 14, color: 'var(--black)', background: 'var(--white)', transition: 'border-color 0.15s' },
-  inputFocused: { borderColor: 'var(--green)', boxShadow: '0 0 0 3px rgba(29,158,117,0.1)' },
-  errorMsg: { fontSize: 13, color: '#A32D2D', marginBottom: '1rem' },
-  btn: { width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--green)', color: 'white', fontSize: 15, fontWeight: 500, padding: '13px', borderRadius: 'var(--radius)', cursor: 'pointer', border: 'none', transition: 'background 0.15s', marginBottom: '1.25rem' },
-  switch: { fontSize: 13, color: 'var(--gray-600)', textAlign: 'center' },
-  link: { background: 'none', border: 'none', color: 'var(--green)', fontWeight: 500, cursor: 'pointer', fontSize: 13, padding: 0 },
+  label: { fontSize: 13, fontWeight: 500, color: 'var(--text)' },
+  input: { width: '100%', padding: '10px 12px', border: '0.5px solid var(--border)', borderRadius: 'var(--radius-sm)', fontSize: 14, color: 'var(--text)', background: 'var(--input-bg)', transition: 'border-color 0.15s' },
+  inputFocused: { borderColor: 'var(--accent)', boxShadow: '0 0 0 3px var(--focus-ring)' },
+  errorMsg: { fontSize: 13, color: 'var(--error)', marginBottom: '1rem' },
+  btn: { width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--accent)', color: 'var(--button-text)', fontSize: 15, fontWeight: 500, padding: '13px', borderRadius: 'var(--radius)', cursor: 'pointer', border: 'none', transition: 'background 0.15s', marginBottom: '1.25rem' },
+  switch: { fontSize: 13, color: 'var(--text-soft)', textAlign: 'center' },
+  link: { background: 'none', border: 'none', color: 'var(--accent)', fontWeight: 500, cursor: 'pointer', fontSize: 13, padding: 0 },
 }
