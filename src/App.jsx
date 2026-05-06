@@ -48,6 +48,7 @@ export default function App() {
   const [auditSessionId,      setAuditSessionId]      = useState(null)
   const [session,             setSession]             = useState(null)
   const [authLoading,         setAuthLoading]         = useState(true)
+  const theme = localStorage.getItem('sa-theme') || 'dark'
 
   // ── navigate: defined early so effects can safely reference it ────────────
   const navigate = useCallback((s) => {
@@ -267,6 +268,7 @@ export default function App() {
       {screen === SCREENS.LANDING    && <Landing onStart={handleAuditStart} onSignUp={(plan) => { window.location.hash = plan ? `signup?plan=${plan}` : 'signup' }} session={session} />}
       {screen === SCREENS.AUDIT && userInfo && (
         <AuditChat
+          theme={theme}
           userInfo={userInfo}
           onReportReady={handleReportReady}
           conversationHistory={conversationHistory}

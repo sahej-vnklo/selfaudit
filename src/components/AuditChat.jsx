@@ -66,7 +66,7 @@ function detectIndustryViolation(text, savedIndustry) {
 
 // ─── Upgrade Panel ────────────────────────────────────────────────────────────
 
-function UpgradePanel({ type, tierData, userInfo, onDismiss }) {
+function UpgradePanel({ type, tierData, userInfo, panelStyles, onDismiss }) {
   const [checkoutLoading, setCheckoutLoading] = useState(false)
   const [checkoutError,   setCheckoutError]   = useState(null)
   const posthog = usePostHog()
@@ -115,36 +115,36 @@ function UpgradePanel({ type, tierData, userInfo, onDismiss }) {
   }
 
   return (
-    <div style={p.panel}>
-      <button style={p.close} onClick={onDismiss} aria-label="Close">✕</button>
-      <div style={p.eyebrow}>SCOPE LIMIT</div>
-      <div style={p.title}>Outside your scope</div>
-      <p style={p.sub}>
+    <div style={panelStyles.panel}>
+      <button style={panelStyles.close} onClick={onDismiss} aria-label="Close">✕</button>
+      <div style={panelStyles.eyebrow}>SCOPE LIMIT</div>
+      <div style={panelStyles.title}>Outside your scope</div>
+      <p style={panelStyles.sub}>
         {isEssential
           ? `You're getting a ${tierData?.domain || 'selected domain'}-only audit. Unlock all ${pills.length} domains.`
           : `You're getting a ${tierData?.industry || 'selected industry'}-only audit. Unlock all ${pills.length} industries.`}
       </p>
-      <div style={p.sectionLabel}>YOUR PLAN</div>
-      <div style={p.pills}>
+      <div style={panelStyles.sectionLabel}>YOUR PLAN</div>
+      <div style={panelStyles.pills}>
         {pills.filter(item => item.toLowerCase() === currentItem?.toLowerCase()).map(item => (
-          <span key={item} style={{ ...p.pill, ...p.pillCurrent }}>{item}</span>
+          <span key={item} style={{ ...panelStyles.pill, ...panelStyles.pillCurrent }}>{item}</span>
         ))}
       </div>
-      <div style={p.sectionLabel}>{isEssential ? 'UNLOCK WITH BUSINESS' : 'UNLOCK WITH PORTFOLIO'}</div>
-      <div style={p.pills}>
+      <div style={panelStyles.sectionLabel}>{isEssential ? 'UNLOCK WITH BUSINESS' : 'UNLOCK WITH PORTFOLIO'}</div>
+      <div style={panelStyles.pills}>
         {pills.filter(item => item.toLowerCase() !== currentItem?.toLowerCase()).map(item => (
-          <span key={item} style={{ ...p.pill, ...p.pillLocked }}>{item}</span>
+          <span key={item} style={{ ...panelStyles.pill, ...panelStyles.pillLocked }}>{item}</span>
         ))}
       </div>
       <button
-        style={{ ...p.cta, opacity: checkoutLoading ? 0.7 : 1 }}
+        style={{ ...panelStyles.cta, opacity: checkoutLoading ? 0.7 : 1 }}
         onClick={handleUpgrade}
         disabled={checkoutLoading}
       >
         {checkoutLoading ? 'Redirecting…' : ctaLabel}
       </button>
-      {checkoutError && <div style={p.error}>{checkoutError}</div>}
-      <div style={p.stayLink} onClick={onDismiss}>Stay on my plan</div>
+      {checkoutError && <div style={panelStyles.error}>{checkoutError}</div>}
+      <div style={panelStyles.stayLink} onClick={onDismiss}>Stay on my plan</div>
     </div>
   )
 }
@@ -202,7 +202,7 @@ function parseContactReply(text) {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function AuditChat({ userInfo, onReportReady, conversationHistory, setConversationHistory }) {
+export default function AuditChat({ theme = 'dark', userInfo, onReportReady, conversationHistory, setConversationHistory }) {
   const [input,         setInput]         = useState('')
   const [loading,       setLoading]       = useState(false)
   const [initialized,   setInitialized]   = useState(false)
@@ -220,6 +220,8 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
   const inputRef    = useRef(null)
   const sessionIdRef = useRef(crypto.randomUUID())
   const posthog     = usePostHog()
+  const themeStyles = getStyles(theme)
+  const panelStyles = getPanelStyles(theme)
   const resolvedUserInfo = React.useMemo(() => ({
     ...userInfo,
     name: contactInfo.name || userInfo?.name || '',
@@ -451,50 +453,51 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
   }
 
   return (
-    <div style={styles.page}>
+    <div style={themeStyles.page}>
       {scopePanel && (
         <UpgradePanel
           type={scopePanel}
           tierData={tierData}
           userInfo={resolvedUserInfo}
+          panelStyles={panelStyles}
           onDismiss={() => { setScopePanel(null); inputRef.current?.focus() }}
         />
       )}
 
-      <nav style={styles.nav}>
-        <div style={{...styles.logo, cursor: 'pointer'}} onClick={handleLogoClick}>
-          self<span style={{ color: 'var(--green)' }}>audit</span>
+      <nav style={themeStyles.nav}>
+        <div style={{...themeStyles.logo, cursor: 'pointer'}} onClick={handleLogoClick}>
+          self<span style={{ color: themeStyles.accentColor }}>audit</span>
         </div>
         {auditingLabel && (
-          <div style={styles.navMeta}>
-            <span style={styles.auditingLabel}>Auditing:</span>
-            <span style={styles.auditingContext}>{auditingLabel}</span>
+          <div style={themeStyles.navMeta}>
+            <span style={themeStyles.auditingLabel}>Auditing:</span>
+            <span style={themeStyles.auditingContext}>{auditingLabel}</span>
           </div>
         )}
       </nav>
 
-      <div style={styles.messages}>
+      <div style={themeStyles.messages}>
         {conversationHistory.map((msg, i) => (
-          <Message key={i} msg={msg} delay={i * 0.05} />
+          <Message key={i} msg={msg} delay={i * 0.05} themeStyles={themeStyles} />
         ))}
 
         {loading && (
-          <div style={styles.typingWrap}>
-            <div style={styles.typingBubble}>
-              <span style={{ ...styles.dot, animationDelay: '0s' }} />
-              <span style={{ ...styles.dot, animationDelay: '0.2s' }} />
-              <span style={{ ...styles.dot, animationDelay: '0.4s' }} />
+          <div style={themeStyles.typingWrap}>
+            <div style={themeStyles.typingBubble}>
+              <span style={{ ...themeStyles.dot, animationDelay: '0s' }} />
+              <span style={{ ...themeStyles.dot, animationDelay: '0.2s' }} />
+              <span style={{ ...themeStyles.dot, animationDelay: '0.4s' }} />
             </div>
           </div>
         )}
         <div ref={bottomRef} />
       </div>
 
-      <div style={styles.inputArea}>
-        <div style={styles.inputWrap}>
+      <div style={themeStyles.inputArea}>
+        <div style={themeStyles.inputWrap}>
           <textarea
             ref={inputRef}
-            style={styles.textarea}
+            style={themeStyles.textarea}
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={handleKey}
@@ -503,7 +506,7 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
             disabled={loading}
           />
           <button
-            style={{ ...styles.sendBtn, ...((!input.trim() || loading) ? styles.sendDisabled : {}) }}
+            style={{ ...themeStyles.sendBtn, ...((!input.trim() || loading) ? themeStyles.sendDisabled : {}) }}
             onClick={send}
             disabled={!input.trim() || loading}
           >
@@ -512,7 +515,7 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
             </svg>
           </button>
         </div>
-        <p style={styles.hint}>Press Enter to send · Shift+Enter for new line</p>
+        <p style={themeStyles.hint}>Press Enter to send · Shift+Enter for new line</p>
       </div>
     </div>
   )
@@ -520,33 +523,33 @@ export default function AuditChat({ userInfo, onReportReady, conversationHistory
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function Message({ msg, delay }) {
+function Message({ msg, delay, themeStyles }) {
   const isUser = msg.role === 'user'
 
   return (
     <div style={{
-      ...styles.msgRow,
+      ...themeStyles.msgRow,
       justifyContent: isUser ? 'flex-end' : 'flex-start',
       animation: `fadeUp 0.3s ease ${delay}s both`
     }}>
       {!isUser && (
-        <div style={styles.avatar}>SA</div>
+        <div style={themeStyles.avatar}>SA</div>
       )}
       <div style={{
-        ...styles.bubble,
-        ...(isUser ? styles.userBubble : styles.aiBubble),
-        ...(msg.error ? { borderColor: '#F09595', background: '#FCEBEB' } : {})
+        ...themeStyles.bubble,
+        ...(isUser ? themeStyles.userBubble : themeStyles.aiBubble),
+        ...(msg.error ? themeStyles.errorBubble : {})
       }}>
-        <FormattedText text={msg.display} />
+        <FormattedText text={msg.display} msgTextStyle={themeStyles.msgText} />
       </div>
     </div>
   )
 }
 
-function FormattedText({ text }) {
+function FormattedText({ text, msgTextStyle }) {
   const parts = text.split(/(\*\*[^*]+\*\*)/g)
   return (
-    <p style={styles.msgText}>
+    <p style={msgTextStyle}>
       {parts.map((part, i) => {
         if (part.startsWith('**') && part.endsWith('**')) {
           return <strong key={i} style={{ fontWeight: 500 }}>{part.slice(2, -2)}</strong>
@@ -564,138 +567,199 @@ function FormattedText({ text }) {
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
-const styles = {
-  page: { height: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--white)' },
-  nav: {
-    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-    padding: '1rem 2rem', borderBottom: '0.5px solid var(--gray-200)',
-    background: 'var(--white)', zIndex: 10, flexShrink: 0
+const CHAT_THEMES = {
+  dark: {
+    bg: '#0F1520',
+    nav: '#141D2B',
+    surface: '#1A2535',
+    surface2: '#111827',
+    border: '#1E2D42',
+    borderSoft: '#243247',
+    text: '#E8E2D8',
+    textSoft: '#B8B0A4',
+    textMuted: '#7A8FA8',
+    accent: '#4A7FA8',
+    accentDark: '#3A6A90',
+    accentSoft: '#1A2535',
+    accentText: '#8FBAD8',
+    userText: '#F5F0E8',
+    errorBg: '#301719',
+    errorBorder: '#8F4D4D',
+    errorText: '#F3D2D2',
   },
-  logo: { fontSize: 16, fontWeight: 500, letterSpacing: '-0.4px' },
-  navMeta: { display: 'flex', alignItems: 'center', gap: 6, maxWidth: '60%' },
-  auditingLabel: { fontSize: 12, color: 'var(--gray-400)' },
-  auditingContext: {
-    fontSize: 12, color: 'var(--gray-600)', fontWeight: 500,
-    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
+  light: {
+    bg: '#F5F0E8',
+    nav: '#EDE6DC',
+    surface: '#E8DFD3',
+    surface2: '#F0E8DE',
+    border: '#C4B4A4',
+    borderSoft: '#BAA898',
+    text: '#1A1410',
+    textSoft: '#5C4840',
+    textMuted: '#8A6A58',
+    accent: '#8C4A42',
+    accentDark: '#7A3C36',
+    accentSoft: '#F0E4E0',
+    accentText: '#8C4A42',
+    userText: '#F5F0E8',
+    errorBg: '#F5E8E8',
+    errorBorder: '#D1A3A3',
+    errorText: '#7A2C2C',
   },
-  messages: {
-    flex: 1, overflowY: 'auto',
-    padding: '2rem 1.5rem',
-    display: 'flex', flexDirection: 'column', gap: '1rem',
-    maxWidth: 680, width: '100%', margin: '0 auto', boxSizing: 'border-box'
-  },
-  msgRow: { display: 'flex', alignItems: 'flex-end', gap: 10 },
-  avatar: {
-    width: 28, height: 28, borderRadius: '50%',
-    background: 'var(--green-light)', color: 'var(--green-dark)',
-    fontSize: 10, fontWeight: 500,
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    flexShrink: 0
-  },
-  bubble: {
-    maxWidth: '80%', padding: '12px 16px',
-    borderRadius: 'var(--radius)', border: '0.5px solid transparent',
-    lineHeight: 1.6
-  },
-  aiBubble: {
-    background: 'var(--gray-100)', borderColor: 'var(--gray-200)',
-    borderBottomLeftRadius: 4
-  },
-  userBubble: {
-    background: 'var(--green)', color: 'white',
-    borderBottomRightRadius: 4
-  },
-  msgText: { fontSize: 14, margin: 0, lineHeight: 1.7 },
-  typingWrap: { display: 'flex', alignItems: 'flex-end', gap: 10 },
-  typingBubble: {
-    background: 'var(--gray-100)', border: '0.5px solid var(--gray-200)',
-    borderRadius: 'var(--radius)', borderBottomLeftRadius: 4,
-    padding: '14px 16px', display: 'flex', gap: 5, alignItems: 'center'
-  },
-  dot: {
-    width: 6, height: 6, borderRadius: '50%',
-    background: 'var(--gray-400)',
-    display: 'inline-block',
-    animation: 'pulse 1.2s ease infinite'
-  },
-  inputArea: {
-    padding: '1rem 1.5rem 1.25rem',
-    borderTop: '0.5px solid var(--gray-200)',
-    background: 'var(--white)', flexShrink: 0
-  },
-  inputWrap: {
-    display: 'flex', alignItems: 'flex-end', gap: 10,
-    maxWidth: 680, margin: '0 auto',
-    background: 'var(--gray-100)', borderRadius: 'var(--radius)',
-    border: '0.5px solid var(--gray-200)', padding: '8px 8px 8px 14px'
-  },
-  textarea: {
-    flex: 1, border: 'none', background: 'transparent',
-    fontSize: 14, resize: 'none', lineHeight: 1.5,
-    color: 'var(--black)', minHeight: 24, maxHeight: 120,
-    outline: 'none', fontFamily: 'var(--sans)'
-  },
-  sendBtn: {
-    width: 36, height: 36, borderRadius: 8,
-    background: 'var(--green)', color: 'white',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    border: 'none', cursor: 'pointer', flexShrink: 0,
-    transition: 'background 0.15s'
-  },
-  sendDisabled: { background: 'var(--gray-200)', color: 'var(--gray-400)', cursor: 'not-allowed' },
-  hint: { fontSize: 11, color: 'var(--gray-400)', textAlign: 'center', marginTop: 8, maxWidth: 680, margin: '8px auto 0' }
+}
+
+function getTheme(theme) {
+  return CHAT_THEMES[theme] || CHAT_THEMES.dark
+}
+
+function getStyles(theme) {
+  const T = getTheme(theme)
+
+  return {
+    accentColor: T.accent,
+    page: { height: '100vh', display: 'flex', flexDirection: 'column', background: T.bg, color: T.text },
+    nav: {
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      padding: '1rem 2rem', borderBottom: `0.5px solid ${T.border}`,
+      background: T.nav, zIndex: 10, flexShrink: 0, color: T.text
+    },
+    logo: { fontSize: 16, fontWeight: 500, letterSpacing: '-0.4px', color: T.text },
+    navMeta: { display: 'flex', alignItems: 'center', gap: 6, maxWidth: '60%' },
+    auditingLabel: { fontSize: 12, color: T.textMuted },
+    auditingContext: {
+      fontSize: 12, color: T.textSoft, fontWeight: 500,
+      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
+    },
+    messages: {
+      flex: 1, overflowY: 'auto',
+      padding: '2rem 1.5rem',
+      display: 'flex', flexDirection: 'column', gap: '1rem',
+      maxWidth: 680, width: '100%', margin: '0 auto', boxSizing: 'border-box'
+    },
+    msgRow: { display: 'flex', alignItems: 'flex-end', gap: 10 },
+    avatar: {
+      width: 28, height: 28, borderRadius: '50%',
+      background: T.accentSoft, color: T.accentText,
+      border: `1px solid ${T.borderSoft}`,
+      fontSize: 10, fontWeight: 600,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      flexShrink: 0
+    },
+    bubble: {
+      maxWidth: '80%', padding: '12px 16px',
+      borderRadius: 14, border: `0.5px solid ${T.border}`,
+      lineHeight: 1.6
+    },
+    aiBubble: {
+      background: T.surface, color: T.text, borderColor: T.border,
+      borderBottomLeftRadius: 4
+    },
+    userBubble: {
+      background: T.accent, color: T.userText, borderColor: T.accentDark,
+      borderBottomRightRadius: 4
+    },
+    errorBubble: {
+      borderColor: T.errorBorder,
+      background: T.errorBg,
+      color: T.errorText,
+    },
+    msgText: { fontSize: 14, margin: 0, lineHeight: 1.7 },
+    typingWrap: { display: 'flex', alignItems: 'flex-end', gap: 10 },
+    typingBubble: {
+      background: T.surface, border: `0.5px solid ${T.border}`,
+      borderRadius: 14, borderBottomLeftRadius: 4,
+      padding: '14px 16px', display: 'flex', gap: 5, alignItems: 'center'
+    },
+    dot: {
+      width: 6, height: 6, borderRadius: '50%',
+      background: T.textMuted,
+      display: 'inline-block',
+      animation: 'pulse 1.2s ease infinite'
+    },
+    inputArea: {
+      padding: '1rem 1.5rem 1.25rem',
+      borderTop: `0.5px solid ${T.border}`,
+      background: T.nav, flexShrink: 0
+    },
+    inputWrap: {
+      display: 'flex', alignItems: 'flex-end', gap: 10,
+      maxWidth: 680, margin: '0 auto',
+      background: T.surface2, borderRadius: 14,
+      border: `0.5px solid ${T.borderSoft}`, padding: '8px 8px 8px 14px'
+    },
+    textarea: {
+      flex: 1, border: 'none', background: 'transparent',
+      fontSize: 14, resize: 'none', lineHeight: 1.5,
+      color: T.text, minHeight: 24, maxHeight: 120,
+      outline: 'none', fontFamily: 'var(--sans)'
+    },
+    sendBtn: {
+      width: 36, height: 36, borderRadius: 8,
+      background: T.accent, color: T.userText,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      border: 'none', cursor: 'pointer', flexShrink: 0,
+      transition: 'background 0.15s'
+    },
+    sendDisabled: { background: T.borderSoft, color: T.textMuted, cursor: 'not-allowed' },
+    hint: { fontSize: 11, color: T.textMuted, textAlign: 'center', maxWidth: 680, margin: '8px auto 0' }
+  }
 }
 
 // ─── Panel styles ─────────────────────────────────────────────────────────────
 
-const p = {
-  panel: {
-    position: 'fixed', right: 20, top: '50%', transform: 'translateY(-50%)',
-    width: 280, zIndex: 200, background: '#fff', borderRadius: 16,
-    boxShadow: '0 8px 32px rgba(0,0,0,0.12)', padding: 24,
-    border: '1px solid rgba(0,0,0,0.06)',
-  },
-  eyebrow: {
-    fontSize: 10, letterSpacing: '1.5px', textTransform: 'uppercase', color: '#888',
-  },
-  title: {
-    fontSize: 18, fontWeight: 700, color: '#111', marginTop: 4,
-  },
-  close: {
-    position: 'absolute', top: 16, right: 16,
-    background: 'none', border: 'none', cursor: 'pointer',
-    fontSize: 14, color: '#888', padding: 0, lineHeight: 1,
-  },
-  sub: {
-    fontSize: 13, color: '#666', lineHeight: 1.5, marginTop: 6, marginBottom: 0,
-  },
-  sectionLabel: {
-    fontSize: 10, letterSpacing: '1.5px', textTransform: 'uppercase',
-    color: '#888', marginTop: 20,
-  },
-  pills: {
-    display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8,
-  },
-  pill: {
-    fontSize: 12, borderRadius: 20, padding: '4px 12px',
-    border: 'none', cursor: 'default',
-  },
-  pillCurrent: {
-    background: '#111', color: '#fff',
-  },
-  pillLocked: {
-    background: '#f0f0f0', color: '#444',
-  },
-  cta: {
-    width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-    background: '#1a1a1a', color: '#fff', borderRadius: 10,
-    padding: '12px', fontWeight: 600, fontSize: 14,
-    border: 'none', cursor: 'pointer', marginTop: 20, boxSizing: 'border-box',
-  },
-  stayLink: {
-    textAlign: 'center', fontSize: 12, color: '#888', cursor: 'pointer', marginTop: 10,
-  },
-  error: {
-    fontSize: 11, color: '#c0392b', textAlign: 'center', marginTop: 8,
-  },
+function getPanelStyles(theme) {
+  const T = getTheme(theme)
+
+  return {
+    panel: {
+      position: 'fixed', right: 20, top: '50%', transform: 'translateY(-50%)',
+      width: 280, zIndex: 200, background: T.surface, borderRadius: 16,
+      boxShadow: theme === 'dark' ? '0 18px 44px rgba(0,0,0,0.34)' : '0 12px 34px rgba(58,34,18,0.12)',
+      padding: 24, border: `1px solid ${T.border}`,
+      color: T.text,
+    },
+    eyebrow: {
+      fontSize: 10, letterSpacing: '1.5px', textTransform: 'uppercase', color: T.textMuted,
+    },
+    title: {
+      fontSize: 18, fontWeight: 700, color: T.text, marginTop: 4,
+    },
+    close: {
+      position: 'absolute', top: 16, right: 16,
+      background: 'none', border: 'none', cursor: 'pointer',
+      fontSize: 14, color: T.textMuted, padding: 0, lineHeight: 1,
+    },
+    sub: {
+      fontSize: 13, color: T.textSoft, lineHeight: 1.5, marginTop: 6, marginBottom: 0,
+    },
+    sectionLabel: {
+      fontSize: 10, letterSpacing: '1.5px', textTransform: 'uppercase',
+      color: T.textMuted, marginTop: 20,
+    },
+    pills: {
+      display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8,
+    },
+    pill: {
+      fontSize: 12, borderRadius: 20, padding: '4px 12px',
+      border: 'none', cursor: 'default',
+    },
+    pillCurrent: {
+      background: T.accent, color: T.userText,
+    },
+    pillLocked: {
+      background: T.surface2, color: T.textSoft,
+    },
+    cta: {
+      width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: T.accent, color: T.userText, borderRadius: 10,
+      padding: '12px', fontWeight: 600, fontSize: 14,
+      border: 'none', cursor: 'pointer', marginTop: 20, boxSizing: 'border-box',
+    },
+    stayLink: {
+      textAlign: 'center', fontSize: 12, color: T.textMuted, cursor: 'pointer', marginTop: 10,
+    },
+    error: {
+      fontSize: 11, color: T.errorText, textAlign: 'center', marginTop: 8,
+    },
+  }
 }
