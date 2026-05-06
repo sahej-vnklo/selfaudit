@@ -51,7 +51,7 @@ const wrap = { maxWidth: 1140, margin: '0 auto', padding: '0 28px' }
 
 const sectionLabel = (C) => ({
   textAlign: 'center',
-  fontSize: 11,
+  fontSize: 12,
   letterSpacing: '0.14em',
   textTransform: 'uppercase',
   color: C.inkFaint,
@@ -309,7 +309,7 @@ function PrimaryButton({ label, onClick, small = false, C }) {
         color: '#fff',
         padding: small ? '10px 18px' : '16px 28px',
         borderRadius: 999,
-        fontSize: small ? 14 : 16,
+        fontSize: small ? 15 : 17,
         fontWeight: 600,
         border: 'none',
         cursor: 'pointer',
@@ -318,7 +318,7 @@ function PrimaryButton({ label, onClick, small = false, C }) {
       }}
     >
       {label}
-      <span style={{ fontSize: small ? 16 : 18 }}>→</span>
+      <span style={{ fontSize: small ? 17 : 19 }}>→</span>
     </button>
   )
 }
@@ -339,7 +339,7 @@ function OutlineButton({ label, onClick, C }) {
         color: C.ink,
         padding: '14px 22px',
         borderRadius: 999,
-        fontSize: 15,
+        fontSize: 16,
         fontWeight: 600,
         border: `1px solid ${C.border2}`,
         cursor: 'pointer',
@@ -356,7 +356,7 @@ function FeatureList({ items, color, iconColor, icon = '✓' }) {
   return (
     <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 11 }}>
       {items.map((item) => (
-        <li key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, color, fontSize: 14 }}>
+        <li key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, color, fontSize: 15 }}>
           <span style={{ color: iconColor, flexShrink: 0, fontWeight: 700, lineHeight: 1.5 }}>{icon}</span>
           <span>{item}</span>
         </li>
@@ -454,14 +454,14 @@ function DiagnosticLoop({ C }) {
               <div key={c} style={{ width: 10, height: 10, borderRadius: '50%', background: c }} />
             ))}
           </div>
-          <div style={{ fontSize: 12, color: C.inkFaint, marginLeft: 6, letterSpacing: '0.08em' }}>
+          <div style={{ fontSize: 13, color: C.inkFaint, marginLeft: 6, letterSpacing: '0.08em' }}>
             selfaudit · intelligence engine
           </div>
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}>
             {!expanded && !isPaused && (
               <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#28CA41', animation: 'pulse 1.5s infinite' }} />
             )}
-            <span style={{ fontSize: 11, color: C.inkFaint }}>{isPaused ? 'PAUSED' : 'LIVE'}</span>
+            <span style={{ fontSize: 12, color: C.inkFaint }}>{isPaused ? 'PAUSED' : 'LIVE'}</span>
           </div>
         </div>
 
@@ -472,7 +472,7 @@ function DiagnosticLoop({ C }) {
             color: C.accentText,
             borderRadius: 999,
             padding: '4px 12px',
-            fontSize: 11,
+            fontSize: 12,
             fontWeight: 600,
             letterSpacing: '0.08em',
             textTransform: 'uppercase',
@@ -483,10 +483,10 @@ function DiagnosticLoop({ C }) {
 
         {/* Question */}
         <div style={{ padding: '14px 22px' }}>
-          <div style={{ fontSize: 13, color: C.inkMuted, marginBottom: 6 }}>Audit query</div>
+          <div style={{ fontSize: 14, color: C.inkMuted, marginBottom: 6 }}>Audit query</div>
           <div style={{
             fontFamily: serif,
-            fontSize: 20,
+            fontSize: 21,
             fontWeight: 600,
             color: C.ink,
             lineHeight: 1.35,
@@ -501,9 +501,9 @@ function DiagnosticLoop({ C }) {
           borderTop: `1px solid ${C.border}`,
           minHeight: 72,
         }}>
-          <div style={{ fontSize: 13, color: C.inkMuted, marginBottom: 6 }}>Intelligence verdict</div>
+          <div style={{ fontSize: 14, color: C.inkMuted, marginBottom: 6 }}>Intelligence verdict</div>
           <div style={{
-            fontSize: 15,
+            fontSize: 16,
             color: thread.a.startsWith('CRITICAL') ? '#C05050' : C.amber,
             fontWeight: 600,
             lineHeight: 1.5,
@@ -515,7 +515,7 @@ function DiagnosticLoop({ C }) {
         {/* Expanded: all domains */}
         {expanded && (
           <div style={{ borderTop: `1px solid ${C.border}`, padding: '20px 22px' }}>
-            <div style={{ fontSize: 12, color: C.inkMuted, marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+            <div style={{ fontSize: 13, color: C.inkMuted, marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
               All domains being monitored
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
@@ -525,7 +525,7 @@ function DiagnosticLoop({ C }) {
                   border: `1px solid ${C.border2}`,
                   borderRadius: 999,
                   padding: '6px 14px',
-                  fontSize: 13,
+                  fontSize: 14,
                   color: C.inkSoft,
                   fontWeight: 500,
                 }}>
@@ -533,7 +533,7 @@ function DiagnosticLoop({ C }) {
                 </span>
               ))}
             </div>
-            <div style={{ marginTop: 18, fontSize: 13, color: C.inkMuted, fontStyle: 'italic' }}>
+            <div style={{ marginTop: 18, fontSize: 14, color: C.inkMuted, fontStyle: 'italic' }}>
               Click to collapse
             </div>
           </div>
@@ -541,7 +541,7 @@ function DiagnosticLoop({ C }) {
 
         {!expanded && (
           <div style={{ padding: '10px 22px 14px', textAlign: 'center' }}>
-            <span style={{ fontSize: 12, color: C.inkFaint }}>Hover to pause · Click to explore all domains</span>
+            <span style={{ fontSize: 13, color: C.inkFaint }}>Hover to pause · Click to explore all domains</span>
           </div>
         )}
       </div>
@@ -573,16 +573,16 @@ function GrowthOSCard({ onSignUp, C }) {
       position: 'relative',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 6 }}>
-        <div style={{ fontSize: 12, fontWeight: 700, color: C.inkMuted, textTransform: 'uppercase', letterSpacing: '0.12em' }}>Growth OS</div>
-        <span style={{ background: C.accentSoft, color: C.accentText, borderRadius: 999, padding: '4px 10px', fontSize: 11 }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: C.inkMuted, textTransform: 'uppercase', letterSpacing: '0.12em' }}>Growth OS</div>
+        <span style={{ background: C.accentSoft, color: C.accentText, borderRadius: 999, padding: '4px 10px', fontSize: 12 }}>
           Recommended
         </span>
       </div>
 
       <div style={{ fontFamily: serif, fontSize: 48, fontWeight: 700, letterSpacing: '-0.04em', color: C.ink, lineHeight: 1 }}>
-        $99<span style={{ fontSize: 20, color: C.inkMuted, marginLeft: 4 }}>/mo</span>
+        $99<span style={{ fontSize: 21, color: C.inkMuted, marginLeft: 4 }}>/mo</span>
       </div>
-      <div style={{ fontSize: 13, color: C.inkMuted, marginTop: 8, marginBottom: 24 }}>$79/mo billed annually</div>
+      <div style={{ fontSize: 14, color: C.inkMuted, marginTop: 8, marginBottom: 24 }}>$79/mo billed annually</div>
 
       {/* Promise — no feature list by default */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 24 }}>
@@ -594,8 +594,8 @@ function GrowthOSCard({ onSignUp, C }) {
         ].map(item => (
           <div key={item.label} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
             <div>
-              <div style={{ fontSize: 15, fontWeight: 600, color: C.ink, marginBottom: 2 }}>{item.label}</div>
-              <div style={{ fontSize: 13, color: C.inkMuted }}>{item.sub}</div>
+              <div style={{ fontSize: 16, fontWeight: 600, color: C.ink, marginBottom: 2 }}>{item.label}</div>
+              <div style={{ fontSize: 14, color: C.inkMuted }}>{item.sub}</div>
             </div>
           </div>
         ))}
@@ -609,7 +609,7 @@ function GrowthOSCard({ onSignUp, C }) {
           border: `1px solid ${C.border2}`,
           borderRadius: 8,
           color: C.inkMuted,
-          fontSize: 13,
+          fontSize: 14,
           padding: '8px 14px',
           cursor: 'pointer',
           marginBottom: 20,
@@ -634,7 +634,7 @@ function GrowthOSCard({ onSignUp, C }) {
             { title: 'Integrations & Notifications', items: growthIntegrations },
           ].map(section => (
             <div key={section.title}>
-              <div style={{ fontFamily: serif, fontSize: 16, color: C.ink, marginBottom: 10 }}>{section.title}</div>
+              <div style={{ fontFamily: serif, fontSize: 17, color: C.ink, marginBottom: 10 }}>{section.title}</div>
               <FeatureList items={section.items} color={C.inkSoft} iconColor={C.accentText} />
             </div>
           ))}
@@ -642,7 +642,7 @@ function GrowthOSCard({ onSignUp, C }) {
       )}
 
       <PrimaryButton label="Start Growth OS — $99/mo" onClick={() => onSignUp('business')} C={C} />
-      <div style={{ fontSize: 12, color: C.inkMuted, marginTop: 12 }}>Cancel anytime. No contracts.</div>
+      <div style={{ fontSize: 13, color: C.inkMuted, marginTop: 12 }}>Cancel anytime. No contracts.</div>
     </div>
   )
 }
@@ -659,7 +659,7 @@ function VisionWidget({ C, serif, visionOpen, setVisionOpen, visionGoal, setVisi
   const tileStyle = (selected) => ({
     padding: '8px 14px',
     borderRadius: 999,
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: 500,
     cursor: 'pointer',
     border: `1px solid ${selected ? C.accent : C.border2}`,
@@ -685,7 +685,7 @@ function VisionWidget({ C, serif, visionOpen, setVisionOpen, visionGoal, setVisi
           borderRadius: 999,
           padding: '7px 16px',
           cursor: 'pointer',
-          fontSize: 13,
+          fontSize: 14,
           fontWeight: 600,
           color: C.inkSoft,
           fontFamily: 'inherit',
@@ -708,13 +708,13 @@ function VisionWidget({ C, serif, visionOpen, setVisionOpen, visionGoal, setVisi
           zIndex: 100,
           boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
         }}>
-          <div style={{ fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: C.inkMuted, marginBottom: 16 }}>
+          <div style={{ fontSize: 12, letterSpacing: '0.12em', textTransform: 'uppercase', color: C.inkMuted, marginBottom: 16 }}>
             What's yours?
           </div>
 
           {/* Q1 — Goal */}
           <div style={{ marginBottom: 18 }}>
-            <div style={{ fontSize: 13, color: C.inkSoft, marginBottom: 10, fontWeight: 500 }}>The goal</div>
+            <div style={{ fontSize: 14, color: C.inkSoft, marginBottom: 10, fontWeight: 500 }}>The goal</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               {goals.map(g => (
                 <div key={g} onClick={() => setVisionGoal(g)} style={tileStyle(visionGoal === g)}>{g}</div>
@@ -725,7 +725,7 @@ function VisionWidget({ C, serif, visionOpen, setVisionOpen, visionGoal, setVisi
           {/* Q2 — Current */}
           {visionGoal && (
             <div style={{ marginBottom: 18 }}>
-              <div style={{ fontSize: 13, color: C.inkSoft, marginBottom: 10, fontWeight: 500 }}>Right now</div>
+              <div style={{ fontSize: 14, color: C.inkSoft, marginBottom: 10, fontWeight: 500 }}>Right now</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                 {currentStates.map(s => (
                   <div key={s} onClick={() => setVisionCurrent(s)} style={tileStyle(visionCurrent === s)}>{s}</div>
@@ -737,7 +737,7 @@ function VisionWidget({ C, serif, visionOpen, setVisionOpen, visionGoal, setVisi
           {/* Q3 — Timeline */}
           {visionCurrent && (
             <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 13, color: C.inkSoft, marginBottom: 10, fontWeight: 500 }}>Timeline</div>
+              <div style={{ fontSize: 14, color: C.inkSoft, marginBottom: 10, fontWeight: 500 }}>Timeline</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                 {timelines.map(t => (
                   <div key={t} onClick={() => setVisionTimeline(t)} style={tileStyle(visionTimeline === t)}>{t}</div>
@@ -754,7 +754,7 @@ function VisionWidget({ C, serif, visionOpen, setVisionOpen, visionGoal, setVisi
             }}>
               <div style={{
                 fontFamily: serif,
-                fontSize: 15,
+                fontSize: 16,
                 color: C.ink,
                 lineHeight: 1.6,
                 marginBottom: 16,
@@ -770,7 +770,7 @@ function VisionWidget({ C, serif, visionOpen, setVisionOpen, visionGoal, setVisi
                   border: 'none',
                   borderRadius: 999,
                   padding: '12px 20px',
-                  fontSize: 14,
+                  fontSize: 15,
                   fontWeight: 600,
                   cursor: 'pointer',
                   fontFamily: 'inherit',
@@ -895,10 +895,10 @@ export default function Landing({ onStart, onSignUp, session }) {
             self<span style={{ color: C.accentText, fontWeight: 500 }}>audit</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-            <button onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })} style={{ fontSize: 14, color: C.inkSoft, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500, padding: 0 }}>
+            <button onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })} style={{ fontSize: 15, color: C.inkSoft, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500, padding: 0 }}>
               Pricing
             </button>
-            <button onClick={() => { window.location.hash = 'login' }} style={{ fontSize: 14, color: C.inkMuted, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500, padding: 0 }}>
+            <button onClick={() => { window.location.hash = 'login' }} style={{ fontSize: 15, color: C.inkMuted, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500, padding: 0 }}>
               Sign in
             </button>
             <VisionWidget
@@ -923,7 +923,7 @@ export default function Landing({ onStart, onSignUp, session }) {
                 borderRadius: 999,
                 padding: '7px 14px',
                 cursor: 'pointer',
-                fontSize: 13,
+                fontSize: 14,
                 fontWeight: 500,
                 color: C.inkSoft,
                 fontFamily: 'inherit',
@@ -936,7 +936,7 @@ export default function Landing({ onStart, onSignUp, session }) {
               {theme === 'dark' ? '☀ Light' : '☾ Dark'}
             </button>
             <PrimaryButton label="Start free audit" onClick={() => handleAuditStart()} small C={C} />
-            <div style={{ fontSize: 14, color: C.inkMuted }}>
+            <div style={{ fontSize: 15, color: C.inkMuted }}>
               by{' '}
               <a href="https://vnklo.com" target="_blank" rel="noopener" style={{ color: C.accentText, textDecoration: 'none', fontWeight: 500 }}>
                 Vnklo
@@ -949,7 +949,7 @@ export default function Landing({ onStart, onSignUp, session }) {
       {/* ── 1. Hero ── */}
       <section style={{ padding: '112px 0 100px', textAlign: 'center', background: 'none' }}>
         <div style={wrap}>
-          <div style={{ fontSize: 12, letterSpacing: '0.18em', textTransform: 'uppercase', color: C.accentText, fontWeight: 600, marginBottom: 24 }}>
+          <div style={{ fontSize: 13, letterSpacing: '0.18em', textTransform: 'uppercase', color: C.accentText, fontWeight: 600, marginBottom: 24 }}>
             Your problems. Your goals. Your next move. One system.
           </div>
 
@@ -982,7 +982,7 @@ export default function Landing({ onStart, onSignUp, session }) {
           </p>
 
           <p style={{
-            fontSize: 16,
+            fontSize: 17,
             color: C.inkMuted,
             maxWidth: 580,
             margin: '0 auto 48px',
@@ -1020,7 +1020,7 @@ export default function Landing({ onStart, onSignUp, session }) {
                   background: 'none',
                   border: 'none',
                   outline: 'none',
-                  fontSize: 15,
+                  fontSize: 16,
                   color: C.ink,
                   fontFamily: 'inherit',
                   minWidth: 0,
@@ -1034,7 +1034,7 @@ export default function Landing({ onStart, onSignUp, session }) {
                   border: 'none',
                   borderRadius: 999,
                   padding: '12px 22px',
-                  fontSize: 15,
+                  fontSize: 16,
                   fontWeight: 600,
                   cursor: 'pointer',
                   fontFamily: 'inherit',
@@ -1048,7 +1048,7 @@ export default function Landing({ onStart, onSignUp, session }) {
                 Let&apos;s go →
               </button>
             </div>
-            <div style={{ marginTop: 14, fontSize: 13, color: C.inkMuted }}>
+            <div style={{ marginTop: 14, fontSize: 14, color: C.inkMuted }}>
               Free root-cause diagnosis. No account needed. Takes 5 minutes. Brutally honest.
             </div>
           </div>
@@ -1060,7 +1060,7 @@ export default function Landing({ onStart, onSignUp, session }) {
         <div style={wrap}>
           <div style={sectionLabel(C)}>Advisory fatigue</div>
           <h2 style={h2Style(C)}>Why founders are replacing advisory calls and meetings.</h2>
-          <p style={{ textAlign: 'center', fontSize: 18, color: C.inkSoft, maxWidth: 640, margin: '0 auto 56px' }}>
+          <p style={{ textAlign: 'center', fontSize: 19, color: C.inkSoft, maxWidth: 640, margin: '0 auto 56px' }}>
             The old model was built for a world that moved slowly. Yours doesn't.
           </p>
 
@@ -1068,22 +1068,22 @@ export default function Landing({ onStart, onSignUp, session }) {
             {/* Header */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderBottom: `1px solid ${C.border}`, background: C.surface2 }}>
               <div style={{ padding: '20px 28px', borderRight: `1px solid ${C.border}` }}>
-                <div style={{ fontSize: 14, fontWeight: 600, color: C.inkMuted }}>What you're doing now</div>
-                <div style={{ fontSize: 12, color: C.inkFaint, marginTop: 4 }}>Slow, expensive, guessing</div>
+                <div style={{ fontSize: 15, fontWeight: 600, color: C.inkMuted }}>What you're doing now</div>
+                <div style={{ fontSize: 13, color: C.inkFaint, marginTop: 4 }}>Slow, expensive, guessing</div>
               </div>
               <div style={{ padding: '20px 28px' }}>
-                <div style={{ fontSize: 14, fontWeight: 600, color: C.accentText }}>SelfAudit</div>
-                <div style={{ fontSize: 12, color: C.inkFaint, marginTop: 4 }}>Instant, data-driven, persistent</div>
+                <div style={{ fontSize: 15, fontWeight: 600, color: C.accentText }}>SelfAudit</div>
+                <div style={{ fontSize: 13, color: C.inkFaint, marginTop: 4 }}>Instant, data-driven, persistent</div>
               </div>
             </div>
 
             {compareRows.map((row, i) => (
               <div key={row.dim} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderBottom: i < compareRows.length - 1 ? `1px solid ${C.border}` : 'none' }}>
                 <div style={{ padding: '18px 28px', borderRight: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  <div style={{ fontSize: 14, color: C.inkSoft, fontWeight: 500 }}>{row.dim}</div>
-                  <div style={{ fontSize: 13, color: C.inkFaint }}>{row.old}</div>
+                  <div style={{ fontSize: 15, color: C.inkSoft, fontWeight: 500 }}>{row.dim}</div>
+                  <div style={{ fontSize: 14, color: C.inkFaint }}>{row.old}</div>
                 </div>
-                <div style={{ padding: '18px 28px', fontSize: 14, color: C.accentText, fontWeight: 600, display: 'flex', alignItems: 'center' }}>
+                <div style={{ padding: '18px 28px', fontSize: 15, color: C.accentText, fontWeight: 600, display: 'flex', alignItems: 'center' }}>
                   {row.neo}
                 </div>
               </div>
@@ -1097,15 +1097,15 @@ export default function Landing({ onStart, onSignUp, session }) {
         <div style={wrap}>
           <div style={sectionLabel(C)}>Why this works</div>
           <h2 style={h2Style(C)}>The intelligence moat.</h2>
-          <p style={{ textAlign: 'center', fontSize: 18, color: C.inkSoft, maxWidth: 640, margin: '0 auto 56px' }}>
+          <p style={{ textAlign: 'center', fontSize: 19, color: C.inkSoft, maxWidth: 640, margin: '0 auto 56px' }}>
             We're not "honest." We're technically superior. Here's why.
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20, maxWidth: 1040, margin: '0 auto' }}>
             {intelligencePillars.map(pillar => (
               <div key={pillar.title} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, padding: 28 }}>
-                <div style={{ color: C.accentText, fontSize: 20, marginBottom: 16 }}>→</div>
-                <h3 style={{ fontSize: 19, fontWeight: 600, marginBottom: 12, letterSpacing: '-0.02em', color: C.ink }}>{pillar.title}</h3>
-                <p style={{ color: C.inkSoft, fontSize: 15, margin: 0 }}>{pillar.body}</p>
+                <div style={{ color: C.accentText, fontSize: 21, marginBottom: 16 }}>→</div>
+                <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 12, letterSpacing: '-0.02em', color: C.ink }}>{pillar.title}</h3>
+                <p style={{ color: C.inkSoft, fontSize: 16, margin: 0 }}>{pillar.body}</p>
               </div>
             ))}
           </div>
@@ -1117,7 +1117,7 @@ export default function Landing({ onStart, onSignUp, session }) {
         <div style={wrap}>
           <div style={sectionLabel(C)}>The engine, live</div>
           <h2 style={h2Style(C)}>Where business failure hides.</h2>
-          <p style={{ textAlign: 'center', fontSize: 18, color: C.inkSoft, maxWidth: 640, margin: '0 auto 48px' }}>
+          <p style={{ textAlign: 'center', fontSize: 19, color: C.inkSoft, maxWidth: 640, margin: '0 auto 48px' }}>
             Our Intelligence Layer maps 40+ industries and 200+ failure points. Watch it work.
           </p>
           <DiagnosticLoop C={C} />
@@ -1129,33 +1129,33 @@ export default function Landing({ onStart, onSignUp, session }) {
         <div style={wrap}>
           <div style={sectionLabel(C)}>Intelligence in action</div>
           <h2 style={h2Style(C)}>Evidence of the Intelligence Layer.</h2>
-          <p style={{ textAlign: 'center', fontSize: 18, color: C.inkSoft, maxWidth: 640, margin: '0 auto 56px' }}>
+          <p style={{ textAlign: 'center', fontSize: 19, color: C.inkSoft, maxWidth: 640, margin: '0 auto 56px' }}>
             We don't tell you what you want to hear. We tell you what's actually killing your growth.
           </p>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24 }}>
             {verdictCards.map(card => (
               <div key={card.symptom} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, padding: 28, display: 'flex', flexDirection: 'column', gap: 0 }}>
-                <div style={{ fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 600, marginBottom: 20, padding: '4px 10px', borderRadius: 999, display: 'inline-block', alignSelf: 'flex-start', background: theme === 'dark' ? card.badgeBgDark : card.badgeBgLight, color: theme === 'dark' ? card.badgeColorDark : card.badgeColorLight }}>
+                <div style={{ fontSize: 12, letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 600, marginBottom: 20, padding: '4px 10px', borderRadius: 999, display: 'inline-block', alignSelf: 'flex-start', background: theme === 'dark' ? card.badgeBgDark : card.badgeBgLight, color: theme === 'dark' ? card.badgeColorDark : card.badgeColorLight }}>
                   {card.badge}
                 </div>
 
                 <div style={{ marginBottom: 16 }}>
-                  <div style={{ fontSize: 11, color: C.inkFaint, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>What they thought</div>
-                  <div style={{ fontFamily: serif, fontSize: 18, fontWeight: 600, color: C.inkSoft, lineHeight: 1.4 }}>{card.symptom}</div>
+                  <div style={{ fontSize: 12, color: C.inkFaint, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>What they thought</div>
+                  <div style={{ fontFamily: serif, fontSize: 19, fontWeight: 600, color: C.inkSoft, lineHeight: 1.4 }}>{card.symptom}</div>
                 </div>
 
                 <div style={{ marginBottom: 16 }}>
-                  <div style={{ fontSize: 11, color: C.inkFaint, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>What we found</div>
-                  <div style={{ fontSize: 15, color: C.ink, lineHeight: 1.55, fontWeight: 500 }}>{card.reveal}</div>
+                  <div style={{ fontSize: 12, color: C.inkFaint, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>What we found</div>
+                  <div style={{ fontSize: 16, color: C.ink, lineHeight: 1.55, fontWeight: 500 }}>{card.reveal}</div>
                 </div>
 
                 <div style={{ padding: 14, background: C.surface2, borderRadius: 10, marginTop: 'auto' }}>
-                  <div style={{ fontSize: 11, color: C.accentText, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>The Outcome</div>
-                  <div style={{ fontSize: 14, color: C.inkSoft }}>{card.outcome}</div>
+                  <div style={{ fontSize: 12, color: C.accentText, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>The Outcome</div>
+                  <div style={{ fontSize: 15, color: C.inkSoft }}>{card.outcome}</div>
                 </div>
 
-                <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 16, marginTop: 16, display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
+                <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 16, marginTop: 16, display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
                   <span style={{ color: C.inkMuted }}>{card.industry}</span>
                   <span style={{ color: C.inkMuted }}>{card.time} · {card.findings}</span>
                 </div>
@@ -1170,7 +1170,7 @@ export default function Landing({ onStart, onSignUp, session }) {
         <div style={wrap}>
           <div style={sectionLabel(C)}>The unfair advantage</div>
           <h2 style={h2Style(C)}>Advice you can't ignore.</h2>
-          <p style={{ textAlign: 'center', fontSize: 18, color: C.inkSoft, maxWidth: 680, margin: '0 auto 60px' }}>
+          <p style={{ textAlign: 'center', fontSize: 19, color: C.inkSoft, maxWidth: 680, margin: '0 auto 60px' }}>
             Most audits are static. A PDF you open once and file away. SelfAudit creates an intelligent loop that monitors your progress, alerts you when you're slipping, and forces the discipline of execution.
           </p>
 
@@ -1193,8 +1193,8 @@ export default function Landing({ onStart, onSignUp, session }) {
               },
             ].map(item => (
               <div key={item.title} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, padding: 28 }}>
-                <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 12, letterSpacing: '-0.02em', color: C.ink }}>{item.title}</h3>
-                <p style={{ color: C.inkSoft, fontSize: 15, margin: 0 }}>{item.body}</p>
+                <h3 style={{ fontSize: 21, fontWeight: 600, marginBottom: 12, letterSpacing: '-0.02em', color: C.ink }}>{item.title}</h3>
+                <p style={{ color: C.inkSoft, fontSize: 16, margin: 0 }}>{item.body}</p>
               </div>
             ))}
           </div>
@@ -1206,23 +1206,23 @@ export default function Landing({ onStart, onSignUp, session }) {
         <div style={wrap}>
           <div style={sectionLabel(C)}>The AI question, answered honestly</div>
           <h2 style={h2Style(C)}>The "AI Strategy" Graveyard.</h2>
-          <p style={{ textAlign: 'center', fontSize: 18, color: C.inkSoft, maxWidth: 680, margin: '0 auto 60px' }}>
+          <p style={{ textAlign: 'center', fontSize: 19, color: C.inkSoft, maxWidth: 680, margin: '0 auto 60px' }}>
             Most AI projects are expensive science experiments that die in a slide deck. SelfAudit doesn't just "deploy AI" — it validates whether AI is even the solution.
           </p>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 28, maxWidth: 1040, margin: '0 auto' }}>
             {aiCards.map(card => (
               <div key={card.title} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, padding: 30, display: 'flex', flexDirection: 'column' }}>
-                <div style={{ width: 36, height: 36, borderRadius: '50%', background: C.accentSoft, color: C.accentText, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: serif, fontSize: 18, fontWeight: 700, marginBottom: 18, flexShrink: 0 }}>
+                <div style={{ width: 36, height: 36, borderRadius: '50%', background: C.accentSoft, color: C.accentText, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: serif, fontSize: 19, fontWeight: 700, marginBottom: 18, flexShrink: 0 }}>
                   {card.num}
                 </div>
-                <h3 style={{ fontFamily: serif, fontSize: 22, fontWeight: 700, letterSpacing: '-0.02em', margin: '0 0 14px', lineHeight: 1.2, color: C.ink }}>{card.title}</h3>
-                <p style={{ fontSize: 15, color: C.inkSoft, margin: 0 }}>{card.body}</p>
+                <h3 style={{ fontFamily: serif, fontSize: 23, fontWeight: 700, letterSpacing: '-0.02em', margin: '0 0 14px', lineHeight: 1.2, color: C.ink }}>{card.title}</h3>
+                <p style={{ fontSize: 16, color: C.inkSoft, margin: 0 }}>{card.body}</p>
               </div>
             ))}
           </div>
 
-          <p style={{ textAlign: 'center', marginTop: 52, fontFamily: serif, fontStyle: 'italic', fontSize: 22, color: C.inkSoft, maxWidth: 760, marginLeft: 'auto', marginRight: 'auto' }}>
+          <p style={{ textAlign: 'center', marginTop: 52, fontFamily: serif, fontStyle: 'italic', fontSize: 23, color: C.inkSoft, maxWidth: 760, marginLeft: 'auto', marginRight: 'auto' }}>
             You'll leave knowing exactly which problems deserve AI, and which ones deserve a manager, a process, or a hard conversation.
           </p>
         </div>
@@ -1233,19 +1233,19 @@ export default function Landing({ onStart, onSignUp, session }) {
         <div style={wrap}>
           <div style={sectionLabel(C)}>Pricing</div>
           <h2 style={h2Style(C)}>Diagnosis is free. Execution is the edge.</h2>
-          <p style={{ textAlign: 'center', fontSize: 18, color: C.inkSoft, maxWidth: 700, margin: '0 auto 60px' }}>
+          <p style={{ textAlign: 'center', fontSize: 19, color: C.inkSoft, maxWidth: 700, margin: '0 auto 60px' }}>
             Start with the truth. Upgrade when you're ready to fix it.
           </p>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 24, maxWidth: 1080, margin: '0 auto' }}>
             {/* Free */}
             <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 18, padding: 32, display: 'flex', flexDirection: 'column' }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: C.inkMuted, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 6 }}>Free</div>
-              <div style={{ fontFamily: serif, fontSize: 28, fontWeight: 700, color: C.ink, marginBottom: 10 }}>Root-Cause Diagnosis</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: C.inkMuted, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 6 }}>Free</div>
+              <div style={{ fontFamily: serif, fontSize: 29, fontWeight: 700, color: C.ink, marginBottom: 10 }}>Root-Cause Diagnosis</div>
               <div style={{ fontFamily: serif, fontSize: 48, fontWeight: 700, letterSpacing: '-0.04em', color: C.ink, lineHeight: 1 }}>
                 $0
               </div>
-              <div style={{ fontSize: 14, color: C.inkMuted, marginTop: 8, marginBottom: 24 }}>The truth about your business.</div>
+              <div style={{ fontSize: 15, color: C.inkMuted, marginTop: 8, marginBottom: 24 }}>The truth about your business.</div>
 
               <div style={{ marginBottom: 24 }}>
                 <FeatureList items={freeFeatures} color={C.inkSoft} iconColor={C.accentText} />
@@ -1253,7 +1253,7 @@ export default function Landing({ onStart, onSignUp, session }) {
 
               <div style={{ marginTop: 'auto' }}>
                 <OutlineButton label="Start free audit" onClick={() => handleAuditStart()} C={C} />
-                <div style={{ fontSize: 12, color: C.inkMuted, marginTop: 12 }}>One audit. No account needed.</div>
+                <div style={{ fontSize: 13, color: C.inkMuted, marginTop: 12 }}>One audit. No account needed.</div>
               </div>
             </div>
 
@@ -1261,7 +1261,7 @@ export default function Landing({ onStart, onSignUp, session }) {
             <GrowthOSCard onSignUp={handleSignUpWithPlan} C={C} />
           </div>
 
-          <p style={{ textAlign: 'center', marginTop: 34, fontFamily: serif, fontStyle: 'italic', fontSize: 20, color: C.inkSoft, maxWidth: 760, marginLeft: 'auto', marginRight: 'auto' }}>
+          <p style={{ textAlign: 'center', marginTop: 34, fontFamily: serif, fontStyle: 'italic', fontSize: 21, color: C.inkSoft, maxWidth: 760, marginLeft: 'auto', marginRight: 'auto' }}>
             Your competitors aren't smarter. They just have better data on their own business.
           </p>
         </div>
@@ -1274,14 +1274,14 @@ export default function Landing({ onStart, onSignUp, session }) {
           <div style={{ marginTop: 28 }}>
             <PrimaryButton label="Start your free audit" onClick={() => handleAuditStart()} C={C} />
           </div>
-          <div style={{ fontSize: 13, color: C.inkMuted, marginTop: 14 }}>
+          <div style={{ fontSize: 14, color: C.inkMuted, marginTop: 14 }}>
             5 minutes. No account needed. Brutally honest.
           </div>
         </div>
       </section>
 
       {/* ── Footer ── */}
-      <footer style={{ background: theme === 'dark' ? '#111820' : '#E8E0D4', color: '#B8B6B0', padding: '42px 0', textAlign: 'center', fontSize: 14, borderTop: `1px solid ${C.border}` }}>
+      <footer style={{ background: theme === 'dark' ? '#111820' : '#E8E0D4', color: '#B8B6B0', padding: '42px 0', textAlign: 'center', fontSize: 15, borderTop: `1px solid ${C.border}` }}>
         <div style={wrap}>
           Built by{' '}
           <a href="https://vnklo.com" target="_blank" rel="noopener" style={{ color: C.accentText, textDecoration: 'none', fontWeight: 500 }}>
