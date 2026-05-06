@@ -3,6 +3,7 @@ import { usePostHog } from '@posthog/react'
 
 const THEMES = {
   dark: {
+    theme: 'dark',
     bg: '#0F1520',
     surface: '#141D2B',
     surface2: '#111827',
@@ -23,6 +24,7 @@ const THEMES = {
     amber: '#C9A040',
   },
   light: {
+    theme: 'light',
     bg: '#F5F0E8',
     surface: '#EDE6DC',
     surface2: '#E8E0D4',
@@ -130,6 +132,58 @@ const diagnosticThreads = [
   { domain: 'Strategy', industry: 'Manufacturing', q: 'What\'s the single constraint stopping your next revenue tier?', a: 'CRITICAL: Capacity illusion. You\'re solving demand problems, not supply ones.' },
   { domain: 'Product', industry: 'SaaS', q: 'Are users churning before they hit the activation moment?', a: 'CRITICAL: Onboarding is leaking value. Fix this before more features.' },
 ]
+
+const visionOutputs = {
+  'Hit $1M ARR': {
+    'Pre-revenue': 'Getting to $1M from zero is a distribution problem, not a product one. You need one repeatable channel before anything else.',
+    'Early traction': 'You have proof. $1M from early traction is a conversion and pricing problem. The market exists — you\'re just leaving money in it.',
+    'Plateaued': 'A plateau on the way to $1M means your current channel is maxed. The next dollar needs a different door.',
+    'Growing but bleeding cash': 'Growing to $1M while bleeding means your unit economics are broken. Fix the margin before you fix the growth.',
+    'Ready to scale': 'You\'re positioned. $1M is a systems and capacity problem now — not a sales one.',
+  },
+  '2x my revenue': {
+    'Pre-revenue': 'You can\'t double what doesn\'t exist yet. First dollar before second dollar.',
+    'Early traction': 'Doubling from early traction means finding your second acquisition channel. One channel is a single point of failure.',
+    'Plateaued': 'Revenue plateaus before doubling for one reason: you\'ve exhausted your current buyer. The next 2x is a new segment.',
+    'Growing but bleeding cash': 'Doubling revenue while bleeding cash doubles your problem. Margin first, then scale.',
+    'Ready to scale': 'You\'re ready. 2x from here is an execution and capacity problem. Let\'s find what breaks first when you push.',
+  },
+  'Exit in 3 years': {
+    'Pre-revenue': 'Three years to exit with no revenue is aggressive. You need 18 months of strong growth before anyone values this.',
+    'Early traction': 'Exit in 3 years from early traction is achievable — if you build the right metrics story now. EBITDA and retention are what buyers look at.',
+    'Plateaued': 'A plateau kills exit multiples. Buyers pay for trajectory, not history. You need 12 months of upward movement before going to market.',
+    'Growing but bleeding cash': 'Nobody buys a bleeding business at a premium. Fix the cash model — that\'s your first 12 months.',
+    'Ready to scale': 'Good position. 3 years to exit means you need 2 years of clean growth and 1 year of process. Start the documentation now.',
+  },
+  'Break even': {
+    'Pre-revenue': 'Breaking even is a cost structure and pricing problem. Let\'s find where your model leaks before you burn more.',
+    'Early traction': 'You\'re close. Breaking even from early traction means your CAC is too high or your price is too low. Usually both.',
+    'Plateaued': 'Plateau and not breaking even means your fixed costs scaled before your revenue did. One of them needs to move.',
+    'Growing but bleeding cash': 'Growing and not breaking even is the most dangerous position. You\'re buying revenue. Let\'s find what it actually costs you.',
+    'Ready to scale': 'Scaling without breaking even first multiplies the problem. Get to zero before you go positive.',
+  },
+  'Enter new market': {
+    'Pre-revenue': 'Entering a new market without proving the first one is a sequencing error. Nail market one first.',
+    'Early traction': 'New market from early traction works if your ICP transfers. If it doesn\'t, you\'re starting over with less runway.',
+    'Plateaued': 'A plateau is often a sign you\'ve hit the ceiling of your current market. A new market might be the right move — or a distraction. Let\'s find out.',
+    'Growing but bleeding cash': 'New markets cost money you don\'t have margin for right now. Fix the bleed first.',
+    'Ready to scale': 'You\'re positioned for it. New market entry from scale is a GTM and localisation problem. Let\'s map the gaps.',
+  },
+  'Scale the team': {
+    'Pre-revenue': 'Scaling a team before revenue is how startups die. Get the money first.',
+    'Early traction': 'Hiring from early traction works if you\'re hiring for your bottleneck. Most people hire for the wrong role at this stage.',
+    'Plateaued': 'Team size isn\'t your plateau problem. Adding people to a stuck business makes it more stuck.',
+    'Growing but bleeding cash': 'Hiring while bleeding is the fastest way to run out of runway. Every new hire needs to be cash-positive within 90 days.',
+    'Ready to scale': 'Good. Scaling the team from a strong base is a hiring brief and onboarding problem. Let\'s find where the first 5 hires need to go.',
+  },
+}
+
+const timelineLabels = {
+  '6 months': 'in 6 months',
+  '12 months': 'in 12 months',
+  '2 years': 'in 2 years',
+  '3+ years': 'in 3+ years',
+}
 
 const intelligencePillars = [
   {
@@ -593,6 +647,145 @@ function GrowthOSCard({ onSignUp, C }) {
   )
 }
 
+function VisionWidget({ C, serif, visionOpen, setVisionOpen, visionGoal, setVisionGoal, visionCurrent, setVisionCurrent, visionTimeline, setVisionTimeline, visionRef, onStart }) {
+
+  const goals = ['Hit $1M ARR', '2x my revenue', 'Exit in 3 years', 'Break even', 'Enter new market', 'Scale the team']
+  const currentStates = ['Pre-revenue', 'Early traction', 'Plateaued', 'Growing but bleeding cash', 'Ready to scale']
+  const timelines = ['6 months', '12 months', '2 years', '3+ years']
+
+  const output = visionGoal && visionCurrent ? visionOutputs[visionGoal]?.[visionCurrent] : null
+  const allSelected = visionGoal && visionCurrent && visionTimeline
+
+  const tileStyle = (selected) => ({
+    padding: '8px 14px',
+    borderRadius: 999,
+    fontSize: 13,
+    fontWeight: 500,
+    cursor: 'pointer',
+    border: `1px solid ${selected ? C.accent : C.border2}`,
+    background: selected ? C.accentSoft : 'transparent',
+    color: selected ? C.accentText : C.inkSoft,
+    transition: 'all 0.15s ease',
+    whiteSpace: 'nowrap',
+  })
+
+  const reset = () => {
+    setVisionGoal(null)
+    setVisionCurrent(null)
+    setVisionTimeline(null)
+  }
+
+  return (
+    <div ref={visionRef} style={{ position: 'relative' }}>
+      <button
+        onClick={() => { setVisionOpen(o => !o); reset() }}
+        style={{
+          background: 'none',
+          border: `1px solid ${C.border2}`,
+          borderRadius: 999,
+          padding: '7px 16px',
+          cursor: 'pointer',
+          fontSize: 13,
+          fontWeight: 600,
+          color: C.inkSoft,
+          fontFamily: 'inherit',
+          letterSpacing: '-0.01em',
+        }}
+      >
+        Vision.
+      </button>
+
+      {visionOpen && (
+        <div style={{
+          position: 'absolute',
+          top: 'calc(100% + 12px)',
+          right: 0,
+          width: 480,
+          background: C.surface,
+          border: `1px solid ${C.border}`,
+          borderRadius: 16,
+          padding: 24,
+          zIndex: 100,
+          boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+        }}>
+          <div style={{ fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: C.inkMuted, marginBottom: 16 }}>
+            What's yours?
+          </div>
+
+          {/* Q1 — Goal */}
+          <div style={{ marginBottom: 18 }}>
+            <div style={{ fontSize: 13, color: C.inkSoft, marginBottom: 10, fontWeight: 500 }}>The goal</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {goals.map(g => (
+                <div key={g} onClick={() => setVisionGoal(g)} style={tileStyle(visionGoal === g)}>{g}</div>
+              ))}
+            </div>
+          </div>
+
+          {/* Q2 — Current */}
+          {visionGoal && (
+            <div style={{ marginBottom: 18 }}>
+              <div style={{ fontSize: 13, color: C.inkSoft, marginBottom: 10, fontWeight: 500 }}>Right now</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {currentStates.map(s => (
+                  <div key={s} onClick={() => setVisionCurrent(s)} style={tileStyle(visionCurrent === s)}>{s}</div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Q3 — Timeline */}
+          {visionCurrent && (
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ fontSize: 13, color: C.inkSoft, marginBottom: 10, fontWeight: 500 }}>Timeline</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {timelines.map(t => (
+                  <div key={t} onClick={() => setVisionTimeline(t)} style={tileStyle(visionTimeline === t)}>{t}</div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Output */}
+          {output && visionTimeline && (
+            <div style={{
+              borderTop: `1px solid ${C.border}`,
+              paddingTop: 18,
+            }}>
+              <div style={{
+                fontFamily: serif,
+                fontSize: 15,
+                color: C.ink,
+                lineHeight: 1.6,
+                marginBottom: 16,
+              }}>
+                {output}
+              </div>
+              <button
+                onClick={() => { setVisionOpen(false); onStart(`Goal: ${visionGoal} ${timelineLabels[visionTimeline]}. Currently: ${visionCurrent}.`) }}
+                style={{
+                  width: '100%',
+                  background: C.accent,
+                  color: C.theme === 'dark' ? '#E8E2D8' : '#F5F0E8',
+                  border: 'none',
+                  borderRadius: 999,
+                  padding: '12px 20px',
+                  fontSize: 14,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                }}
+              >
+                Map the path — free →
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Main Component ────────────────────────────────────────────────────────────
 
 export default function Landing({ onStart, onSignUp, session }) {
@@ -605,6 +798,11 @@ export default function Landing({ onStart, onSignUp, session }) {
   const typewriterRef = useRef(null)
   const statementIndexRef = useRef(0)
   const userFocusedRef = useRef(false)
+  const [visionOpen, setVisionOpen] = useState(false)
+  const [visionGoal, setVisionGoal] = useState(null)
+  const [visionCurrent, setVisionCurrent] = useState(null)
+  const [visionTimeline, setVisionTimeline] = useState(null)
+  const visionRef = useRef(null)
 
   useEffect(() => {
     localStorage.setItem('sa-theme', theme)
@@ -651,6 +849,16 @@ export default function Landing({ onStart, onSignUp, session }) {
     return () => { cancelled = true }
   }, [])
 
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (visionRef.current && !visionRef.current.contains(e.target)) {
+        setVisionOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
   const handleAuditStart = (problem) => {
     posthog?.capture('audit_started', { source: 'landing', problem: problem || '' })
     onStart(problem)
@@ -693,6 +901,20 @@ export default function Landing({ onStart, onSignUp, session }) {
             <button onClick={() => { window.location.hash = 'login' }} style={{ fontSize: 14, color: C.inkMuted, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500, padding: 0 }}>
               Sign in
             </button>
+            <VisionWidget
+              C={C}
+              serif={serif}
+              visionOpen={visionOpen}
+              setVisionOpen={setVisionOpen}
+              visionGoal={visionGoal}
+              setVisionGoal={setVisionGoal}
+              visionCurrent={visionCurrent}
+              setVisionCurrent={setVisionCurrent}
+              visionTimeline={visionTimeline}
+              setVisionTimeline={setVisionTimeline}
+              visionRef={visionRef}
+              onStart={handleAuditStart}
+            />
             <button
               onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
               style={{
