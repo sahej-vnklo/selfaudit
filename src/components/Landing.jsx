@@ -81,8 +81,10 @@ const compareRows = [
 const verdictCards = [
   {
     badge: 'Critical · Operations',
-    badgeBg: '#1A0A0A',
-    badgeColor: '#C05050',
+    badgeBgDark: '#1A0A0A',
+    badgeBgLight: '#F5E8E8',
+    badgeColorDark: '#C05050',
+    badgeColorLight: '#8C2A2A',
     symptom: '"QC team is burning cash on mistakes."',
     reveal: 'Root cause traced to a non-existent accountability protocol — not a tech failure.',
     outcome: 'Process redesign + automated performance oversight.',
@@ -92,8 +94,10 @@ const verdictCards = [
   },
   {
     badge: 'Critical · Strategy',
-    badgeBg: '#1A1508',
-    badgeColor: '#C9A040',
+    badgeBgDark: '#1A1508',
+    badgeBgLight: '#F5F0E0',
+    badgeColorDark: '#C9A040',
+    badgeColorLight: '#7A5A10',
     symptom: '"Revenue is flat despite heavy effort."',
     reveal: 'Seasonal capital model misaligned with actual service capacity.',
     outcome: 'Pricing model restructure + real-time capacity-to-revenue tracking.',
@@ -103,8 +107,10 @@ const verdictCards = [
   },
   {
     badge: 'Needs work · People',
-    badgeBg: '#0A1A10',
-    badgeColor: '#4A9E6B',
+    badgeBgDark: '#0A1A10',
+    badgeBgLight: '#E8F5EE',
+    badgeColorDark: '#4A9E6B',
+    badgeColorLight: '#1A6B3A',
     symptom: '"We need to automate, but the product isn\'t ready."',
     reveal: 'Management churn is the actual bottleneck — not technical debt.',
     outcome: 'Hiring brief + Team alignment SOPs removed organisational drag.',
@@ -909,7 +915,7 @@ export default function Landing({ onStart, onSignUp, session }) {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24 }}>
             {verdictCards.map(card => (
               <div key={card.symptom} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, padding: 28, display: 'flex', flexDirection: 'column', gap: 0 }}>
-                <div style={{ fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 600, marginBottom: 20, padding: '4px 10px', borderRadius: 999, display: 'inline-block', alignSelf: 'flex-start', background: card.badgeBg, color: card.badgeColor }}>
+                <div style={{ fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 600, marginBottom: 20, padding: '4px 10px', borderRadius: 999, display: 'inline-block', alignSelf: 'flex-start', background: theme === 'dark' ? card.badgeBgDark : card.badgeBgLight, color: theme === 'dark' ? card.badgeColorDark : card.badgeColorLight }}>
                   {card.badge}
                 </div>
 
