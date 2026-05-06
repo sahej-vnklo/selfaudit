@@ -947,7 +947,7 @@ export default function Landing({ onStart, onSignUp, session }) {
       </nav>
 
       {/* ── 1. Hero ── */}
-      <section style={{ padding: '112px 0 100px', textAlign: 'center', background: theme === 'dark' ? 'radial-gradient(circle at top, rgba(74,127,168,0.15), transparent 34%)' : 'radial-gradient(circle at top, rgba(140,74,66,0.08), transparent 34%)' }}>
+      <section style={{ padding: '112px 0 100px', textAlign: 'center', background: 'none' }}>
         <div style={wrap}>
           <div style={{ fontSize: 12, letterSpacing: '0.18em', textTransform: 'uppercase', color: C.accentText, fontWeight: 600, marginBottom: 24 }}>
             Your problems. Your goals. Your next move. One system.
