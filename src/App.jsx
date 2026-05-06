@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react'
 import * as Sentry from '@sentry/react'
 import { supabase, initSupabase } from './lib/supabase.js'
 import Landing from './components/Landing.jsx'
-import Onboarding from './components/Onboarding.jsx'
 import AuditChat from './components/AuditChat.jsx'
 import Report from './components/Report.jsx'
 import Login from './components/auth/Login.jsx'
@@ -13,7 +12,6 @@ import AdminDashboard from './pages/AdminDashboard.jsx'
 
 const SCREENS = {
   LANDING:             'landing',
-  ONBOARDING:          'onboarding',
   AUDIT:               'audit',
   REPORT:              'report',
   LOGIN:               'login',
@@ -152,22 +150,37 @@ export default function App() {
   }, [navigate])
 
   // ── Existing audit flow handlers ──────────────────────────────────────────
-  const handleStart      = () => navigate(SCREENS.ONBOARDING)
-  const handleOnboarding = async (info) => {
-    const merged = userInfo ? { ...userInfo, ...info } : info
-    setUserInfo(merged)
-    if (session && info.context?.trim()) {
-      try {
-        const sb = await initSupabase()
-        await sb.from('profiles').update({ context: info.context.trim() }).eq('id', session.user.id)
-      } catch (e) {
-        Sentry.captureException(e)
-        console.warn('[onboarding] context save failed:', e?.message)
-      }
-    }
+  const handleAuditStart = (problem) => {
+    const isGoalMode = typeof problem === 'string' && problem.startsWith('Goal:')
+    setUserInfo({
+      name: '',
+      email: '',
+      phone: '',
+      context: problem || '',
+      userId: session?.user?.id || null,
+      tier: null,
+      industry: null,
+      domain: null,
+      goalMode: isGoalMode,
+      goal: isGoalMode ? problem.split('Goal:')[1]?.split('.')[0]?.trim() : '',
+      goalTimeline: isGoalMode ? (problem.match(/in (.+?)\./)?.[1] || '') : '',
+      goalBaseline: '',
+      anonymous: !session,
+    })
     navigate(SCREENS.AUDIT)
   }
-  const handleReportReady = (history, sessionId) => { setConversationHistory(history); setAuditSessionId(sessionId ?? null); navigate(SCREENS.REPORT) }
+  const handleReportReady = (history, sessionId, contactInfo) => {
+    setConversationHistory(history)
+    setAuditSessionId(sessionId ?? null)
+    if (contactInfo?.email) {
+      setUserInfo(prev => prev ? {
+        ...prev,
+        name: contactInfo.name || prev.name || '',
+        email: contactInfo.email || prev.email || '',
+      } : prev)
+    }
+    navigate(SCREENS.REPORT)
+  }
   const handleSignOut = () => {
     // Use the client if it's already initialized — don't await initSupabase()
     // because it may still be pending and will silently hang the button click.
@@ -246,18 +259,7 @@ export default function App() {
   // ── Existing audit flow ───────────────────────────────────────────────────
   return (
     <>
-      {screen === SCREENS.LANDING    && <Landing onStart={handleStart} onSignUp={(plan) => { window.location.hash = plan ? `signup?plan=${plan}` : 'signup' }} session={session} />}
-      {screen === SCREENS.ONBOARDING && (
-        <Onboarding
-          onComplete={handleOnboarding}
-          defaultValues={userInfo ? {
-            name:    userInfo.name    || '',
-            email:   userInfo.email   || '',
-            phone:   userInfo.phone   || '',
-            context: userInfo.context || '',
-          } : undefined}
-        />
-      )}
+      {screen === SCREENS.LANDING    && <Landing onStart={handleAuditStart} onSignUp={(plan) => { window.location.hash = plan ? `signup?plan=${plan}` : 'signup' }} session={session} />}
       {screen === SCREENS.AUDIT && userInfo && (
         <AuditChat
           userInfo={userInfo}
