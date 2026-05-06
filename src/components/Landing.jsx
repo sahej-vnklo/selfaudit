@@ -809,6 +809,43 @@ export default function Landing({ onStart, onSignUp, session }) {
   }, [theme])
 
   useEffect(() => {
+    const styleId = 'sa-bg-texture'
+    let el = document.getElementById(styleId)
+    if (!el) {
+      el = document.createElement('style')
+      el.id = styleId
+      document.head.appendChild(el)
+    }
+
+    if (theme === 'light') {
+      el.textContent = `
+      body {
+        background-image:
+          radial-gradient(ellipse 80% 60% at 10% 15%, rgba(210,198,178,0.35) 0%, transparent 70%),
+          radial-gradient(ellipse 70% 55% at 90% 85%, rgba(215,203,183,0.3) 0%, transparent 70%),
+          radial-gradient(ellipse 50% 40% at 75% 20%, rgba(225,215,198,0.2) 0%, transparent 70%),
+          radial-gradient(ellipse 45% 35% at 20% 80%, rgba(220,210,193,0.2) 0%, transparent 70%);
+        background-attachment: fixed;
+        background-color: #F5F0E8;
+        background-size: 100% 100%;
+      }
+    `
+    } else {
+      el.textContent = `
+      body {
+        background-image: none;
+        background-attachment: scroll;
+        background-color: #0F1520;
+      }
+    `
+    }
+
+    return () => {
+      if (el) el.textContent = ''
+    }
+  }, [theme])
+
+  useEffect(() => {
     let cancelled = false
 
     const runLoop = async () => {
