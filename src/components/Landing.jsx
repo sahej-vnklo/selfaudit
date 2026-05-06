@@ -212,6 +212,17 @@ const freeFeatures = [
   'Share report with Vnklo',
 ]
 
+const typewriterStatements = [
+  "Sales are flat but I don't know why.",
+  "We keep hiring but the team still feels broken.",
+  'Revenue is growing but margins keep shrinking.',
+  'My best people are burning out.',
+  "We're busy but never making progress.",
+  "Customers churn after 60 days and I can't figure out why.",
+  "I think we need AI but I'm not sure where.",
+  'Our ops are a mess and nobody owns anything.',
+]
+
 // ── Sub-components ────────────────────────────────────────────────────────────
 
 function PrimaryButton({ label, onClick, small = false, C }) {
@@ -543,10 +554,56 @@ export default function Landing({ onStart, onSignUp, session }) {
   const [theme, setTheme] = useState(() => localStorage.getItem('sa-theme') || 'dark')
   const C = THEMES[theme]
   const [inputValue, setInputValue] = useState('')
+  const [placeholder, setPlaceholder] = useState('')
+  const [isTyping, setIsTyping] = useState(false)
+  const typewriterRef = useRef(null)
+  const statementIndexRef = useRef(0)
+  const userFocusedRef = useRef(false)
 
   useEffect(() => {
     localStorage.setItem('sa-theme', theme)
   }, [theme])
+
+  useEffect(() => {
+    let cancelled = false
+
+    const runLoop = async () => {
+      while (!cancelled) {
+        if (userFocusedRef.current) {
+          await new Promise(r => setTimeout(r, 300))
+          continue
+        }
+
+        const statement = typewriterStatements[statementIndexRef.current % typewriterStatements.length]
+        statementIndexRef.current++
+
+        setIsTyping(true)
+        typewriterRef.current = statement
+
+        for (let i = 0; i <= statement.length; i++) {
+          if (cancelled || userFocusedRef.current) break
+          setPlaceholder(statement.slice(0, i))
+          await new Promise(r => setTimeout(r, 38))
+        }
+
+        await new Promise(r => setTimeout(r, 2000))
+
+        for (let i = statement.length; i >= 0; i--) {
+          if (cancelled || userFocusedRef.current) break
+          setPlaceholder(statement.slice(0, i))
+          await new Promise(r => setTimeout(r, 18))
+        }
+
+        setIsTyping(false)
+        typewriterRef.current = null
+
+        await new Promise(r => setTimeout(r, 400))
+      }
+    }
+
+    runLoop()
+    return () => { cancelled = true }
+  }, [])
 
   const handleAuditStart = (problem) => {
     posthog?.capture('audit_started', { source: 'landing', problem: problem || '' })
@@ -655,7 +712,9 @@ export default function Landing({ onStart, onSignUp, session }) {
                 value={inputValue}
                 onChange={e => setInputValue(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleDiagnose()}
-                placeholder={"Example: \"Sales are slow but I don't know why.\""}
+                placeholder={placeholder}
+                onFocus={() => { userFocusedRef.current = true; setPlaceholder('') }}
+                onBlur={() => { userFocusedRef.current = false }}
                 style={{
                   flex: 1,
                   background: 'none',
