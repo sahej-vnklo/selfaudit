@@ -607,7 +607,7 @@ export default function Landing({ onStart, onSignUp, session }) {
                 value={inputValue}
                 onChange={e => setInputValue(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleDiagnose()}
-                placeholder='Example: "Sales are slow but I don\'t know why."'
+                placeholder={"Example: \"Sales are slow but I don't know why.\""}
                 style={{
                   flex: 1,
                   background: 'none',
