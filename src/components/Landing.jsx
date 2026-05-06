@@ -898,7 +898,7 @@ export default function Landing({ onStart, onSignUp, session }) {
 
   const handleAuditStart = (problem) => {
     posthog?.capture('audit_started', { source: 'landing', problem: problem || '' })
-    onStart(problem)
+    onStart(problem ?? '')
   }
 
   const handleSignUpWithPlan = (plan) => {
@@ -918,7 +918,7 @@ export default function Landing({ onStart, onSignUp, session }) {
     if (inputValue.trim()) {
       handleAuditStart(inputValue.trim())
     } else {
-      handleAuditStart()
+      handleAuditStart('')
     }
   }
 
@@ -972,7 +972,7 @@ export default function Landing({ onStart, onSignUp, session }) {
             >
               {theme === 'dark' ? '☀ Light' : '☾ Dark'}
             </button>
-            <PrimaryButton label="Start free audit" onClick={() => handleAuditStart()} small C={C} />
+            <PrimaryButton label="Start free audit" onClick={() => handleAuditStart('')} small C={C} />
             <div style={{ fontSize: 15, color: C.inkMuted }}>
               by{' '}
               <a href="https://vnklo.com" target="_blank" rel="noopener" style={{ color: C.accentText, textDecoration: 'none', fontWeight: 500 }}>
@@ -1289,7 +1289,7 @@ export default function Landing({ onStart, onSignUp, session }) {
               </div>
 
               <div style={{ marginTop: 'auto' }}>
-                <OutlineButton label="Start free audit" onClick={() => handleAuditStart()} C={C} />
+                <OutlineButton label="Start free audit" onClick={() => handleAuditStart('')} C={C} />
                 <div style={{ fontSize: 13, color: C.inkMuted, marginTop: 12 }}>One audit. No account needed.</div>
               </div>
             </div>
@@ -1309,7 +1309,7 @@ export default function Landing({ onStart, onSignUp, session }) {
         <div style={wrap}>
           <h2 style={h2Style(C)}>Stop guessing. Get a diagnosis.</h2>
           <div style={{ marginTop: 28 }}>
-            <PrimaryButton label="Start your free audit" onClick={() => handleAuditStart()} C={C} />
+            <PrimaryButton label="Start your free audit" onClick={() => handleAuditStart('')} C={C} />
           </div>
           <div style={{ fontSize: 14, color: C.inkMuted, marginTop: 14 }}>
             5 minutes. No account needed. Brutally honest.
