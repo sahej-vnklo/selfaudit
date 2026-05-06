@@ -316,6 +316,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
   const [billingError, setBillingError] = useState('')
   const [portalLoading, setPortalLoading] = useState(false)
   const [section, setSection] = useState(() => getSectionFromHash())
+  const [sidebarExpanded, setSidebarExpanded] = useState(false)
   const [goalModal, setGoalModal] = useState(false)
   const [scopeSetupOpen, setScopeSetupOpen] = useState(false)
   const pendingAuditRef = useRef(null)
@@ -545,20 +546,29 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
         />
       )}
 
-      <aside style={styles.sidebar}>
-        <SidebarButton icon={<IconHome />} active={section === 'home'} onClick={() => navigateSection('home')} label="Home" />
-        <SidebarButton icon={<IconReports />} active={section === 'reports'} onClick={() => navigateSection('reports')} label="Reports" />
-        <SidebarButton icon={<IconIntelligence />} active={section === 'intelligence'} onClick={() => navigateSection('intelligence')} label="Intelligence brief" />
-        <SidebarButton icon={<IconTarget />} active={false} onClick={() => setGoalModal(true)} label="Map a goal" />
+      <aside
+        style={{ ...styles.sidebar, ...(sidebarExpanded ? styles.sidebarExpanded : {}) }}
+        onMouseEnter={() => setSidebarExpanded(true)}
+        onMouseLeave={() => setSidebarExpanded(false)}
+      >
+        <SidebarButton icon={<IconHome />} active={section === 'home'} onClick={() => navigateSection('home')} label="Home" expanded={sidebarExpanded} />
+        <SidebarButton icon={<IconReports />} active={section === 'reports'} onClick={() => navigateSection('reports')} label="Reports" expanded={sidebarExpanded} />
+        <SidebarButton icon={<IconIntelligence />} active={section === 'intelligence'} onClick={() => navigateSection('intelligence')} label="Intelligence brief" expanded={sidebarExpanded} />
         <div style={{ flex: 1 }} />
-        <SidebarButton icon={<IconGear />} active={section === 'billing'} onClick={() => navigateSection('billing')} label="Billing" />
+        <SidebarButton icon={<IconGear />} active={section === 'billing'} onClick={() => navigateSection('billing')} label="Billing" expanded={sidebarExpanded} />
         <button
           type="button"
           onClick={() => navigateSection('account')}
-          style={{ ...styles.avatarButton, ...(section === 'account' ? styles.avatarButtonActive : {}) }}
+          style={{
+            ...styles.avatarButton,
+            ...(sidebarExpanded ? styles.avatarButtonExpanded : {}),
+            ...(section === 'account' ? styles.avatarButtonActive : {}),
+          }}
           aria-label="Account"
+          title="Account"
         >
-          {initials}
+          <span style={{ ...styles.avatarChip, ...(section === 'account' ? styles.avatarChipActive : {}) }}>{initials}</span>
+          {sidebarExpanded && <span style={styles.sidebarLabel}>Account</span>}
         </button>
       </aside>
 
@@ -2012,10 +2022,21 @@ function TierCard({ tier, currentTier, userId, email }) {
   )
 }
 
-function SidebarButton({ icon, active, onClick, label }) {
+function SidebarButton({ icon, active, onClick, label, expanded }) {
   return (
-    <button type="button" onClick={onClick} style={{ ...styles.sidebarButton, ...(active ? styles.sidebarButtonActive : {}) }} aria-label={label} title={label}>
-      {icon}
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        ...styles.sidebarButton,
+        ...(expanded ? styles.sidebarButtonExpanded : {}),
+        ...(active ? styles.sidebarButtonActive : {}),
+      }}
+      aria-label={label}
+      title={label}
+    >
+      <span style={styles.sidebarIcon}>{icon}</span>
+      {expanded && <span style={styles.sidebarLabel}>{label}</span>}
     </button>
   )
 }
@@ -2049,16 +2070,6 @@ function IconIntelligence() {
   )
 }
 
-function IconTarget() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <circle cx="8" cy="8" r="5.5" stroke="currentColor" strokeWidth="1.5" />
-      <circle cx="8" cy="8" r="2.25" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M8 1.5V3M8 13V14.5M1.5 8H3M13 8H14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  )
-}
-
 function IconGear() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -2085,6 +2096,13 @@ const styles = {
     padding: '16px 0',
     gap: 4,
     flexShrink: 0,
+    transition: 'width 0.18s ease',
+    overflow: 'hidden',
+  },
+  sidebarExpanded: {
+    width: 176,
+    alignItems: 'stretch',
+    padding: '16px 8px',
   },
   sidebarButton: {
     width: 34,
@@ -2097,26 +2115,65 @@ const styles = {
     placeItems: 'center',
     cursor: 'pointer',
   },
+  sidebarButtonExpanded: {
+    width: '100%',
+    padding: '0 12px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    gap: 12,
+  },
   sidebarButtonActive: {
     background: G.accentLight,
     color: G.accentText,
   },
+  sidebarIcon: {
+    width: 16,
+    height: 16,
+    display: 'grid',
+    placeItems: 'center',
+    flexShrink: 0,
+  },
+  sidebarLabel: {
+    fontSize: 13,
+    color: 'inherit',
+    whiteSpace: 'nowrap',
+  },
   avatarButton: {
-    width: 26,
-    height: 26,
-    borderRadius: '50%',
-    background: G.surface3,
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    background: 'transparent',
     border: 'none',
     color: G.textSecondary,
     fontSize: 10,
-    display: 'grid',
-    placeItems: 'center',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
     cursor: 'pointer',
     marginTop: 4,
+  },
+  avatarButtonExpanded: {
+    width: '100%',
+    padding: '0 12px',
+    justifyContent: 'flex-start',
+    gap: 12,
   },
   avatarButtonActive: {
     background: G.accentLight,
     color: G.accentText,
+  },
+  avatarChip: {
+    width: 26,
+    height: 26,
+    borderRadius: '50%',
+    background: G.surface3,
+    display: 'grid',
+    placeItems: 'center',
+    flexShrink: 0,
+  },
+  avatarChipActive: {
+    background: G.surface,
   },
   appFrame: {
     flex: 1,
