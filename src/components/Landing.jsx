@@ -1,31 +1,53 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { usePostHog } from '@posthog/react'
 
-const C = {
-  bg: '#0A0A0A',
-  surface: '#111111',
-  surface2: '#161616',
-  surface3: '#1C1C1C',
-  ink: '#E8E4DC',
-  inkSoft: '#C8C4BC',
-  inkMuted: '#888888',
-  inkFaint: '#444444',
-  accent: '#6B5CE7',
-  accentDark: '#5849D0',
-  accentSoft: '#1A1630',
-  accentText: '#9D8FF0',
-  border: '#222222',
-  border2: '#2A2A2A',
-  card: '#141414',
-  redMuted: 'rgba(192, 80, 80, 0.78)',
-  redSoft: '#1A0A0A',
-  amber: '#C9A040',
+const THEMES = {
+  dark: {
+    bg: '#1C2330',
+    surface: '#1A2030',
+    surface2: '#151C28',
+    surface3: '#1A2535',
+    card: '#151C28',
+    border: '#2A3347',
+    border2: '#2A3347',
+    ink: '#E8E2D8',
+    inkSoft: '#B8B0A4',
+    inkMuted: '#6A7A8A',
+    inkFaint: '#3A4A5A',
+    accent: '#4A7FA8',
+    accentDark: '#3A6A90',
+    accentSoft: '#1A2535',
+    accentText: '#8FBAD8',
+    redMuted: 'rgba(192, 80, 80, 0.78)',
+    redSoft: '#1A0A0A',
+    amber: '#C9A040',
+  },
+  light: {
+    bg: '#F5F0E8',
+    surface: '#EDE6DC',
+    surface2: '#E8E0D4',
+    surface3: '#E2D8CC',
+    card: '#EDE6DC',
+    border: '#D4C4B8',
+    border2: '#CCC0B2',
+    ink: '#1A1410',
+    inkSoft: '#5C4840',
+    inkMuted: '#8C7060',
+    inkFaint: '#B0A090',
+    accent: '#8C4A42',
+    accentDark: '#7A3C36',
+    accentSoft: '#F0E4E0',
+    accentText: '#8C4A42',
+    redMuted: 'rgba(140, 74, 66, 0.85)',
+    redSoft: '#F5EDEB',
+    amber: '#8C6A30',
+  },
 }
 
 const serif = "'Playfair Display', Georgia, serif"
 const wrap = { maxWidth: 1140, margin: '0 auto', padding: '0 28px' }
 
-const sectionLabel = {
+const sectionLabel = (C) => ({
   textAlign: 'center',
   fontSize: 11,
   letterSpacing: '0.14em',
@@ -33,9 +55,9 @@ const sectionLabel = {
   color: C.inkFaint,
   marginBottom: 16,
   fontWeight: 600,
-}
+})
 
-const h2Style = {
+const h2Style = (C) => ({
   fontFamily: serif,
   fontSize: 'clamp(30px, 4vw, 48px)',
   fontWeight: 700,
@@ -44,7 +66,7 @@ const h2Style = {
   textAlign: 'center',
   marginBottom: 18,
   color: C.ink,
-}
+})
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 
@@ -192,7 +214,7 @@ const freeFeatures = [
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
-function PrimaryButton({ label, onClick, small = false }) {
+function PrimaryButton({ label, onClick, small = false, C }) {
   const [hovered, setHovered] = useState(false)
   return (
     <button
@@ -222,7 +244,7 @@ function PrimaryButton({ label, onClick, small = false }) {
   )
 }
 
-function OutlineButton({ label, onClick }) {
+function OutlineButton({ label, onClick, C }) {
   const [hovered, setHovered] = useState(false)
   return (
     <button
@@ -251,7 +273,7 @@ function OutlineButton({ label, onClick }) {
   )
 }
 
-function FeatureList({ items, color = C.inkSoft, iconColor = C.accentText, icon = '✓' }) {
+function FeatureList({ items, color, iconColor, icon = '✓' }) {
   return (
     <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 11 }}>
       {items.map((item) => (
@@ -266,7 +288,7 @@ function FeatureList({ items, color = C.inkSoft, iconColor = C.accentText, icon 
 
 // ── Diagnostic Loop ───────────────────────────────────────────────────────────
 
-function DiagnosticLoop() {
+function DiagnosticLoop({ C }) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [phase, setPhase] = useState('question') // 'question' | 'answer'
   const [paused, setPaused] = useState(false)
@@ -424,7 +446,7 @@ function DiagnosticLoop() {
 
 // ── Pricing Drawer ────────────────────────────────────────────────────────────
 
-function GrowthOSCard({ onSignUp }) {
+function GrowthOSCard({ onSignUp, C }) {
   const [drawerOpen, setDrawerOpen] = useState(false)
 
   return (
@@ -502,13 +524,13 @@ function GrowthOSCard({ onSignUp }) {
           ].map(section => (
             <div key={section.title}>
               <div style={{ fontFamily: serif, fontSize: 16, color: C.ink, marginBottom: 10 }}>{section.title}</div>
-              <FeatureList items={section.items} iconColor={C.accentText} />
+              <FeatureList items={section.items} color={C.inkSoft} iconColor={C.accentText} />
             </div>
           ))}
         </div>
       )}
 
-      <PrimaryButton label="Start Growth OS — $99/mo" onClick={() => onSignUp('business')} />
+      <PrimaryButton label="Start Growth OS — $99/mo" onClick={() => onSignUp('business')} C={C} />
       <div style={{ fontSize: 12, color: C.inkMuted, marginTop: 12 }}>Cancel anytime. No contracts.</div>
     </div>
   )
@@ -518,7 +540,13 @@ function GrowthOSCard({ onSignUp }) {
 
 export default function Landing({ onStart, onSignUp, session }) {
   const posthog = usePostHog()
+  const [theme, setTheme] = useState(() => localStorage.getItem('sa-theme') || 'dark')
+  const C = THEMES[theme]
   const [inputValue, setInputValue] = useState('')
+
+  useEffect(() => {
+    localStorage.setItem('sa-theme', theme)
+  }, [theme])
 
   const handleAuditStart = (problem) => {
     posthog?.capture('audit_started', { source: 'landing', problem: problem || '' })
@@ -550,7 +578,7 @@ export default function Landing({ onStart, onSignUp, session }) {
     <div style={{ fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", background: C.bg, color: C.ink, lineHeight: 1.6, minHeight: '100vh' }}>
 
       {/* ── Nav ── */}
-      <nav style={{ padding: '22px 0', borderBottom: `1px solid ${C.border}`, background: 'rgba(10,10,10,0.96)', position: 'sticky', top: 0, zIndex: 10, backdropFilter: 'blur(10px)' }}>
+      <nav style={{ padding: '22px 0', borderBottom: `1px solid ${C.border}`, background: theme === 'dark' ? 'rgba(28,35,48,0.97)' : 'rgba(245,240,232,0.97)', position: 'sticky', top: 0, zIndex: 10, backdropFilter: 'blur(10px)' }}>
         <div style={{ ...wrap, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 20 }}>
           <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.5px', cursor: 'pointer', color: C.ink }} onClick={handleLogoClick}>
             self<span style={{ color: C.accentText, fontWeight: 500 }}>audit</span>
@@ -562,7 +590,27 @@ export default function Landing({ onStart, onSignUp, session }) {
             <button onClick={() => { window.location.hash = 'login' }} style={{ fontSize: 14, color: C.inkMuted, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500, padding: 0 }}>
               Sign in
             </button>
-            <PrimaryButton label="Start free audit" onClick={() => handleAuditStart()} small />
+            <button
+              onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
+              style={{
+                background: 'none',
+                border: `1px solid ${C.border2}`,
+                borderRadius: 999,
+                padding: '7px 14px',
+                cursor: 'pointer',
+                fontSize: 13,
+                fontWeight: 500,
+                color: C.inkSoft,
+                fontFamily: 'inherit',
+                transition: 'border-color 0.2s, color 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+              }}
+            >
+              {theme === 'dark' ? '☀ Light' : '☾ Dark'}
+            </button>
+            <PrimaryButton label="Start free audit" onClick={() => handleAuditStart()} small C={C} />
             <div style={{ fontSize: 14, color: C.inkMuted }}>
               by{' '}
               <a href="https://vnklo.com" target="_blank" rel="noopener" style={{ color: C.accentText, textDecoration: 'none', fontWeight: 500 }}>
@@ -574,7 +622,7 @@ export default function Landing({ onStart, onSignUp, session }) {
       </nav>
 
       {/* ── 1. Hero ── */}
-      <section style={{ padding: '112px 0 100px', textAlign: 'center', background: 'radial-gradient(circle at top, rgba(107,92,231,0.18), transparent 34%)' }}>
+      <section style={{ padding: '112px 0 100px', textAlign: 'center', background: theme === 'dark' ? 'radial-gradient(circle at top, rgba(74,127,168,0.15), transparent 34%)' : 'radial-gradient(circle at top, rgba(140,74,66,0.08), transparent 34%)' }}>
         <div style={wrap}>
           <div style={{ fontSize: 12, letterSpacing: '0.18em', textTransform: 'uppercase', color: C.accentText, fontWeight: 600, marginBottom: 24 }}>
             Not another AI consultant. Your new business nervous system.
@@ -651,8 +699,8 @@ export default function Landing({ onStart, onSignUp, session }) {
       {/* ── 2. Advisory Contrast ── */}
       <section id="comparison" style={{ padding: '96px 0', background: C.surface }}>
         <div style={wrap}>
-          <div style={sectionLabel}>Advisory fatigue</div>
-          <h2 style={h2Style}>Why founders are replacing advisory calls and meetings.</h2>
+          <div style={sectionLabel(C)}>Advisory fatigue</div>
+          <h2 style={h2Style(C)}>Why founders are replacing advisory calls and meetings.</h2>
           <p style={{ textAlign: 'center', fontSize: 18, color: C.inkSoft, maxWidth: 640, margin: '0 auto 56px' }}>
             The old model was built for a world that moved slowly. Yours doesn't.
           </p>
@@ -688,8 +736,8 @@ export default function Landing({ onStart, onSignUp, session }) {
       {/* ── 3. Intelligence Moat ── */}
       <section style={{ padding: '96px 0', background: C.bg }}>
         <div style={wrap}>
-          <div style={sectionLabel}>Why this works</div>
-          <h2 style={h2Style}>The intelligence moat.</h2>
+          <div style={sectionLabel(C)}>Why this works</div>
+          <h2 style={h2Style(C)}>The intelligence moat.</h2>
           <p style={{ textAlign: 'center', fontSize: 18, color: C.inkSoft, maxWidth: 640, margin: '0 auto 56px' }}>
             We're not "honest." We're technically superior. Here's why.
           </p>
@@ -708,20 +756,20 @@ export default function Landing({ onStart, onSignUp, session }) {
       {/* ── 4. Diagnostic Loop ── */}
       <section style={{ padding: '96px 0', background: C.surface }}>
         <div style={wrap}>
-          <div style={sectionLabel}>The engine, live</div>
-          <h2 style={h2Style}>Where business failure hides.</h2>
+          <div style={sectionLabel(C)}>The engine, live</div>
+          <h2 style={h2Style(C)}>Where business failure hides.</h2>
           <p style={{ textAlign: 'center', fontSize: 18, color: C.inkSoft, maxWidth: 640, margin: '0 auto 48px' }}>
             Our Intelligence Layer maps 40+ industries and 200+ failure points. Watch it work.
           </p>
-          <DiagnosticLoop />
+          <DiagnosticLoop C={C} />
         </div>
       </section>
 
       {/* ── 5. Evidence of Intelligence ── */}
       <section style={{ padding: '96px 0', background: C.bg }}>
         <div style={wrap}>
-          <div style={sectionLabel}>Intelligence in action</div>
-          <h2 style={h2Style}>Evidence of the Intelligence Layer.</h2>
+          <div style={sectionLabel(C)}>Intelligence in action</div>
+          <h2 style={h2Style(C)}>Evidence of the Intelligence Layer.</h2>
           <p style={{ textAlign: 'center', fontSize: 18, color: C.inkSoft, maxWidth: 640, margin: '0 auto 56px' }}>
             We don't tell you what you want to hear. We tell you what's actually killing your growth.
           </p>
@@ -761,8 +809,8 @@ export default function Landing({ onStart, onSignUp, session }) {
       {/* ── 6. Accountability Loop ── */}
       <section style={{ padding: '96px 0', background: C.surface }}>
         <div style={wrap}>
-          <div style={sectionLabel}>The unfair advantage</div>
-          <h2 style={h2Style}>Advice you can't ignore.</h2>
+          <div style={sectionLabel(C)}>The unfair advantage</div>
+          <h2 style={h2Style(C)}>Advice you can't ignore.</h2>
           <p style={{ textAlign: 'center', fontSize: 18, color: C.inkSoft, maxWidth: 680, margin: '0 auto 60px' }}>
             Most audits are static. A PDF you open once and file away. SelfAudit creates an intelligent loop that monitors your progress, alerts you when you're slipping, and forces the discipline of execution.
           </p>
@@ -798,8 +846,8 @@ export default function Landing({ onStart, onSignUp, session }) {
       {/* ── 7. AI Graveyard ── */}
       <section style={{ padding: '96px 0', background: C.bg }}>
         <div style={wrap}>
-          <div style={sectionLabel}>The AI question, answered honestly</div>
-          <h2 style={h2Style}>The "AI Strategy" Graveyard.</h2>
+          <div style={sectionLabel(C)}>The AI question, answered honestly</div>
+          <h2 style={h2Style(C)}>The "AI Strategy" Graveyard.</h2>
           <p style={{ textAlign: 'center', fontSize: 18, color: C.inkSoft, maxWidth: 680, margin: '0 auto 60px' }}>
             Most AI projects are expensive science experiments that die in a slide deck. SelfAudit doesn't just "deploy AI" — it validates whether AI is even the solution.
           </p>
@@ -825,8 +873,8 @@ export default function Landing({ onStart, onSignUp, session }) {
       {/* ── 8. Pricing ── */}
       <section id="pricing" style={{ padding: '100px 0', background: C.surface }}>
         <div style={wrap}>
-          <div style={sectionLabel}>Pricing</div>
-          <h2 style={h2Style}>Diagnosis is free. Execution is the edge.</h2>
+          <div style={sectionLabel(C)}>Pricing</div>
+          <h2 style={h2Style(C)}>Diagnosis is free. Execution is the edge.</h2>
           <p style={{ textAlign: 'center', fontSize: 18, color: C.inkSoft, maxWidth: 700, margin: '0 auto 60px' }}>
             Start with the truth. Upgrade when you're ready to fix it.
           </p>
@@ -842,17 +890,17 @@ export default function Landing({ onStart, onSignUp, session }) {
               <div style={{ fontSize: 14, color: C.inkMuted, marginTop: 8, marginBottom: 24 }}>The truth about your business.</div>
 
               <div style={{ marginBottom: 24 }}>
-                <FeatureList items={freeFeatures} />
+                <FeatureList items={freeFeatures} color={C.inkSoft} iconColor={C.accentText} />
               </div>
 
               <div style={{ marginTop: 'auto' }}>
-                <OutlineButton label="Start free audit" onClick={() => handleAuditStart()} />
+                <OutlineButton label="Start free audit" onClick={() => handleAuditStart()} C={C} />
                 <div style={{ fontSize: 12, color: C.inkMuted, marginTop: 12 }}>One audit. No account needed.</div>
               </div>
             </div>
 
             {/* Growth OS */}
-            <GrowthOSCard onSignUp={handleSignUpWithPlan} />
+            <GrowthOSCard onSignUp={handleSignUpWithPlan} C={C} />
           </div>
 
           <p style={{ textAlign: 'center', marginTop: 34, fontFamily: serif, fontStyle: 'italic', fontSize: 20, color: C.inkSoft, maxWidth: 760, marginLeft: 'auto', marginRight: 'auto' }}>
@@ -864,9 +912,9 @@ export default function Landing({ onStart, onSignUp, session }) {
       {/* ── 9. Final CTA ── */}
       <section style={{ background: C.bg, textAlign: 'center', padding: '110px 0' }}>
         <div style={wrap}>
-          <h2 style={h2Style}>Stop guessing. Get a diagnosis.</h2>
+          <h2 style={h2Style(C)}>Stop guessing. Get a diagnosis.</h2>
           <div style={{ marginTop: 28 }}>
-            <PrimaryButton label="Start your free audit" onClick={() => handleAuditStart()} />
+            <PrimaryButton label="Start your free audit" onClick={() => handleAuditStart()} C={C} />
           </div>
           <div style={{ fontSize: 13, color: C.inkMuted, marginTop: 14 }}>
             5 minutes. No account needed. Brutally honest.
@@ -875,7 +923,7 @@ export default function Landing({ onStart, onSignUp, session }) {
       </section>
 
       {/* ── Footer ── */}
-      <footer style={{ background: '#060606', color: '#B8B6B0', padding: '42px 0', textAlign: 'center', fontSize: 14, borderTop: `1px solid ${C.border}` }}>
+      <footer style={{ background: theme === 'dark' ? '#111820' : '#E8E0D4', color: '#B8B6B0', padding: '42px 0', textAlign: 'center', fontSize: 14, borderTop: `1px solid ${C.border}` }}>
         <div style={wrap}>
           Built by{' '}
           <a href="https://vnklo.com" target="_blank" rel="noopener" style={{ color: C.accentText, textDecoration: 'none', fontWeight: 500 }}>
