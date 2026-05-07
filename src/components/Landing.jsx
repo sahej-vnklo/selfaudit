@@ -1071,7 +1071,15 @@ function ConnectedPage({ C, theme, onStartAudit }) {
 function SocialProofTicker({ C }) {
   const [rowOneItems, setRowOneItems] = useState([])
   const [rowTwoItems, setRowTwoItems] = useState([])
-  const [paused, setPaused] = useState(false)
+  const wrapperRef = useRef(null)
+  const rowOneRef = useRef(null)
+  const rowTwoRef = useRef(null)
+  const dragRef = useRef({
+    isDragging: false,
+    startX: 0,
+    rowOneOffset: 0,
+    rowTwoOffset: 0,
+  })
 
   useEffect(() => {
     const firstRow = socialProofQuotes.slice(0, 6)
@@ -1097,12 +1105,111 @@ function SocialProofTicker({ C }) {
     }
   }, [])
 
+  useEffect(() => {
+    const wrapper = wrapperRef.current
+    const firstTrack = rowOneRef.current
+    const secondTrack = rowTwoRef.current
+    if (!wrapper || !firstTrack || !secondTrack) return
+
+    const duration = 90
+    const trackConfigs = [
+      { ref: rowOneRef, reverse: false, key: 'rowOneOffset' },
+      { ref: rowTwoRef, reverse: true, key: 'rowTwoOffset' },
+    ]
+
+    const getClientX = (event) => ('touches' in event ? event.touches[0]?.clientX ?? 0 : event.clientX)
+
+    const getTranslateX = (el) => {
+      const transform = window.getComputedStyle(el).transform
+      if (!transform || transform === 'none') return 0
+      return new DOMMatrixReadOnly(transform).m41
+    }
+
+    const normalizeOffset = (offset, width) => {
+      let normalized = offset % width
+      if (normalized > 0) normalized -= width
+      if (normalized === -width) normalized = 0
+      return normalized
+    }
+
+    const beginDrag = (event) => {
+      if ('button' in event && event.button !== 0) return
+      event.preventDefault()
+
+      dragRef.current.isDragging = true
+      dragRef.current.startX = getClientX(event)
+      wrapper.style.cursor = 'grabbing'
+
+      trackConfigs.forEach(({ ref, key }) => {
+        const el = ref.current
+        if (!el) return
+        el.style.animationPlayState = 'paused'
+        dragRef.current[key] = getTranslateX(el)
+        el.style.animation = 'none'
+        el.style.transform = `translateX(${dragRef.current[key]}px)`
+      })
+    }
+
+    const moveDrag = (event) => {
+      if (!dragRef.current.isDragging) return
+      if (event.cancelable) event.preventDefault()
+
+      const delta = getClientX(event) - dragRef.current.startX
+      trackConfigs.forEach(({ ref, key }) => {
+        const el = ref.current
+        if (!el) return
+        el.style.transform = `translateX(${dragRef.current[key] + delta}px)`
+      })
+    }
+
+    const endDrag = () => {
+      if (!dragRef.current.isDragging) return
+
+      dragRef.current.isDragging = false
+      wrapper.style.cursor = 'grab'
+
+      trackConfigs.forEach(({ ref, reverse }) => {
+        const el = ref.current
+        if (!el) return
+
+        const width = el.scrollWidth / 2
+        const currentOffset = getTranslateX(el)
+        const normalized = normalizeOffset(currentOffset, width)
+        const progress = reverse
+          ? (normalized + width) / width
+          : Math.abs(normalized) / width
+        const delay = progress >= 1 ? 0 : -(progress * duration)
+
+        el.style.animation = `saSocialProofScroll ${duration}s linear infinite`
+        el.style.animationDirection = reverse ? 'reverse' : 'normal'
+        el.style.animationDelay = `${delay}s`
+        el.style.animationPlayState = 'running'
+        el.style.transform = ''
+      })
+    }
+
+    wrapper.addEventListener('mousedown', beginDrag)
+    wrapper.addEventListener('touchstart', beginDrag, { passive: false })
+    window.addEventListener('mousemove', moveDrag)
+    window.addEventListener('touchmove', moveDrag, { passive: false })
+    window.addEventListener('mouseup', endDrag)
+    window.addEventListener('touchend', endDrag)
+
+    return () => {
+      wrapper.removeEventListener('mousedown', beginDrag)
+      wrapper.removeEventListener('touchstart', beginDrag)
+      window.removeEventListener('mousemove', moveDrag)
+      window.removeEventListener('touchmove', moveDrag)
+      window.removeEventListener('mouseup', endDrag)
+      window.removeEventListener('touchend', endDrag)
+    }
+  }, [rowOneItems, rowTwoItems])
+
   return (
-    <section style={{ padding: '80px 0', background: C.bg }}>
+    <section style={{ padding: '140px 0', background: C.bg }}>
       <div
-        onMouseEnter={() => setPaused(true)}
-        onMouseLeave={() => setPaused(false)}
-        style={{ position: 'relative', overflow: 'hidden', width: '100%', padding: '32px 0' }}
+        ref={wrapperRef}
+        style={{ position: 'relative', overflow: 'hidden', width: '100%', padding: '32px 0', cursor: 'grab', touchAction: 'pan-y' }}
       >
         <div style={{
           position: 'absolute',
@@ -1127,12 +1234,12 @@ function SocialProofTicker({ C }) {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
           <div
+            ref={rowOneRef}
             style={{
               display: 'flex',
               width: 'max-content',
               whiteSpace: 'nowrap',
               animation: 'saSocialProofScroll 90s linear infinite',
-              animationPlayState: paused ? 'paused' : 'running',
             }}
           >
             {rowOneItems.map((quote, index) => (
@@ -1144,13 +1251,13 @@ function SocialProofTicker({ C }) {
           </div>
 
           <div
+            ref={rowTwoRef}
             style={{
               display: 'flex',
               width: 'max-content',
               whiteSpace: 'nowrap',
               animation: 'saSocialProofScroll 90s linear infinite',
               animationDirection: 'reverse',
-              animationPlayState: paused ? 'paused' : 'running',
             }}
           >
             {rowTwoItems.map((quote, index) => (
