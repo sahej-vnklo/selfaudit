@@ -1651,19 +1651,12 @@ function GoalCaptureModal({ onClose, onStart }) {
 
 function AuditScopeSetupModal({ user, onClose, onSaved }) {
   const [industry, setIndustry] = useState('')
-  const [domain, setDomain] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
-
-  const domainOptions = industry ? DOMAIN_MAP[industry] || [] : []
 
   const submit = async () => {
     if (!industry) {
       setError('Pick your industry first.')
-      return
-    }
-    if (!domain) {
-      setError('Pick the domain you want to audit.')
       return
     }
 
@@ -1672,11 +1665,11 @@ function AuditScopeSetupModal({ user, onClose, onSaved }) {
       const sb = await initSupabase()
       const { error: updateError } = await sb
         .from('profiles')
-        .update({ industry, domain })
+        .update({ industry })
         .eq('id', user.id)
 
       if (updateError) throw updateError
-      onSaved({ industry, domain })
+      onSaved({ industry })
     } catch (updateError) {
       console.error('[dashboard] scope setup failed:', updateError?.message ?? updateError)
       setError('Could not save your audit setup. Please try again.')
@@ -1692,7 +1685,7 @@ function AuditScopeSetupModal({ user, onClose, onSaved }) {
         </button>
         <div style={gm.eyebrow}>Audit setup</div>
         <h2 style={gm.title}>Before we start</h2>
-        <p style={gm.sub}>Pick your industry and the part of the business you want this audit to focus on.</p>
+        <p style={gm.sub}>Pick your industry to get started.</p>
 
         <div style={gm.field}>
           <label style={gm.label}>Industry <span style={{ color: G.accentText }}>*</span></label>
@@ -1704,7 +1697,6 @@ function AuditScopeSetupModal({ user, onClose, onSaved }) {
                 style={{ ...gm.categoryPill, ...(industry === option ? gm.categoryActive : {}) }}
                 onClick={() => {
                   setIndustry(option)
-                  setDomain('')
                   setError('')
                 }}
               >
@@ -1713,27 +1705,6 @@ function AuditScopeSetupModal({ user, onClose, onSaved }) {
             ))}
           </div>
         </div>
-
-        {industry && (
-          <div style={gm.field}>
-            <label style={gm.label}>Domain <span style={{ color: G.accentText }}>*</span></label>
-            <div style={styles.scopeSetupGrid}>
-              {domainOptions.map((option) => (
-                <button
-                  type="button"
-                  key={option}
-                  style={{ ...styles.scopeSetupPill, ...(domain === option ? styles.scopeSetupPillActive : {}) }}
-                  onClick={() => {
-                    setDomain(option)
-                    setError('')
-                  }}
-                >
-                  {option}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
 
         {error && <p style={gm.error}>{error}</p>}
 
