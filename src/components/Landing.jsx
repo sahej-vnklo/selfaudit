@@ -573,7 +573,7 @@ function GrowthOSCard({ onSignUp, C }) {
       position: 'relative',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 6 }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: C.inkMuted, textTransform: 'uppercase', letterSpacing: '0.12em' }}>Growth OS</div>
+        <div style={{ fontSize: 13, fontWeight: 700, color: C.inkMuted, textTransform: 'uppercase', letterSpacing: '0.12em' }}>Intelligence</div>
         <span style={{ background: C.accentSoft, color: C.accentText, borderRadius: 999, padding: '4px 10px', fontSize: 12 }}>
           Recommended
         </span>
@@ -641,7 +641,7 @@ function GrowthOSCard({ onSignUp, C }) {
         </div>
       )}
 
-      <PrimaryButton label="Start Growth OS — $99/mo" onClick={() => onSignUp('business')} C={C} />
+      <PrimaryButton label="Start Intelligence — $99/mo" onClick={() => onSignUp('business')} C={C} />
       <div style={{ fontSize: 13, color: C.inkMuted, marginTop: 12 }}>Cancel anytime. No contracts.</div>
     </div>
   )
@@ -1269,18 +1269,18 @@ export default function Landing({ onStart, onSignUp, session }) {
       <section id="pricing" style={{ padding: '100px 0', background: C.surface }}>
         <div style={wrap}>
           <div style={sectionLabel(C)}>Pricing</div>
-          <h2 style={h2Style(C)}>Diagnosis is free. Execution is the edge.</h2>
+          <h2 style={h2Style(C)}>Two ways to run SelfAudit.</h2>
           <p style={{ textAlign: 'center', fontSize: 19, color: C.inkSoft, maxWidth: 700, margin: '0 auto 60px' }}>
-            Start with the truth. Upgrade when you're ready to fix it.
+            Choose the plan that fits how deep you want SelfAudit embedded in the business.
           </p>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 24, maxWidth: 1080, margin: '0 auto' }}>
-            {/* Free */}
+            {/* Foundation */}
             <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 18, padding: 32, display: 'flex', flexDirection: 'column' }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: C.inkMuted, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 6 }}>Free</div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: C.inkMuted, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 6 }}>Foundation</div>
               <div style={{ fontFamily: serif, fontSize: 29, fontWeight: 700, color: C.ink, marginBottom: 10 }}>Root-Cause Diagnosis</div>
               <div style={{ fontFamily: serif, fontSize: 48, fontWeight: 700, letterSpacing: '-0.04em', color: C.ink, lineHeight: 1 }}>
-                $0
+                $29<span style={{ fontSize: 21, color: C.inkMuted, marginLeft: 4 }}>/mo</span>
               </div>
               <div style={{ fontSize: 15, color: C.inkMuted, marginTop: 8, marginBottom: 24 }}>The truth about your business.</div>
 
@@ -1289,12 +1289,12 @@ export default function Landing({ onStart, onSignUp, session }) {
               </div>
 
               <div style={{ marginTop: 'auto' }}>
-                <OutlineButton label="Start free audit" onClick={() => handleAuditStart('')} C={C} />
-                <div style={{ fontSize: 13, color: C.inkMuted, marginTop: 12 }}>One audit. No account needed.</div>
+                <OutlineButton label="Start Foundation — $29/mo" onClick={() => handleSignUpWithPlan('essential')} C={C} />
+                <div style={{ fontSize: 13, color: C.inkMuted, marginTop: 12 }}>Includes account setup and immediate access.</div>
               </div>
             </div>
 
-            {/* Growth OS */}
+            {/* Intelligence */}
             <GrowthOSCard onSignUp={handleSignUpWithPlan} C={C} />
           </div>
 
