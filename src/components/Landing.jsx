@@ -572,8 +572,8 @@ function GrowthOSCard({ onSignUp, C }) {
       flexDirection: 'column',
       position: 'relative',
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 6 }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: C.inkMuted, textTransform: 'uppercase', letterSpacing: '0.12em' }}>Intelligence</div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 10 }}>
+        <div style={{ fontFamily: serif, fontSize: 29, fontWeight: 700, color: C.ink, letterSpacing: '-0.03em' }}>Intelligence</div>
         <span style={{ background: C.accentSoft, color: C.accentText, borderRadius: 999, padding: '4px 10px', fontSize: 12 }}>
           Recommended
         </span>
@@ -1277,8 +1277,7 @@ export default function Landing({ onStart, onSignUp, session }) {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 24, maxWidth: 1080, margin: '0 auto' }}>
             {/* Foundation */}
             <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 18, padding: 32, display: 'flex', flexDirection: 'column' }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: C.inkMuted, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 6 }}>Foundation</div>
-              <div style={{ fontFamily: serif, fontSize: 29, fontWeight: 700, color: C.ink, marginBottom: 10 }}>Root-Cause Diagnosis</div>
+              <div style={{ fontFamily: serif, fontSize: 29, fontWeight: 700, color: C.ink, letterSpacing: '-0.03em', marginBottom: 10 }}>Foundation</div>
               <div style={{ fontFamily: serif, fontSize: 48, fontWeight: 700, letterSpacing: '-0.04em', color: C.ink, lineHeight: 1 }}>
                 $29<span style={{ fontSize: 21, color: C.inkMuted, marginLeft: 4 }}>/mo</span>
               </div>
