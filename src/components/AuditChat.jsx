@@ -173,8 +173,21 @@ function isContactMetaMessage(msg) {
 
 function toApiMessages(history) {
   return history
-    .filter(m => m.role !== 'system' && !isContactMetaMessage(m))
-    .map(m => ({ role: m.role, content: m.content }))
+    .filter(m => m.role !== 'system')
+    .filter(m => !m.isContactPrompt && !m.isContactRetry && !m.isContactConfirmation)
+    .map(m => {
+      if (m.isContactReply) {
+        const cleanedContent = (m.nonContactContent || m.content)
+          .replace(/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g, '')
+          .replace(/\b(sahej|jane|smith|my name is|email is|i am)\b/gi, '')
+          .replace(/\s+/g, ' ')
+          .trim()
+        if (cleanedContent.length < 5) return null
+        return { role: m.role, content: cleanedContent }
+      }
+      return { role: m.role, content: m.content }
+    })
+    .filter(Boolean)
 }
 
 function parseContactReply(text) {
@@ -184,8 +197,12 @@ function parseContactReply(text) {
   const email = emailMatch[0]
   let name = ''
 
-  if (text.includes(',')) {
-    name = text.split(',')[0].trim()
+  const beforeEmail = text.slice(0, emailMatch.index).trim()
+  const commaParts = beforeEmail.split(',').map(part => part.trim()).filter(Boolean)
+  const candidateName = commaParts[commaParts.length - 1]
+
+  if (candidateName && /^[A-Za-z][A-Za-z .'-]{1,60}$/.test(candidateName) && candidateName.split(/\s+/).length <= 4) {
+    name = candidateName
   }
 
   if (!name) {
@@ -198,6 +215,21 @@ function parseContactReply(text) {
   }
 
   return { name, email }
+}
+
+function extractNonContactText(text, email, name) {
+  let remaining = text.replace(email, '')
+
+  if (name && name.length <= 40 && name.split(/\s+/).length <= 4) {
+    remaining = remaining.replace(name, '')
+  }
+
+  remaining = remaining
+    .replace(/\b(my name is|email is|i am)\b/gi, '')
+    .replace(/[,\s]+/g, ' ')
+    .trim()
+
+  return remaining.length > 15 ? remaining : ''
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
@@ -306,29 +338,46 @@ export default function AuditChat({ theme = 'dark', userInfo, onReportReady, con
 
     setInput('')
     const isContactReply = awaitingContactRef.current
-    const userMsg = { role: 'user', content: text, display: text, ...(isContactReply ? { isContactReply: true } : {}) }
-    const newHistory = [...conversationHistory, userMsg]
+    const parsedContact = isContactReply ? parseContactReply(text) : null
+    const nonContactText = parsedContact?.email
+      ? extractNonContactText(text, parsedContact.email, parsedContact.name)
+      : ''
+    const userMsg = {
+      role: 'user',
+      content: text,
+      display: text,
+      ...(isContactReply ? { isContactReply: true } : {}),
+      ...(nonContactText ? { nonContactContent: nonContactText } : {}),
+    }
+    let newHistory = [...conversationHistory, userMsg]
     setConversationHistory(newHistory)
+    let textForClaude = text
 
     if (isContactReply) {
-      const parsed = parseContactReply(text)
-
-      if (parsed?.email) {
+      if (parsedContact?.email) {
         const nextContactInfo = {
-          name: parsed.name || '',
-          email: parsed.email,
+          name: parsedContact.name || '',
+          email: parsedContact.email,
           collected: true,
         }
 
         setContactInfo(nextContactInfo)
         setCollectingContact(false)
         awaitingContactRef.current = false
-        setConversationHistory([...newHistory, {
+        newHistory = [...newHistory, {
           role: 'assistant',
           content: CONTACT_CONFIRM_TEXT,
           display: CONTACT_CONFIRM_TEXT,
           isContactConfirmation: true,
-        }])
+        }]
+        setConversationHistory(newHistory)
+
+        if (!nonContactText || nonContactText.split(/\s+/).length <= 3) {
+          inputRef.current?.focus()
+          return
+        }
+
+        textForClaude = nonContactText
       } else {
         setCollectingContact(true)
         setConversationHistory([...newHistory, {
@@ -338,15 +387,14 @@ export default function AuditChat({ theme = 'dark', userInfo, onReportReady, con
           isContactRetry: true,
           isContactPrompt: true,
         }])
+        inputRef.current?.focus()
+        return
       }
-
-      inputRef.current?.focus()
-      return
     }
 
     setLoading(true)
 
-    const messageIndex = newHistory.filter(m => m.role === 'user' && !m.isContactReply).length
+    const messageIndex = newHistory.filter(m => m.role === 'user' && (!m.isContactReply || m.nonContactContent)).length
     posthog?.capture('audit_message_sent', {
       message_index: messageIndex,
       industry: tierData?.industry ?? userInfo?.industry,
@@ -377,7 +425,7 @@ export default function AuditChat({ theme = 'dark', userInfo, onReportReady, con
       const assistantMsg = { role: 'assistant', content: cleanResponse, display: cleanResponse }
       let finalHistory = [...newHistory, assistantMsg]
       const assistantCount = finalHistory.filter(m => m.role === 'assistant' && !isContactMetaMessage(m)).length
-      if (!contactInfo.collected && !awaitingContactRef.current && assistantCount >= 2) {
+      if (!contactInfo.collected && !awaitingContactRef.current && assistantCount >= 4) {
         awaitingContactRef.current = true
         setCollectingContact(true)
         finalHistory = [...finalHistory, {
@@ -393,7 +441,7 @@ export default function AuditChat({ theme = 'dark', userInfo, onReportReady, con
         const sessionId = sessionIdRef.current
         const userId = resolvedUserInfo.userId
         initSupabase().then(sb => sb.from('chats').insert([
-          { user_id: userId, session_id: sessionId, role: 'user',      message: text },
+          { user_id: userId, session_id: sessionId, role: 'user',      message: textForClaude },
           { user_id: userId, session_id: sessionId, role: 'assistant', message: cleanResponse },
         ])).catch(e => console.warn('[chats] save failed:', e?.message))
       }
