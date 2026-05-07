@@ -1089,7 +1089,7 @@ function SocialProofTicker({ C }) {
 
   return (
     <section style={{ padding: '60px 0 20px', background: C.bg }}>
-      <div style={{ position: 'relative', overflow: 'hidden', width: '100%', padding: '16px 0' }}>
+      <div style={{ position: 'relative', overflow: 'hidden', width: '100%', padding: '32px 0' }}>
         <div style={{
           position: 'absolute',
           top: 0,
@@ -1123,16 +1123,12 @@ function SocialProofTicker({ C }) {
           }}
         >
           {items.map((quote, index) => (
-            <div key={`${quote}-${index}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 16, padding: '0 48px' }}>
-              <span style={{ fontFamily: serif, fontSize: 15, fontStyle: 'italic', color: C.ink }}>{quote}</span>
-              <span style={{ width: 4, height: 4, borderRadius: '50%', background: C.border, flexShrink: 0, display: 'inline-block' }} />
+            <div key={`${quote}-${index}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 16, padding: '0 120px' }}>
+              <span style={{ fontFamily: serif, fontSize: 60, fontStyle: 'italic', color: C.ink, lineHeight: 1.08 }}>{quote}</span>
+              <span style={{ width: 16, height: 16, borderRadius: '50%', background: C.border, flexShrink: 0, display: 'inline-block' }} />
             </div>
           ))}
         </div>
-      </div>
-
-      <div style={{ textAlign: 'center', fontSize: 13, color: C.inkMuted, marginTop: 12 }}>
-        <span style={{ color: C.ink, fontWeight: 500 }}>1,200+</span> businesses diagnosed. Average finding: <span style={{ color: C.ink, fontWeight: 500 }}>3 critical issues</span> they didn&apos;t know existed.
       </div>
     </section>
   )
@@ -1673,6 +1669,8 @@ export default function Landing({ onStart, onSignUp, session }) {
         </div>
       </section>
 
+      <SocialProofTicker C={C} />
+
       {/* ── 6. AI Graveyard ── */}
       <section style={{ padding: '96px 0', background: C.bg }}>
         <div style={wrap}>
@@ -1699,8 +1697,6 @@ export default function Landing({ onStart, onSignUp, session }) {
           </p>
         </div>
       </section>
-
-      <SocialProofTicker C={C} />
 
       {/* ── 7. Pricing ── */}
       <section id="pricing" style={{ padding: '100px 0', background: C.surface }}>
