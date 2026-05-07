@@ -171,23 +171,36 @@ function isContactMetaMessage(msg) {
   return !!(msg?.isContactPrompt || msg?.isContactReply || msg?.isContactRetry || msg?.isContactConfirmation)
 }
 
-function toApiMessages(history) {
+function cleanContactReplyContent(text = '') {
+  return text
+    .replace(/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g, '')
+    .replace(/\b(sahej|jane|smith|my name is|email is|i am)\b/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+function toSubstantiveHistory(history) {
   return history
     .filter(m => m.role !== 'system')
     .filter(m => !m.isContactPrompt && !m.isContactRetry && !m.isContactConfirmation)
     .map(m => {
-      if (m.isContactReply) {
-        const cleanedContent = (m.nonContactContent || m.content)
-          .replace(/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g, '')
-          .replace(/\b(sahej|jane|smith|my name is|email is|i am)\b/gi, '')
-          .replace(/\s+/g, ' ')
-          .trim()
-        if (cleanedContent.length < 5) return null
-        return { role: m.role, content: cleanedContent }
+      if (!m.isContactReply) return m
+
+      const cleanedContent = cleanContactReplyContent(m.nonContactContent || m.content)
+      if (cleanedContent.length < 5) return null
+
+      return {
+        ...m,
+        content: cleanedContent,
+        display: cleanedContent,
       }
-      return { role: m.role, content: m.content }
     })
     .filter(Boolean)
+}
+
+function toApiMessages(history) {
+  return toSubstantiveHistory(history)
+    .map(m => ({ role: m.role, content: m.content }))
 }
 
 function parseContactReply(text) {
@@ -352,6 +365,7 @@ export default function AuditChat({ theme = 'dark', userInfo, onReportReady, con
     let newHistory = [...conversationHistory, userMsg]
     setConversationHistory(newHistory)
     let textForClaude = text
+    let effectiveContactInfo = contactInfo
 
     if (isContactReply) {
       if (parsedContact?.email) {
@@ -362,6 +376,7 @@ export default function AuditChat({ theme = 'dark', userInfo, onReportReady, con
         }
 
         setContactInfo(nextContactInfo)
+        effectiveContactInfo = nextContactInfo
         setCollectingContact(false)
         awaitingContactRef.current = false
         newHistory = [...newHistory, {
@@ -425,7 +440,7 @@ export default function AuditChat({ theme = 'dark', userInfo, onReportReady, con
       const assistantMsg = { role: 'assistant', content: cleanResponse, display: cleanResponse }
       let finalHistory = [...newHistory, assistantMsg]
       const assistantCount = finalHistory.filter(m => m.role === 'assistant' && !isContactMetaMessage(m)).length
-      if (!contactInfo.collected && !awaitingContactRef.current && assistantCount >= 4) {
+      if (!effectiveContactInfo.collected && !awaitingContactRef.current && assistantCount >= 4) {
         awaitingContactRef.current = true
         setCollectingContact(true)
         finalHistory = [...finalHistory, {
@@ -448,7 +463,7 @@ export default function AuditChat({ theme = 'dark', userInfo, onReportReady, con
 
       if (isScopeLimit) setScopePanel('domain')
       if (isReady) {
-        const reportHistory = finalHistory.filter(m => !isContactMetaMessage(m))
+        const reportHistory = toSubstantiveHistory(finalHistory)
         posthog?.capture('audit_report_ready', {
           message_count: reportHistory.filter(m => m.role === 'user').length,
           industry: tierData?.industry ?? resolvedUserInfo?.industry,
@@ -476,7 +491,7 @@ export default function AuditChat({ theme = 'dark', userInfo, onReportReady, con
           }).catch(() => {})
         }
 
-        setTimeout(() => onReportReady(reportHistory, sessionId, contactInfo.collected ? contactInfo : null), 1200)
+        setTimeout(() => onReportReady(reportHistory, sessionId, effectiveContactInfo.collected ? effectiveContactInfo : null), 1200)
       }
     } catch (err) {
       Sentry.captureException(err)
