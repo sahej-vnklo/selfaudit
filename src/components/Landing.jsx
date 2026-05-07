@@ -771,7 +771,7 @@ function LandingNav({ C, pageOpen, onBack, onPricing, onStories, onConnected, on
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 28 }}>
           <TextNavLink label="Pricing" onClick={onPricing} C={C} />
           <TextNavLink label="Stories" onClick={onStories} C={C} active={storiesOpen} />
-          <TextNavLink label="Connected" onClick={onConnected} C={C} active={connectedOpen} />
+          <TextNavLink label="Integrations" onClick={onConnected} C={C} active={connectedOpen} />
           <TextNavLink label="Sign in" onClick={onSignIn} C={C} muted />
         </div>
 
@@ -781,6 +781,41 @@ function LandingNav({ C, pageOpen, onBack, onPricing, onStories, onConnected, on
         </div>
       </div>
     </nav>
+  )
+}
+
+function ConnectorLogo({ tool, src, brandColor, fallbackText }) {
+  const [failed, setFailed] = useState(!src)
+
+  if (failed) {
+    return (
+      <div style={{
+        width: 20,
+        height: 20,
+        borderRadius: '50%',
+        background: brandColor,
+        color: '#fff',
+        fontSize: 9,
+        fontWeight: 700,
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexShrink: 0,
+      }}>
+        {fallbackText || tool.slice(0, 2)}
+      </div>
+    )
+  }
+
+  return (
+    <img
+      src={src}
+      alt={tool}
+      width="20"
+      height="20"
+      onError={() => setFailed(true)}
+      style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0 }}
+    />
   )
 }
 
@@ -905,38 +940,82 @@ function ConnectedPage({ C, theme, onStartAudit }) {
   const connectorColumns = [
     {
       heading: 'CRM & PIPELINE',
-      color: '#FF7A59',
-      tools: ['HubSpot', 'Salesforce', 'Pipedrive', 'Close'],
+      tools: [
+        { name: 'HubSpot', src: 'https://cdn.simpleicons.org/hubspot/FF7A59', brandColor: '#FF7A59', live: true },
+        { name: 'Salesforce', src: 'https://cdn.simpleicons.org/salesforce/00A1E0', brandColor: '#00A1E0' },
+        { name: 'Pipedrive', src: 'https://cdn.simpleicons.org/pipedrive/017737', brandColor: '#017737' },
+        { name: 'Close', src: '', brandColor: '#7B68EE', fallbackText: 'C' },
+      ],
     },
     {
       heading: 'REVENUE & BILLING',
-      color: '#635BFF',
-      tools: ['Stripe', 'Paddle', 'Chargebee', 'Recurly'],
+      tools: [
+        { name: 'Stripe', src: 'https://cdn.simpleicons.org/stripe/635BFF', brandColor: '#635BFF' },
+        { name: 'Paddle', src: 'https://cdn.simpleicons.org/paddle/007AB5', brandColor: '#007AB5', fallbackText: 'Pa' },
+        { name: 'Chargebee', src: 'https://cdn.simpleicons.org/chargebee/FF4B00', brandColor: '#FF4B00', fallbackText: 'Cb' },
+        { name: 'Recurly', src: 'https://cdn.simpleicons.org/recurly/7B4CB3', brandColor: '#7B4CB3', fallbackText: 'Re' },
+      ],
     },
     {
       heading: 'SUPPORT & CX',
-      color: '#03363D',
-      tools: ['Zendesk', 'Intercom', 'Help Scout', 'Freshdesk'],
+      tools: [
+        { name: 'Zendesk', src: 'https://cdn.simpleicons.org/zendesk/03363D', brandColor: '#03363D' },
+        { name: 'Intercom', src: 'https://cdn.simpleicons.org/intercom/6AFDEF', brandColor: '#6AFDEF' },
+        { name: 'Help Scout', src: 'https://cdn.simpleicons.org/helpscout/1292EE', brandColor: '#1292EE', fallbackText: 'HS' },
+        { name: 'Freshdesk', src: 'https://cdn.simpleicons.org/freshdesk/22C55E', brandColor: '#22C55E', fallbackText: 'Fd' },
+      ],
     },
     {
       heading: 'COMMS & EMAIL',
-      color: '#4A154B',
-      tools: ['Slack', 'Gmail', 'Microsoft Teams', 'Mailchimp'],
+      tools: [
+        { name: 'Slack', src: 'https://cdn.simpleicons.org/slack/4A154B', brandColor: '#4A154B' },
+        { name: 'Gmail', src: 'https://cdn.simpleicons.org/gmail/EA4335', brandColor: '#EA4335' },
+        { name: 'Microsoft Teams', src: 'https://cdn.simpleicons.org/microsoftteams/6264A7', brandColor: '#6264A7' },
+        { name: 'Mailchimp', src: 'https://cdn.simpleicons.org/mailchimp/FFE01B', brandColor: '#FFE01B' },
+      ],
     },
     {
       heading: 'PROJECT & DELIVERY',
-      color: '#F96854',
-      tools: ['Asana', 'Linear', 'ClickUp', 'Jira'],
+      tools: [
+        { name: 'Asana', src: 'https://cdn.simpleicons.org/asana/F06A6A', brandColor: '#F06A6A' },
+        { name: 'Linear', src: 'https://cdn.simpleicons.org/linear/5E6AD2', brandColor: '#5E6AD2' },
+        { name: 'ClickUp', src: 'https://cdn.simpleicons.org/clickup/7B68EE', brandColor: '#7B68EE' },
+        { name: 'Jira', src: 'https://cdn.simpleicons.org/jira/0052CC', brandColor: '#0052CC' },
+      ],
     },
     {
       heading: 'KNOWLEDGE & DOCS',
-      color: '#000000',
-      tools: ['Notion', 'Google Drive', 'Confluence', 'OneDrive'],
+      tools: [
+        { name: 'Notion', src: `https://cdn.simpleicons.org/notion/${theme === 'dark' ? 'FFFFFF' : '000000'}`, brandColor: theme === 'dark' ? '#FFFFFF' : '#000000' },
+        { name: 'Google Drive', src: 'https://cdn.simpleicons.org/googledrive/4285F4', brandColor: '#4285F4' },
+        { name: 'Confluence', src: 'https://cdn.simpleicons.org/confluence/172B4D', brandColor: '#172B4D' },
+        { name: 'OneDrive', src: 'https://cdn.simpleicons.org/onedrive/0078D4', brandColor: '#0078D4' },
+      ],
     },
   ]
 
   return (
     <>
+      <style>{`
+        .sa-integrations-grid {
+          display: grid;
+          grid-template-columns: repeat(6, minmax(0, 1fr));
+          gap: 32px;
+          max-width: 1100px;
+          margin: 0 auto;
+        }
+        @media (max-width: 900px) {
+          .sa-integrations-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+          }
+        }
+        @media (max-width: 600px) {
+          .sa-integrations-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+        }
+      `}</style>
+
       <section style={{ padding: '96px 0 82px', background: C.bg, textAlign: 'center' }}>
         <div style={wrap}>
           <div style={{ ...sectionLabel(C), color: C.inkMuted }}>LIVE BUSINESS INTELLIGENCE</div>
@@ -987,19 +1066,19 @@ function ConnectedPage({ C, theme, onStartAudit }) {
             Connect once. SelfAudit handles the rest — pulling live data across your entire stack, not just one tool.
           </p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(165px, 1fr))', gap: 18 }}>
+          <div className="sa-integrations-grid">
             {connectorColumns.map((column) => (
-              <div key={column.heading} style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 16, padding: 18 }}>
-                <div style={{ fontSize: 11, color: C.accentText, letterSpacing: '0.12em', textTransform: 'uppercase', borderBottom: `0.5px solid ${C.border}`, paddingBottom: 8, marginBottom: 14, fontWeight: 700 }}>
+              <div key={column.heading}>
+                <div style={{ fontSize: 10, color: C.accentText, letterSpacing: '0.14em', textTransform: 'uppercase', borderBottom: `0.5px solid ${C.border}`, paddingBottom: 8, marginBottom: 16, fontWeight: 700 }}>
                   {column.heading}
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
                   {column.tools.map((tool) => (
-                    <div key={tool} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <span style={{ width: 20, height: 20, borderRadius: 4, background: column.color, display: 'inline-block', flexShrink: 0 }} />
+                    <div key={tool.name} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0' }}>
+                      <ConnectorLogo tool={tool.name} src={tool.src} brandColor={tool.brandColor} fallbackText={tool.fallbackText} />
                       <span style={{ fontSize: 13, color: C.inkSoft, display: 'inline-flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                        {tool}
-                        {tool === 'HubSpot' && (
+                        {tool.name}
+                        {tool.live && (
                           <span style={{ ...liveBadge, borderRadius: 999, padding: '2px 6px', fontSize: 10, fontWeight: 600 }}>
                             Live
                           </span>
