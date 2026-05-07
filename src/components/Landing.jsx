@@ -331,6 +331,15 @@ const typewriterStatements = [
   'I want to go from 10 to 50 employees without breaking culture.',
 ]
 
+const rotatingHeadlines = [
+  'Your problems, diagnosed.\nYour goals, reverse-engineered.',
+  'Most founders are fixing\nthe wrong problem.',
+  "Stop the leak.\nScale the rest.",
+  "Find what's broken.\nDouble what's working.",
+  "Find what's killing it.\nThen go all in.",
+  "Cut what's costing you.\nScale what's making you.",
+]
+
 // ── Sub-components ────────────────────────────────────────────────────────────
 
 function PrimaryButton({ label, onClick, small = false, C }) {
@@ -1509,6 +1518,8 @@ export default function Landing({ onStart, onSignUp, session }) {
   const C = THEMES[theme]
   const [storiesOpen, setStoriesOpen] = useState(false)
   const [connectedOpen, setConnectedOpen] = useState(false)
+  const [headlineIndex, setHeadlineIndex] = useState(0)
+  const [headlineVisible, setHeadlineVisible] = useState(true)
   const [inputValue, setInputValue] = useState('')
   const [placeholder, setPlaceholder] = useState('')
   const [isTyping, setIsTyping] = useState(false)
@@ -1597,6 +1608,22 @@ export default function Landing({ onStart, onSignUp, session }) {
     runLoop()
     return () => { cancelled = true }
   }, [])
+
+  useEffect(() => {
+    const fadeTimeout = setTimeout(() => {
+      setHeadlineVisible(false)
+    }, 3500)
+
+    const rotateTimeout = setTimeout(() => {
+      setHeadlineIndex(i => (i + 1) % rotatingHeadlines.length)
+      setHeadlineVisible(true)
+    }, 4100)
+
+    return () => {
+      clearTimeout(fadeTimeout)
+      clearTimeout(rotateTimeout)
+    }
+  }, [headlineIndex])
 
   const handleAuditStart = (problem) => {
     posthog?.capture('audit_started', { source: 'landing', problem: problem || '' })
@@ -1701,9 +1728,16 @@ export default function Landing({ onStart, onSignUp, session }) {
             textAlign: 'center',
             margin: '0 auto 16px',
             color: C.ink,
+            minHeight: '2.4em',
+            opacity: headlineVisible ? 1 : 0,
+            transition: 'opacity 0.6s ease',
           }}>
-            Your problems, diagnosed.<br />
-            Your goals, reverse-engineered.
+            {rotatingHeadlines[headlineIndex].split('\n').map((line, idx, arr) => (
+              <React.Fragment key={`${headlineIndex}-${idx}`}>
+                {line}
+                {idx < arr.length - 1 && <br />}
+              </React.Fragment>
+            ))}
           </h1>
 
           <p style={{
