@@ -1063,11 +1063,15 @@ function ConnectedPage({ C, theme, onStartAudit }) {
 }
 
 function SocialProofTicker({ C }) {
-  const [items, setItems] = useState([])
+  const [rowOneItems, setRowOneItems] = useState([])
+  const [rowTwoItems, setRowTwoItems] = useState([])
   const [paused, setPaused] = useState(false)
 
   useEffect(() => {
-    setItems([...socialProofQuotes, ...socialProofQuotes])
+    const firstRow = socialProofQuotes.slice(0, 6)
+    const secondRow = socialProofQuotes.slice(6, 12)
+    setRowOneItems([...firstRow, ...firstRow])
+    setRowTwoItems([...secondRow, ...secondRow])
 
     const styleId = 'sa-social-proof-keyframes'
     let el = document.getElementById(styleId)
@@ -1088,8 +1092,12 @@ function SocialProofTicker({ C }) {
   }, [])
 
   return (
-    <section style={{ padding: '60px 0 20px', background: C.bg }}>
-      <div style={{ position: 'relative', overflow: 'hidden', width: '100%', padding: '32px 0' }}>
+    <section style={{ padding: '80px 0', background: C.bg }}>
+      <div
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+        style={{ position: 'relative', overflow: 'hidden', width: '100%', padding: '32px 0' }}
+      >
         <div style={{
           position: 'absolute',
           top: 0,
@@ -1111,23 +1119,41 @@ function SocialProofTicker({ C }) {
           background: `linear-gradient(to left, ${C.bg} 0%, transparent 100%)`,
         }} />
 
-        <div
-          onMouseEnter={() => setPaused(true)}
-          onMouseLeave={() => setPaused(false)}
-          style={{
-            display: 'flex',
-            width: 'max-content',
-            whiteSpace: 'nowrap',
-            animation: 'saSocialProofScroll 45s linear infinite',
-            animationPlayState: paused ? 'paused' : 'running',
-          }}
-        >
-          {items.map((quote, index) => (
-            <div key={`${quote}-${index}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 16, padding: '0 120px' }}>
-              <span style={{ fontFamily: serif, fontSize: 60, fontStyle: 'italic', color: C.ink, lineHeight: 1.08 }}>{quote}</span>
-              <span style={{ width: 16, height: 16, borderRadius: '50%', background: C.border, flexShrink: 0, display: 'inline-block' }} />
-            </div>
-          ))}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+          <div
+            style={{
+              display: 'flex',
+              width: 'max-content',
+              whiteSpace: 'nowrap',
+              animation: 'saSocialProofScroll 90s linear infinite',
+              animationPlayState: paused ? 'paused' : 'running',
+            }}
+          >
+            {rowOneItems.map((quote, index) => (
+              <div key={`${quote}-${index}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 16, padding: '0 120px' }}>
+                <span style={{ fontFamily: serif, fontSize: 60, fontStyle: 'italic', color: C.ink, lineHeight: 1.08 }}>{quote}</span>
+                <span style={{ width: 16, height: 16, borderRadius: '50%', background: C.border, flexShrink: 0, display: 'inline-block' }} />
+              </div>
+            ))}
+          </div>
+
+          <div
+            style={{
+              display: 'flex',
+              width: 'max-content',
+              whiteSpace: 'nowrap',
+              animation: 'saSocialProofScroll 90s linear infinite',
+              animationDirection: 'reverse',
+              animationPlayState: paused ? 'paused' : 'running',
+            }}
+          >
+            {rowTwoItems.map((quote, index) => (
+              <div key={`${quote}-${index}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 16, padding: '0 120px' }}>
+                <span style={{ fontFamily: serif, fontSize: 60, fontStyle: 'italic', color: C.ink, lineHeight: 1.08 }}>{quote}</span>
+                <span style={{ width: 16, height: 16, borderRadius: '50%', background: C.border, flexShrink: 0, display: 'inline-block' }} />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>
