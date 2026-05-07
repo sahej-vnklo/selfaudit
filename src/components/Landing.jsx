@@ -80,45 +80,70 @@ const compareRows = [
   { dim: 'Guesswork & intuition', old: 'Human bias, agenda, and error', neo: 'Pattern Recognition (The Edge)' },
 ]
 
-const verdictCards = [
+const storyCards = [
   {
-    badge: 'Critical · Operations',
-    badgeBgDark: '#1A0A0A',
-    badgeBgLight: '#F5E8E8',
-    badgeColorDark: '#C05050',
-    badgeColorLight: '#8C2A2A',
-    symptom: '"QC team is burning cash on mistakes."',
-    reveal: 'Root cause traced to a non-existent accountability protocol — not a tech failure.',
-    outcome: 'Process redesign + automated performance oversight.',
-    industry: 'Manufacturing',
-    time: '6 min',
-    findings: '3 critical · 2 needs-work',
+    severity: 'CRITICAL',
+    domain: 'Operations',
+    meta: 'Manufacturing · 6 min',
+    thinking: '"Our QC team is burning through budget for no reason."',
+    found: 'No accountability protocol existed. Errors were absorbed, not owned. The QC team was fixing problems that should not have reached them.',
+    changed: 'Redesigned the handoff process. QC errors dropped 60% in 6 weeks without a single new hire.',
   },
   {
-    badge: 'Critical · Strategy',
-    badgeBgDark: '#1A1508',
-    badgeBgLight: '#F5F0E0',
-    badgeColorDark: '#C9A040',
-    badgeColorLight: '#7A5A10',
-    symptom: '"Revenue is flat despite heavy effort."',
-    reveal: 'Seasonal capital model misaligned with actual service capacity.',
-    outcome: 'Pricing model restructure + real-time capacity-to-revenue tracking.',
-    industry: 'Service business',
-    time: '5 min',
-    findings: '4 critical',
+    severity: 'CRITICAL',
+    domain: 'Strategy',
+    meta: 'Service Business · 5 min',
+    thinking: '"Revenue is flat. We need to do more marketing."',
+    found: 'Seasonal capital model completely misaligned with actual service capacity. They were marketing into months they could not deliver in.',
+    changed: 'Pricing model restructured around capacity windows. Revenue up 34% in the next quarter without increasing ad spend.',
   },
   {
-    badge: 'Needs work · People',
-    badgeBgDark: '#0A1A10',
-    badgeBgLight: '#E8F5EE',
-    badgeColorDark: '#4A9E6B',
-    badgeColorLight: '#1A6B3A',
-    symptom: '"We need to automate, but the product isn\'t ready."',
-    reveal: 'Management churn is the actual bottleneck — not technical debt.',
-    outcome: 'Hiring brief + Team alignment SOPs removed organisational drag.',
-    industry: 'SaaS (25 employees)',
-    time: '7 min',
-    findings: '2 critical · 3 needs-work',
+    severity: 'NEEDS WORK',
+    domain: 'People',
+    meta: 'SaaS · 7 min',
+    thinking: '"We need to automate but the product is not ready."',
+    found: 'Management churn was the real bottleneck. 3 team leads had left in 4 months. The product was fine. The org was not.',
+    changed: 'Hiring brief built for a Head of Delivery. Onboarding SOP created. Product velocity increased within 60 days.',
+  },
+  {
+    severity: 'CRITICAL',
+    domain: 'Finance',
+    meta: 'Agency · 5 min',
+    thinking: '"We are busy and growing. Margins should be fine."',
+    found: 'Billable hour rate had not been reviewed in 2 years. Inflation and scope creep had eroded margin to 11%. Profitable on paper, bleeding in reality.',
+    changed: 'Pricing repriced by project type. Average margin recovered to 31% within one billing cycle.',
+  },
+  {
+    severity: 'CRITICAL',
+    domain: 'Sales',
+    meta: 'SaaS · 6 min',
+    thinking: '"Our close rate is low. We need a better demo."',
+    found: 'Deals were not dying in the demo — they were dying in follow-up. No structured sequence existed after the call. Leads were going cold in silence.',
+    changed: '5-touch follow-up sequence built. Close rate improved 28% in 6 weeks. Demo unchanged.',
+  },
+  {
+    severity: 'NEEDS WORK',
+    domain: 'Marketing',
+    meta: 'E-commerce · 4 min',
+    thinking: '"We need more traffic. Our ads are not working."',
+    found: 'Traffic was not the problem. Conversion rate on the product page was 0.8% — industry average is 2.4%. They were pouring spend into a leaking funnel.',
+    changed: 'Product page rebuilt. Ad spend held flat. Revenue increased 41% from the same traffic.',
+  },
+  {
+    severity: 'CRITICAL',
+    domain: 'Operations',
+    meta: 'Consulting · 8 min',
+    thinking: '"We are understaffed. We need to hire."',
+    found: 'Three consultants were spending 40% of their time on admin tasks that had no business being done manually. Capacity was not the issue. Workflow was.',
+    changed: 'Two automations built. Equivalent of 1.2 FTE recovered. Hiring paused indefinitely.',
+  },
+  {
+    severity: 'NEEDS WORK',
+    domain: 'Customer Experience',
+    meta: 'Healthcare · 6 min',
+    thinking: '"Patient satisfaction scores are dropping. We need better staff training."',
+    found: 'The drop correlated exactly with a scheduling system change 3 months prior. Wait times had increased 18 minutes on average. Staff were not the problem.',
+    changed: 'Scheduling logic reverted and rebuilt. Satisfaction scores recovered within 30 days. Training budget untouched.',
   },
 ]
 
@@ -647,6 +672,211 @@ function GrowthOSCard({ onSignUp, C }) {
   )
 }
 
+function TextNavLink({ label, onClick, C, muted = false, active = false }) {
+  const [hovered, setHovered] = useState(false)
+
+  return (
+    <button
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        background: 'none',
+        border: 'none',
+        padding: 0,
+        cursor: 'pointer',
+        fontSize: 15,
+        fontWeight: 500,
+        color: muted ? C.inkMuted : C.inkSoft,
+        fontFamily: 'inherit',
+        opacity: hovered || active ? 1 : 0.84,
+        textDecoration: hovered || active ? 'underline' : 'none',
+        textUnderlineOffset: 4,
+      }}
+    >
+      {label}
+    </button>
+  )
+}
+
+function ThemeTextToggle({ theme, setTheme, C }) {
+  return (
+    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 14, color: C.inkMuted }}>
+      <span
+        onClick={() => setTheme('light')}
+        style={{ cursor: 'pointer', color: theme === 'light' ? C.inkSoft : C.inkMuted }}
+      >
+        Light
+      </span>
+      <span style={{ color: C.inkFaint }}>/</span>
+      <span
+        onClick={() => setTheme('dark')}
+        style={{ cursor: 'pointer', color: theme === 'dark' ? C.inkSoft : C.inkMuted }}
+      >
+        Dark
+      </span>
+    </div>
+  )
+}
+
+function LandingNav({ C, storiesOpen, onBackStories, onPricing, onStories, onIntegrations, onSignIn, onStartAudit, onLogoClick }) {
+  return (
+    <nav style={{ padding: '20px 0', borderBottom: `1px solid ${C.border}`, background: C.bg, position: 'sticky', top: 0, zIndex: 20 }}>
+      <div style={{ ...wrap, display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0 }}>
+          {storiesOpen && (
+            <button
+              onClick={onBackStories}
+              style={{
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                cursor: 'pointer',
+                fontSize: 22,
+                lineHeight: 1,
+                color: C.inkSoft,
+                fontFamily: 'inherit',
+              }}
+              aria-label="Back to landing"
+            >
+              ←
+            </button>
+          )}
+          <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.5px', cursor: 'pointer', color: C.ink }} onClick={onLogoClick}>
+            self<span style={{ color: C.accentText, fontWeight: 500 }}>audit</span>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 28 }}>
+          <TextNavLink label="Pricing" onClick={onPricing} C={C} />
+          <TextNavLink label="Stories" onClick={onStories} C={C} active={storiesOpen} />
+          <TextNavLink label="Integrations" onClick={onIntegrations} C={C} />
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 22 }}>
+          <TextNavLink label="Sign in" onClick={onSignIn} C={C} muted />
+          <PrimaryButton label="Start free audit" onClick={onStartAudit} small C={C} />
+        </div>
+      </div>
+    </nav>
+  )
+}
+
+function LandingFooter({ C, theme, setTheme }) {
+  return (
+    <footer style={{ background: C.surface, color: C.inkMuted, padding: '42px 0', borderTop: `1px solid ${C.border}` }}>
+      <div style={{ ...wrap, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
+        <div style={{ fontSize: 15 }}>
+          Built by{' '}
+          <a href="https://vnklo.com" target="_blank" rel="noopener" style={{ color: C.accentText, textDecoration: 'none', fontWeight: 500 }}>
+            Vnklo
+          </a>
+        </div>
+        <ThemeTextToggle theme={theme} setTheme={setTheme} C={C} />
+      </div>
+    </footer>
+  )
+}
+
+function StoriesPage({ C, onStartAudit }) {
+  return (
+    <>
+      <section style={{ padding: '96px 0 72px', background: C.bg }}>
+        <div style={wrap}>
+          <div style={sectionLabel(C)}>REAL DIAGNOSES. REAL OUTCOMES.</div>
+          <h1 style={{
+            fontFamily: serif,
+            fontSize: 'clamp(40px, 5vw, 68px)',
+            fontWeight: 700,
+            lineHeight: 1.04,
+            letterSpacing: '-0.04em',
+            textAlign: 'center',
+            color: C.ink,
+            margin: '0 auto 18px',
+            maxWidth: 760,
+          }}>
+            What founders found out.
+          </h1>
+          <p style={{ textAlign: 'center', fontSize: 19, color: C.inkSoft, maxWidth: 760, margin: '0 auto' }}>
+            These are not case studies. They are moments where someone finally got an honest answer about their business.
+          </p>
+        </div>
+      </section>
+
+      <section style={{ padding: '0 0 96px', background: C.bg }}>
+        <div style={wrap}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 24 }}>
+            {storyCards.map((story) => {
+              const critical = story.severity === 'CRITICAL'
+              return (
+                <div
+                  key={`${story.severity}-${story.domain}-${story.meta}`}
+                  style={{
+                    background: C.card,
+                    border: `1px solid ${C.border}`,
+                    borderLeft: `3px solid ${critical ? C.redMuted : C.amber}`,
+                    borderRadius: 16,
+                    padding: 28,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 18,
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'flex-start' }}>
+                    <div style={{
+                      fontSize: 12,
+                      letterSpacing: '0.12em',
+                      textTransform: 'uppercase',
+                      fontWeight: 700,
+                      color: critical ? C.redMuted : C.amber,
+                    }}>
+                      {story.severity} · {story.domain}
+                    </div>
+                    <div style={{ fontSize: 14, color: C.inkMuted, textAlign: 'right' }}>{story.meta}</div>
+                  </div>
+
+                  <div>
+                    <div style={{ fontSize: 12, color: C.inkFaint, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>What they came in thinking</div>
+                    <div style={{ fontFamily: serif, fontSize: 24, fontStyle: 'italic', lineHeight: 1.4, color: C.ink }}>
+                      {story.thinking}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div style={{ fontSize: 12, color: C.inkFaint, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>What we actually found</div>
+                    <div style={{ fontSize: 16, color: C.inkSoft, lineHeight: 1.65 }}>
+                      {story.found}
+                    </div>
+                  </div>
+
+                  <div style={{ paddingTop: 16, borderTop: `1px solid ${C.border}` }}>
+                    <div style={{ fontSize: 12, color: C.accentText, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>What changed</div>
+                    <div style={{ fontSize: 16, color: C.ink, lineHeight: 1.65, fontWeight: 500 }}>
+                      {story.changed}
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section style={{ background: C.surface, textAlign: 'center', padding: '88px 0 96px' }}>
+        <div style={wrap}>
+          <div style={{ fontFamily: serif, fontSize: 'clamp(28px, 4vw, 44px)', color: C.ink, lineHeight: 1.15, marginBottom: 28 }}>
+            Every audit starts with a question you have not asked yet.
+          </div>
+          <PrimaryButton label="Start your free audit" onClick={() => onStartAudit('')} C={C} />
+          <div style={{ fontSize: 14, color: C.inkMuted, marginTop: 14 }}>
+            5 minutes. No account needed.
+          </div>
+        </div>
+      </section>
+    </>
+  )
+}
+
 function VisionWidget({ C, serif, visionOpen, setVisionOpen, visionGoal, setVisionGoal, visionCurrent, setVisionCurrent, visionTimeline, setVisionTimeline, visionRef, onStart }) {
 
   const goals = ['Hit $1M ARR', '2x my revenue', 'Exit in 3 years', 'Break even', 'Enter new market', 'Scale the team']
@@ -792,17 +1022,13 @@ export default function Landing({ onStart, onSignUp, session }) {
   const posthog = usePostHog()
   const [theme, setTheme] = useState(() => localStorage.getItem('sa-theme') || 'dark')
   const C = THEMES[theme]
+  const [storiesOpen, setStoriesOpen] = useState(false)
   const [inputValue, setInputValue] = useState('')
   const [placeholder, setPlaceholder] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const typewriterRef = useRef(null)
   const statementIndexRef = useRef(0)
   const userFocusedRef = useRef(false)
-  const [visionOpen, setVisionOpen] = useState(false)
-  const [visionGoal, setVisionGoal] = useState(null)
-  const [visionCurrent, setVisionCurrent] = useState(null)
-  const [visionTimeline, setVisionTimeline] = useState(null)
-  const visionRef = useRef(null)
 
   useEffect(() => {
     localStorage.setItem('sa-theme', theme)
@@ -886,16 +1112,6 @@ export default function Landing({ onStart, onSignUp, session }) {
     return () => { cancelled = true }
   }, [])
 
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (visionRef.current && !visionRef.current.contains(e.target)) {
-        setVisionOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
-
   const handleAuditStart = (problem) => {
     posthog?.capture('audit_started', { source: 'landing', problem: problem || '' })
     onStart(problem ?? '')
@@ -907,6 +1123,10 @@ export default function Landing({ onStart, onSignUp, session }) {
   }
 
   const handleLogoClick = () => {
+    if (storiesOpen) {
+      setStoriesOpen(false)
+      return
+    }
     if (session) {
       window.location.hash = 'dashboard'
     } else {
@@ -922,66 +1142,44 @@ export default function Landing({ onStart, onSignUp, session }) {
     }
   }
 
+  const closeStoriesAndThen = (callback) => {
+    if (storiesOpen) {
+      setStoriesOpen(false)
+      window.setTimeout(callback, 30)
+      return
+    }
+    callback()
+  }
+
+  const handlePricingNav = () => closeStoriesAndThen(() => {
+    document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })
+  })
+
+  const handleIntegrationsNav = () => closeStoriesAndThen(() => {
+    document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })
+  })
+
   return (
     <div style={{ fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", background: C.bg, color: C.ink, lineHeight: 1.6, minHeight: '100vh' }}>
+      <LandingNav
+        C={C}
+        storiesOpen={storiesOpen}
+        onBackStories={() => setStoriesOpen(false)}
+        onPricing={handlePricingNav}
+        onStories={() => setStoriesOpen(true)}
+        onIntegrations={handleIntegrationsNav}
+        onSignIn={() => { window.location.hash = 'login' }}
+        onStartAudit={() => handleAuditStart('')}
+        onLogoClick={handleLogoClick}
+      />
 
-      {/* ── Nav ── */}
-      <nav style={{ padding: '22px 0', borderBottom: `1px solid ${C.border}`, background: theme === 'dark' ? 'rgba(28,35,48,0.97)' : 'rgba(245,240,232,0.97)', position: 'sticky', top: 0, zIndex: 10, backdropFilter: 'blur(10px)' }}>
-        <div style={{ ...wrap, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 20 }}>
-          <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.5px', cursor: 'pointer', color: C.ink }} onClick={handleLogoClick}>
-            self<span style={{ color: C.accentText, fontWeight: 500 }}>audit</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-            <button onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })} style={{ fontSize: 15, color: C.inkSoft, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500, padding: 0 }}>
-              Pricing
-            </button>
-            <button onClick={() => { window.location.hash = 'login' }} style={{ fontSize: 15, color: C.inkMuted, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500, padding: 0 }}>
-              Sign in
-            </button>
-            <VisionWidget
-              C={C}
-              serif={serif}
-              visionOpen={visionOpen}
-              setVisionOpen={setVisionOpen}
-              visionGoal={visionGoal}
-              setVisionGoal={setVisionGoal}
-              visionCurrent={visionCurrent}
-              setVisionCurrent={setVisionCurrent}
-              visionTimeline={visionTimeline}
-              setVisionTimeline={setVisionTimeline}
-              visionRef={visionRef}
-              onStart={handleAuditStart}
-            />
-            <button
-              onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
-              style={{
-                background: 'none',
-                border: `1px solid ${C.border2}`,
-                borderRadius: 999,
-                padding: '7px 14px',
-                cursor: 'pointer',
-                fontSize: 14,
-                fontWeight: 500,
-                color: C.inkSoft,
-                fontFamily: 'inherit',
-                transition: 'border-color 0.2s, color 0.2s',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-              }}
-            >
-              {theme === 'dark' ? '☀ Light' : '☾ Dark'}
-            </button>
-            <PrimaryButton label="Start free audit" onClick={() => handleAuditStart('')} small C={C} />
-            <div style={{ fontSize: 15, color: C.inkMuted }}>
-              by{' '}
-              <a href="https://vnklo.com" target="_blank" rel="noopener" style={{ color: C.accentText, textDecoration: 'none', fontWeight: 500 }}>
-                Vnklo
-              </a>
-            </div>
-          </div>
-        </div>
-      </nav>
+      {storiesOpen ? (
+        <>
+          <StoriesPage C={C} onStartAudit={handleAuditStart} />
+          <LandingFooter C={C} theme={theme} setTheme={setTheme} />
+        </>
+      ) : (
+        <>
 
       {/* ── 1. Hero ── */}
       <section style={{ padding: '112px 0 100px', textAlign: 'center', background: 'none' }}>
@@ -1161,48 +1359,7 @@ export default function Landing({ onStart, onSignUp, session }) {
         </div>
       </section>
 
-      {/* ── 5. Evidence of Intelligence ── */}
-      <section style={{ padding: '96px 0', background: C.bg }}>
-        <div style={wrap}>
-          <div style={sectionLabel(C)}>Intelligence in action</div>
-          <h2 style={h2Style(C)}>Evidence of the Intelligence Layer.</h2>
-          <p style={{ textAlign: 'center', fontSize: 19, color: C.inkSoft, maxWidth: 640, margin: '0 auto 56px' }}>
-            We don't tell you what you want to hear. We tell you what's actually killing your growth.
-          </p>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24 }}>
-            {verdictCards.map(card => (
-              <div key={card.symptom} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, padding: 28, display: 'flex', flexDirection: 'column', gap: 0 }}>
-                <div style={{ fontSize: 12, letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 600, marginBottom: 20, padding: '4px 10px', borderRadius: 999, display: 'inline-block', alignSelf: 'flex-start', background: theme === 'dark' ? card.badgeBgDark : card.badgeBgLight, color: theme === 'dark' ? card.badgeColorDark : card.badgeColorLight }}>
-                  {card.badge}
-                </div>
-
-                <div style={{ marginBottom: 16 }}>
-                  <div style={{ fontSize: 12, color: C.inkFaint, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>What they thought</div>
-                  <div style={{ fontFamily: serif, fontSize: 19, fontWeight: 600, color: C.inkSoft, lineHeight: 1.4 }}>{card.symptom}</div>
-                </div>
-
-                <div style={{ marginBottom: 16 }}>
-                  <div style={{ fontSize: 12, color: C.inkFaint, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>What we found</div>
-                  <div style={{ fontSize: 16, color: C.ink, lineHeight: 1.55, fontWeight: 500 }}>{card.reveal}</div>
-                </div>
-
-                <div style={{ padding: 14, background: C.surface2, borderRadius: 10, marginTop: 'auto' }}>
-                  <div style={{ fontSize: 12, color: C.accentText, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>The Outcome</div>
-                  <div style={{ fontSize: 15, color: C.inkSoft }}>{card.outcome}</div>
-                </div>
-
-                <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 16, marginTop: 16, display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
-                  <span style={{ color: C.inkMuted }}>{card.industry}</span>
-                  <span style={{ color: C.inkMuted }}>{card.time} · {card.findings}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── 6. Accountability Loop ── */}
+      {/* ── 5. Accountability Loop ── */}
       <section style={{ padding: '96px 0', background: C.surface }}>
         <div style={wrap}>
           <div style={sectionLabel(C)}>The unfair advantage</div>
@@ -1238,7 +1395,7 @@ export default function Landing({ onStart, onSignUp, session }) {
         </div>
       </section>
 
-      {/* ── 7. AI Graveyard ── */}
+      {/* ── 6. AI Graveyard ── */}
       <section style={{ padding: '96px 0', background: C.bg }}>
         <div style={wrap}>
           <div style={sectionLabel(C)}>The AI question, answered honestly</div>
@@ -1265,7 +1422,7 @@ export default function Landing({ onStart, onSignUp, session }) {
         </div>
       </section>
 
-      {/* ── 8. Pricing ── */}
+      {/* ── 7. Pricing ── */}
       <section id="pricing" style={{ padding: '100px 0', background: C.surface }}>
         <div style={wrap}>
           <div style={sectionLabel(C)}>Pricing</div>
@@ -1303,7 +1460,7 @@ export default function Landing({ onStart, onSignUp, session }) {
         </div>
       </section>
 
-      {/* ── 9. Final CTA ── */}
+      {/* ── 8. Final CTA ── */}
       <section style={{ background: C.bg, textAlign: 'center', padding: '110px 0' }}>
         <div style={wrap}>
           <h2 style={h2Style(C)}>Stop guessing. Get a diagnosis.</h2>
@@ -1316,15 +1473,9 @@ export default function Landing({ onStart, onSignUp, session }) {
         </div>
       </section>
 
-      {/* ── Footer ── */}
-      <footer style={{ background: theme === 'dark' ? '#111820' : '#E8E0D4', color: '#B8B6B0', padding: '42px 0', textAlign: 'center', fontSize: 15, borderTop: `1px solid ${C.border}` }}>
-        <div style={wrap}>
-          Built by{' '}
-          <a href="https://vnklo.com" target="_blank" rel="noopener" style={{ color: C.accentText, textDecoration: 'none', fontWeight: 500 }}>
-            Vnklo
-          </a>
-        </div>
-      </footer>
+      <LandingFooter C={C} theme={theme} setTheme={setTheme} />
+        </>
+      )}
     </div>
   )
 }
