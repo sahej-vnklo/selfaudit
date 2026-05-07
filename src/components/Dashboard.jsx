@@ -197,7 +197,7 @@ const TIERS = [
 ]
 
 const TIER_ORDER = { essential: 0, business: 1, portfolio: 2, free: 0, paid: 1 }
-const SECTIONS = ['home', 'reports', 'intelligence', 'billing', 'account']
+const SECTIONS = ['home', 'reports', 'intelligence', 'connectors', 'billing', 'account']
 
 function normalizeTier(raw) {
   if (raw === 'paid') return 'business'
@@ -256,7 +256,31 @@ function getInitials(name, email) {
 
 function getSectionFromHash() {
   const hash = window.location.hash.replace(/^#\/?/, '')
-  return SECTIONS.includes(hash) ? hash : 'home'
+  const section = hash.split('?')[0]
+  return SECTIONS.includes(section) ? section : 'home'
+}
+
+function formatRelativeTime(input) {
+  if (!input) return 'just now'
+  const date = new Date(input)
+  if (Number.isNaN(date.getTime())) return 'just now'
+
+  const diffMs = date.getTime() - Date.now()
+  const absMs = Math.abs(diffMs)
+  const units = [
+    ['day', 24 * 60 * 60 * 1000],
+    ['hour', 60 * 60 * 1000],
+    ['minute', 60 * 1000],
+  ]
+  const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' })
+
+  for (const [unit, size] of units) {
+    if (absMs >= size || unit === 'minute') {
+      return rtf.format(Math.round(diffMs / size), unit)
+    }
+  }
+
+  return 'just now'
 }
 
 function extractGoalFromContext(context) {
@@ -518,6 +542,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
     home: '/ command centre',
     reports: '/ reports',
     intelligence: '/ intelligence brief',
+    connectors: '/ connectors',
     billing: '/ billing',
     account: '/ account',
   }
@@ -554,6 +579,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
         <SidebarButton icon={<IconHome />} active={section === 'home'} onClick={() => navigateSection('home')} label="Home" expanded={sidebarExpanded} />
         <SidebarButton icon={<IconReports />} active={section === 'reports'} onClick={() => navigateSection('reports')} label="Reports" expanded={sidebarExpanded} />
         <SidebarButton icon={<IconIntelligence />} active={section === 'intelligence'} onClick={() => navigateSection('intelligence')} label="Intelligence brief" expanded={sidebarExpanded} />
+        <SidebarButton icon={<IconConnectors />} active={section === 'connectors'} onClick={() => navigateSection('connectors')} label="Connectors" expanded={sidebarExpanded} />
         <div style={{ flex: 1 }} />
         <SidebarButton icon={<IconGear />} active={section === 'billing'} onClick={() => navigateSection('billing')} label="Billing" expanded={sidebarExpanded} />
         <button
@@ -627,6 +653,10 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
                 onProfileChange={(updated) => setProfile((prev) => ({ ...prev, ...updated }))}
               />
             </PageShell>
+          )}
+
+          {section === 'connectors' && (
+            <ConnectorsSection user={user} />
           )}
 
           {section === 'billing' && (
@@ -1102,6 +1132,206 @@ function TopButtons({ onDiagnose, onGoal }) {
         map a goal
       </button>
     </div>
+  )
+}
+
+const CONNECTOR_LIST = [
+  { id: 'hubspot', name: 'HubSpot', category: 'CRM', available: true },
+  { id: 'stripe', name: 'Stripe', category: 'Revenue', available: false },
+  { id: 'slack', name: 'Slack', category: 'Comms', available: false },
+  { id: 'gmail', name: 'Gmail', category: 'Email', available: false },
+  { id: 'notion', name: 'Notion', category: 'Docs', available: false },
+]
+
+function ConnectorsSection({ user }) {
+  const [connectors, setConnectors] = useState({})
+  const [loading, setLoading] = useState(true)
+  const [disconnecting, setDisconnecting] = useState('')
+  const [toast, setToast] = useState('')
+  const [preview, setPreview] = useState(null)
+
+  const getSessionToken = async () => {
+    const sb = await initSupabase()
+    const { data: { session } } = await sb.auth.getSession()
+    return session?.access_token || ''
+  }
+
+  const loadStatus = async () => {
+    if (!user?.id) return
+    setLoading(true)
+    try {
+      const token = await getSessionToken()
+      if (!token) return
+      const response = await fetch('/api/connect/status', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ userId: user.id }),
+      })
+      const data = await response.json()
+      setConnectors(data?.connectors || {})
+    } catch {
+      setConnectors({})
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const loadHubspotPreview = async () => {
+    if (!user?.id) return
+    try {
+      const token = await getSessionToken()
+      if (!token) return
+      const response = await fetch('/api/connect/hubspot/preview', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ userId: user.id }),
+      })
+      const data = await response.json()
+      if (data?.source === 'hubspot') setPreview(data)
+      else setPreview(null)
+    } catch {
+      setPreview(null)
+    }
+  }
+
+  useEffect(() => {
+    loadStatus()
+  }, [user?.id])
+
+  useEffect(() => {
+    const hash = window.location.hash || ''
+    const [, rawQuery = ''] = hash.split('?')
+    if (!rawQuery) return
+
+    const params = new URLSearchParams(rawQuery)
+    const connected = params.get('connected')
+    const error = params.get('error')
+    if (!connected && !error) return
+
+    setToast(connected ? `${connected} connected.` : `Could not connect ${error}.`)
+    history.replaceState(history.state, '', '/#connectors')
+    const timer = window.setTimeout(() => setToast(''), 3200)
+    return () => window.clearTimeout(timer)
+  }, [])
+
+  useEffect(() => {
+    if (connectors?.hubspot?.connected) {
+      loadHubspotPreview()
+      return
+    }
+    setPreview(null)
+  }, [connectors?.hubspot?.connected, connectors?.hubspot?.last_synced_at, user?.id])
+
+  const disconnect = async (provider) => {
+    if (!user?.id) return
+    setDisconnecting(provider)
+    try {
+      const token = await getSessionToken()
+      if (!token) return
+      await fetch('/api/connect/disconnect', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ userId: user.id, provider }),
+      })
+      if (provider === 'hubspot') setPreview(null)
+      await loadStatus()
+    } finally {
+      setDisconnecting('')
+    }
+  }
+
+  return (
+    <PageShell title="Connectors" sub="Connect live systems so audits can reason from verified data, not just self-reported context.">
+      {toast && <div style={styles.connectorsToast}>{toast}</div>}
+      <div style={styles.connectorsGrid}>
+        {CONNECTOR_LIST.map((connector) => {
+          const status = connectors?.[connector.id] || {}
+          const connected = !!status.connected
+          const busy = disconnecting === connector.id
+
+          return (
+            <div key={connector.id} style={{ ...styles.connectorCard, opacity: connector.available ? 1 : 0.68 }}>
+              <div style={styles.connectorCardTop}>
+                <div>
+                  <div style={styles.connectorName}>{connector.name}</div>
+                  <div style={styles.connectorCategory}>{connector.category}</div>
+                </div>
+                <span
+                  style={{
+                    ...styles.connectorBadge,
+                    ...(connected
+                      ? styles.connectorBadgeConnected
+                      : connector.available
+                        ? styles.connectorBadgeAdd
+                        : styles.connectorBadgeSoon),
+                  }}
+                >
+                  {connected ? 'Connected' : connector.available ? 'Add' : 'Coming soon'}
+                </span>
+              </div>
+
+              <div style={styles.connectorBodyText}>
+                {connector.id === 'hubspot'
+                  ? 'Pipeline, contacts, and activity sync into the audit context.'
+                  : 'Reserved for the next connector release.'}
+              </div>
+
+              {connector.available ? (
+                connected ? (
+                  <button type="button" style={styles.connectorDisconnectBtn} onClick={() => disconnect(connector.id)} disabled={busy}>
+                    {busy ? 'Disconnecting…' : 'Disconnect'}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    style={styles.connectorConnectBtn}
+                    onClick={() => { window.location.href = `/api/connect/hubspot/auth?state=${user.id}` }}
+                  >
+                    Connect HubSpot
+                  </button>
+                )
+              ) : (
+                <div style={styles.connectorSoonText}>Available in a later release.</div>
+              )}
+
+              {connector.id === 'hubspot' && connected && preview?.source === 'hubspot' && (
+                <div style={styles.connectorPreview}>
+                  <div style={styles.connectorPreviewMeta}>
+                    Last synced: {formatRelativeTime(status.last_synced_at || preview.fetched_at)}
+                  </div>
+                  {preview.pipeline && (
+                    <div style={styles.connectorPreviewStat}>
+                      Open deals: {preview.pipeline.total_open_deals ?? 0}
+                      {typeof preview.pipeline.total_open_value === 'number' ? ` · $${preview.pipeline.total_open_value.toLocaleString()}` : ''}
+                    </div>
+                  )}
+                  {!!preview.signals?.length && (
+                    <div style={styles.connectorSignals}>
+                      {preview.signals.slice(0, 2).map((signal) => (
+                        <div key={signal} style={styles.connectorSignalLine}>{signal}</div>
+                      ))}
+                    </div>
+                  )}
+                  <button type="button" style={styles.connectorSyncBtn} onClick={loadHubspotPreview}>
+                    Sync now
+                  </button>
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+      {loading && <div style={styles.connectorsLoading}>Checking connector status…</div>}
+    </PageShell>
   )
 }
 
@@ -2070,6 +2300,16 @@ function IconIntelligence() {
   )
 }
 
+function IconConnectors() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <path d="M10.5 5.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" stroke="currentColor" strokeWidth="1.2" />
+      <path d="M5.5 14.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" stroke="currentColor" strokeWidth="1.2" />
+      <path d="M8.5 3.5H6a2.5 2.5 0 0 0 0 5h4a2.5 2.5 0 0 1 0 5H7.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 function IconGear() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -2733,6 +2973,136 @@ const styles = {
     padding: '9px 16px',
     fontSize: 12,
     cursor: 'pointer',
+  },
+  connectorsToast: {
+    marginBottom: 16,
+    border: `0.5px solid ${G.border}`,
+    background: G.accentLight,
+    color: G.accentText,
+    borderRadius: 12,
+    padding: '12px 14px',
+    fontSize: 13,
+  },
+  connectorsGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+    gap: 12,
+  },
+  connectorCard: {
+    background: G.panel,
+    border: `0.5px solid ${G.border}`,
+    borderRadius: 14,
+    padding: 16,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 14,
+  },
+  connectorCardTop: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: 12,
+  },
+  connectorName: {
+    fontSize: 16,
+    fontWeight: 600,
+    color: G.text,
+  },
+  connectorCategory: {
+    marginTop: 4,
+    fontSize: 12,
+    color: G.textFaint,
+    textTransform: 'uppercase',
+    letterSpacing: '0.06em',
+  },
+  connectorBadge: {
+    borderRadius: 999,
+    padding: '5px 10px',
+    fontSize: 12,
+    fontWeight: 600,
+    whiteSpace: 'nowrap',
+  },
+  connectorBadgeConnected: {
+    background: G.greenBg,
+    color: G.greenText,
+  },
+  connectorBadgeAdd: {
+    background: G.accentLight,
+    color: G.accentText,
+  },
+  connectorBadgeSoon: {
+    background: G.surface3,
+    color: G.textFaint,
+  },
+  connectorBodyText: {
+    fontSize: 13,
+    color: G.textSecondary,
+    lineHeight: 1.5,
+  },
+  connectorConnectBtn: {
+    border: 'none',
+    borderRadius: 999,
+    background: G.accent,
+    color: G.white,
+    padding: '11px 16px',
+    fontSize: 14,
+    fontWeight: 600,
+    cursor: 'pointer',
+  },
+  connectorDisconnectBtn: {
+    border: `0.5px solid ${G.border}`,
+    borderRadius: 999,
+    background: 'transparent',
+    color: G.text,
+    padding: '11px 16px',
+    fontSize: 14,
+    fontWeight: 600,
+    cursor: 'pointer',
+  },
+  connectorSoonText: {
+    fontSize: 12,
+    color: G.textFaint,
+  },
+  connectorPreview: {
+    borderTop: `0.5px solid ${G.border}`,
+    paddingTop: 12,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 8,
+  },
+  connectorPreviewMeta: {
+    fontSize: 12,
+    color: G.textFaint,
+  },
+  connectorPreviewStat: {
+    fontSize: 13,
+    color: G.textSecondary,
+  },
+  connectorSignals: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 6,
+  },
+  connectorSignalLine: {
+    fontSize: 12,
+    color: G.textSecondary,
+    lineHeight: 1.45,
+  },
+  connectorSyncBtn: {
+    alignSelf: 'flex-start',
+    border: `0.5px solid ${G.border}`,
+    borderRadius: 999,
+    background: G.surface2,
+    color: G.text,
+    padding: '8px 12px',
+    fontSize: 12,
+    fontWeight: 600,
+    cursor: 'pointer',
+  },
+  connectorsLoading: {
+    marginTop: 14,
+    fontSize: 12,
+    color: G.textFaint,
   },
   reportCard: {
     background: G.surface2,

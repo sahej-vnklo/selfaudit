@@ -10,6 +10,7 @@
 // - Store feedback on user acceptance/rejection for future improvement
 
 import { createClient } from '@supabase/supabase-js'
+import { fetchHubspotBusinessState } from './lib/connectors/hubspot.js'
 
 const CLAUDE_API = 'https://api.anthropic.com/v1/messages'
 
@@ -76,6 +77,46 @@ async function fetchPatterns(industry, domain) {
     }
     lines.push('')
     lines.push('Use these patterns to sharpen your diagnosis. If you see a matching root cause, reference that this pattern has appeared before and what resolved it.')
+    return lines.join('\n')
+  } catch {
+    return ''
+  }
+}
+
+async function fetchConnectorContext(userId, supabase) {
+  if (!userId) return ''
+  try {
+    const { data } = await supabase
+      .from('profiles')
+      .select('integrations')
+      .eq('id', userId)
+      .single()
+
+    if (!data?.integrations?.hubspot?.access_token) return ''
+
+    const hubspotData = await fetchHubspotBusinessState(userId, data.integrations)
+    if (!hubspotData) return ''
+
+    const lines = ['LIVE CONNECTOR DATA (verified from HubSpot):']
+    const p = hubspotData.pipeline
+    if (p) {
+      lines.push(`Open deals: ${p.total_open_deals} worth $${p.total_open_value?.toLocaleString()}`)
+      if (p.avg_deal_size) lines.push(`Avg deal size: $${p.avg_deal_size.toLocaleString()}`)
+      if (p.deals_closing_soon?.length) {
+        lines.push(`Closing soon: ${p.deals_closing_soon.map(
+          d => `${d.name} $${d.amount} by ${d.closedate}`
+        ).join(', ')}`)
+      }
+    }
+    if (hubspotData.contacts?.new_this_month) {
+      lines.push(`New contacts this month: ${hubspotData.contacts.new_this_month}`)
+    }
+    if (hubspotData.signals?.length) {
+      lines.push('Signals:')
+      hubspotData.signals.forEach(s => lines.push(`- ${s}`))
+    }
+    lines.push('')
+    lines.push('Use this data directly in your diagnosis. Reference specific numbers. Do not ask the user for information already present here.')
     return lines.join('\n')
   } catch {
     return ''
@@ -217,7 +258,7 @@ async function fetchUserMemory(userId) {
   }
 }
 
-function buildSystemPrompt(industry, domain, intelligenceBrief, userMemory, goalMode, goal, goalTimeline, goalBaseline, memoryContext, businessState, patterns) {
+function buildSystemPrompt(industry, domain, intelligenceBrief, userMemory, goalMode, goal, goalTimeline, goalBaseline, memoryContext, businessState, patterns, connectorContext) {
   const base = `You are SelfAudit — a brutally honest, senior-level business and life advisor. Your job is to audit any situation a user brings — business, startup, side project, personal goals, career, anything.
 
 CORE RULES:
@@ -349,8 +390,9 @@ Do NOT open with "How can I help", "What are you working on", or any generic que
 
   const businessStateBlock = businessState ? `\n\n---\n${businessState}` : ''
   const patternsBlock      = patterns      ? `\n\n---\n${patterns}`       : ''
+  const connectorBlock = connectorContext ? `\n\n---\nCONNECTOR DATA\n${connectorContext}` : ''
 
-  return base + goalBlock + scopeBlock + intelligenceBriefBlock + memoryBlock + businessStateBlock + patternsBlock + memoryContextBlock + openingRule
+  return base + goalBlock + scopeBlock + intelligenceBriefBlock + memoryBlock + businessStateBlock + patternsBlock + connectorBlock + memoryContextBlock + openingRule
 }
 
 function buildReportPrompt(goalMode) {
@@ -581,6 +623,7 @@ export default async function handler(req, res) {
     fetchBusinessState(userId),
     fetchPatterns(industry, domain),
   ])
+  const connectorContext = await fetchConnectorContext(userId, supabase)
 
   try {
     const response = await fetch(CLAUDE_API, {
@@ -589,7 +632,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: isReport ? (goalMode ? 4000 : 2500) : 1024,
-        system: buildSystemPrompt(industry, domain, intelligenceBrief, userMemory, goalMode, goal, goalTimeline, goalBaseline, memoryContext, businessState, patterns),
+        system: buildSystemPrompt(industry, domain, intelligenceBrief, userMemory, goalMode, goal, goalTimeline, goalBaseline, memoryContext, businessState, patterns, connectorContext),
         messages: finalMessages,
       }),
     })
@@ -637,7 +680,7 @@ export default async function handler(req, res) {
               body: JSON.stringify({
                 model: 'claude-sonnet-4-20250514',
                 max_tokens: goalMode ? 4000 : 2500,
-                system: buildSystemPrompt(industry, domain, intelligenceBrief, userMemory, goalMode, goal, goalTimeline, goalBaseline, memoryContext, businessState, patterns),
+                system: buildSystemPrompt(industry, domain, intelligenceBrief, userMemory, goalMode, goal, goalTimeline, goalBaseline, memoryContext, businessState, patterns, connectorContext),
                 messages: retryMessages,
               }),
             })

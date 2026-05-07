@@ -2,5 +2,12 @@
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/((?!api/).*)", "destination": "/" }
-  ]
+  ],
+  "functions": {
+    "api/connect/hubspot/auth.js": { "memory": 256 },
+    "api/connect/hubspot/callback.js": { "memory": 256 },
+    "api/connect/hubspot/preview.js": { "memory": 256 },
+    "api/connect/disconnect.js": { "memory": 256 },
+    "api/connect/status.js": { "memory": 256 }
+  }
 }
