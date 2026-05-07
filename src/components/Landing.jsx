@@ -1295,7 +1295,7 @@ function SocialProofTicker({ C }) {
   }, [rowOneItems, rowTwoItems])
 
   return (
-    <section style={{ padding: '140px 0', background: C.bg }}>
+    <section style={{ padding: '170px 0 140px', background: C.bg }}>
       <div
         ref={wrapperRef}
         style={{ position: 'relative', overflow: 'hidden', width: '100%', padding: '32px 0', cursor: 'grab', touchAction: 'pan-y' }}
