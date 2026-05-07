@@ -715,26 +715,32 @@ function TextNavLink({ label, onClick, C, muted = false, active = false }) {
 }
 
 function ThemeTextToggle({ theme, setTheme, C }) {
+  const nextTheme = theme === 'dark' ? 'light' : 'dark'
+
   return (
-    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 14, color: C.inkMuted }}>
-      <span
-        onClick={() => setTheme('light')}
-        style={{ cursor: 'pointer', color: theme === 'light' ? C.inkSoft : C.inkMuted }}
-      >
-        Light
-      </span>
-      <span style={{ color: C.inkFaint }}>/</span>
-      <span
-        onClick={() => setTheme('dark')}
-        style={{ cursor: 'pointer', color: theme === 'dark' ? C.inkSoft : C.inkMuted }}
-      >
-        Dark
-      </span>
-    </div>
+    <button
+      onClick={() => setTheme(nextTheme)}
+      style={{
+        background: 'none',
+        border: `1px solid ${C.border2}`,
+        borderRadius: 999,
+        padding: '10px 16px',
+        cursor: 'pointer',
+        fontSize: 14,
+        fontWeight: 500,
+        color: C.inkSoft,
+        fontFamily: 'inherit',
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 6,
+      }}
+    >
+      {theme === 'dark' ? '☀ Light' : '☾ Dark'}
+    </button>
   )
 }
 
-function LandingNav({ C, pageOpen, onBack, onPricing, onStories, onConnected, onSignIn, onStartAudit, onLogoClick, storiesOpen, connectedOpen }) {
+function LandingNav({ C, pageOpen, onBack, onPricing, onStories, onConnected, onSignIn, onStartAudit, onLogoClick, storiesOpen, connectedOpen, theme, setTheme }) {
   return (
     <nav style={{ padding: '20px 0', borderBottom: `1px solid ${C.border}`, background: C.bg, position: 'sticky', top: 0, zIndex: 20 }}>
       <div style={{ ...wrap, display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 20 }}>
@@ -769,7 +775,8 @@ function LandingNav({ C, pageOpen, onBack, onPricing, onStories, onConnected, on
           <TextNavLink label="Sign in" onClick={onSignIn} C={C} muted />
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 14 }}>
+          <ThemeTextToggle theme={theme} setTheme={setTheme} C={C} />
           <PrimaryButton label="Start free audit" onClick={onStartAudit} small C={C} />
         </div>
       </div>
@@ -787,7 +794,6 @@ function LandingFooter({ C, theme, setTheme }) {
             Vnklo
           </a>
         </div>
-        <ThemeTextToggle theme={theme} setTheme={setTheme} C={C} />
       </div>
     </footer>
   )
@@ -1450,6 +1456,8 @@ export default function Landing({ onStart, onSignUp, session }) {
         pageOpen={pageOpen}
         storiesOpen={storiesOpen}
         connectedOpen={connectedOpen}
+        theme={theme}
+        setTheme={setTheme}
         onBack={() => {
           setStoriesOpen(false)
           setConnectedOpen(false)
