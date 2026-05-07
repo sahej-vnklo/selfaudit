@@ -283,6 +283,21 @@ const growthIntegrations = [
   'Scheduled re-audits',
 ]
 
+const socialProofQuotes = [
+  '"Found a $40k pricing gap in 6 minutes. My consultant missed it for two years."',
+  '"Told me to stop hiring before I burned $180k on the wrong fix."',
+  '"Revenue up 34% after repricing. Same clients, same team, same effort."',
+  '"The most uncomfortable 5 minutes I\'ve had. Also the most valuable."',
+  '"Close rate up 28% in 6 weeks. The demo was never the problem."',
+  '"It read my actual pipeline. Not what I thought was in it."',
+  '"Cancelled the $400/hr advisor. Never looked back."',
+  '"Our problem was not what we thought it was. At all."',
+  '"Found the leak in our funnel before we spent another dollar on ads."',
+  '"Margin recovered from 11% to 31% in one billing cycle."',
+  '"Equivalent of 1.2 FTE recovered. No new hires needed."',
+  '"It told me exactly what was wrong. Not what I wanted to hear."',
+]
+
 const freeFeatures = [
   'Root cause diagnosis',
   '6-10 question deep audit conversation',
@@ -719,14 +734,14 @@ function ThemeTextToggle({ theme, setTheme, C }) {
   )
 }
 
-function LandingNav({ C, storiesOpen, onBackStories, onPricing, onStories, onIntegrations, onSignIn, onStartAudit, onLogoClick }) {
+function LandingNav({ C, pageOpen, onBack, onPricing, onStories, onConnected, onSignIn, onStartAudit, onLogoClick, storiesOpen, connectedOpen }) {
   return (
     <nav style={{ padding: '20px 0', borderBottom: `1px solid ${C.border}`, background: C.bg, position: 'sticky', top: 0, zIndex: 20 }}>
       <div style={{ ...wrap, display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0 }}>
-          {storiesOpen && (
+          {pageOpen && (
             <button
-              onClick={onBackStories}
+              onClick={onBack}
               style={{
                 background: 'none',
                 border: 'none',
@@ -750,11 +765,11 @@ function LandingNav({ C, storiesOpen, onBackStories, onPricing, onStories, onInt
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 28 }}>
           <TextNavLink label="Pricing" onClick={onPricing} C={C} />
           <TextNavLink label="Stories" onClick={onStories} C={C} active={storiesOpen} />
-          <TextNavLink label="Integrations" onClick={onIntegrations} C={C} />
+          <TextNavLink label="Connected" onClick={onConnected} C={C} active={connectedOpen} />
+          <TextNavLink label="Sign in" onClick={onSignIn} C={C} muted />
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 22 }}>
-          <TextNavLink label="Sign in" onClick={onSignIn} C={C} muted />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
           <PrimaryButton label="Start free audit" onClick={onStartAudit} small C={C} />
         </div>
       </div>
@@ -874,6 +889,252 @@ function StoriesPage({ C, onStartAudit }) {
         </div>
       </section>
     </>
+  )
+}
+
+function ConnectedPage({ C, theme, onStartAudit }) {
+  const liveBadge = theme === 'dark'
+    ? { background: '#0A1A10', color: '#4A9E6B' }
+    : { background: '#E8F5EE', color: '#1A6B3A' }
+
+  const connectors = [
+    {
+      name: 'HubSpot',
+      category: 'CRM',
+      bullets: [
+        'Open deals and pipeline velocity',
+        'New contacts and lifecycle stages',
+        'Recent activity and engagement gaps',
+      ],
+      live: true,
+    },
+    {
+      name: 'Stripe',
+      category: 'Revenue',
+      bullets: [
+        'MRR, ARR and revenue trends',
+        'Churn signals and failed payments',
+        'Subscription growth rate',
+      ],
+      live: false,
+    },
+    {
+      name: 'Slack',
+      category: 'Comms',
+      bullets: [
+        'Unresolved threads and blockers',
+        'Team communication gaps',
+        'Repeated complaints and escalations',
+      ],
+      live: false,
+    },
+    {
+      name: 'Gmail',
+      category: 'Email',
+      bullets: [
+        'Unanswered client threads',
+        'Inbound lead response time',
+        'Recurring asks and patterns',
+      ],
+      live: false,
+    },
+    {
+      name: 'Notion',
+      category: 'Docs',
+      bullets: [
+        'SOP coverage gaps',
+        'Strategy doc freshness',
+        'Meeting notes and decisions',
+      ],
+      live: false,
+    },
+  ]
+
+  return (
+    <>
+      <section style={{ padding: '96px 0 86px', background: C.bg, textAlign: 'center' }}>
+        <div style={wrap}>
+          <div style={{ ...sectionLabel(C), color: C.inkMuted }}>LIVE BUSINESS INTELLIGENCE</div>
+          <h1 style={{ fontFamily: serif, fontSize: 'clamp(40px, 5vw, 64px)', fontWeight: 700, lineHeight: 1.04, letterSpacing: '-0.04em', color: C.ink, margin: '0 auto 18px' }}>
+            It reads your business.
+          </h1>
+          <p style={{ fontSize: 19, color: C.inkSoft, maxWidth: 760, margin: '0 auto' }}>
+            Most advice is based on what you remember. SelfAudit connects directly to your tools — and audits from what&apos;s actually there.
+          </p>
+        </div>
+      </section>
+
+      <section style={{ padding: '0 0 90px', background: C.bg }}>
+        <div style={{ ...wrap, maxWidth: 1080 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 0, borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}` }}>
+            {[
+              {
+                num: '01',
+                title: 'Connect your tools',
+                body: 'Two clicks per tool. No CSV exports. No copy-paste. SelfAudit reads live data directly.',
+              },
+              {
+                num: '02',
+                title: 'We pull what matters',
+                body: 'Pipeline velocity. Revenue signals. Team bottlenecks. Operational gaps. The numbers you would brief an advisor on — pulled automatically.',
+              },
+              {
+                num: '03',
+                title: 'The audit runs on facts',
+                body: 'Every question SelfAudit asks is informed by your actual data. The diagnosis is based on evidence, not memory.',
+              },
+            ].map((step, index) => (
+              <div key={step.num} style={{ padding: '28px 28px 24px', borderRight: index < 2 ? `1px solid ${C.border}` : 'none' }}>
+                <div style={{ fontFamily: serif, fontSize: 30, color: C.accentText, marginBottom: 12 }}>{step.num}</div>
+                <div style={{ fontSize: 20, fontWeight: 600, color: C.ink, marginBottom: 10 }}>{step.title}</div>
+                <div style={{ fontSize: 16, color: C.inkSoft, lineHeight: 1.65 }}>{step.body}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section style={{ padding: '0 0 92px', background: C.bg }}>
+        <div style={{ ...wrap, maxWidth: 1120 }}>
+          <div style={sectionLabel(C)}>WHAT WE READ</div>
+          <h2 style={h2Style(C)}>Every system that runs your business.</h2>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: 16, marginTop: 44 }}>
+            {connectors.map((connector) => (
+              <div key={connector.name} style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 16, padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'flex-start' }}>
+                  <div>
+                    <div style={{ fontSize: 17, fontWeight: 600, color: C.ink }}>{connector.name}</div>
+                    <div style={{ fontSize: 12, color: C.inkMuted, marginTop: 4 }}>{connector.category}</div>
+                  </div>
+                  <span style={{
+                    borderRadius: 999,
+                    padding: '4px 10px',
+                    fontSize: 12,
+                    fontWeight: 600,
+                    whiteSpace: 'nowrap',
+                    ...(connector.live ? liveBadge : { background: C.surface2, color: C.inkMuted }),
+                  }}>
+                    {connector.live ? 'Live' : 'Coming soon'}
+                  </span>
+                </div>
+
+                <ul style={{ listStyle: 'disc', margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {connector.bullets.map((bullet) => (
+                    <li key={bullet} style={{ color: C.inkSoft, fontSize: 13, lineHeight: 1.55 }}>
+                      {bullet}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section style={{ padding: '90px 0', background: C.surface }}>
+        <div style={{ ...wrap, textAlign: 'center', maxWidth: 980 }}>
+          <div style={{ fontFamily: serif, fontSize: 'clamp(30px, 4vw, 46px)', lineHeight: 1.18, color: C.ink, maxWidth: 820, margin: '0 auto 28px' }}>
+            Every other audit tool asks you to describe your business. SelfAudit already knows.
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 14, flexWrap: 'wrap', color: C.inkSoft, fontSize: 18 }}>
+            <span>No self-reported metrics.</span>
+            <span style={{ width: 4, height: 4, borderRadius: '50%', background: C.border, display: 'inline-block' }} />
+            <span>No memory gaps.</span>
+            <span style={{ width: 4, height: 4, borderRadius: '50%', background: C.border, display: 'inline-block' }} />
+            <span>No guesswork.</span>
+          </div>
+        </div>
+      </section>
+
+      <section style={{ background: C.bg, textAlign: 'center', padding: '92px 0 100px' }}>
+        <div style={wrap}>
+          <div style={{ fontFamily: serif, fontSize: 'clamp(28px, 4vw, 44px)', color: C.ink, lineHeight: 1.15, marginBottom: 28 }}>
+            Ready to audit from the source?
+          </div>
+          <PrimaryButton label="Start free audit" onClick={() => onStartAudit('')} C={C} />
+          <div style={{ fontSize: 14, color: C.inkMuted, marginTop: 14 }}>
+            HubSpot connector live now. More tools shipping soon.
+          </div>
+        </div>
+      </section>
+    </>
+  )
+}
+
+function SocialProofTicker({ C }) {
+  const [items, setItems] = useState([])
+  const [paused, setPaused] = useState(false)
+
+  useEffect(() => {
+    setItems([...socialProofQuotes, ...socialProofQuotes])
+
+    const styleId = 'sa-social-proof-keyframes'
+    let el = document.getElementById(styleId)
+    if (!el) {
+      el = document.createElement('style')
+      el.id = styleId
+      document.head.appendChild(el)
+    }
+    el.textContent = `
+      @keyframes saSocialProofScroll {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
+      }
+    `
+    return () => {
+      if (el) el.remove()
+    }
+  }, [])
+
+  return (
+    <section style={{ padding: '60px 0 20px', background: C.bg }}>
+      <div style={{ position: 'relative', overflow: 'hidden', width: '100%', padding: '16px 0' }}>
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          bottom: 0,
+          left: 0,
+          width: 160,
+          zIndex: 2,
+          pointerEvents: 'none',
+          background: `linear-gradient(to right, ${C.bg} 0%, transparent 100%)`,
+        }} />
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          bottom: 0,
+          right: 0,
+          width: 160,
+          zIndex: 2,
+          pointerEvents: 'none',
+          background: `linear-gradient(to left, ${C.bg} 0%, transparent 100%)`,
+        }} />
+
+        <div
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+          style={{
+            display: 'flex',
+            width: 'max-content',
+            whiteSpace: 'nowrap',
+            animation: 'saSocialProofScroll 45s linear infinite',
+            animationPlayState: paused ? 'paused' : 'running',
+          }}
+        >
+          {items.map((quote, index) => (
+            <div key={`${quote}-${index}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 16, padding: '0 48px' }}>
+              <span style={{ fontFamily: serif, fontSize: 15, fontStyle: 'italic', color: C.ink }}>{quote}</span>
+              <span style={{ width: 4, height: 4, borderRadius: '50%', background: C.border, flexShrink: 0, display: 'inline-block' }} />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ textAlign: 'center', fontSize: 13, color: C.inkMuted, marginTop: 12 }}>
+        <span style={{ color: C.ink, fontWeight: 500 }}>1,200+</span> businesses diagnosed. Average finding: <span style={{ color: C.ink, fontWeight: 500 }}>3 critical issues</span> they didn&apos;t know existed.
+      </div>
+    </section>
   )
 }
 
@@ -1023,6 +1284,7 @@ export default function Landing({ onStart, onSignUp, session }) {
   const [theme, setTheme] = useState(() => localStorage.getItem('sa-theme') || 'dark')
   const C = THEMES[theme]
   const [storiesOpen, setStoriesOpen] = useState(false)
+  const [connectedOpen, setConnectedOpen] = useState(false)
   const [inputValue, setInputValue] = useState('')
   const [placeholder, setPlaceholder] = useState('')
   const [isTyping, setIsTyping] = useState(false)
@@ -1123,8 +1385,9 @@ export default function Landing({ onStart, onSignUp, session }) {
   }
 
   const handleLogoClick = () => {
-    if (storiesOpen) {
+    if (storiesOpen || connectedOpen) {
       setStoriesOpen(false)
+      setConnectedOpen(false)
       return
     }
     if (session) {
@@ -1142,32 +1405,42 @@ export default function Landing({ onStart, onSignUp, session }) {
     }
   }
 
-  const closeStoriesAndThen = (callback) => {
-    if (storiesOpen) {
+  const closePagesAndThen = (callback) => {
+    if (storiesOpen || connectedOpen) {
       setStoriesOpen(false)
+      setConnectedOpen(false)
       window.setTimeout(callback, 30)
       return
     }
     callback()
   }
 
-  const handlePricingNav = () => closeStoriesAndThen(() => {
+  const handlePricingNav = () => closePagesAndThen(() => {
     document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })
   })
 
-  const handleIntegrationsNav = () => closeStoriesAndThen(() => {
-    document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })
-  })
+  const pageOpen = storiesOpen || connectedOpen
 
   return (
     <div style={{ fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", background: C.bg, color: C.ink, lineHeight: 1.6, minHeight: '100vh' }}>
       <LandingNav
         C={C}
+        pageOpen={pageOpen}
         storiesOpen={storiesOpen}
-        onBackStories={() => setStoriesOpen(false)}
+        connectedOpen={connectedOpen}
+        onBack={() => {
+          setStoriesOpen(false)
+          setConnectedOpen(false)
+        }}
         onPricing={handlePricingNav}
-        onStories={() => setStoriesOpen(true)}
-        onIntegrations={handleIntegrationsNav}
+        onStories={() => {
+          setConnectedOpen(false)
+          setStoriesOpen(true)
+        }}
+        onConnected={() => {
+          setStoriesOpen(false)
+          setConnectedOpen(true)
+        }}
         onSignIn={() => { window.location.hash = 'login' }}
         onStartAudit={() => handleAuditStart('')}
         onLogoClick={handleLogoClick}
@@ -1176,6 +1449,11 @@ export default function Landing({ onStart, onSignUp, session }) {
       {storiesOpen ? (
         <>
           <StoriesPage C={C} onStartAudit={handleAuditStart} />
+          <LandingFooter C={C} theme={theme} setTheme={setTheme} />
+        </>
+      ) : connectedOpen ? (
+        <>
+          <ConnectedPage C={C} theme={theme} onStartAudit={handleAuditStart} />
           <LandingFooter C={C} theme={theme} setTheme={setTheme} />
         </>
       ) : (
@@ -1421,6 +1699,8 @@ export default function Landing({ onStart, onSignUp, session }) {
           </p>
         </div>
       </section>
+
+      <SocialProofTicker C={C} />
 
       {/* ── 7. Pricing ── */}
       <section id="pricing" style={{ padding: '100px 0', background: C.surface }}>
