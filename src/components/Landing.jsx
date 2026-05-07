@@ -902,69 +902,48 @@ function ConnectedPage({ C, theme, onStartAudit }) {
   const liveBadge = theme === 'dark'
     ? { background: '#0A1A10', color: '#4A9E6B' }
     : { background: '#E8F5EE', color: '#1A6B3A' }
-
-  const connectors = [
+  const connectorColumns = [
     {
-      name: 'HubSpot',
-      category: 'CRM',
-      bullets: [
-        'Open deals and pipeline velocity',
-        'New contacts and lifecycle stages',
-        'Recent activity and engagement gaps',
-      ],
-      live: true,
+      heading: 'CRM & PIPELINE',
+      color: '#FF7A59',
+      tools: ['HubSpot', 'Salesforce', 'Pipedrive', 'Close'],
     },
     {
-      name: 'Stripe',
-      category: 'Revenue',
-      bullets: [
-        'MRR, ARR and revenue trends',
-        'Churn signals and failed payments',
-        'Subscription growth rate',
-      ],
-      live: false,
+      heading: 'REVENUE & BILLING',
+      color: '#635BFF',
+      tools: ['Stripe', 'Paddle', 'Chargebee', 'Recurly'],
     },
     {
-      name: 'Slack',
-      category: 'Comms',
-      bullets: [
-        'Unresolved threads and blockers',
-        'Team communication gaps',
-        'Repeated complaints and escalations',
-      ],
-      live: false,
+      heading: 'SUPPORT & CX',
+      color: '#03363D',
+      tools: ['Zendesk', 'Intercom', 'Help Scout', 'Freshdesk'],
     },
     {
-      name: 'Gmail',
-      category: 'Email',
-      bullets: [
-        'Unanswered client threads',
-        'Inbound lead response time',
-        'Recurring asks and patterns',
-      ],
-      live: false,
+      heading: 'COMMS & EMAIL',
+      color: '#4A154B',
+      tools: ['Slack', 'Gmail', 'Microsoft Teams', 'Mailchimp'],
     },
     {
-      name: 'Notion',
-      category: 'Docs',
-      bullets: [
-        'SOP coverage gaps',
-        'Strategy doc freshness',
-        'Meeting notes and decisions',
-      ],
-      live: false,
+      heading: 'PROJECT & DELIVERY',
+      color: '#F96854',
+      tools: ['Asana', 'Linear', 'ClickUp', 'Jira'],
+    },
+    {
+      heading: 'KNOWLEDGE & DOCS',
+      color: '#000000',
+      tools: ['Notion', 'Google Drive', 'Confluence', 'OneDrive'],
     },
   ]
 
   return (
     <>
-      <section style={{ padding: '96px 0 86px', background: C.bg, textAlign: 'center' }}>
+      <section style={{ padding: '96px 0 82px', background: C.bg, textAlign: 'center' }}>
         <div style={wrap}>
           <div style={{ ...sectionLabel(C), color: C.inkMuted }}>LIVE BUSINESS INTELLIGENCE</div>
-          <h1 style={{ fontFamily: serif, fontSize: 'clamp(40px, 5vw, 64px)', fontWeight: 700, lineHeight: 1.04, letterSpacing: '-0.04em', color: C.ink, margin: '0 auto 18px' }}>
-            It reads your business.
+          <h1 style={{ fontFamily: serif, fontSize: 'clamp(42px, 5vw, 52px)', fontWeight: 700, lineHeight: 1.04, letterSpacing: '-0.04em', color: C.ink, margin: '0 auto 18px' }}>
+            Your business, under the hood.
           </h1>
-          <p style={{ fontSize: 19, color: C.inkSoft, maxWidth: 760, margin: '0 auto' }}>
+          <p style={{ fontSize: 17, color: C.inkSoft, maxWidth: 580, margin: '0 auto' }}>
             Most advice is based on what you remember. SelfAudit connects directly to your tools — and audits from what&apos;s actually there.
           </p>
         </div>
@@ -976,18 +955,18 @@ function ConnectedPage({ C, theme, onStartAudit }) {
             {[
               {
                 num: '01',
-                title: 'Connect your tools',
-                body: 'Two clicks per tool. No CSV exports. No copy-paste. SelfAudit reads live data directly.',
+                title: 'Two clicks per tool',
+                body: 'No CSV exports. No copy-paste. No briefing calls. SelfAudit reads your tools directly and knows what\'s in them.',
               },
               {
                 num: '02',
-                title: 'We pull what matters',
-                body: 'Pipeline velocity. Revenue signals. Team bottlenecks. Operational gaps. The numbers you would brief an advisor on — pulled automatically.',
+                title: 'Runs across every function',
+                body: 'Pipeline velocity. Revenue signals. Support backlog. Ops gaps. Team blockers. Checked automatically, on a schedule you set.',
               },
               {
                 num: '03',
-                title: 'The audit runs on facts',
-                body: 'Every question SelfAudit asks is informed by your actual data. The diagnosis is based on evidence, not memory.',
+                title: 'Full visibility. Every week. Automatically.',
+                body: 'Not a dashboard full of numbers. A ranked list of what\'s actually wrong — with the evidence to back it up. Delivered on a weekly cadence so nothing slips through.',
               },
             ].map((step, index) => (
               <div key={step.num} style={{ padding: '28px 28px 24px', borderRight: index < 2 ? `1px solid ${C.border}` : 'none' }}>
@@ -1001,66 +980,97 @@ function ConnectedPage({ C, theme, onStartAudit }) {
       </section>
 
       <section style={{ padding: '0 0 92px', background: C.bg }}>
-        <div style={{ ...wrap, maxWidth: 1120 }}>
-          <div style={sectionLabel(C)}>WHAT WE READ</div>
+        <div style={{ ...wrap, maxWidth: 1240 }}>
+          <div style={{ ...sectionLabel(C), color: C.inkMuted }}>READS FROM</div>
           <h2 style={h2Style(C)}>Every system that runs your business.</h2>
+          <p style={{ textAlign: 'center', fontSize: 17, color: C.inkSoft, maxWidth: 760, margin: '0 auto 44px' }}>
+            Connect once. SelfAudit handles the rest — pulling live data across your entire stack, not just one tool.
+          </p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: 16, marginTop: 44 }}>
-            {connectors.map((connector) => (
-              <div key={connector.name} style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 16, padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'flex-start' }}>
-                  <div>
-                    <div style={{ fontSize: 17, fontWeight: 600, color: C.ink }}>{connector.name}</div>
-                    <div style={{ fontSize: 12, color: C.inkMuted, marginTop: 4 }}>{connector.category}</div>
-                  </div>
-                  <span style={{
-                    borderRadius: 999,
-                    padding: '4px 10px',
-                    fontSize: 12,
-                    fontWeight: 600,
-                    whiteSpace: 'nowrap',
-                    ...(connector.live ? liveBadge : { background: C.surface2, color: C.inkMuted }),
-                  }}>
-                    {connector.live ? 'Live' : 'Coming soon'}
-                  </span>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(165px, 1fr))', gap: 18 }}>
+            {connectorColumns.map((column) => (
+              <div key={column.heading} style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 16, padding: 18 }}>
+                <div style={{ fontSize: 11, color: C.accentText, letterSpacing: '0.12em', textTransform: 'uppercase', borderBottom: `0.5px solid ${C.border}`, paddingBottom: 8, marginBottom: 14, fontWeight: 700 }}>
+                  {column.heading}
                 </div>
-
-                <ul style={{ listStyle: 'disc', margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {connector.bullets.map((bullet) => (
-                    <li key={bullet} style={{ color: C.inkSoft, fontSize: 13, lineHeight: 1.55 }}>
-                      {bullet}
-                    </li>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {column.tools.map((tool) => (
+                    <div key={tool} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <span style={{ width: 20, height: 20, borderRadius: 4, background: column.color, display: 'inline-block', flexShrink: 0 }} />
+                      <span style={{ fontSize: 13, color: C.inkSoft, display: 'inline-flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                        {tool}
+                        {tool === 'HubSpot' && (
+                          <span style={{ ...liveBadge, borderRadius: 999, padding: '2px 6px', fontSize: 10, fontWeight: 600 }}>
+                            Live
+                          </span>
+                        )}
+                      </span>
+                    </div>
                   ))}
-                </ul>
+                </div>
               </div>
+            ))}
+          </div>
+
+          <div style={{ textAlign: 'center', fontSize: 13, color: C.inkMuted, fontStyle: 'italic', marginTop: 22 }}>
+            10+ more connectors available in your dashboard — and more shipping every month.
+          </div>
+        </div>
+      </section>
+
+      <section style={{ padding: '0 0 92px', background: C.bg }}>
+        <div style={{ ...wrap, textAlign: 'center', maxWidth: 980 }}>
+          <h2 style={{ fontFamily: serif, fontSize: 32, color: C.ink, lineHeight: 1.12, margin: '0 auto 16px' }}>
+            It doesn&apos;t wait to be asked.
+          </h2>
+          <p style={{ fontSize: 17, color: C.inkSoft, maxWidth: 760, margin: '0 auto 28px' }}>
+            SelfAudit runs scheduled sweeps across your connected stack — weekly, daily, or on demand. When something shifts, you hear about it before it becomes a problem.
+          </p>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 10, flexWrap: 'wrap' }}>
+            {[
+              'Pipeline velocity drop',
+              'Churn signal detected',
+              'Support backlog spike',
+              'Revenue vs forecast gap',
+              'Unresolved team blockers',
+              'Goal tracking off pace',
+            ].map((pill) => (
+              <span key={pill} style={{ border: `1px solid ${C.border}`, background: C.surface, color: C.inkSoft, borderRadius: 999, padding: '9px 14px', fontSize: 14 }}>
+                {pill}
+              </span>
             ))}
           </div>
         </div>
       </section>
 
-      <section style={{ padding: '90px 0', background: C.surface }}>
+      <section style={{ padding: '64px 0', background: C.surface2 }}>
         <div style={{ ...wrap, textAlign: 'center', maxWidth: 980 }}>
-          <div style={{ fontFamily: serif, fontSize: 'clamp(30px, 4vw, 46px)', lineHeight: 1.18, color: C.ink, maxWidth: 820, margin: '0 auto 28px' }}>
+          <div style={{ fontFamily: serif, fontSize: 28, fontStyle: 'italic', lineHeight: 1.4, color: C.ink, maxWidth: 680, margin: '0 auto 28px' }}>
             Every other audit tool asks you to describe your business. SelfAudit already knows.
           </div>
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 14, flexWrap: 'wrap', color: C.inkSoft, fontSize: 18 }}>
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 14, flexWrap: 'wrap', color: C.inkSoft, fontSize: 16 }}>
             <span>No self-reported metrics.</span>
             <span style={{ width: 4, height: 4, borderRadius: '50%', background: C.border, display: 'inline-block' }} />
             <span>No memory gaps.</span>
             <span style={{ width: 4, height: 4, borderRadius: '50%', background: C.border, display: 'inline-block' }} />
             <span>No guesswork.</span>
+            <span style={{ width: 4, height: 4, borderRadius: '50%', background: C.border, display: 'inline-block' }} />
+            <span>No waiting for a calendar invite.</span>
           </div>
         </div>
       </section>
 
-      <section style={{ background: C.bg, textAlign: 'center', padding: '92px 0 100px' }}>
+      <section style={{ background: C.bg, textAlign: 'center', padding: '64px 0' }}>
         <div style={wrap}>
-          <div style={{ fontFamily: serif, fontSize: 'clamp(28px, 4vw, 44px)', color: C.ink, lineHeight: 1.15, marginBottom: 28 }}>
+          <div style={{ fontSize: 22, color: C.ink, lineHeight: 1.2, marginBottom: 10 }}>
             Ready to audit from the source?
           </div>
+          <div style={{ fontSize: 14, color: C.inkSoft, marginBottom: 24 }}>
+            Connect your first tool in 2 minutes.
+          </div>
           <PrimaryButton label="Start free audit" onClick={() => onStartAudit('')} C={C} />
-          <div style={{ fontSize: 14, color: C.inkMuted, marginTop: 14 }}>
-            HubSpot connector live now. More tools shipping soon.
+          <div style={{ fontSize: 12, color: C.inkMuted, marginTop: 14 }}>
+            HubSpot live now. Stripe, Slack, Gmail, Notion shipping soon.
           </div>
         </div>
       </section>
