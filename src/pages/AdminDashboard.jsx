@@ -1021,11 +1021,6 @@ function RightRail({ stats, users, detailCache }) {
 
   const mrr = tierCounts.foundation * 29 + tierCounts.intelligence * 99
 
-  const intelligenceUsers = [...users]
-    .filter(user => (user.report_count ?? 0) > 0)
-    .sort((a, b) => (b.report_count ?? 0) - (a.report_count ?? 0))
-    .slice(0, 5)
-
   return (
     <div style={{ width: 280, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 14, position: 'sticky', top: 20 }}>
       <div style={{ ...panelStyle({ padding: '16px 16px 14px' }) }}>
@@ -1074,45 +1069,6 @@ function RightRail({ stats, users, detailCache }) {
         })}
       </div>
 
-      <div style={{ ...panelStyle({ padding: '16px 16px 14px' }) }}>
-        <div style={{ color: G.text, fontSize: 13, marginBottom: 4 }}>What the AI knows</div>
-        <div style={{ color: G.textFaint, fontSize: 11, lineHeight: 1.5, marginBottom: 14 }}>
-          Business intelligence accumulated across all sessions
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {intelligenceUsers.length === 0 ? (
-            <EmptyText>No audited users yet.</EmptyText>
-          ) : intelligenceUsers.map(user => {
-            const detail = detailCache[user.email]
-            const intel = detail ? extractBusinessIntel(detail) : null
-            return (
-              <div key={user.id} style={{ ...panelStyle({ background: G.surface2, padding: '10px 12px' }) }}>
-                <div style={{ color: G.text, fontSize: 12, marginBottom: 6 }}>{user.name || user.email}</div>
-                <div style={{ color: G.textMuted, fontSize: 11, lineHeight: 1.55 }}>
-                  {intel?.coreOffer ? textClamp(stripAssumption(intel.coreOffer), 60) : 'loading intelligence…'}
-                </div>
-                {intel?.activeGoal && (
-                  <div style={{ marginTop: 8 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                      <div style={{ color: G.textFaint, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.06em' }}>active goal</div>
-                      <div style={{ color: G.accentText, fontSize: 10, ...monoStyle() }}>{Math.round(intel.goalScore || 0)}%</div>
-                    </div>
-                    <ProgressBar value={intel.goalScore || 0} />
-                  </div>
-                )}
-                <div style={{ color: G.textFaint, fontSize: 10, marginTop: 8 }}>
-                  {intel?.lastAuditHeadline || detail?.reports?.[0]?.title || 'No audit headline yet'}
-                </div>
-                {intel?.domainsAudited?.length > 0 && (
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
-                    {intel.domainsAudited.slice(0, 3).map(domain => <Badge key={domain}>{domain}</Badge>)}
-                  </div>
-                )}
-              </div>
-            )
-          })}
-        </div>
-      </div>
     </div>
   )
 }
@@ -1276,7 +1232,7 @@ function UserDetailView({ user, detail, onBack, onTierChange, tierSaving }) {
       </div>
 
       <div style={{ ...panelStyle({ padding: '16px 18px' }) }}>
-        <div style={{ color: G.text, fontSize: 13, marginBottom: 14 }}>Business intelligence</div>
+        <div style={{ color: G.text, fontSize: 13, marginBottom: 14 }}>What the AI knows</div>
         <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: 16 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div>
@@ -1330,6 +1286,18 @@ function UserDetailView({ user, detail, onBack, onTierChange, tierSaving }) {
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                   {intel.assumptionsUnverified.map((item, index) => (
                     <Badge key={index} tone="amber">{stripAssumption(item)}</Badge>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div>
+              <SectionLabel>domains audited</SectionLabel>
+              {intel.domainsAudited.length === 0 ? (
+                <EmptyText />
+              ) : (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {intel.domainsAudited.map((domain, index) => (
+                    <Badge key={`${domain}-${index}`}>{domain}</Badge>
                   ))}
                 </div>
               )}
