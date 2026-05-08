@@ -4,6 +4,9 @@ import * as Sentry from '@sentry/react'
 import { generateReport, sendReportEmail } from '../lib/audit.js'
 import { usePostHog } from '@posthog/react'
 import ExecutionPanel from './ExecutionPanel.jsx'
+import DiagnosticReport from './reports/DiagnosticReport.jsx'
+import ExecutionReport from './reports/ExecutionReport.jsx'
+import HumanMomentReport from './reports/HumanMomentReport.jsx'
 
 const THEMES = {
   dark: {
@@ -258,8 +261,38 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
       : report.acknowledgment
 
   const shareCopy = mode === 'DIAGNOSTIC'
-    ? 'Share this report with Vnklo and discuss your first steps on implementing AI in the areas identified. One click — we\'ll reach out directly.'
+    ? 'Vnklo implements AI for businesses like yours. One click sends them your full audit — they\'ll come back with a concrete plan.'
     : 'Share this report with Vnklo and we\'ll reach out to talk through next steps. One click.'
+
+  const reportBody = mode === 'DIAGNOSTIC'
+    ? (
+      <DiagnosticReport
+        report={report}
+        userInfo={userInfo}
+        Section={Section}
+        GoalGapPanel={GoalGapPanel}
+        ExecutionPanel={ExecutionPanel}
+        styles={styles}
+        statusColor={statusColor}
+        statusBg={statusBg}
+        statusLabel={statusLabel}
+      />
+    )
+    : mode === 'EXECUTION'
+      ? (
+        <ExecutionReport
+          report={report}
+          Section={Section}
+          styles={styles}
+        />
+      )
+      : (
+        <HumanMomentReport
+          report={report}
+          Section={Section}
+          styles={styles}
+        />
+      )
 
   return (
     <div style={{ ...themeVars, ...styles.page }}>
@@ -303,130 +336,7 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
           </div>
         </div>
 
-        {/* DIAGNOSTIC sections */}
-        {mode === 'DIAGNOSTIC' && <>
-          {report.goal_gap_analysis && (
-            <GoalGapPanel
-              gap={report.goal_gap_analysis}
-              missingCapabilities={report.missing_capabilities}
-              rankingLogic={report.ranking_logic}
-              timelineFeasibility={report.timeline_feasibility}
-              confidenceLevel={report.confidence_level}
-            />
-          )}
-
-          <Section title="Domain Findings">
-            <div style={styles.domainsGrid}>
-              {report.domains?.map((d, i) => (
-                <div key={i} style={{ ...styles.domainCard, borderTop: `3px solid ${statusColor[d.status]}` }}>
-                  <div style={styles.domainTop}>
-                    <span style={styles.domainName}>{d.name}</span>
-                    <span style={{
-                      ...styles.badge,
-                      background: statusBg[d.status],
-                      color: statusColor[d.status]
-                    }}>{statusLabel[d.status]}</span>
-                  </div>
-                  <p style={styles.domainFinding}>{d.finding}</p>
-                  <p style={styles.domainAction}>→ {d.action}</p>
-                </div>
-              ))}
-            </div>
-          </Section>
-
-          {report.non_ai_fixes?.length > 0 && (
-            <Section title="Fix These First">
-              <div style={styles.fixList}>
-                {report.non_ai_fixes.map((f, i) => (
-                  <div key={i} style={styles.fixItem}>
-                    <div style={styles.fixIssue}>{f.issue}</div>
-                    <div style={styles.fixSolution}>{f.fix}</div>
-                  </div>
-                ))}
-              </div>
-            </Section>
-          )}
-
-          {report.ai_opportunities?.length > 0 && (
-            <Section title="What's Now Possible">
-              <div style={styles.aiList}>
-                {report.ai_opportunities.map((a, i) => (
-                  <div key={i} style={styles.aiItem}>
-                    <div style={styles.aiArea}>{a.area}</div>
-                    <div style={styles.aiWhy}>{a.why}</div>
-                  </div>
-                ))}
-              </div>
-            </Section>
-          )}
-
-          <Section title="Priority Actions">
-            <div style={styles.actions}>
-              {report.priority_actions?.map((a, i) => (
-                <div key={i} style={styles.action}>
-                  <div style={styles.actionNum}>{i + 1}</div>
-                  <div style={styles.actionText}>{a}</div>
-                </div>
-              ))}
-            </div>
-          </Section>
-        </>}
-
-        {/* EXECUTION sections */}
-        {mode === 'EXECUTION' && <>
-          {report.delivery_plan?.length > 0 && (
-            <Section title="Delivery Plan">
-              <div style={styles.planList}>
-                {report.delivery_plan.map((s, i) => (
-                  <div key={i} style={styles.planItem}>
-                    <div style={styles.planStep}>{s.step}</div>
-                    <div>
-                      <div style={styles.planAction}>{s.action}</div>
-                      <div style={styles.planWhy}>{s.why}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Section>
-          )}
-
-          {report.what_to_expect && (
-            <Section title="What to Expect">
-              <p style={styles.prose}>{report.what_to_expect}</p>
-            </Section>
-          )}
-
-          {report.key_message && (
-            <Section title="Key Message">
-              <div style={styles.keyMessage}>
-                <p style={styles.keyMessageText}>{report.key_message}</p>
-              </div>
-            </Section>
-          )}
-        </>}
-
-        {/* HUMAN_MOMENT sections */}
-        {(mode === 'HUMAN_MOMENT' || mode === 'EXECUTION_HUMAN') && <>
-          {report.what_this_actually_is && (
-            <Section title="What This Actually Is">
-              <p style={styles.prose}>{report.what_this_actually_is}</p>
-            </Section>
-          )}
-
-          {report.delivery_script && (
-            <Section title="What to Say">
-              <div style={styles.scriptBlock}>
-                <p style={styles.scriptText}>{report.delivery_script}</p>
-              </div>
-            </Section>
-          )}
-
-          {report.what_to_expect && (
-            <Section title="What to Expect">
-              <p style={styles.prose}>{report.what_to_expect}</p>
-            </Section>
-          )}
-        </>}
+        {reportBody}
 
         {/* Honest Truth — shared across all modes */}
         <Section title="The Honest Truth">
@@ -434,10 +344,6 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
             <p style={styles.truthText}>{report.honest_truth}</p>
           </div>
         </Section>
-
-        {mode === 'DIAGNOSTIC' && (
-          <ExecutionPanel report={report} userInfo={userInfo} />
-        )}
 
         {/* Anonymous signup prompt */}
         {!userInfo?.userId && (
@@ -592,7 +498,7 @@ function buildReportHtml(report, userInfo, theme) {
     }
 
     if (report.ai_opportunities?.length > 0) {
-      body += sec("What's Now Possible", report.ai_opportunities.map(a => `
+      body += sec("If You Actually Built This", report.ai_opportunities.map(a => `
         <div class="ai-item"><div class="ai-area">${e(a.area)}</div><div class="ai-why">${e(a.why)}</div></div>`).join(''))
     }
 

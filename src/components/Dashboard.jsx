@@ -1458,10 +1458,6 @@ function AccountSection({ user, profile, onProfileChange, onSignOut }) {
         />
       </div>
 
-      {email === 'sahej@vnklo.com' && (
-        <DevToolsCard user={user} profile={profile} onProfileChange={onProfileChange} />
-      )}
-
       <div style={{ marginTop: 24 }}>
         <span style={{ fontSize: 12, color: G.textFaint }}>Need to leave? </span>
         <button
@@ -1865,51 +1861,6 @@ function EmptyReports({ onStartAudit }) {
       <button type="button" style={styles.emptyReportsBtn} onClick={onStartAudit}>
         Start audit
       </button>
-    </div>
-  )
-}
-
-function DevToolsCard({ user, profile, onProfileChange }) {
-  const [saving, setSaving] = useState(null)
-  const current = normalizeTier(profile?.tier)
-
-  const switchTier = async (tier) => {
-    setSaving(tier)
-    try {
-      const sb = await initSupabase()
-      await sb.from('profiles').update({ tier }).eq('id', user.id)
-      onProfileChange({ tier })
-    } catch (error) {
-      console.error('[devtools] tier switch failed:', error?.message)
-    } finally {
-      setSaving(null)
-    }
-  }
-
-  return (
-    <div style={styles.devToolsCard}>
-      <div style={styles.devToolsEyebrow}>Developer tools — testing only</div>
-      <p style={styles.devToolsSub}>Tier switcher — changes your profile tier for testing.</p>
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        {['essential', 'business', 'portfolio'].map((tier) => {
-          const active = current === tier
-          return (
-            <button
-              type="button"
-              key={tier}
-              onClick={() => switchTier(tier)}
-              disabled={!!saving}
-              style={{
-                ...styles.devTierButton,
-                ...(active ? styles.devTierButtonActive : {}),
-                opacity: saving && saving !== tier ? 0.5 : 1,
-              }}
-            >
-              {saving === tier ? 'Saving…' : tier}
-            </button>
-          )
-        })}
-      </div>
     </div>
   )
 }
@@ -3310,40 +3261,6 @@ const styles = {
     padding: '10px 12px',
     fontSize: 13,
     cursor: 'pointer',
-  },
-  devToolsCard: {
-    marginTop: 28,
-    background: G.amberBg,
-    border: `1px solid ${G.amber}`,
-    borderRadius: 12,
-    padding: '18px 22px',
-  },
-  devToolsEyebrow: {
-    fontSize: 11,
-    color: G.amberText,
-    textTransform: 'uppercase',
-    letterSpacing: '0.08em',
-    marginBottom: 6,
-  },
-  devToolsSub: {
-    fontSize: 12,
-    color: G.amberText,
-    marginBottom: 14,
-  },
-  devTierButton: {
-    background: G.surface,
-    color: G.textSecondary,
-    border: `0.5px solid ${G.border2}`,
-    borderRadius: 8,
-    padding: '7px 16px',
-    fontSize: 13,
-    cursor: 'pointer',
-    textTransform: 'capitalize',
-  },
-  devTierButtonActive: {
-    background: G.accent,
-    color: G.white,
-    borderColor: G.accent,
   },
 }
 
