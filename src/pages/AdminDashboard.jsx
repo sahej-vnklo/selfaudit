@@ -1156,6 +1156,12 @@ function UserDetailView({ user, detail, onBack, onTierChange, tierSaving }) {
   const reports = detail?.reports || []
   const chatSessions = detail?.chat_sessions || []
   const intel = extractBusinessIntel(detail || { reports })
+  const summaryParts = []
+  if (intel.coreOffer) summaryParts.push(stripAssumption(intel.coreOffer))
+  if (intel.targetCustomer) summaryParts.push(`targeting ${stripAssumption(intel.targetCustomer)}`)
+  if (intel.activeGoal) summaryParts.push(`working toward ${stripAssumption(intel.activeGoal)}`)
+  if (intel.lastAuditHeadline) summaryParts.push(`Last finding: ${intel.lastAuditHeadline}`)
+  const summaryText = summaryParts.join('. ')
   const displayedReports = showAllReports ? reports : reports.slice(0, 5)
   const stripeCustomerId = profile?.stripe_customer_id || profile?.customer_id || '—'
   const stripeSubscriptionId = profile?.stripe_subscription_id || profile?.subscription_id || '—'
@@ -1305,6 +1311,15 @@ function UserDetailView({ user, detail, onBack, onTierChange, tierSaving }) {
           </div>
         </div>
       </div>
+
+      {summaryText && (
+        <div style={{ ...panelStyle({ padding: '16px 18px' }) }}>
+          <SectionLabel>AI SUMMARY</SectionLabel>
+          <div style={{ color: G.textMuted, fontSize: 13, lineHeight: 1.7 }}>
+            {summaryText}
+          </div>
+        </div>
+      )}
 
       <div style={{ ...panelStyle({ padding: '16px 18px' }) }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 14 }}>
