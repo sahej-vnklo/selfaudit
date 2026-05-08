@@ -14,11 +14,11 @@ export async function sendMessage(messages, { industry, domain, userId, goalMode
   return data.text
 }
 
-export async function generateReport(messages, { userId, goalMode, goal, goalTimeline, goalBaseline } = {}) {
+export async function generateReport(messages, { industry, domain, userId, goalMode, goal, goalTimeline, goalBaseline } = {}) {
   const response = await fetch('/api/audit', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ type: 'report', messages, userId, goalMode, goal, goalTimeline, goalBaseline }),
+    body: JSON.stringify({ type: 'report', messages, industry, domain, userId, goalMode, goal, goalTimeline, goalBaseline }),
   })
 
   if (!response.ok) {

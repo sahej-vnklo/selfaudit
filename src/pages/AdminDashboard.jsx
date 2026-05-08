@@ -463,6 +463,35 @@ function ReportSchemaB({ p }) {
   )
 }
 
+function ReportSchemaExecution({ p }) {
+  const deliveryPlan = p.delivery_plan ?? []
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {p.headline && (
+        <p style={{ fontSize: 17, fontWeight: 700, color: G.ink, lineHeight: 1.4 }}>{p.headline}</p>
+      )}
+      <TextSection label="Execution Context" text={p.execution_context} />
+      {deliveryPlan.length > 0 && (
+        <div>
+          <SectionLabel>Delivery Plan</SectionLabel>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {deliveryPlan.map((item, i) => (
+              <div key={i} style={{ background: G.bg, border: `1px solid ${G.border}`, borderRadius: 8, padding: '10px 14px' }}>
+                {item.action && <p style={{ fontSize: 13, fontWeight: 700, color: G.ink, marginBottom: 4 }}>{item.step ? `${item.step}. ` : ''}{item.action}</p>}
+                {item.why && <p style={{ fontSize: 13, color: G.inkMuted, lineHeight: 1.55 }}>{item.why}</p>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      <TextSection label="What To Expect" text={p.what_to_expect} />
+      <TextSection label="Key Message" text={p.key_message} />
+      <TextSection label="Honest Truth" text={p.honest_truth} italic />
+    </div>
+  )
+}
+
 function ReportSchemaA({ p }) {
   const domains = p.domains ?? []
   const nonAiFixes = p.non_ai_fixes ?? []
@@ -580,9 +609,10 @@ function ReportContent({ content }) {
     )
   }
 
-  return parsed.conversation_mode === 'EXECUTION_HUMAN'
-    ? <ReportSchemaB p={parsed} />
-    : <ReportSchemaA p={parsed} />
+  const mode = parsed.conversation_mode ?? 'DIAGNOSTIC'
+  if (mode === 'EXECUTION') return <ReportSchemaExecution p={parsed} />
+  if (mode === 'HUMAN_MOMENT' || mode === 'EXECUTION_HUMAN') return <ReportSchemaB p={parsed} />
+  return <ReportSchemaA p={parsed} />
 }
 
 function IconHome() {

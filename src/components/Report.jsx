@@ -129,6 +129,8 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
           .filter(m => m.role !== 'system')
           .map(m => ({ role: m.role, content: m.content }))
         const r = await generateReport(apiMessages, {
+          industry:     userInfo?.industry,
+          domain:       userInfo?.domain,
           userId:       userInfo?.userId,
           goalMode:     userInfo?.goalMode     ?? false,
           goal:         userInfo?.goal         ?? '',
@@ -404,7 +406,7 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
         </>}
 
         {/* HUMAN_MOMENT sections */}
-        {mode === 'HUMAN_MOMENT' && <>
+        {(mode === 'HUMAN_MOMENT' || mode === 'EXECUTION_HUMAN') && <>
           {report.what_this_actually_is && (
             <Section title="What This Actually Is">
               <p style={styles.prose}>{report.what_this_actually_is}</p>
@@ -609,7 +611,7 @@ function buildReportHtml(report, userInfo, theme) {
     if (report.key_message)    body += sec('Key Message', `<div class="key-msg"><p>${e(report.key_message)}</p></div>`)
   }
 
-  if (mode === 'HUMAN_MOMENT') {
+  if (mode === 'HUMAN_MOMENT' || mode === 'EXECUTION_HUMAN') {
     if (report.what_this_actually_is) body += sec('What This Actually Is', `<p class="prose">${e(report.what_this_actually_is)}</p>`)
     if (report.delivery_script)       body += sec('What to Say', `<div class="script"><p>${e(report.delivery_script)}</p></div>`)
     if (report.what_to_expect)        body += sec('What to Expect', `<p class="prose">${e(report.what_to_expect)}</p>`)
