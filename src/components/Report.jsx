@@ -7,6 +7,7 @@ import ExecutionPanel from './ExecutionPanel.jsx'
 import DiagnosticReport from './reports/DiagnosticReport.jsx'
 import ExecutionReport from './reports/ExecutionReport.jsx'
 import HumanMomentReport from './reports/HumanMomentReport.jsx'
+import GoalGapReport from './reports/GoalGapReport.jsx'
 
 const THEMES = {
   dark: {
@@ -251,10 +252,13 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
   if (error) return <ErrorScreen error={error} theme={theme} />
 
   const mode = report.conversation_mode ?? 'DIAGNOSTIC'
+  const isGoal = report.report_family === 'GOAL' || mode === 'GOAL_GAP'
   const { color: statusColor, bg: statusBg } = getStatusStyles(theme)
   const statusLabel = { strong: 'Strong', needs_work: 'Needs Work', critical: 'Critical' }
 
-  const headerSubtext = mode === 'DIAGNOSTIC'
+  const headerSubtext = isGoal
+    ? report.overall_verdict
+    : mode === 'DIAGNOSTIC'
     ? report.overall_verdict
     : mode === 'EXECUTION'
       ? report.execution_context
@@ -264,7 +268,15 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
     ? 'Vnklo implements AI for businesses like yours. One click sends them your full audit — they\'ll come back with a concrete plan.'
     : 'Share this report with Vnklo and we\'ll reach out to talk through next steps. One click.'
 
-  const reportBody = mode === 'DIAGNOSTIC'
+  const reportBody = isGoal
+    ? (
+      <GoalGapReport
+        report={report}
+        Section={Section}
+        styles={styles}
+      />
+    )
+    : mode === 'DIAGNOSTIC'
     ? (
       <DiagnosticReport
         report={report}
@@ -338,12 +350,13 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
 
         {reportBody}
 
-        {/* Honest Truth — shared across all modes */}
-        <Section title="The Honest Truth">
-          <div style={styles.truth}>
-            <p style={styles.truthText}>{report.honest_truth}</p>
-          </div>
-        </Section>
+        {!isGoal && (
+          <Section title="The Honest Truth">
+            <div style={styles.truth}>
+              <p style={styles.truthText}>{report.honest_truth}</p>
+            </div>
+          </Section>
+        )}
 
         {/* Anonymous signup prompt */}
         {!userInfo?.userId && (
@@ -413,6 +426,7 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
 
 function buildReportHtml(report, userInfo, theme) {
   const mode = report.conversation_mode ?? 'DIAGNOSTIC'
+  const isGoal = report.report_family === 'GOAL' || mode === 'GOAL_GAP'
   const date = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
   const C = getThemeTokens(theme)
   const statusStyles = getStatusStyles(theme)
@@ -425,7 +439,8 @@ function buildReportHtml(report, userInfo, theme) {
   const statusBg = statusStyles.bg
   const statusLabel = { strong: 'Strong', needs_work: 'Needs Work', critical: 'Critical' }
 
-  const headerSub = mode === 'DIAGNOSTIC' ? report.overall_verdict
+  const headerSub = isGoal ? report.overall_verdict
+    : mode === 'DIAGNOSTIC' ? report.overall_verdict
     : mode === 'EXECUTION' ? report.execution_context
     : report.acknowledgment
 
@@ -437,7 +452,42 @@ function buildReportHtml(report, userInfo, theme) {
       <div class="meta">${e(userInfo?.name ?? '')} · ${e(date)}</div>
     </div>`
 
-  if (mode === 'DIAGNOSTIC') {
+  if (isGoal) {
+    const gap = report.goal_gap_analysis || {}
+    const caps = Array.isArray(report.missing_capabilities) ? report.missing_capabilities.filter(Boolean) : []
+    const feasText = report.timeline_feasibility || gap.realistic_timeline || ''
+    const fl = feasText.toLowerCase()
+    const fe = fl.startsWith('unrealistic') ? 'unrealistic' : fl.startsWith('tight') ? 'tight' : 'feasible'
+    const fc = fe === 'unrealistic' ? C.dangerText : fe === 'tight' ? C.warningText : C.successText
+    const fb = fe === 'unrealistic' ? C.dangerBg : fe === 'tight' ? C.warningBg : C.successBg
+    const rankCells = report.ranking_logic ? [
+      { label: 'Impact', value: report.ranking_logic.impact },
+      { label: 'Urgency', value: report.ranking_logic.urgency },
+      { label: 'Cost', value: report.ranking_logic.cost },
+      { label: 'Dependency', value: report.ranking_logic.dependency },
+    ].filter(r => r.value) : []
+
+    body += sec('Goal Gap Analysis', `
+      <div class="gg-block"><div class="gg-label">Goal</div><p class="gg-text">${e(gap.goal || '')}</p></div>
+      <div class="gg-row">
+        <div class="gg-half"><div class="gg-label">Current position</div><p class="gg-text">${e(gap.current_position || '')}</p></div>
+        <div class="gg-half" style="border-right:none"><div class="gg-label">The gap</div><p class="gg-text">${e(gap.gap || '')}</p></div>
+      </div>
+      <div class="gg-block"><div class="gg-label">Fastest path</div><p class="gg-text">${e(gap.fastest_path || '')}</p></div>
+      <div class="gg-block"><div class="gg-label">Realistic timeline</div><p class="gg-text">${e(gap.realistic_timeline || '')}</p></div>
+      ${caps.length > 0 ? `<div class="gg-block"><div class="gg-label">Missing capabilities</div><div class="cap-list">${caps.map(c => `<div class="cap-item"><div class="cap-dot"></div><div class="cap-text">${e(c)}</div></div>`).join('')}</div></div>` : ''}
+      ${rankCells.length > 0 ? `<div class="gg-block"><div class="gg-label">Ranking logic</div><div class="rank-row">${rankCells.map(r => `<div class="rank-cell"><div class="rank-label">${e(r.label)}</div><div class="rank-val">${e(r.value)}</div></div>`).join('')}</div></div>` : ''}
+      <div class="tl-block" style="background:${fb};border-top:0.5px solid ${fc}">
+        <div class="tl-header"><span class="tl-badge" style="background:${fc}">${fe}</span><span class="tl-lbl">Timeline feasibility</span></div>
+        <p class="gg-text">${e(feasText)}</p>
+      </div>
+    `)
+
+    if (report.priority_actions?.length > 0) {
+      body += sec('Priority Actions', `<div class="actions-list">${report.priority_actions.map((a, i) => `
+        <div class="action-row"><div class="action-num">${i + 1}</div><div class="action-text">${e(a)}</div></div>`).join('')}</div>`)
+    }
+  } else if (mode === 'DIAGNOSTIC') {
     if (report.goal_gap_analysis) {
       const gap = report.goal_gap_analysis
       const feasText = report.timeline_feasibility || gap.realistic_timeline || ''

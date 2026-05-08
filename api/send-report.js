@@ -1,3 +1,59 @@
+function buildGoalSections(report) {
+  const gap = report.goal_gap_analysis || {}
+  const caps = report.missing_capabilities || []
+  const actions = report.priority_actions || []
+  const feasText = report.timeline_feasibility || ''
+  const fl = feasText.toLowerCase()
+  const feasColor = fl.startsWith('unrealistic') ? '#A32D2D' : fl.startsWith('tight') ? '#BA7517' : '#1D9E75'
+
+  return `
+  <div class="section">
+    <h2>Goal</h2>
+    <p class="verdict">${gap.goal || ''}</p>
+  </div>
+
+  <div class="section">
+    <h2>Where You Are Now</h2>
+    <p class="verdict">${gap.current_position || ''}</p>
+  </div>
+
+  <div class="section">
+    <h2>The Gap</h2>
+    <p class="verdict">${gap.gap || ''}</p>
+  </div>
+
+  <div class="section">
+    <h2>Fastest Path</h2>
+    <p class="verdict">${gap.fastest_path || ''}</p>
+  </div>
+
+  ${caps.length > 0 ? `
+  <div class="section">
+    <h2>Missing Capabilities</h2>
+    ${caps.map(c => `<div class="fix"><div class="fix-issue">${c}</div></div>`).join('')}
+  </div>` : ''}
+
+  <div class="section">
+    <h2>Timeline</h2>
+    <p class="verdict" style="color:${feasColor};font-weight:500">${feasText}</p>
+  </div>
+
+  <div class="section">
+    <h2>Priority Actions</h2>
+    ${actions.map((a, i) => `
+      <div class="priority">
+        <span class="priority-num">${i + 1}</span>
+        <span style="font-size:14px">${a}</span>
+      </div>
+    `).join('')}
+  </div>
+
+  <div class="section">
+    <h2>The Honest Truth</h2>
+    <div class="truth">${report.honest_truth || ''}</div>
+  </div>`
+}
+
 function buildDiagnosticSections(report, statusColor, statusBg, statusLabel) {
   return `
   <div class="section">
@@ -142,7 +198,9 @@ export default async function handler(req, res) {
   const statusBg    = { strong: '#E1F5EE', needs_work: '#FAEEDA', critical: '#FCEBEB' }
   const statusLabel = { strong: 'Strong', needs_work: 'Needs Work', critical: 'Critical' }
   const mode = report.conversation_mode ?? 'DIAGNOSTIC'
-  const bodySections = mode === 'EXECUTION'
+  const bodySections = (report.report_family === 'GOAL' || mode === 'GOAL_GAP')
+    ? buildGoalSections(report)
+    : mode === 'EXECUTION'
     ? buildExecutionSections(report)
     : mode === 'HUMAN_MOMENT' || mode === 'EXECUTION_HUMAN'
       ? buildHumanSections(report)

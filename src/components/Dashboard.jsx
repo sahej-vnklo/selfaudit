@@ -1989,6 +1989,50 @@ function DashReportSchemaA({ p }) {
   )
 }
 
+function DashReportSchemaGoal({ p }) {
+  const gap = p.goal_gap_analysis || {}
+  const missingCapabilities = p.missing_capabilities || []
+  const priorityActions = p.priority_actions || []
+
+  return (
+    <div style={reportStyles.stack}>
+      {p.headline && <p style={reportStyles.headline}>{p.headline}</p>}
+      <DashTextSection label="Verdict" text={p.overall_verdict} />
+      <DashTextSection label="Goal" text={gap.goal} />
+      <DashTextSection label="Current Position" text={gap.current_position} />
+      <DashTextSection label="The Gap" text={gap.gap} />
+      <DashTextSection label="Fastest Path" text={gap.fastest_path} />
+      <DashTextSection label="Timeline" text={p.timeline_feasibility || gap.realistic_timeline} />
+
+      {missingCapabilities.length > 0 && (
+        <div>
+          <DashSectionLabel>Missing Capabilities</DashSectionLabel>
+          <ol style={reportStyles.priorityList}>
+            {missingCapabilities.map((item, index) => (
+              <li key={index} style={reportStyles.priorityItem}>{item}</li>
+            ))}
+          </ol>
+        </div>
+      )}
+
+      {priorityActions.length > 0 && (
+        <div>
+          <DashSectionLabel>Priority Actions</DashSectionLabel>
+          <ol style={reportStyles.priorityList}>
+            {priorityActions.map((item, index) => (
+              <li key={index} style={reportStyles.priorityItem}>
+                {typeof item === 'string' ? item : (item.action ?? item.text ?? JSON.stringify(item))}
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+
+      <DashTextSection label="Honest Truth" text={p.honest_truth} italic />
+    </div>
+  )
+}
+
 function DashReportContent({ content }) {
   if (!content) return <p style={reportStyles.emptyText}>No content stored.</p>
   let parsed
@@ -1998,6 +2042,7 @@ function DashReportContent({ content }) {
     return <pre style={reportStyles.fallbackBlock}>{content}</pre>
   }
   const mode = parsed.conversation_mode
+  if (mode === 'GOAL_GAP') return <DashReportSchemaGoal p={parsed} />
   return (mode === 'EXECUTION_HUMAN' || mode === 'EXECUTION' || mode === 'HUMAN_MOMENT')
     ? <DashReportSchemaB p={parsed} />
     : <DashReportSchemaA p={parsed} />

@@ -591,6 +591,33 @@ CRITICAL RULES FOR NON-DIAGNOSTIC REPORTS:
 - The report is not a diagnostic. It is support for a human navigating something real.${goalGapInstruction}`
 }
 
+function normalizeGoalReport(report) {
+  return {
+    ...report,
+    report_family: 'GOAL',
+    conversation_mode: 'GOAL_GAP',
+  }
+}
+
+function validateGoalReport(report) {
+  const issues = []
+  const gap = report.goal_gap_analysis
+  const feasibility = typeof report.timeline_feasibility === 'string' ? report.timeline_feasibility.trim().toLowerCase() : ''
+
+  if (!gap || typeof gap !== 'object' || Array.isArray(gap)) issues.push('goal_gap_analysis')
+  if (!Array.isArray(report.missing_capabilities)) issues.push('missing_capabilities')
+  if (!Array.isArray(report.priority_actions)) issues.push('priority_actions')
+  if (!report.ranking_logic || typeof report.ranking_logic !== 'object' || Array.isArray(report.ranking_logic)) issues.push('ranking_logic')
+  if (typeof report.timeline_feasibility !== 'string' || !report.timeline_feasibility.trim()) issues.push('timeline_feasibility')
+  if (feasibility && !(feasibility.startsWith('feasible') || feasibility.startsWith('tight') || feasibility.startsWith('unrealistic'))) {
+    issues.push('timeline_feasibility_format')
+  }
+  if (typeof report.confidence_level !== 'string' || !report.confidence_level.trim()) issues.push('confidence_level')
+  if (typeof report.honest_truth !== 'string' || !report.honest_truth.trim()) issues.push('honest_truth')
+
+  return issues
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
@@ -648,21 +675,22 @@ export default async function handler(req, res) {
     if (isReport) {
       const clean = text.replace(/```json|```/g, '').trim()
       let report = JSON.parse(clean)
+      if (goalMode) report = normalizeGoalReport(report)
 
       const requiredHumanMoment  = ['headline','acknowledgment','what_this_actually_is','delivery_script','what_to_expect','honest_truth']
       const requiredExecution    = ['headline','execution_context','delivery_plan','what_to_expect','key_message','honest_truth']
-      const requiredGoalMode     = ['goal_gap_analysis','missing_capabilities','ranking_logic','timeline_feasibility','confidence_level']
       const requiredDiagnostic   = ['business_state','ranked_path','timeline_reality']
 
-      const mode     = report.conversation_mode
-      const required = mode === 'HUMAN_MOMENT'             ? requiredHumanMoment
+      const mode = report.conversation_mode
+      const required = goalMode                           ? []
+                     : mode === 'HUMAN_MOMENT'            ? requiredHumanMoment
                      : mode === 'EXECUTION'                ? requiredExecution
-                     : (mode === 'DIAGNOSTIC' && goalMode) ? [...requiredGoalMode, ...requiredDiagnostic]
                      : mode === 'DIAGNOSTIC'               ? requiredDiagnostic
                      : null
+      const goalIssues = goalMode ? validateGoalReport(report) : []
 
-      if (required) {
-        const missing = required.filter(f => !report[f])
+      if (required || goalMode) {
+        const missing = goalMode ? goalIssues : required.filter(f => !report[f])
         if (missing.length > 0) {
           console.log(`[audit] ${mode} report missing fields: ${missing.join(', ')} — retrying`)
           try {
@@ -671,7 +699,9 @@ export default async function handler(req, res) {
               { role: 'assistant', content: text },
               {
                 role: 'user',
-                content: `Your response was missing these required fields: ${missing.join(', ')}. Regenerate the complete JSON with ALL fields populated. Every field must be a non-empty string.`,
+                content: goalMode
+                  ? `Your response failed GOAL report validation for these fields: ${missing.join(', ')}. Regenerate the complete JSON with the goal-mode fields populated correctly. goal_gap_analysis and ranking_logic must be objects, missing_capabilities and priority_actions must be arrays, timeline_feasibility must begin with feasible, tight, or unrealistic, and confidence_level and honest_truth must be non-empty strings.`
+                  : `Your response was missing these required fields: ${missing.join(', ')}. Regenerate the complete JSON with ALL fields populated. Every field must be a non-empty string.`,
               },
             ]
             const retryResponse = await fetch(CLAUDE_API, {
@@ -688,6 +718,7 @@ export default async function handler(req, res) {
               const retryData  = await retryResponse.json()
               const retryClean = retryData.content[0].text.replace(/```json|```/g, '').trim()
               report = JSON.parse(retryClean)
+              if (goalMode) report = normalizeGoalReport(report)
               console.log(`[audit] retry succeeded for ${mode}`)
             } else {
               console.warn(`[audit] retry API call failed: ${retryResponse.status}`)

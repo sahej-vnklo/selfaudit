@@ -587,6 +587,53 @@ function ReportSchemaA({ p }) {
   )
 }
 
+function ReportSchemaGoal({ p }) {
+  const gap = p.goal_gap_analysis || {}
+  const missingCapabilities = p.missing_capabilities || []
+  const priorityActions = p.priority_actions || []
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {p.headline && (
+        <p style={{ fontSize: 17, fontWeight: 700, color: G.ink, lineHeight: 1.4 }}>{p.headline}</p>
+      )}
+
+      <TextSection label="Verdict" text={p.overall_verdict} />
+      <TextSection label="Goal" text={gap.goal} />
+      <TextSection label="Current Position" text={gap.current_position} />
+      <TextSection label="The Gap" text={gap.gap} />
+      <TextSection label="Fastest Path" text={gap.fastest_path} />
+      <TextSection label="Timeline" text={p.timeline_feasibility || gap.realistic_timeline} />
+
+      {missingCapabilities.length > 0 && (
+        <div>
+          <SectionLabel>Missing Capabilities</SectionLabel>
+          <ul style={{ paddingLeft: 20, margin: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {missingCapabilities.map((item, i) => (
+              <li key={i} style={{ fontSize: 13, color: G.inkMuted, lineHeight: 1.55 }}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {priorityActions.length > 0 && (
+        <div>
+          <SectionLabel>Priority Actions</SectionLabel>
+          <ol style={{ paddingLeft: 20, margin: 0, display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {priorityActions.map((item, i) => (
+              <li key={i} style={{ fontSize: 13, color: G.inkMuted, lineHeight: 1.55 }}>
+                {typeof item === 'string' ? item : (item.action ?? item.text ?? JSON.stringify(item))}
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+
+      <TextSection label="Honest Truth" text={p.honest_truth} italic />
+    </div>
+  )
+}
+
 function ReportContent({ content }) {
   if (!content) return <EmptyText>No content stored.</EmptyText>
 
@@ -610,6 +657,7 @@ function ReportContent({ content }) {
   }
 
   const mode = parsed.conversation_mode ?? 'DIAGNOSTIC'
+  if (mode === 'GOAL_GAP') return <ReportSchemaGoal p={parsed} />
   if (mode === 'EXECUTION') return <ReportSchemaExecution p={parsed} />
   if (mode === 'HUMAN_MOMENT' || mode === 'EXECUTION_HUMAN') return <ReportSchemaB p={parsed} />
   return <ReportSchemaA p={parsed} />
