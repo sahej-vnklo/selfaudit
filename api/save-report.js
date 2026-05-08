@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { synthesizeUserIntelligence } from './lib/intelligence/synthesize.js'
 
 const supabase = createClient(
   process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
@@ -181,6 +182,12 @@ export default async function handler(req, res) {
       }
     } catch (patternErr) {
       console.warn('[save-report] pattern insert failed:', patternErr.message)
+    }
+
+    try {
+      await synthesizeUserIntelligence(userId, { supabase })
+    } catch (synthErr) {
+      console.warn('[save-report] intelligence synthesis failed:', synthErr.message)
     }
 
     return res.status(200).json({ success: true })

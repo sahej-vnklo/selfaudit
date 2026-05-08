@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { PROVIDER_CONFIGS } from '../../lib/connectors/providers.js'
+import { synthesizeUserIntelligence } from '../../lib/intelligence/synthesize.js'
 
 function getSupabase() {
   return createClient(
@@ -73,6 +74,8 @@ export default async function handler(req, res) {
     if (updateError) {
       return res.redirect(302, `${appUrl}/#connectors?error=hubspot`)
     }
+
+    synthesizeUserIntelligence(decoded.userId, { supabase }).catch(() => {})
 
     return res.redirect(302, `${appUrl}/#connectors?connected=hubspot`)
   } catch {

@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { synthesizeUserIntelligence } from '../lib/intelligence/synthesize.js'
 
 function getAnonSupabase() {
   return createClient(
@@ -45,5 +46,7 @@ export default async function handler(req, res) {
     .eq('id', userId)
 
   if (updateError) return res.status(500).json({ error: updateError.message })
+
+  synthesizeUserIntelligence(userId, { supabase: service }).catch(() => {})
   return res.status(200).json({ success: true })
 }

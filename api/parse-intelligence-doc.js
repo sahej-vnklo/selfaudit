@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { synthesizeUserIntelligence } from './lib/intelligence/synthesize.js'
 
 const CLAUDE_API = 'https://api.anthropic.com/v1/messages'
 const FINANCIAL_KEYS = ['arr', 'mrr', 'gross_margin', 'net_profit_margin', 'burn_rate', 'cac', 'ltv', 'churn', 'revenue_qtr']
@@ -96,6 +97,10 @@ export default async function handler(req, res) {
     }
     const { error: upsertError } = await sb.from('intelligence_brief').upsert(payload, { onConflict: 'user_id' })
     if (upsertError) return res.status(500).json({ error: upsertError.message })
+
+    synthesizeUserIntelligence(userId, { supabase: sb }).catch((err) => {
+      console.warn('[parse-intelligence-doc] synthesis failed:', err?.message || err)
+    })
 
     return res.status(200).json({ success: true, extracted })
   } catch (error) {

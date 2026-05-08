@@ -82,6 +82,26 @@ function getThemeVars(theme) {
 }
 
 const FUNDING_STAGES = ['Bootstrapped', 'Pre-seed', 'Seed', 'Series A', 'Series B+', 'Public']
+const NOTIFICATION_AREAS = [
+  { key: 'goal_progress', label: 'Goal progress' },
+  { key: 'revenue', label: 'Revenue' },
+  { key: 'operations', label: 'Operations' },
+  { key: 'customer_experience', label: 'Customer experience' },
+  { key: 'people', label: 'People' },
+  { key: 'connectors', label: 'Connectors' },
+  { key: 'critical_risks', label: 'Critical risks' },
+]
+const DEFAULT_NOTIFICATION_PREFS = {
+  enabled: true,
+  frequency: 'daily',
+  channels: ['in_app'],
+  areas: NOTIFICATION_AREAS.map(area => area.key),
+}
+
+function normalizeTier(raw) {
+  if (raw === 'business' || raw === 'portfolio' || raw === 'paid' || raw === 'intelligence') return 'intelligence'
+  return 'foundation'
+}
 
 function isFilled(value) {
   if (Array.isArray(value)) return value.length > 0
@@ -212,6 +232,8 @@ export default function IntelligenceBrief({ user, profile, onProfileChange }) {
   const [operational, setOperational] = useState({})
   const [context, setContext] = useState({})
   const [docPaths, setDocPaths] = useState(() => profile?.intelligence_docs || [])
+  const [synthProfile, setSynthProfile] = useState(null)
+  const [notificationPrefs, setNotificationPrefs] = useState(DEFAULT_NOTIFICATION_PREFS)
   const [openSections, setOpenSections] = useState({
     financial: true,
     operational: true,
@@ -220,12 +242,15 @@ export default function IntelligenceBrief({ user, profile, onProfileChange }) {
   })
   const [loading, setLoading] = useState(true)
   const [savingSection, setSavingSection] = useState('')
+  const [savingPrefs, setSavingPrefs] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [toast, setToast] = useState('')
   const inputRef = useRef(null)
 
   const financialFields = useMemo(() => getFinancialFields(profile?.industry), [profile?.industry])
   const visibleContextFields = useMemo(() => getVisibleContextFields(context), [context])
+  const normalizedTier = useMemo(() => normalizeTier(profile?.tier), [profile?.tier])
+  const intelligenceUnlocked = normalizedTier === 'intelligence'
 
   useEffect(() => {
     if (!toast) return undefined
@@ -259,6 +284,40 @@ export default function IntelligenceBrief({ user, profile, onProfileChange }) {
         } else if (Array.isArray(profile?.intelligence_docs)) {
           setDocPaths(profile.intelligence_docs)
         }
+
+        if (intelligenceUnlocked) {
+          try {
+            const { data: synthData } = await sb
+              .from('intelligence_profiles')
+              .select('*')
+              .eq('user_id', user.id)
+              .maybeSingle()
+
+            const { data: prefsData } = await sb
+              .from('intelligence_notification_preferences')
+              .select('enabled, frequency, channels, areas')
+              .eq('user_id', user.id)
+              .maybeSingle()
+
+            if (cancelled) return
+            setSynthProfile(synthData || null)
+            setNotificationPrefs({
+              ...DEFAULT_NOTIFICATION_PREFS,
+              ...(prefsData || {}),
+              channels: Array.isArray(prefsData?.channels) && prefsData.channels.length > 0 ? prefsData.channels : DEFAULT_NOTIFICATION_PREFS.channels,
+              areas: Array.isArray(prefsData?.areas) && prefsData.areas.length > 0 ? prefsData.areas : DEFAULT_NOTIFICATION_PREFS.areas,
+            })
+          } catch (intelligenceErr) {
+            console.warn('[intelligence-brief] synthesized profile load failed:', intelligenceErr?.message || intelligenceErr)
+            if (!cancelled) {
+              setSynthProfile(null)
+              setNotificationPrefs(DEFAULT_NOTIFICATION_PREFS)
+            }
+          }
+        } else {
+          setSynthProfile(null)
+          setNotificationPrefs(DEFAULT_NOTIFICATION_PREFS)
+        }
       } catch (err) {
         console.warn('[intelligence-brief] load failed:', err?.message || err)
       } finally {
@@ -269,7 +328,7 @@ export default function IntelligenceBrief({ user, profile, onProfileChange }) {
     return () => {
       cancelled = true
     }
-  }, [profile?.intelligence_docs, user?.id])
+  }, [intelligenceUnlocked, profile?.intelligence_docs, user?.id])
 
   const completionPct = useMemo(
     () => calculateCompletion(financialFields, financial, operational, context, docPaths),
@@ -494,6 +553,42 @@ export default function IntelligenceBrief({ user, profile, onProfileChange }) {
 
   const sectionTitle = `${completionPct}% complete`
 
+  const saveNotificationPrefs = async () => {
+    if (!user?.id || !intelligenceUnlocked) return
+    setSavingPrefs(true)
+    try {
+      const sb = await initSupabase()
+      const payload = {
+        user_id: user.id,
+        enabled: !!notificationPrefs.enabled,
+        frequency: notificationPrefs.frequency,
+        channels: notificationPrefs.enabled ? notificationPrefs.channels : ['in_app'],
+        areas: notificationPrefs.enabled ? notificationPrefs.areas : [],
+        updated_at: new Date().toISOString(),
+      }
+      const { error } = await sb
+        .from('intelligence_notification_preferences')
+        .upsert(payload, { onConflict: 'user_id' })
+      if (error) throw error
+      setToast('Alert preferences saved')
+    } catch (err) {
+      console.error('[intelligence-brief] prefs save failed:', err?.message || err)
+      setToast('Save failed')
+    } finally {
+      setSavingPrefs(false)
+    }
+  }
+
+  const toggleArea = (areaKey) => {
+    setNotificationPrefs((prev) => {
+      const hasArea = prev.areas.includes(areaKey)
+      const nextAreas = hasArea
+        ? prev.areas.filter((item) => item !== areaKey)
+        : [...prev.areas, areaKey]
+      return { ...prev, areas: nextAreas }
+    })
+  }
+
   return (
     <div style={{ ...themeVars, maxWidth: 980 }}>
       <div style={pageHeader}>
@@ -512,6 +607,151 @@ export default function IntelligenceBrief({ user, profile, onProfileChange }) {
         <div style={loadingCard}>Loading intelligence brief…</div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {intelligenceUnlocked ? (
+            <div style={card}>
+              <div style={cardBodyStandalone}>
+                <div style={panelLabel}>Synthesized intelligence</div>
+                {synthProfile ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+                      <div style={{ flex: 1, minWidth: 260 }}>
+                        <div style={{ fontSize: 16, color: COLORS.text, marginBottom: 8 }}>What the system now believes</div>
+                        <div style={{ fontSize: 13, color: COLORS.textSecondary, lineHeight: 1.7 }}>
+                          {synthProfile.summary || 'Still gathering enough signal to synthesize a reliable view.'}
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+                        <div style={summaryBadge}>{String(synthProfile.confidence || 'low').toUpperCase()} confidence</div>
+                        <div style={summaryBadge}>Updated {synthProfile.last_synthesized_at ? new Date(synthProfile.last_synthesized_at).toLocaleDateString() : 'just now'}</div>
+                      </div>
+                    </div>
+
+                    {typeof synthProfile.goal_score === 'number' && (
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                          <span style={fieldLabel}>Goal score</span>
+                          <span style={{ fontSize: 12, color: COLORS.accentText }}>{Math.round(synthProfile.goal_score || 0)} / 100</span>
+                        </div>
+                        <ProgressBar value={synthProfile.goal_score || 0} />
+                      </div>
+                    )}
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
+                      <div>
+                        <div style={fieldLabel}>Focus areas</div>
+                        <div style={badgeWrap}>
+                          {(synthProfile.focus_areas || []).length > 0
+                            ? synthProfile.focus_areas.map((area) => <SummaryBadge key={area}>{area}</SummaryBadge>)
+                            : <EmptyInline>Still learning where to focus.</EmptyInline>}
+                        </div>
+                      </div>
+                      <div>
+                        <div style={fieldLabel}>Domains audited</div>
+                        <div style={badgeWrap}>
+                          {(synthProfile.domains_audited || []).length > 0
+                            ? synthProfile.domains_audited.map((area) => <SummaryBadge key={area}>{area}</SummaryBadge>)
+                            : <EmptyInline>No domain history yet.</EmptyInline>}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
+                      <SummaryList title="Repeated blockers" items={synthProfile.repeated_blockers} empty="No repeated blockers yet." />
+                      <SummaryList title="Top priorities" items={synthProfile.top_priorities} empty="No clear priorities yet." />
+                    </div>
+
+                    <SummaryList title="Watchouts" items={synthProfile.watchouts} empty="No urgent watchouts right now." />
+                  </div>
+                ) : (
+                  <div style={{ fontSize: 13, color: COLORS.textSecondary, lineHeight: 1.7 }}>
+                    Your intelligence profile will start compounding after audits, reports, brief data, and connector signals accumulate.
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div style={card}>
+              <div style={cardBodyStandalone}>
+                <div style={panelLabel}>Intelligence layer</div>
+                <div style={{ fontSize: 13, color: COLORS.textSecondary, lineHeight: 1.7 }}>
+                  Cross-audit synthesis, compounding business memory, and alert preferences are reserved for Intelligence users. Foundation still gets audits and saved report history.
+                </div>
+              </div>
+            </div>
+          )}
+
+          {intelligenceUnlocked && (
+            <div style={card}>
+              <div style={cardBodyStandalone}>
+                <div style={panelLabel}>Alert preferences</div>
+                <div style={{ fontSize: 13, color: COLORS.textSecondary, lineHeight: 1.7, marginBottom: 16 }}>
+                  Choose the parts of the business you want this system to watch once proactive alerts go live.
+                </div>
+
+                <label style={toggleRow}>
+                  <input
+                    type="checkbox"
+                    checked={notificationPrefs.enabled}
+                    onChange={(event) => setNotificationPrefs((prev) => ({ ...prev, enabled: event.target.checked }))}
+                  />
+                  <span style={{ fontSize: 13, color: COLORS.text }}>Enable proactive intelligence alerts</span>
+                </label>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14, marginTop: 16 }}>
+                  <label style={fieldShell}>
+                    <span style={fieldLabel}>Frequency</span>
+                    <select
+                      value={notificationPrefs.frequency}
+                      onChange={(event) => setNotificationPrefs((prev) => ({ ...prev, frequency: event.target.value }))}
+                      style={prefsSelect}
+                      disabled={!notificationPrefs.enabled}
+                    >
+                      <option value="daily">Daily</option>
+                      <option value="every_3_days">Every 3 days</option>
+                      <option value="weekly">Weekly</option>
+                    </select>
+                  </label>
+
+                  <label style={fieldShell}>
+                    <span style={fieldLabel}>Preferred channel</span>
+                    <select
+                      value={notificationPrefs.channels?.[0] || 'in_app'}
+                      onChange={(event) => setNotificationPrefs((prev) => ({ ...prev, channels: [event.target.value] }))}
+                      style={prefsSelect}
+                      disabled={!notificationPrefs.enabled}
+                    >
+                      <option value="in_app">In-app</option>
+                      <option value="email">Email</option>
+                    </select>
+                  </label>
+                </div>
+
+                <div style={{ marginTop: 16 }}>
+                  <div style={fieldLabel}>Areas to watch</div>
+                  <div style={checkboxGrid}>
+                    {NOTIFICATION_AREAS.map((area) => (
+                      <label key={area.key} style={checkboxPill}>
+                        <input
+                          type="checkbox"
+                          checked={notificationPrefs.areas.includes(area.key)}
+                          onChange={() => toggleArea(area.key)}
+                          disabled={!notificationPrefs.enabled}
+                        />
+                        <span style={{ fontSize: 12, color: COLORS.text }}>{area.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 18 }}>
+                  <button type="button" onClick={saveNotificationPrefs} disabled={savingPrefs} style={saveBtn}>
+                    {savingPrefs ? 'Saving…' : 'Save alert preferences'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           <SectionCard
             title="Financial metrics"
             isOpen={openSections.financial}
@@ -657,6 +897,33 @@ function FieldShell({ label, children, fullWidth = false }) {
   )
 }
 
+function SummaryBadge({ children }) {
+  return <span style={miniBadge}>{children}</span>
+}
+
+function EmptyInline({ children }) {
+  return <span style={{ color: COLORS.textFaint, fontSize: 12 }}>{children}</span>
+}
+
+function SummaryList({ title, items, empty }) {
+  return (
+    <div>
+      <div style={fieldLabel}>{title}</div>
+      {Array.isArray(items) && items.length > 0 ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {items.map((item, index) => (
+            <div key={`${title}-${index}`} style={{ fontSize: 13, color: COLORS.textSecondary, lineHeight: 1.6 }}>
+              {item}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <EmptyInline>{empty}</EmptyInline>
+      )}
+    </div>
+  )
+}
+
 function fieldAffixStyle(side) {
   return {
     position: 'absolute',
@@ -727,6 +994,10 @@ const cardBody = {
   borderTop: `0.5px solid ${COLORS.border}`,
 }
 
+const cardBodyStandalone = {
+  padding: '18px',
+}
+
 const chevron = {
   color: COLORS.textSecondary,
   fontSize: 18,
@@ -754,6 +1025,41 @@ const fieldLabel = {
   letterSpacing: '0.06em',
 }
 
+const panelLabel = {
+  fontSize: 10,
+  color: COLORS.textFaint,
+  textTransform: 'uppercase',
+  letterSpacing: '0.08em',
+  marginBottom: 10,
+}
+
+const summaryBadge = {
+  background: COLORS.surface,
+  color: COLORS.textSecondary,
+  border: `0.5px solid ${COLORS.border}`,
+  borderRadius: 999,
+  padding: '7px 12px',
+  fontSize: 11,
+  whiteSpace: 'nowrap',
+}
+
+const miniBadge = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  padding: '6px 10px',
+  borderRadius: 999,
+  background: COLORS.surface,
+  border: `0.5px solid ${COLORS.border}`,
+  color: COLORS.textSecondary,
+  fontSize: 11,
+}
+
+const badgeWrap = {
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: 8,
+}
+
 const saveBtn = {
   background: COLORS.accent,
   color: COLORS.buttonText,
@@ -772,6 +1078,42 @@ const uploadShell = {
   textAlign: 'center',
   background: COLORS.surface,
   cursor: 'pointer',
+}
+
+const prefsSelect = {
+  width: '100%',
+  minHeight: 40,
+  background: COLORS.black,
+  color: COLORS.text,
+  border: `0.5px solid ${COLORS.border2}`,
+  borderRadius: 8,
+  padding: '10px 12px',
+  fontSize: 13,
+  outline: 'none',
+  fontFamily: 'inherit',
+}
+
+const toggleRow = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 10,
+}
+
+const checkboxGrid = {
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: 10,
+  marginTop: 10,
+}
+
+const checkboxPill = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 8,
+  padding: '8px 10px',
+  border: `0.5px solid ${COLORS.border}`,
+  borderRadius: 999,
+  background: COLORS.surface,
 }
 
 const docRow = {
