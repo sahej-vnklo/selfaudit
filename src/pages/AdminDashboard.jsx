@@ -2,26 +2,28 @@ import React, { useEffect, useMemo, useState } from 'react'
 
 const ADMIN_EMAIL = 'sahej@vnklo.com'
 const G = {
-  bg: '#0A0A0A',
-  surface: '#111111',
-  surface2: '#161616',
-  border: '#1E1E1E',
-  border2: '#2A2A2A',
-  text: '#E8E4DC',
-  textMuted: '#888888',
-  textFaint: '#444444',
-  accent: '#01696f',
-  accentLight: '#0a2e30',
-  accentText: '#2dd4bf',
-  red: '#9E3030',
-  redBg: '#1A0A0A',
-  redText: '#C05050',
+  bg: '#F5F0E8',
+  surface: '#EDE6DC',
+  surface2: '#E8DFD3',
+  surface3: '#E2D8CC',
+  border: '#C4B4A4',
+  border2: '#BAA898',
+  text: '#1A1410',
+  textMuted: '#6B5040',
+  textFaint: '#8A6A58',
+  accent: '#8C4A42',
+  accentLight: '#F0E4E0',
+  accentText: '#7A3C36',
+  red: '#B85C5C',
+  redBg: '#F5E8E8',
+  redText: '#8C2A2A',
   amber: '#8A6A1A',
-  amberBg: '#1A1508',
-  amberText: '#C9A040',
+  amberBg: '#F5F0E0',
+  amberText: '#7A5A10',
   green: '#2D6B45',
-  greenBg: '#0A1A10',
-  greenText: '#4A9E6B',
+  greenBg: '#E8F5EE',
+  greenText: '#1A6B3A',
+  blue: '#5B7FA6',
 }
 
 const MONO = '"DM Mono", ui-monospace, monospace'
@@ -34,8 +36,8 @@ const NAV_ITEMS = [
 ]
 
 const TIER_STYLES = {
-  foundation: { bg: G.surface2, color: G.textMuted, border: G.border2 },
-  intelligence: { bg: G.accentLight, color: G.accentText, border: G.accent },
+  foundation: { bg: G.accentLight, color: G.accentText, border: G.accent },
+  intelligence: { bg: G.surface3, color: G.blue, border: G.border2 },
 }
 
 function normTier(tier) {
