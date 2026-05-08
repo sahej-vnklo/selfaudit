@@ -34,15 +34,14 @@ const NAV_ITEMS = [
 ]
 
 const TIER_STYLES = {
-  essential: { bg: G.surface2, color: G.textMuted, border: G.border2 },
-  business: { bg: G.accentLight, color: G.accentText, border: G.accent },
-  portfolio: { bg: G.greenBg, color: G.greenText, border: G.green },
+  foundation: { bg: G.surface2, color: G.textMuted, border: G.border2 },
+  intelligence: { bg: G.accentLight, color: G.accentText, border: G.accent },
 }
 
 function normTier(tier) {
-  if (tier === 'paid') return 'business'
-  if (tier === 'free') return 'essential'
-  return tier || 'essential'
+  if (tier === 'foundation' || tier === 'free' || tier === 'essential') return 'foundation'
+  if (tier === 'intelligence' || tier === 'paid' || tier === 'business' || tier === 'portfolio') return 'intelligence'
+  return 'foundation'
 }
 
 function fmtDate(iso) {
@@ -907,7 +906,7 @@ function UsersTable({ users, detailCache, onSelectUser, title = 'Users' }) {
           }}
         />
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          {['all', 'essential', 'business', 'portfolio'].map(tier => (
+          {['all', 'foundation', 'intelligence'].map(tier => (
             <button
               key={tier}
               onClick={() => setTierFilter(tier)}
@@ -966,7 +965,7 @@ function UsersTable({ users, detailCache, onSelectUser, title = 'Users' }) {
               const lastAudit = detail?.reports?.[0]?.created_at || null
               const hasStarted = (detail?.chat_sessions?.length ?? 0) > 0 || user.industry || user.domain
               const dotColor = user.report_count > 0 ? G.greenText : hasStarted ? G.amberText : G.textFaint
-              const tierStyle = TIER_STYLES[normTier(user.tier)] || TIER_STYLES.essential
+              const tierStyle = TIER_STYLES[normTier(user.tier)] || TIER_STYLES.foundation
 
               return (
                 <tr
@@ -1018,9 +1017,9 @@ function RightRail({ stats, users, detailCache }) {
     const tier = normTier(user.tier)
     acc[tier] = (acc[tier] || 0) + 1
     return acc
-  }, { essential: 0, business: 0, portfolio: 0 })
+  }, { foundation: 0, intelligence: 0 })
 
-  const mrr = tierCounts.essential * 49 + tierCounts.business * 99 + tierCounts.portfolio * 299
+  const mrr = tierCounts.foundation * 29 + tierCounts.intelligence * 99
 
   const intelligenceUsers = [...users]
     .filter(user => (user.report_count ?? 0) > 0)
@@ -1056,9 +1055,8 @@ function RightRail({ stats, users, detailCache }) {
           <div style={{ color: G.accentText, fontSize: 13, ...monoStyle() }}>${mrr}/mo</div>
         </div>
         {[
-          ['essential', 49],
-          ['business', 99],
-          ['portfolio', 299],
+          ['foundation', 29],
+          ['intelligence', 99],
         ].map(([tier, price]) => {
           const count = tierCounts[tier] || 0
           const width = totalUsers > 0 ? (count / totalUsers) * 100 : 0
@@ -1069,7 +1067,7 @@ function RightRail({ stats, users, detailCache }) {
                 <div style={{ color: G.text, fontSize: 11, ...monoStyle() }}>{count} · ${count * price}</div>
               </div>
               <div style={{ height: 8, borderRadius: 4, border: `0.5px solid ${G.border2}`, background: G.surface2, overflow: 'hidden' }}>
-                <div style={{ width: `${width}%`, height: '100%', background: tier === 'portfolio' ? G.greenText : tier === 'business' ? G.accentText : G.textMuted }} />
+                <div style={{ width: `${width}%`, height: '100%', background: tier === 'intelligence' ? G.accentText : G.textMuted }} />
               </div>
             </div>
           )
@@ -1127,9 +1125,9 @@ function TierEditor({ email, tier, onChange, saving }) {
       <button
         onClick={() => setOpen(value => !value)}
         style={{
-          border: `0.5px solid ${(TIER_STYLES[normTier(tier)] || TIER_STYLES.essential).border}`,
-          background: (TIER_STYLES[normTier(tier)] || TIER_STYLES.essential).bg,
-          color: (TIER_STYLES[normTier(tier)] || TIER_STYLES.essential).color,
+          border: `0.5px solid ${(TIER_STYLES[normTier(tier)] || TIER_STYLES.foundation).border}`,
+          background: (TIER_STYLES[normTier(tier)] || TIER_STYLES.foundation).bg,
+          color: (TIER_STYLES[normTier(tier)] || TIER_STYLES.foundation).color,
           borderRadius: 4,
           padding: '6px 10px',
           cursor: 'pointer',
@@ -1153,7 +1151,7 @@ function TierEditor({ email, tier, onChange, saving }) {
           zIndex: 10,
           ...panelStyle({ padding: 6 }),
         }}>
-          {['essential', 'business', 'portfolio'].map(nextTier => (
+          {['foundation', 'intelligence'].map(nextTier => (
             <button
               key={nextTier}
               disabled={saving}
@@ -1477,7 +1475,7 @@ function UserDetailView({ user, detail, onBack, onTierChange, tierSaving }) {
       <div style={{ ...panelStyle({ padding: '16px 18px' }) }}>
         <div style={{ color: G.text, fontSize: 13, marginBottom: 14 }}>Tier management</div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
-          {['essential', 'business', 'portfolio'].map(tier => (
+          {['foundation', 'intelligence'].map(tier => (
             <button
               key={tier}
               disabled={tierSaving}
@@ -1599,9 +1597,9 @@ export default function AdminDashboard({ session, onUnauthorized }) {
     const tier = normTier(user.tier)
     acc[tier] = (acc[tier] || 0) + 1
     return acc
-  }, { essential: 0, business: 0, portfolio: 0 })
+  }, { foundation: 0, intelligence: 0 })
 
-  const mrr = tierCounts.essential * 49 + tierCounts.business * 99 + tierCounts.portfolio * 299
+  const mrr = tierCounts.foundation * 29 + tierCounts.intelligence * 99
   const sectionName = selectedUser ? 'user detail' : navSection
 
   const kpis = [
@@ -1623,7 +1621,7 @@ export default function AdminDashboard({ session, onUnauthorized }) {
     {
       label: 'mrr',
       value: `$${mrr}`,
-      delta: `${tierCounts.essential}/${tierCounts.business}/${tierCounts.portfolio}`,
+      delta: `${tierCounts.foundation}/${tierCounts.intelligence}`,
     },
   ]
 

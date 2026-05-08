@@ -133,7 +133,7 @@ function buildServer() {
     "Updates a user's subscription tier.",
     {
       email: z.string().email().describe("User email address"),
-      tier: z.enum(["essential", "business", "portfolio"]).describe("New tier"),
+      tier: z.enum(["foundation", "intelligence"]).describe("New tier"),
     },
     async ({ email, tier }) => {
       const { data: profile, error: pErr } = await sb
