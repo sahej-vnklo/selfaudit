@@ -446,7 +446,7 @@ function buildAiOpportunityItems(reports, tier) {
 }
 
 export default function Dashboard({ user, onStartAudit, onSignOut }) {
-  const theme = localStorage.getItem('sa-theme') || 'dark'
+  const [theme, setTheme] = useState(() => localStorage.getItem('sa-theme') || 'dark')
   const themeVars = getThemeVars(theme)
   const [profile, setProfile] = useState(null)
   const [businessState, setBusinessState] = useState(null)
@@ -468,6 +468,10 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
   const initials = getInitials(name, email)
   const tier = normalizeTier(profile?.tier)
   const badge = TIER_BADGE[tier] || TIER_BADGE.essential
+
+  useEffect(() => {
+    localStorage.setItem('sa-theme', theme)
+  }, [theme])
 
   useEffect(() => {
     const syncSection = () => setSection(getSectionFromHash())
@@ -665,6 +669,10 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
     account: '/ account',
   }
 
+  const toggleTheme = () => {
+    setTheme((prev) => prev === 'dark' ? 'light' : 'dark')
+  }
+
   return (
     <div style={{ ...themeVars, ...styles.shell }}>
       {goalModal && (
@@ -731,6 +739,10 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
           </div>
 
           <div style={styles.topbarActions}>
+            <button type="button" style={styles.themeToggleButton} onClick={toggleTheme} aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}>
+              <span style={styles.themeToggleIcon}>{theme === 'dark' ? '☀' : '☾'}</span>
+              <span>{theme === 'dark' ? 'light mode' : 'dark mode'}</span>
+            </button>
             <button type="button" style={styles.ghostButton} onClick={startAudit}>
               diagnose a problem
             </button>
@@ -2703,6 +2715,23 @@ const styles = {
     alignItems: 'center',
     gap: 8,
     flexShrink: 0,
+  },
+  themeToggleButton: {
+    border: `0.5px solid ${G.border2}`,
+    background: G.surface2,
+    color: G.textSecondary,
+    borderRadius: 6,
+    padding: '5px 12px',
+    fontSize: 12,
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 8,
+    whiteSpace: 'nowrap',
+  },
+  themeToggleIcon: {
+    fontSize: 13,
+    lineHeight: 1,
   },
   ghostButton: {
     border: `0.5px solid ${G.border2}`,
