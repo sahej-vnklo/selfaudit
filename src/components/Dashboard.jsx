@@ -698,6 +698,11 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
         <SidebarButton icon={<IconReports />} active={section === 'reports'} onClick={() => navigateSection('reports')} label="Reports" expanded={sidebarExpanded} />
         <SidebarButton icon={<IconIntelligence />} active={section === 'intelligence'} onClick={() => navigateSection('intelligence')} label="Intelligence brief" expanded={sidebarExpanded} />
         <SidebarButton icon={<IconConnectors />} active={section === 'connectors'} onClick={() => navigateSection('connectors')} label="Connectors" expanded={sidebarExpanded} />
+        {sidebarExpanded && (
+          <div style={styles.sidebarBusinessStateWrap}>
+            <BusinessStateCard user={user} businessState={businessState} loading={businessStateLoading} />
+          </div>
+        )}
         <div style={{ flex: 1 }} />
         <SidebarButton icon={<IconGear />} active={section === 'billing'} onClick={() => navigateSection('billing')} label="Billing" expanded={sidebarExpanded} />
         <button
@@ -915,7 +920,6 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
         <div style={styles.rightColumn}>
           <BusinessHealthPanel latestDomains={latestDomains} />
           <AiOpportunitiesCard user={user} userInfo={shareUserInfo} reports={reports} items={opportunityItems} tier={profile?.tier || 'essential'} />
-          <BusinessStateCard user={user} businessState={businessState} loading={businessStateLoading} />
         </div>
       </div>
     </div>
@@ -2524,12 +2528,17 @@ const styles = {
     gap: 4,
     flexShrink: 0,
     transition: 'width 0.18s ease',
-    overflow: 'hidden',
+    overflowX: 'hidden',
+    overflowY: 'auto',
   },
   sidebarExpanded: {
-    width: 176,
+    width: 272,
     alignItems: 'stretch',
     padding: '16px 8px',
+  },
+  sidebarBusinessStateWrap: {
+    marginTop: 10,
+    padding: '0 4px',
   },
   sidebarButton: {
     width: 34,
