@@ -75,6 +75,38 @@ function getThemeVars(theme) {
   }
 }
 
+function ProviderButton({ icon, label, onClick, disabled }) {
+  return (
+    <button type="button" style={s.providerButton} onClick={onClick} disabled={disabled}>
+      <span style={s.providerIconWrap}>{icon}</span>
+      <span>{label}</span>
+    </button>
+  )
+}
+
+function GoogleMark() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+      <path fill="#EA4335" d="M12 10.2v3.9h5.5c-.2 1.3-1.5 3.9-5.5 3.9-3.3 0-6-2.7-6-6s2.7-6 6-6c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 3.5 14.6 2.6 12 2.6 6.8 2.6 2.6 6.8 2.6 12S6.8 21.4 12 21.4c6.9 0 9.1-4.8 9.1-7.3 0-.5-.1-.9-.1-1.3H12z" />
+      <path fill="#4285F4" d="M21.1 12.1c0-.5-.1-.9-.1-1.3H12v3.9h5.5c-.3 1.2-1.3 2.2-2.6 2.9l3.2 2.5c1.9-1.8 3-4.4 3-8z" opacity=".001" />
+      <path fill="#FBBC05" d="M4.8 7.6l3.2 2.4C8.8 8.3 10.2 7 12 7c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 4.5 14.6 3.6 12 3.6c-3.6 0-6.7 2-8.2 4.9z" />
+      <path fill="#34A853" d="M12 20.4c2.5 0 4.7-.8 6.2-2.3l-3.2-2.5c-.9.6-2 1-3 1-2.5 0-4.7-1.7-5.5-4l-3.3 2.5c1.5 3 4.6 5.3 8.8 5.3z" />
+      <path fill="#4285F4" d="M6.5 12.6c-.2-.6-.3-1.2-.3-1.9s.1-1.3.3-1.9L3.2 6.3C2.8 7.2 2.6 8.2 2.6 9.2s.2 2 .6 2.9l3.3-2.5z" />
+    </svg>
+  )
+}
+
+function MicrosoftMark() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="3" y="3" width="8" height="8" fill="#F25022" />
+      <rect x="13" y="3" width="8" height="8" fill="#7FBA00" />
+      <rect x="3" y="13" width="8" height="8" fill="#00A4EF" />
+      <rect x="13" y="13" width="8" height="8" fill="#FFB900" />
+    </svg>
+  )
+}
+
 const stripePromise = fetch('/api/config')
   .then(r => r.ok ? r.json() : Promise.reject())
   .then(cfg => loadStripe(cfg.stripePublishableKey || import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || ''))
@@ -419,12 +451,8 @@ function SignupForm({ onSuccess, onLogin }) {
               <span style={s.dividerLine} />
             </div>
             <div style={s.providerGrid}>
-              <button type="button" style={s.providerButton} onClick={() => handleOAuthSignup('google')} disabled={loading}>
-                Continue with Google
-              </button>
-              <button type="button" style={s.providerButton} onClick={() => handleOAuthSignup('azure')} disabled={loading}>
-                Continue with Microsoft
-              </button>
+              <ProviderButton icon={<GoogleMark />} label="Continue with" onClick={() => handleOAuthSignup('google')} disabled={loading} />
+              <ProviderButton icon={<MicrosoftMark />} label="Continue with" onClick={() => handleOAuthSignup('azure')} disabled={loading} />
             </div>
             <button type="button" style={s.magicButton} onClick={handleMagicLinkSignup} disabled={loading}>
               Email me a magic link
@@ -538,7 +566,12 @@ const s = {
     fontSize: 14,
     fontWeight: 500,
     cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
   },
+  providerIconWrap: { width: 18, height: 18, display: 'grid', placeItems: 'center', flexShrink: 0 },
   magicButton: {
     width: '100%',
     padding: '11px 12px',
