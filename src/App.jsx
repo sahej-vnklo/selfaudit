@@ -152,6 +152,10 @@ export default function App() {
         if (data?.session) {
           const redirected = await maybeStartPendingCheckout(data.session)
           if (redirected) return
+          const currentHash = window.location.hash.replace(/^#\/?/, '')
+          if (currentHash !== 'admin' && currentHash !== 'dashboard' && !DASHBOARD_SECTION_HASHES.has(currentHash)) {
+            navigate(SCREENS.DASHBOARD)
+          }
         }
         setAuthLoading(false)
 

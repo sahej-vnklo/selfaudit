@@ -270,7 +270,7 @@ function SignupForm({ onSuccess, onLogin }) {
       const { data, error } = await sb.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/#dashboard`,
+          redirectTo: `${window.location.origin}/`,
         },
       })
       if (error) throw error
@@ -302,7 +302,7 @@ function SignupForm({ onSuccess, onLogin }) {
         email,
         options: {
           shouldCreateUser: true,
-          emailRedirectTo: `${window.location.origin}/#dashboard`,
+          emailRedirectTo: `${window.location.origin}/`,
           data: fullName ? { name: fullName } : undefined,
         },
       })

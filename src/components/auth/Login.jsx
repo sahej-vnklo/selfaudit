@@ -133,7 +133,7 @@ export default function Login({ onSuccess, onSignup }) {
       const { data, error } = await sb.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/#dashboard`,
+          redirectTo: `${window.location.origin}/`,
         },
       })
       if (error) throw error
@@ -161,7 +161,7 @@ export default function Login({ onSuccess, onSignup }) {
         email: form.email.trim(),
         options: {
           shouldCreateUser: false,
-          emailRedirectTo: `${window.location.origin}/#dashboard`,
+          emailRedirectTo: `${window.location.origin}/`,
         },
       })
       if (error) throw error
