@@ -183,16 +183,16 @@ const TIERS = [
     key: 'essential',
     name: 'Foundation',
     price: '$29',
-    desc: 'One domain. Unlimited audits. Your dedicated department head.',
-    features: ['1 industry, 1 domain', 'Unlimited audits on that domain', 'Full drill-down audit', 'Complete written report', 'Root cause diagnosis', 'Fix-first priority list', 'Email delivery'],
+    desc: 'The truth about your business.',
+    features: ['Full drill-down audit', 'Complete written report', 'Root cause diagnosis', 'Fix-first priority list', 'Email delivery'],
   },
   {
     key: 'business',
     name: 'Intelligence',
     price: '$99',
     popular: true,
-    desc: 'Every function of your business, fully audited. No blind spots.',
-    features: ['Everything in Foundation', 'All domains for your industry', 'AI opportunity breakdown', 'Re-audit anytime — track progress'],
+    desc: 'Persistent intelligence embedded into the business.',
+    features: ['Everything in Foundation', 'AI opportunity breakdown', 'Re-audit anytime', 'Track progress'],
   },
 ]
 

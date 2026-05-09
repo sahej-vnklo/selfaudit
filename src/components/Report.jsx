@@ -415,10 +415,6 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
           </div>
         </div>
 
-        <p style={styles.disclaimer}>
-          This report is for your eyes only and is displayed on-screen. Built by <a href="https://vnklo.com" target="_blank" rel="noopener" style={{ color: 'var(--accent)' }}>Vnklo</a>.
-        </p>
-
       </div>
     </div>
   )
