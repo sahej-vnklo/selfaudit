@@ -61,6 +61,7 @@ export default function Login({ onSuccess, onSignup }) {
   const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [magicLinkSent, setMagicLinkSent] = useState(false)
   const posthog = usePostHog()
   const theme = localStorage.getItem('sa-theme') || 'dark'
   const themeVars = getThemeVars(theme)
@@ -92,6 +93,82 @@ export default function Login({ onSuccess, onSignup }) {
     }
   }
 
+  const handleOAuthLogin = async (provider) => {
+    setError(null)
+    setLoading(true)
+    try {
+      const sb = await initSupabase()
+      const { data, error } = await sb.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/#dashboard`,
+        },
+      })
+      if (error) throw error
+      if (data?.url) {
+        window.location.href = data.url
+        return
+      }
+      throw new Error('Could not start social sign in.')
+    } catch (e) {
+      setError(friendlyError(e?.message || 'Could not start sign in.'))
+      setLoading(false)
+    }
+  }
+
+  const handleMagicLinkLogin = async () => {
+    setError(null)
+    if (!form.email) {
+      setError('Enter your email first.')
+      return
+    }
+    setLoading(true)
+    try {
+      const sb = await initSupabase()
+      const { error } = await sb.auth.signInWithOtp({
+        email: form.email.trim(),
+        options: {
+          shouldCreateUser: false,
+          emailRedirectTo: `${window.location.origin}/#dashboard`,
+        },
+      })
+      if (error) throw error
+      setMagicLinkSent(true)
+    } catch (e) {
+      setError(friendlyError(e?.message || 'Could not send magic link.'))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (magicLinkSent) {
+    return (
+      <div style={{ ...themeVars, ...s.page }}>
+        <nav style={s.nav}>
+          <div style={s.logo} onClick={() => window.location.hash = ''}>
+            self<span style={{ color: 'var(--accent)' }}>audit</span>
+          </div>
+        </nav>
+
+        <div style={s.wrap}>
+          <div style={s.card}>
+            <div style={s.header}>
+              <p style={s.eyebrow}>Check your inbox</p>
+              <h2 style={s.title}>Your sign-in link is on the way</h2>
+            </div>
+            <p style={{ fontSize: 15, color: 'var(--text-soft)', lineHeight: 1.7, marginTop: 12 }}>
+              We sent a magic link to <strong style={{ color: 'var(--text)' }}>{form.email}</strong>.
+              Open it to sign in to your account.
+            </p>
+            <button style={{ ...s.btn, marginTop: 28 }} onClick={() => setMagicLinkSent(false)}>
+              Back
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div style={{ ...themeVars, ...s.page }}>
       <nav style={s.nav}>
@@ -105,6 +182,25 @@ export default function Login({ onSuccess, onSignup }) {
           <div style={s.header}>
             <p style={s.eyebrow}>Welcome back</p>
             <h2 style={s.title}>Log in to your account</h2>
+          </div>
+
+          <div style={s.altAuthShell}>
+            <div style={s.providerGrid}>
+              <button type="button" style={s.providerButton} onClick={() => handleOAuthLogin('google')} disabled={loading}>
+                Continue with Google
+              </button>
+              <button type="button" style={s.providerButton} onClick={() => handleOAuthLogin('azure')} disabled={loading}>
+                Continue with Microsoft
+              </button>
+            </div>
+            <button type="button" style={s.magicButton} onClick={handleMagicLinkLogin} disabled={loading}>
+              Email me a magic link
+            </button>
+            <div style={s.dividerRow}>
+              <span style={s.dividerLine} />
+              <span style={s.dividerLabel}>or use your password</span>
+              <span style={s.dividerLine} />
+            </div>
           </div>
 
           <div style={s.fields}>
@@ -151,6 +247,8 @@ function Field({ label, type, value, onChange, placeholder, onEnter }) {
 function friendlyError(msg) {
   if (msg.includes('Invalid login')) return 'Incorrect email or password.'
   if (msg.includes('Email not confirmed')) return 'Please confirm your email first.'
+  if (msg.includes('provider is not enabled')) return 'This sign-in method is not enabled yet in Supabase Auth.'
+  if (msg.includes('Signups not allowed for otp')) return 'No account exists for that email yet.'
   return msg
 }
 
@@ -163,6 +261,13 @@ const s = {
   header: { marginBottom: '2rem' },
   eyebrow: { fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--accent)', marginBottom: 8 },
   title: { fontFamily: 'var(--serif)', fontSize: 24, fontWeight: 400, lineHeight: 1.3, color: 'var(--text)' },
+  altAuthShell: { marginBottom: '1.25rem' },
+  providerGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' },
+  providerButton: { width: '100%', padding: '11px 12px', borderRadius: 'var(--radius-sm)', border: '0.5px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: 14, fontWeight: 500, cursor: 'pointer' },
+  magicButton: { width: '100%', padding: '11px 12px', borderRadius: 'var(--radius-sm)', border: '0.5px solid var(--border)', background: 'var(--surface2)', color: 'var(--text)', fontSize: 14, fontWeight: 500, cursor: 'pointer' },
+  dividerRow: { display: 'flex', alignItems: 'center', gap: 10, marginTop: 14 },
+  dividerLine: { flex: 1, height: 1, background: 'var(--border)' },
+  dividerLabel: { fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-soft)', whiteSpace: 'nowrap' },
   fields: { display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '1.5rem' },
   label: { fontSize: 13, fontWeight: 500, color: 'var(--text)' },
   input: { width: '100%', padding: '10px 12px', border: '0.5px solid var(--border)', borderRadius: 'var(--radius-sm)', fontSize: 14, color: 'var(--text)', background: 'var(--input-bg)', transition: 'border-color 0.15s' },

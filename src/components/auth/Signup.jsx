@@ -12,6 +12,8 @@ import {
 import { initSupabase } from '../../lib/supabase.js'
 import { usePostHog } from '@posthog/react'
 
+const PENDING_AUTH_INTENT_KEY = 'sa-auth-intent'
+
 const THEMES = {
   dark: {
     bg: '#0F1520',
@@ -119,6 +121,7 @@ function SignupForm({ onSuccess, onLogin }) {
   const [loading,      setLoading]      = useState(false)
   const [globalError,  setGlobalError]  = useState(null)
   const [emailSent,    setEmailSent]    = useState(false)
+  const [magicLinkSent, setMagicLinkSent] = useState(false)
   const posthog = usePostHog()
 
   const update = (k, v) => setForm(f => ({ ...f, [k]: v }))
@@ -170,7 +173,7 @@ function SignupForm({ onSuccess, onLogin }) {
 
         const { data: profileData, error: profileError } = await sb
           .from('profiles')
-          .upsert({ id: user.id, name: fullName, tier: selectedPlan }, { onConflict: 'id' })
+          .upsert({ id: user.id, name: fullName }, { onConflict: 'id' })
           .select('tier')
           .single()
         if (profileError) throw profileError
@@ -196,6 +199,7 @@ function SignupForm({ onSuccess, onLogin }) {
         if (subData?.error) throw new Error(subData.error)
 
         await sb.from('profiles').update({
+          tier:                   selectedPlan,
           stripe_customer_id:     subData.customerId,
           stripe_subscription_id: subData.subscriptionId,
         }).eq('id', user.id).throwOnError()
@@ -218,6 +222,68 @@ function SignupForm({ onSuccess, onLogin }) {
     }
   }
 
+  const rememberPlanIntent = () => {
+    localStorage.setItem(PENDING_AUTH_INTENT_KEY, JSON.stringify({
+      plan: selectedPlan,
+      at: Date.now(),
+    }))
+  }
+
+  const handleOAuthSignup = async (provider) => {
+    setGlobalError(null)
+    setLoading(true)
+    try {
+      rememberPlanIntent()
+      const sb = await initSupabase()
+      const { data, error } = await sb.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/#dashboard`,
+        },
+      })
+      if (error) throw error
+      if (data?.url) {
+        window.location.href = data.url
+        return
+      }
+      throw new Error('Could not start social sign in.')
+    } catch (error) {
+      localStorage.removeItem(PENDING_AUTH_INTENT_KEY)
+      setGlobalError(friendlyError(error?.message || 'Could not start sign in.'))
+      setLoading(false)
+    }
+  }
+
+  const handleMagicLinkSignup = async () => {
+    setGlobalError(null)
+    const email = form.email.trim()
+    if (!email) {
+      setErrors((prev) => ({ ...prev, email: 'Enter your email first' }))
+      return
+    }
+    setLoading(true)
+    try {
+      rememberPlanIntent()
+      const sb = await initSupabase()
+      const fullName = `${form.firstName.trim()} ${form.lastName.trim()}`.trim()
+      const { error } = await sb.auth.signInWithOtp({
+        email,
+        options: {
+          shouldCreateUser: true,
+          emailRedirectTo: `${window.location.origin}/#dashboard`,
+          data: fullName ? { name: fullName } : undefined,
+        },
+      })
+      if (error) throw error
+      setMagicLinkSent(true)
+    } catch (error) {
+      localStorage.removeItem(PENDING_AUTH_INTENT_KEY)
+      setGlobalError(friendlyError(error?.message || 'Could not send magic link.'))
+    } finally {
+      setLoading(false)
+    }
+  }
+
   // Email confirmation pending state
   if (emailSent) {
     return (
@@ -234,6 +300,31 @@ function SignupForm({ onSuccess, onLogin }) {
             <p style={{ fontSize: 15, color: 'var(--text-soft)', lineHeight: 1.7, marginTop: 12 }}>
               We sent a confirmation link to <strong style={{ color: 'var(--text)' }}>{form.email}</strong>.
               Click it to activate your account, then come back and log in.
+            </p>
+            <button style={{ ...s.btn, marginTop: 28 }} onClick={onLogin}>
+              Go to login
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (magicLinkSent) {
+    return (
+      <div style={{ ...themeVars, ...s.page }}>
+        <nav style={s.nav}>
+          <div style={s.logo} onClick={() => { window.location.hash = '' }}>
+            self<span style={{ color: 'var(--accent)' }}>audit</span>
+          </div>
+        </nav>
+        <div style={s.wrap}>
+          <div style={{ ...themeVars, ...s.card }}>
+            <p style={s.eyebrow}>Check your inbox</p>
+            <h2 style={s.title}>Your sign-in link is on the way</h2>
+            <p style={{ fontSize: 15, color: 'var(--text-soft)', lineHeight: 1.7, marginTop: 12 }}>
+              We sent a magic link to <strong style={{ color: 'var(--text)' }}>{form.email}</strong>.
+              Open it to create your account, then we&apos;ll take you into checkout for the {selectedPlan === 'business' ? 'Intelligence' : 'Foundation'} plan.
             </p>
             <button style={{ ...s.btn, marginTop: 28 }} onClick={onLogin}>
               Go to login
@@ -321,6 +412,28 @@ function SignupForm({ onSuccess, onLogin }) {
             </div>
           </div>
 
+          <div style={s.altAuthShell}>
+            <div style={s.dividerRow}>
+              <span style={s.dividerLine} />
+              <span style={s.dividerLabel}>or create your account first</span>
+              <span style={s.dividerLine} />
+            </div>
+            <div style={s.providerGrid}>
+              <button type="button" style={s.providerButton} onClick={() => handleOAuthSignup('google')} disabled={loading}>
+                Continue with Google
+              </button>
+              <button type="button" style={s.providerButton} onClick={() => handleOAuthSignup('azure')} disabled={loading}>
+                Continue with Microsoft
+              </button>
+            </div>
+            <button type="button" style={s.magicButton} onClick={handleMagicLinkSignup} disabled={loading}>
+              Email me a magic link
+            </button>
+            <p style={s.altAuthHint}>
+              Social and magic-link signup create your account first, then send you into secure checkout for the selected plan.
+            </p>
+          </div>
+
           {/* Stripe card fields — always shown */}
           <div style={{ paddingBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             <div style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-soft)', marginBottom: 2 }}>
@@ -394,6 +507,7 @@ function Field({ label, type, value, onChange, placeholder, error, required, onE
 function friendlyError(msg) {
   if (msg.includes('already registered')) return 'An account with this email already exists.'
   if (msg.includes('Password should')) return 'Password must be at least 8 characters.'
+  if (msg.includes('provider is not enabled')) return 'This sign-in method is not enabled yet in Supabase Auth.'
   return msg
 }
 
@@ -409,6 +523,34 @@ const s = {
   sub:         { fontSize: 14, color: 'var(--text-soft)' },
   fields:      { display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '1.5rem' },
   nameRow:     { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' },
+  altAuthShell:{ marginBottom: '1.5rem' },
+  dividerRow:  { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 },
+  dividerLine: { flex: 1, height: 1, background: 'var(--border)' },
+  dividerLabel:{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-soft)', whiteSpace: 'nowrap' },
+  providerGrid:{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' },
+  providerButton: {
+    width: '100%',
+    padding: '11px 12px',
+    borderRadius: 'var(--radius-sm)',
+    border: '0.5px solid var(--border)',
+    background: 'var(--surface)',
+    color: 'var(--text)',
+    fontSize: 14,
+    fontWeight: 500,
+    cursor: 'pointer',
+  },
+  magicButton: {
+    width: '100%',
+    padding: '11px 12px',
+    borderRadius: 'var(--radius-sm)',
+    border: '0.5px solid var(--border)',
+    background: 'var(--surface2)',
+    color: 'var(--text)',
+    fontSize: 14,
+    fontWeight: 500,
+    cursor: 'pointer',
+  },
+  altAuthHint: { fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.5, marginTop: 10, marginBottom: 0 },
   label:       { fontSize: 13, fontWeight: 500, color: 'var(--text)' },
   input:       { width: '100%', padding: '10px 12px', border: '0.5px solid var(--border)', borderRadius: 'var(--radius-sm)', fontSize: 14, color: 'var(--text)', background: 'var(--input-bg)', transition: 'border-color 0.15s', boxSizing: 'border-box' },
   inputFocused:{ borderColor: 'var(--accent)', boxShadow: '0 0 0 3px var(--focus-ring)' },

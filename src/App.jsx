@@ -9,6 +9,8 @@ import Signup from './components/auth/Signup.jsx'
 import Dashboard from './components/Dashboard.jsx'
 import AdminDashboard from './pages/AdminDashboard.jsx'
 
+const PENDING_AUTH_INTENT_KEY = 'sa-auth-intent'
+
 const SCREENS = {
   LANDING:             'landing',
   AUDIT:               'audit',
@@ -48,6 +50,7 @@ export default function App() {
   const [session,             setSession]             = useState(null)
   const [authLoading,         setAuthLoading]         = useState(true)
   const theme = localStorage.getItem('sa-theme') || 'dark'
+  const pendingCheckoutRef = React.useRef(false)
 
   // ── navigate: defined early so effects can safely reference it ────────────
   const navigate = useCallback((s) => {
@@ -56,6 +59,48 @@ export default function App() {
       window.location.hash = s
     } else {
       history.pushState({ screen: s }, '', window.location.pathname)
+    }
+  }, [])
+
+  const maybeStartPendingCheckout = useCallback(async (session) => {
+    if (!session?.user?.id || !session?.user?.email || pendingCheckoutRef.current) return false
+
+    let intent = null
+    try {
+      intent = JSON.parse(localStorage.getItem(PENDING_AUTH_INTENT_KEY) || 'null')
+    } catch (_) {
+      intent = null
+    }
+
+    if (!intent?.plan || !['essential', 'business'].includes(intent.plan)) {
+      try { localStorage.removeItem(PENDING_AUTH_INTENT_KEY) } catch (_) {}
+      return false
+    }
+
+    pendingCheckoutRef.current = true
+    try {
+      localStorage.removeItem(PENDING_AUTH_INTENT_KEY)
+      const response = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tier: intent.plan,
+          userId: session.user.id,
+          email: session.user.email,
+        }),
+      })
+      const data = await response.json()
+      if (response.ok && data?.url) {
+        window.location.href = data.url
+        return true
+      }
+      console.warn('[auth] pending checkout failed:', data?.error || 'unknown error')
+      return false
+    } catch (error) {
+      console.warn('[auth] pending checkout threw:', error?.message ?? error)
+      return false
+    } finally {
+      pendingCheckoutRef.current = false
     }
   }, [])
 
@@ -104,6 +149,10 @@ export default function App() {
         const { data } = await sb.auth.refreshSession()
         clearTimeout(authTimeout)
         setSession(data?.session ?? null)
+        if (data?.session) {
+          const redirected = await maybeStartPendingCheckout(data.session)
+          if (redirected) return
+        }
         setAuthLoading(false)
 
         // ── Step 2: subscribe for subsequent auth events only ──────────────
@@ -120,6 +169,8 @@ export default function App() {
           }
 
           if (session && event === 'SIGNED_IN') {
+            const redirected = await maybeStartPendingCheckout(session)
+            if (redirected) return
             setAuthLoading(false)
             const currentHash = window.location.hash.replace(/^#\/?/, '')
             if (currentHash === 'admin') return
@@ -141,7 +192,7 @@ export default function App() {
       clearTimeout(authTimeout)
       subscription?.unsubscribe()
     }
-  }, [navigate])
+  }, [maybeStartPendingCheckout, navigate])
 
   // ── Existing audit flow handlers ──────────────────────────────────────────
   const handleAuditStart = (problem) => {
