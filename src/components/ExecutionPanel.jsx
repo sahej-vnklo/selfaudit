@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
+import { initSupabase } from '../lib/supabase.js'
 
 const THEMES = {
   dark: {
@@ -63,11 +64,61 @@ const ARTIFACT_LABELS = {
   EMAIL:          'Email Draft',
 }
 
-export default function ExecutionPanel({ report, userInfo }) {
+function parseReportPayload(report) {
+  if (!report) return null
+  if (report.report_data && typeof report.report_data === 'object') return report.report_data
+  if (report.content) {
+    try {
+      return typeof report.content === 'string' ? JSON.parse(report.content) : report.content
+    } catch {
+      return null
+    }
+  }
+  if (typeof report === 'object') return report
+  return null
+}
+
+function isActionableReport(report) {
+  const parsed = parseReportPayload(report)
+  if (!parsed) return false
+  const mode = parsed.report_family === 'GOAL' || parsed.conversation_mode === 'GOAL_GAP'
+    ? 'GOAL_GAP'
+    : (parsed.conversation_mode || report?.conversation_mode || 'DIAGNOSTIC')
+  return mode === 'DIAGNOSTIC' || mode === 'GOAL_GAP' || mode === 'EXECUTION'
+}
+
+function formatAuditOptionLabel(report) {
+  const date = report?.created_at
+    ? new Date(report.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    : 'Latest'
+  const title = report?.headline || report?.title || 'Audit'
+  return `${date} — ${title}`
+}
+
+function buildScopedUserInfo(userInfo, report, parsedReport) {
+  return {
+    ...userInfo,
+    industry: report?.industry || userInfo?.industry || '',
+    domain: report?.domain || userInfo?.domain || '',
+    goalMode: parsedReport?.report_family === 'GOAL' || parsedReport?.conversation_mode === 'GOAL_GAP',
+    goal: parsedReport?.goal_gap_analysis?.goal || userInfo?.goal || '',
+    goalTimeline: parsedReport?.timeline_feasibility || parsedReport?.goal_gap_analysis?.realistic_timeline || userInfo?.goalTimeline || '',
+  }
+}
+
+export default function ExecutionPanel({ report, reports = [], userInfo, variant = 'report' }) {
   const theme = localStorage.getItem('sa-theme') || 'dark'
   const themeVars = getThemeVars(theme)
+  const reportOptions = useMemo(() => {
+    const fromList = Array.isArray(reports) ? reports.filter(isActionableReport) : []
+    if (fromList.length > 0) return fromList
+    return report && isActionableReport(report) ? [report] : []
+  }, [report, reports])
+
+  const [selectedReportId, setSelectedReportId] = useState(() => reportOptions[0]?.id ?? null)
   const [selectedType, setSelectedType]   = useState(null)
   const [generating, setGenerating]       = useState(false)
+  const [loadingSaved, setLoadingSaved]   = useState(false)
   const [currentArtifact, setCurrentArtifact] = useState(null)
   const [pastArtifacts, setPastArtifacts] = useState([])
   const [recommendations, setRecommendations] = useState([])
@@ -76,25 +127,111 @@ export default function ExecutionPanel({ report, userInfo }) {
   const [error, setError]                 = useState(null)
 
   useEffect(() => {
-    fetch('/api/generate-artifact', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ report, userInfo }),
-    })
-      .then(r => r.json())
-      .then(d => { if (d.recommendations?.recommended) setRecommendations(d.recommendations.recommended) })
-      .catch(() => {})
-  }, [])
+    if (reportOptions.some((item) => item.id === selectedReportId)) return
+    setSelectedReportId(reportOptions[0]?.id ?? null)
+  }, [reportOptions, selectedReportId])
+
+  const activeReport = useMemo(() => (
+    reportOptions.find((item) => item.id === selectedReportId)
+    || reportOptions[0]
+    || null
+  ), [reportOptions, selectedReportId])
+
+  const parsedReport = useMemo(() => parseReportPayload(activeReport), [activeReport])
+  const scopedUserInfo = useMemo(
+    () => buildScopedUserInfo(userInfo, activeReport, parsedReport),
+    [userInfo, activeReport, parsedReport]
+  )
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadPanelState() {
+      if (!parsedReport) {
+        setRecommendations([])
+        setSelectedType(null)
+        setCurrentArtifact(null)
+        setPastArtifacts([])
+        return
+      }
+
+      setError(null)
+      setLoadingSaved(true)
+
+      try {
+        const [recommendationResponse, savedArtifactsResponse] = await Promise.all([
+          fetch('/api/generate-artifact', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ report: parsedReport, userInfo: scopedUserInfo }),
+          }).then(async (response) => response.ok ? response.json() : { recommendations: { recommended: [] } }),
+          scopedUserInfo?.userId && activeReport?.id
+            ? initSupabase().then((sb) => sb
+              .from('artifacts')
+              .select('id, artifact_type, artifact_data, created_at')
+              .eq('user_id', scopedUserInfo.userId)
+              .eq('report_id', activeReport.id)
+              .order('created_at', { ascending: false })
+            )
+            : Promise.resolve({ data: [] }),
+        ])
+
+        if (cancelled) return
+
+        const recommended = recommendationResponse?.recommendations?.recommended ?? []
+        setRecommendations(recommended)
+        setSelectedType((prev) => (prev && ARTIFACT_TYPES.includes(prev) ? prev : (recommended[0] || null)))
+
+        const rows = savedArtifactsResponse?.data ?? []
+        const hydratedArtifacts = rows
+          .map((row) => {
+            const payload = row.artifact_data && typeof row.artifact_data === 'object' ? row.artifact_data : null
+            if (!payload) return null
+            return {
+              ...payload,
+              type: payload.type || row.artifact_type,
+              _artifactId: row.id,
+              _createdAt: row.created_at,
+            }
+          })
+          .filter(Boolean)
+
+        setCurrentArtifact(hydratedArtifacts[0] || null)
+        setPastArtifacts(hydratedArtifacts.slice(1))
+        setExpandedPast({})
+      } catch {
+        if (!cancelled) {
+          setRecommendations([])
+          setCurrentArtifact(null)
+          setPastArtifacts([])
+        }
+      } finally {
+        if (!cancelled) setLoadingSaved(false)
+      }
+    }
+
+    loadPanelState()
+
+    return () => {
+      cancelled = true
+    }
+  }, [activeReport, parsedReport, scopedUserInfo])
 
   const handleGenerate = async () => {
-    if (!selectedType || generating) return
+    if (!selectedType || generating || !parsedReport) return
     setGenerating(true)
     setError(null)
     try {
       const res = await fetch('/api/generate-artifact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ artifactType: selectedType, report, userInfo }),
+        body: JSON.stringify({
+          artifactType: selectedType,
+          report: parsedReport,
+          userInfo: scopedUserInfo,
+          userId: scopedUserInfo?.userId ?? null,
+          reportId: activeReport?.id ?? null,
+        }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Generation failed')
@@ -107,7 +244,7 @@ export default function ExecutionPanel({ report, userInfo }) {
         })
       }
       setCurrentArtifact(data.artifact)
-      if (data.recommendations?.recommended && recommendations.length === 0) {
+      if (data.recommendations?.recommended?.length) {
         setRecommendations(data.recommendations.recommended)
       }
     } catch (e) {
@@ -137,14 +274,43 @@ export default function ExecutionPanel({ report, userInfo }) {
     }).catch(() => {})
   }
 
-  const isGenerateDisabled = !selectedType || generating
+  const isGenerateDisabled = !selectedType || generating || !parsedReport
+
+  if (!parsedReport) {
+    return (
+      <div style={{ ...themeVars, ...(variant === 'dashboard' ? ep.cardWrapper : ep.wrapper) }} data-pdf-hide>
+        <div style={ep.header}>
+          <h2 style={ep.sectionTitle}>Turn This Into Action</h2>
+          <p style={ep.subtitle}>Run a diagnostic report to generate ready-to-use outputs from real findings.</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div style={{ ...themeVars, ...ep.wrapper }} data-pdf-hide>
+    <div style={{ ...themeVars, ...(variant === 'dashboard' ? ep.cardWrapper : ep.wrapper) }} data-pdf-hide>
       <div style={ep.header}>
         <h2 style={ep.sectionTitle}>Turn This Into Action</h2>
         <p style={ep.subtitle}>Generate ready-to-use outputs from your audit findings.</p>
       </div>
+
+      {reportOptions.length > 1 && (
+        <div style={ep.scopeRow}>
+          <span style={ep.scopeLabel}>Generating from</span>
+          <select
+            value={activeReport?.id ?? ''}
+            onChange={(event) => setSelectedReportId(event.target.value)}
+            style={ep.scopeSelect}
+            disabled={generating}
+          >
+            {reportOptions.map((item) => (
+              <option key={item.id} value={item.id}>
+                {formatAuditOptionLabel(item)}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       <div style={ep.pillRow}>
         {ARTIFACT_TYPES.map(type => {
@@ -182,6 +348,7 @@ export default function ExecutionPanel({ report, userInfo }) {
         )}
       </button>
 
+      {loadingSaved && <p style={ep.helperText}>Loading saved outputs for this audit…</p>}
       {error && <p style={ep.errorMsg}>{error}</p>}
 
       {currentArtifact && (
@@ -275,6 +442,12 @@ const ep = {
     borderTop: '0.5px solid var(--border)',
     marginBottom: '2.5rem',
   },
+  cardWrapper: {
+    background: 'var(--surface)',
+    border: '0.5px solid var(--border)',
+    borderRadius: 8,
+    padding: 14,
+  },
   header: { marginBottom: '1.25rem' },
   sectionTitle: {
     fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.8px',
@@ -282,6 +455,30 @@ const ep = {
   },
   subtitle: {
     fontSize: 14, color: 'var(--text-soft)', lineHeight: 1.6, margin: 0,
+  },
+  scopeRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: '1rem',
+    flexWrap: 'wrap',
+  },
+  scopeLabel: {
+    fontSize: 11,
+    color: 'var(--text-muted)',
+    textTransform: 'uppercase',
+    letterSpacing: '0.08em',
+  },
+  scopeSelect: {
+    minWidth: 240,
+    maxWidth: '100%',
+    background: 'var(--input-bg)',
+    border: '0.5px solid var(--border)',
+    color: 'var(--text)',
+    borderRadius: 8,
+    padding: '8px 12px',
+    fontSize: 13,
+    fontFamily: 'inherit',
   },
   pillRow: {
     display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: '1rem',
@@ -332,6 +529,11 @@ const ep = {
   },
   errorMsg: {
     fontSize: 12, color: 'var(--error)', marginTop: 8,
+  },
+  helperText: {
+    fontSize: 12,
+    color: 'var(--text-muted)',
+    marginTop: 8,
   },
   artifactPanel: {
     marginTop: '1.25rem',

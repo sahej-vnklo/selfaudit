@@ -1,6 +1,14 @@
+import { createClient } from '@supabase/supabase-js'
+
 const CLAUDE_API = 'https://api.anthropic.com/v1/messages'
 
 const ARTIFACT_TYPES = ['ACTION_PLAN', 'SOP', 'PROCESS_CHANGE', 'PRICING_MODEL', 'HIRING_BRIEF', 'EMAIL']
+
+const supabase = createClient(
+  process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_SERVICE_ROLE_KEY,
+  { auth: { persistSession: false } }
+)
 
 function recommend(report) {
   const recommended = []
@@ -173,7 +181,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { artifactType, report, userInfo } = req.body
+  const { artifactType, report, userInfo, reportId, userId } = req.body
   if (!report) {
     return res.status(400).json({ error: 'Missing report' })
   }
@@ -219,7 +227,32 @@ export default async function handler(req, res) {
     const clean = text.replace(/```json|```/g, '').trim()
     const artifact = JSON.parse(clean)
 
-    return res.status(200).json({ artifact, recommendations })
+    let savedArtifact = null
+
+    if (userId && reportId) {
+      try {
+        const { data, error } = await supabase
+          .from('artifacts')
+          .insert({
+            user_id: userId,
+            report_id: reportId,
+            artifact_type: artifactType,
+            title: artifact.title ?? null,
+            summary: artifact.summary ?? null,
+            artifact_data: artifact,
+            updated_at: new Date().toISOString(),
+          })
+          .select('id, created_at')
+          .single()
+
+        if (error) throw error
+        savedArtifact = data
+      } catch (saveErr) {
+        console.warn('[generate-artifact] artifact save failed:', saveErr.message)
+      }
+    }
+
+    return res.status(200).json({ artifact, recommendations, savedArtifact })
   } catch (err) {
     return res.status(500).json({ error: err.message })
   }

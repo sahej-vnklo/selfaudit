@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { initSupabase } from '../lib/supabase.js'
 import IntelligenceBrief from './IntelligenceBrief.jsx'
+import ExecutionPanel from './ExecutionPanel.jsx'
 
 const THEMES = {
   dark: {
@@ -206,10 +207,15 @@ function normalizeTier(raw) {
   return 'essential'
 }
 
-function parseReportContent(content) {
-  if (!content) return null
+function parseReportContent(input) {
+  if (!input) return null
+  if (typeof input === 'object' && !Array.isArray(input)) {
+    if (input.report_data && typeof input.report_data === 'object') return input.report_data
+    if (input.content) return parseReportContent(input.content)
+    if (input.conversation_mode || input.goal_gap_analysis || input.ai_opportunities || input.domains) return input
+  }
   try {
-    return typeof content === 'string' ? JSON.parse(content) : content
+    return typeof input === 'string' ? JSON.parse(input) : input
   } catch {
     return null
   }
@@ -327,6 +333,118 @@ function extractGoalState(profile, reports, businessState) {
   return { goal: '', progress: null, timeline: '' }
 }
 
+function formatAuditDate(dateString, options = { month: 'short', day: 'numeric' }) {
+  if (!dateString) return 'Latest audit'
+  return new Date(dateString).toLocaleDateString('en-US', options)
+}
+
+function getLatestDiagnosticReport(reports) {
+  return reports.find((report) => {
+    const parsed = parseReportContent(report)
+    return parsed && Array.isArray(parsed.domains) && parsed.domains.length > 0
+  }) || null
+}
+
+function compactOpportunityText(text, maxLength = 68) {
+  const clean = String(text || '').replace(/\s+/g, ' ').trim()
+  if (!clean) return ''
+  if (clean.length <= maxLength) return clean
+  return `${clean.slice(0, maxLength - 1).trimEnd()}…`
+}
+
+function normalizeOpportunityKey(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+}
+
+function getOpportunitySignal(area, why) {
+  const text = `${area || ''} ${why || ''}`.toLowerCase()
+  if (/revenue|sales|lead|pricing|pipeline|book|close|upsell|conversion/.test(text)) {
+    return { label: '↑ Revenue', tone: 'green' }
+  }
+  if (/cost|ops|operation|workflow|manual|dispatch|routing|support|time|efficiency|onboarding/.test(text)) {
+    return { label: '↓ Cost', tone: 'amber' }
+  }
+  if (/retention|churn|customer|follow-up|experience/.test(text)) {
+    return { label: '↑ Retention', tone: 'blue' }
+  }
+  return { label: '↑ Growth', tone: 'blue' }
+}
+
+function buildAiOpportunityItems(reports, tier) {
+  const parsedReports = reports
+    .map((report) => ({ report, parsed: parseReportContent(report) }))
+    .filter(({ parsed }) => parsed)
+
+  if (parsedReports.length === 0) return []
+
+  if (tier !== 'business' && tier !== 'portfolio') {
+    const source = parsedReports.find(({ parsed }) => Array.isArray(parsed.ai_opportunities) && parsed.ai_opportunities.length > 0)
+    if (!source) return []
+
+    return source.parsed.ai_opportunities.slice(0, 3).map((item, index) => ({
+      id: `${source.report.id}-${index}`,
+      title: item.area || `Opportunity ${index + 1}`,
+      summary: compactOpportunityText(item.why, 72),
+      signal: getOpportunitySignal(item.area, item.why),
+      reportId: source.report.id,
+      reportDate: source.report.created_at,
+      reportLabel: `From: ${formatAuditDate(source.report.created_at)} audit`,
+      frequency: 1,
+      intelligenceMeta: '',
+    }))
+  }
+
+  const aggregated = new Map()
+
+  parsedReports.forEach(({ report, parsed }) => {
+    const items = Array.isArray(parsed.ai_opportunities) ? parsed.ai_opportunities : []
+    items.forEach((item) => {
+      const title = item?.area || ''
+      if (!title) return
+
+      const key = normalizeOpportunityKey(title)
+      const existing = aggregated.get(key) || {
+        id: key,
+        title,
+        summary: compactOpportunityText(item.why, 72),
+        signal: getOpportunitySignal(title, item.why),
+        reportId: report.id,
+        reportDate: report.created_at,
+        frequency: 0,
+        reportIds: new Set(),
+      }
+
+      existing.frequency += 1
+      existing.reportIds.add(report.id)
+
+      if (!existing.reportDate || new Date(report.created_at) > new Date(existing.reportDate)) {
+        existing.title = title
+        existing.summary = compactOpportunityText(item.why, 72)
+        existing.signal = getOpportunitySignal(title, item.why)
+        existing.reportId = report.id
+        existing.reportDate = report.created_at
+      }
+
+      aggregated.set(key, existing)
+    })
+  })
+
+  return [...aggregated.values()]
+    .sort((a, b) => {
+      if (b.frequency !== a.frequency) return b.frequency - a.frequency
+      return new Date(b.reportDate).getTime() - new Date(a.reportDate).getTime()
+    })
+    .slice(0, 3)
+    .map((item) => ({
+      ...item,
+      reportLabel: `From: ${formatAuditDate(item.reportDate)} audit`,
+      intelligenceMeta: item.frequency > 1 ? `Seen in ${item.frequency} audits` : 'Latest audit only',
+    }))
+}
+
 export default function Dashboard({ user, onStartAudit, onSignOut }) {
   const theme = localStorage.getItem('sa-theme') || 'dark'
   const themeVars = getThemeVars(theme)
@@ -402,7 +520,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
           .select('id, title, content, headline, industry, domain, conversation_mode, status, created_at')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
-          .limit(10)
+          .limit(24)
 
         if (!cancelled) setReports(reportData ?? [])
       } catch (err) {
@@ -712,18 +830,30 @@ function PageShell({ title, sub, actions, children }) {
 function HomeSection({ user, profile, businessState, businessStateLoading, reports, reportsLoading, onStartAudit, onStartGoalAudit }) {
   const issuesRef = useRef(null)
   const latestReport = reports[0] || null
-  const latestContent = latestReport ? parseReportContent(latestReport.content) : null
+  const latestDiagnosticReport = getLatestDiagnosticReport(reports)
+  const latestContent = latestDiagnosticReport ? parseReportContent(latestDiagnosticReport) : null
   const latestDomains = latestContent?.domains || []
   const sortedDomains = [...latestDomains].sort((a, b) => severityRank(a.status) - severityRank(b.status))
   const flaggedDomains = sortedDomains.filter((domain) => domain.status === 'critical' || domain.status === 'needs_work')
-  const staleReport = latestReport && (Date.now() - new Date(latestReport.created_at).getTime()) > 24 * 60 * 60 * 1000
+  const staleReport = latestDiagnosticReport && (Date.now() - new Date(latestDiagnosticReport.created_at).getTime()) > 24 * 60 * 60 * 1000
   const alertDomain = flaggedDomains[0]
   const healthScore = latestDomains.length ? computeHealthScore(latestDomains) : null
   const openIssuesCount = flaggedDomains.length
   const goalState = extractGoalState(profile, reports, businessState)
-  const lastReportDate = latestReport?.created_at
-    ? new Date(latestReport.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  const lastReportDate = latestDiagnosticReport?.created_at
+    ? new Date(latestDiagnosticReport.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     : '—'
+  const opportunityItems = buildAiOpportunityItems(reports, profile?.tier || 'essential')
+  const shareUserInfo = {
+    name: profile?.name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'User',
+    email: user?.email || '',
+    phone: profile?.phone || '',
+    context: profile?.context || '',
+    userId: user?.id || null,
+    tier: profile?.tier || null,
+    industry: profile?.industry || null,
+    domain: profile?.domain || null,
+  }
 
   return (
     <div style={styles.pageShell}>
@@ -770,17 +900,22 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
 
       <div style={styles.homeColumns}>
         <div style={styles.leftColumn}>
+          <ExecutionPanel
+            variant="dashboard"
+            reports={reports}
+            report={latestDiagnosticReport || latestReport}
+            userInfo={shareUserInfo}
+          />
           <div ref={issuesRef}>
-            <OpenIssuesPanel report={latestReport} domains={sortedDomains} />
+            <OpenIssuesPanel report={latestDiagnosticReport} domains={sortedDomains} />
           </div>
           <AuditHistoryPanel reports={reports} reportsLoading={reportsLoading} />
         </div>
 
         <div style={styles.rightColumn}>
           <BusinessHealthPanel latestDomains={latestDomains} />
-          {goalState.goal && <GoalPanel goalState={goalState} />}
+          <AiOpportunitiesCard user={user} userInfo={shareUserInfo} reports={reports} items={opportunityItems} tier={profile?.tier || 'essential'} />
           <BusinessStateCard user={user} businessState={businessState} loading={businessStateLoading} />
-          {reports.length > 0 && <VnkloCTACard user={user} reports={reports} />}
         </div>
       </div>
     </div>
@@ -813,7 +948,7 @@ function OpenIssuesPanel({ report, domains }) {
 }
 
 function AuditHistoryPanel({ reports, reportsLoading }) {
-  const [expanded, setExpanded] = useState(false)
+  const [expanded, setExpanded] = useState(true)
 
   return (
     <div style={styles.panelCard}>
@@ -833,7 +968,7 @@ function AuditHistoryPanel({ reports, reportsLoading }) {
           <EmptyPanel message="No past audits yet." />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {reports.slice(0, 3).map((report) => (
+            {reports.slice(0, 4).map((report) => (
               <AuditHistoryRow key={report.id} report={report} />
             ))}
           </div>
@@ -915,6 +1050,128 @@ function GoalPanel({ goalState }) {
         <div>{goalState.timeline || 'Timeline still being assessed'}</div>
       </div>
     </PanelCard>
+  )
+}
+
+function AiOpportunitiesCard({ user, userInfo, reports, items, tier }) {
+  const [sharing, setSharing] = useState(false)
+  const [shared, setShared] = useState(false)
+  const [error, setError] = useState('')
+  const topItem = items[0] || null
+  const sourceReport = topItem ? reports.find((report) => report.id === topItem.reportId) : null
+  const sourcePayload = sourceReport ? parseReportContent(sourceReport) : null
+  const isIntelligence = tier === 'business' || tier === 'portfolio'
+  const subtitle = items.length === 0
+    ? 'No opportunities extracted yet'
+    : isIntelligence
+      ? `${items.length} ranked opportunities compounding across your audits`
+      : `${items.length} wins found in this audit`
+
+  const handleShare = async () => {
+    if (!user?.id || !sourceReport || !sourcePayload || sharing) return
+    setSharing(true)
+    setError('')
+    try {
+      const shareContext = [
+        userInfo?.context,
+        topItem?.title ? `Top opportunity: ${topItem.title}` : '',
+      ].filter(Boolean).join(' · ')
+
+      const response = await fetch('/api/send-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userInfo: {
+            ...userInfo,
+            context: shareContext || userInfo?.context || sourceReport.title || 'Audit review',
+            industry: sourceReport.industry || userInfo?.industry || '',
+            domain: sourceReport.domain || userInfo?.domain || '',
+          },
+          report: sourcePayload,
+        }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data?.error || 'Could not share this report right now.')
+
+      try {
+        const sb = await initSupabase()
+        await sb
+          .from('profiles')
+          .update({
+            shared_with_vnklo: true,
+            shared_report_id: sourceReport.id,
+          })
+          .eq('id', user.id)
+      } catch (updateError) {
+        console.warn('[dashboard] shared_with_vnklo update failed:', updateError?.message ?? updateError)
+      }
+
+      setShared(true)
+    } catch (shareError) {
+      setError(shareError?.message || 'Could not share this report right now.')
+    } finally {
+      setSharing(false)
+    }
+  }
+
+  return (
+    <div style={styles.aiCard}>
+      <div style={styles.panelHeader}>
+        <div>
+          <div style={styles.panelTitle}>AI opportunities</div>
+          <div style={styles.aiCardSub}>{subtitle}</div>
+        </div>
+      </div>
+
+      {items.length === 0 ? (
+        <EmptyPanel message="Run a diagnostic report to surface concrete AI opportunities." />
+      ) : (
+        <>
+          <div style={styles.aiList}>
+            {items.map((item, index) => (
+              <div key={item.id} style={styles.aiOpportunityRow}>
+                <div style={{ ...styles.aiOpportunityBar, background: item.signal.tone === 'green' ? G.green : item.signal.tone === 'amber' ? G.amber : G.blue }} />
+                <div style={styles.aiOpportunityBody}>
+                  <div style={styles.aiOpportunityTop}>
+                    <div style={styles.aiOpportunityTitle}>{item.title}</div>
+                    <span style={{
+                      ...styles.aiSignalPill,
+                      ...(item.signal.tone === 'green'
+                        ? styles.aiSignalPillGreen
+                        : item.signal.tone === 'amber'
+                          ? styles.aiSignalPillAmber
+                          : styles.aiSignalPillBlue),
+                    }}
+                    >
+                      {item.signal.label}
+                    </span>
+                  </div>
+                  <div style={styles.aiOpportunityMeta}>
+                    {item.summary}
+                    {item.intelligenceMeta ? ` · ${item.intelligenceMeta}` : ''}
+                  </div>
+                  <div style={styles.aiOpportunityFoot}>
+                    <span>{item.reportLabel}</span>
+                    {index === 0 && isIntelligence && item.frequency > 1 && <span>Highest signal</span>}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div style={styles.aiCtaWrap}>
+            {shared ? (
+              <div style={styles.aiSuccessText}>Shared with VNKLO. We&apos;ll review the strongest opportunity and follow up.</div>
+            ) : (
+              <button type="button" style={styles.aiShareButton} onClick={handleShare} disabled={sharing || !sourceReport || !sourcePayload}>
+                {sharing ? 'Sharing…' : 'Share strongest opportunity with VNKLO'}
+              </button>
+            )}
+            {error && <div style={styles.aiErrorText}>{error}</div>}
+          </div>
+        </>
+      )}
+    </div>
   )
 }
 
@@ -1789,43 +2046,6 @@ function AuditHistoryRow({ report }) {
         <div style={styles.historyExpanded}>
           <DashReportContent content={report.content} />
         </div>
-      )}
-    </div>
-  )
-}
-
-function VnkloCTACard({ user, reports }) {
-  const [shared, setShared] = useState(false)
-  const [sharing, setSharing] = useState(false)
-
-  const handleShare = async () => {
-    if (!user?.id || !reports[0]?.id) return
-    setSharing(true)
-    try {
-      const sb = await initSupabase()
-      await sb.from('profiles').update({
-        shared_with_vnklo: true,
-        shared_report_id: reports[0].id,
-      }).eq('id', user.id)
-      setShared(true)
-    } catch (error) {
-      console.error('[vnklo-cta] share failed:', error?.message)
-    } finally {
-      setSharing(false)
-    }
-  }
-
-  return (
-    <div style={styles.ctaCard}>
-      <div style={styles.ctaEyebrow}>Ready to fix this?</div>
-      <div style={styles.ctaTitle}>Get a free strategy call with VNKLO</div>
-      <div style={styles.ctaSub}>Share your audit — an AI consultant will map out exactly what to fix and how.</div>
-      {shared ? (
-        <div style={{ color: G.accentText, fontSize: 13 }}>Sent. We&apos;ll be in touch within 24h.</div>
-      ) : (
-        <button type="button" style={styles.ctaButton} onClick={handleShare} disabled={sharing}>
-          {sharing ? 'Sharing…' : 'Share report with VNKLO'}
-        </button>
       )}
     </div>
   )
@@ -2760,6 +2980,106 @@ const styles = {
     fontSize: 11,
     color: G.textFaint,
   },
+  aiCard: {
+    background: G.surface2,
+    border: `1.5px solid ${G.border}`,
+    borderRadius: 8,
+    padding: 14,
+  },
+  aiCardSub: {
+    marginTop: 5,
+    fontSize: 12,
+    color: G.textSecondary,
+  },
+  aiList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 8,
+  },
+  aiOpportunityRow: {
+    display: 'flex',
+    gap: 10,
+    background: G.surface,
+    border: `0.5px solid ${G.border}`,
+    borderRadius: 8,
+    padding: '12px 10px',
+  },
+  aiOpportunityBar: {
+    width: 3,
+    borderRadius: 999,
+    flexShrink: 0,
+  },
+  aiOpportunityBody: {
+    flex: 1,
+    minWidth: 0,
+  },
+  aiOpportunityTop: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  aiOpportunityTitle: {
+    fontSize: 13,
+    color: G.text,
+    fontWeight: 500,
+  },
+  aiOpportunityMeta: {
+    fontSize: 12,
+    color: G.textSecondary,
+    lineHeight: 1.5,
+    marginTop: 4,
+  },
+  aiOpportunityFoot: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    gap: 10,
+    marginTop: 8,
+    fontSize: 11,
+    color: G.textFaint,
+  },
+  aiSignalPill: {
+    borderRadius: 999,
+    padding: '4px 10px',
+    fontSize: 11,
+    whiteSpace: 'nowrap',
+    flexShrink: 0,
+  },
+  aiSignalPillGreen: {
+    background: G.greenBg,
+    color: G.greenText,
+  },
+  aiSignalPillAmber: {
+    background: G.amberBg,
+    color: G.amberText,
+  },
+  aiSignalPillBlue: {
+    background: G.accentLight,
+    color: G.accentText,
+  },
+  aiCtaWrap: {
+    marginTop: 12,
+  },
+  aiShareButton: {
+    width: '100%',
+    background: 'transparent',
+    color: G.accentText,
+    border: `0.5px solid ${G.accent}`,
+    borderRadius: 8,
+    padding: '10px 12px',
+    fontSize: 12,
+    cursor: 'pointer',
+  },
+  aiSuccessText: {
+    fontSize: 12,
+    color: G.accentText,
+    lineHeight: 1.5,
+  },
+  aiErrorText: {
+    marginTop: 8,
+    fontSize: 12,
+    color: G.redText,
+  },
   businessStateCard: {
     background: G.surface2,
     border: `1.5px solid ${G.accent}`,
@@ -2886,39 +3206,6 @@ const styles = {
     borderRadius: 999,
     padding: '4px 10px',
     fontSize: 11,
-  },
-  ctaCard: {
-    background: G.surface,
-    border: `0.5px solid ${G.border}`,
-    borderRadius: 8,
-    padding: 16,
-  },
-  ctaEyebrow: {
-    fontSize: 10,
-    letterSpacing: '0.08em',
-    color: G.textFaint,
-    textTransform: 'uppercase',
-  },
-  ctaTitle: {
-    fontSize: 15,
-    color: G.text,
-    marginTop: 8,
-  },
-  ctaSub: {
-    fontSize: 12,
-    color: G.textSecondary,
-    marginTop: 6,
-    marginBottom: 12,
-  },
-  ctaButton: {
-    width: '100%',
-    background: G.accent,
-    color: G.white,
-    border: 'none',
-    borderRadius: 8,
-    padding: '10px 12px',
-    fontSize: 12,
-    cursor: 'pointer',
   },
   emptyReports: {
     border: `1px dashed ${G.border2}`,
