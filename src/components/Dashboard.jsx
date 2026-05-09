@@ -2840,20 +2840,23 @@ const styles = {
   },
   homeColumns: {
     display: 'grid',
-    gridTemplateColumns: 'minmax(0, 1fr) 300px',
+    gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
     gap: 12,
     alignItems: 'start',
   },
   leftColumn: {
+    gridColumn: 'span 3',
     display: 'flex',
     flexDirection: 'column',
     gap: 12,
     minWidth: 0,
   },
   rightColumn: {
+    gridColumn: 'span 1',
     display: 'flex',
     flexDirection: 'column',
     gap: 12,
+    minWidth: 0,
   },
   panelCard: {
     background: G.surface2,
