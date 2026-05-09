@@ -848,6 +848,10 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
   const lastReportDate = latestDiagnosticReport?.created_at
     ? new Date(latestDiagnosticReport.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     : '—'
+  const alertKey = latestDiagnosticReport && alertDomain
+    ? `tsa_alert_dismissed_${latestDiagnosticReport.id}_${alertDomain.name}`
+    : null
+  const [alertDismissed, setAlertDismissed] = useState(false)
   const opportunityItems = buildAiOpportunityItems(reports, profile?.tier || 'essential')
   const shareUserInfo = {
     name: profile?.name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'User',
@@ -860,9 +864,22 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
     domain: profile?.domain || null,
   }
 
+  useEffect(() => {
+    if (!alertKey) {
+      setAlertDismissed(false)
+      return
+    }
+    setAlertDismissed(localStorage.getItem(alertKey) === '1')
+  }, [alertKey])
+
+  const dismissAlert = () => {
+    if (alertKey) localStorage.setItem(alertKey, '1')
+    setAlertDismissed(true)
+  }
+
   return (
     <div style={styles.pageShell}>
-      {staleReport && alertDomain && (
+      {staleReport && alertDomain && !alertDismissed && (
         <div style={styles.alertBar}>
           <div style={styles.alertTextWrap}>
             <span style={styles.alertDot} />
@@ -870,9 +887,14 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
               {alertDomain.name} is still flagged from your {lastReportDate} audit. Worth updating before it compounds.
             </span>
           </div>
-          <button type="button" style={styles.alertButton} onClick={() => issuesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
-            update status
-          </button>
+          <div style={styles.alertActions}>
+            <button type="button" style={styles.alertButton} onClick={() => issuesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
+              update status
+            </button>
+            <button type="button" style={styles.alertDismissButton} onClick={dismissAlert} aria-label="Dismiss notification" title="Dismiss notification">
+              ×
+            </button>
+          </div>
         </div>
       )}
 
@@ -2766,6 +2788,26 @@ const styles = {
     fontSize: 11,
     cursor: 'pointer',
     whiteSpace: 'nowrap',
+  },
+  alertActions: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    flexShrink: 0,
+  },
+  alertDismissButton: {
+    width: 28,
+    height: 28,
+    borderRadius: 6,
+    border: `0.5px solid ${G.amber}`,
+    background: 'transparent',
+    color: G.amberText,
+    fontSize: 16,
+    lineHeight: 1,
+    cursor: 'pointer',
+    display: 'grid',
+    placeItems: 'center',
+    padding: 0,
   },
   kpiGrid: {
     display: 'grid',
