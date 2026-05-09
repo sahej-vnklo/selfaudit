@@ -493,7 +493,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
 
         const { data, error } = await sb
           .from('profiles')
-          .select('tier, industry, domain, context, name, phone, onboarding_complete, stripe_customer_id, stripe_subscription_id, intelligence_docs, intelligence_complete')
+          .select('tier, industry, domain, context, name, phone, onboarding_complete, stripe_customer_id, stripe_subscription_id, intelligence_docs, intelligence_complete, shared_with_vnklo, shared_report_id')
           .eq('id', user.id)
           .single()
 
@@ -509,7 +509,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
           await new Promise((resolve) => setTimeout(resolve, 800))
           const retry = await sb
             .from('profiles')
-            .select('tier, industry, domain, context, name, phone, onboarding_complete, stripe_customer_id, stripe_subscription_id, intelligence_docs, intelligence_complete')
+            .select('tier, industry, domain, context, name, phone, onboarding_complete, stripe_customer_id, stripe_subscription_id, intelligence_docs, intelligence_complete, shared_with_vnklo, shared_report_id')
             .eq('id', user.id)
             .single()
           if (!cancelled && retry.data) setProfile(retry.data)
@@ -919,7 +919,14 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
 
         <div style={styles.rightColumn}>
           <BusinessHealthPanel latestDomains={latestDomains} />
-          <AiOpportunitiesCard user={user} userInfo={shareUserInfo} reports={reports} items={opportunityItems} tier={profile?.tier || 'essential'} />
+          <AiOpportunitiesCard
+            user={user}
+            userInfo={shareUserInfo}
+            reports={reports}
+            items={opportunityItems}
+            tier={profile?.tier || 'essential'}
+            initialShared={!!profile?.shared_with_vnklo}
+          />
         </div>
       </div>
     </div>
@@ -938,21 +945,33 @@ function KpiCard({ label, value, delta, tone }) {
 }
 
 function OpenIssuesPanel({ report, domains }) {
-  if (!report || domains.length === 0) {
-    return (
-      <PanelCard title="open issues">
-        <EmptyPanel message="Run an audit to populate issue tracking." />
-      </PanelCard>
-    )
-  }
+  const [expanded, setExpanded] = useState(false)
+  const count = domains.length
 
   return (
-    <OpenIssuesTracker report={report} domains={domains} />
+    <div style={styles.panelCard}>
+      <button type="button" style={styles.panelToggle} onClick={() => setExpanded((prev) => !prev)}>
+        <div style={styles.panelTitle}>open issues</div>
+        <div style={styles.panelToggleRight}>
+          <span style={styles.panelCountBadge}>{count}</span>
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.18s ease', color: G.textFaint }}>
+            <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+      </button>
+      {expanded && (
+        !report || domains.length === 0 ? (
+          <EmptyPanel message="Run an audit to populate issue tracking." />
+        ) : (
+          <OpenIssuesTracker report={report} domains={domains} />
+        )
+      )}
+    </div>
   )
 }
 
 function AuditHistoryPanel({ reports, reportsLoading }) {
-  const [expanded, setExpanded] = useState(true)
+  const [expanded, setExpanded] = useState(false)
 
   return (
     <div style={styles.panelCard}>
@@ -1057,9 +1076,10 @@ function GoalPanel({ goalState }) {
   )
 }
 
-function AiOpportunitiesCard({ user, userInfo, reports, items, tier }) {
+function AiOpportunitiesCard({ user, userInfo, reports, items, tier, initialShared = false }) {
+  const [expanded, setExpanded] = useState(false)
   const [sharing, setSharing] = useState(false)
-  const [shared, setShared] = useState(false)
+  const [shared, setShared] = useState(initialShared)
   const [error, setError] = useState('')
   const topItem = items[0] || null
   const sourceReport = topItem ? reports.find((report) => report.id === topItem.reportId) : null
@@ -1071,8 +1091,12 @@ function AiOpportunitiesCard({ user, userInfo, reports, items, tier }) {
       ? `${items.length} ranked opportunities compounding across your audits`
       : `${items.length} wins found in this audit`
 
+  useEffect(() => {
+    setShared(Boolean(initialShared))
+  }, [initialShared])
+
   const handleShare = async () => {
-    if (!user?.id || !sourceReport || !sourcePayload || sharing) return
+    if (!user?.id || !sourceReport || !sourcePayload || sharing || shared) return
     setSharing(true)
     setError('')
     try {
@@ -1120,16 +1144,23 @@ function AiOpportunitiesCard({ user, userInfo, reports, items, tier }) {
 
   return (
     <div style={styles.aiCard}>
-      <div style={styles.panelHeader}>
+      <button type="button" style={styles.panelToggle} onClick={() => setExpanded((prev) => !prev)}>
         <div>
           <div style={styles.panelTitle}>AI opportunities</div>
           <div style={styles.aiCardSub}>{subtitle}</div>
         </div>
-      </div>
+        <div style={styles.panelToggleRight}>
+          <span style={styles.panelCountBadge}>{items.length}</span>
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.18s ease', color: G.textFaint }}>
+            <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+      </button>
 
-      {items.length === 0 ? (
-        <EmptyPanel message="Run a diagnostic report to surface concrete AI opportunities." />
-      ) : (
+      {expanded && (
+        items.length === 0 ? (
+          <EmptyPanel message="Run a diagnostic report to surface concrete AI opportunities." />
+        ) : (
         <>
           <div style={styles.aiList}>
             {items.map((item, index) => (
@@ -1165,7 +1196,7 @@ function AiOpportunitiesCard({ user, userInfo, reports, items, tier }) {
 
           <div style={styles.aiCtaWrap}>
             {shared ? (
-              <div style={styles.aiSuccessText}>Shared with VNKLO. We&apos;ll review the strongest opportunity and follow up.</div>
+              <div style={styles.aiSuccessText}>Already shared with VNKLO. We&apos;ll review the strongest opportunity and follow up.</div>
             ) : (
               <button type="button" style={styles.aiShareButton} onClick={handleShare} disabled={sharing || !sourceReport || !sourcePayload}>
                 {sharing ? 'Sharing…' : 'Share strongest opportunity with VNKLO'}
@@ -1174,6 +1205,7 @@ function AiOpportunitiesCard({ user, userInfo, reports, items, tier }) {
             {error && <div style={styles.aiErrorText}>{error}</div>}
           </div>
         </>
+        )
       )}
     </div>
   )
@@ -1996,29 +2028,27 @@ function OpenIssuesTracker({ report, domains }) {
   }))
 
   return (
-    <PanelCard title="open issues">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {rows.map((domain) => (
-          <button
-            key={domain.name}
-            type="button"
-            onClick={() => cycleStatus(domain.name)}
-            style={styles.issueRow}
-          >
-            <div style={{ ...styles.issueSeverityBar, background: domainSeverityColor(domain.status) }} />
-            <div style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
-              <div style={styles.issueTitle}>{domain.name}</div>
-              <div style={styles.issueSub}>
-                {[domain.status?.replace(/_/g, ' '), new Date(report.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })].filter(Boolean).join(' · ')}
-              </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {rows.map((domain) => (
+        <button
+          key={domain.name}
+          type="button"
+          onClick={() => cycleStatus(domain.name)}
+          style={styles.issueRow}
+        >
+          <div style={{ ...styles.issueSeverityBar, background: domainSeverityColor(domain.status) }} />
+          <div style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
+            <div style={styles.issueTitle}>{domain.name}</div>
+            <div style={styles.issueSub}>
+              {[domain.status?.replace(/_/g, ' '), new Date(report.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })].filter(Boolean).join(' · ')}
             </div>
-            <span style={{ ...styles.statusBadge, ...issueStatusStyle(domain.issueStatus) }}>
-              {domain.issueStatus.replace(/_/g, ' ')}
-            </span>
-          </button>
-        ))}
-      </div>
-    </PanelCard>
+          </div>
+          <span style={{ ...styles.statusBadge, ...issueStatusStyle(domain.issueStatus) }}>
+            {domain.issueStatus.replace(/_/g, ' ')}
+          </span>
+        </button>
+      ))}
+    </div>
   )
 }
 
