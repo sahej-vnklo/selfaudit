@@ -749,7 +749,7 @@ function ThemeTextToggle({ theme, setTheme, C }) {
   )
 }
 
-function LandingNav({ C, pageOpen, onBack, onPricing, onStories, onConnected, onSignIn, onStartAudit, onLogoClick, storiesOpen, connectedOpen, theme, setTheme }) {
+function LandingNav({ C, pageOpen, onBack, onPricing, onStories, onConnected, onSignIn, onStartAudit, onLogoClick, storiesOpen, connectedOpen, pricingOpen, theme, setTheme }) {
   return (
     <nav style={{ padding: '20px 0', borderBottom: `1px solid ${C.border}`, background: C.bg, position: 'sticky', top: 0, zIndex: 20 }}>
       <div style={{ ...wrap, display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 20 }}>
@@ -778,7 +778,7 @@ function LandingNav({ C, pageOpen, onBack, onPricing, onStories, onConnected, on
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 28 }}>
-          <TextNavLink label="Pricing" onClick={onPricing} C={C} />
+          <TextNavLink label="Pricing" onClick={onPricing} C={C} active={pricingOpen} />
           <TextNavLink label="Stories" onClick={onStories} C={C} active={storiesOpen} />
           <TextNavLink label="Integrations" onClick={onConnected} C={C} active={connectedOpen} />
           <TextNavLink label="Sign in" onClick={onSignIn} C={C} muted />
@@ -1510,6 +1510,132 @@ function VisionWidget({ C, serif, visionOpen, setVisionOpen, visionGoal, setVisi
   )
 }
 
+// ── Pricing Page ──────────────────────────────────────────────────────────────
+
+const pricingFAQ = [
+  { q: 'Can I cancel anytime?', a: 'Yes. No contracts, no lock-ins. Cancel from your account settings and your plan ends at the billing period.' },
+  { q: 'What happens to my data if I cancel?', a: 'Your audit history and intelligence profile stay on file for 90 days after cancellation, then are permanently deleted.' },
+  { q: 'Is there a free trial?', a: 'No trial, but anyone can run a full diagnostic audit for free — no account needed. You only pay when you want to save results or access the intelligence layer.' },
+  { q: 'What\'s the difference between Foundation and Intelligence?', a: 'Foundation is per-audit diagnosis — run an audit, get a full report. Intelligence is persistent: your business state is tracked across audits, re-audits are unlimited, and the system learns your patterns over time.' },
+  { q: 'Do you offer team or agency plans?', a: 'Not yet. Portfolio tier is available for operators running multiple businesses — reach out directly.' },
+]
+
+function PricingPage({ C, onSignUp, onStartAudit }) {
+  const [openFAQ, setOpenFAQ] = useState(null)
+
+  return (
+    <div style={{ padding: '72px 0 100px' }}>
+      <div style={wrap}>
+
+        {/* Header */}
+        <div style={{ textAlign: 'center', marginBottom: 64 }}>
+          <div style={sectionLabel(C)}>Pricing</div>
+          <h1 style={{ fontFamily: serif, fontSize: 'clamp(36px, 4vw, 52px)', fontWeight: 700, letterSpacing: '-0.04em', color: C.ink, margin: '0 auto 16px' }}>
+            Two ways to run SelfAudit.
+          </h1>
+          <p style={{ fontSize: 18, color: C.inkSoft, maxWidth: 560, margin: '0 auto' }}>
+            Choose how deep you want the intelligence embedded in your business.
+          </p>
+        </div>
+
+        {/* Plan cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 24, maxWidth: 1080, margin: '0 auto 80px' }}>
+          {/* Foundation */}
+          <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 18, padding: 36, display: 'flex', flexDirection: 'column' }}>
+            <div style={{ fontFamily: serif, fontSize: 30, fontWeight: 700, color: C.ink, letterSpacing: '-0.03em', marginBottom: 10 }}>Foundation</div>
+            <div style={{ fontFamily: serif, fontSize: 52, fontWeight: 700, letterSpacing: '-0.04em', color: C.ink, lineHeight: 1 }}>
+              $29<span style={{ fontSize: 22, color: C.inkMuted, marginLeft: 4 }}>/mo</span>
+            </div>
+            <div style={{ fontSize: 15, color: C.inkMuted, marginTop: 8, marginBottom: 28 }}>The truth about your business.</div>
+            <div style={{ marginBottom: 28 }}>
+              <FeatureList items={freeFeatures} color={C.inkSoft} iconColor={C.accentText} />
+            </div>
+            <div style={{ marginTop: 'auto' }}>
+              <OutlineButton label="Start Foundation — $29/mo" onClick={() => onSignUp('foundation')} C={C} />
+              <div style={{ fontSize: 13, color: C.inkMuted, marginTop: 12, textAlign: 'center' }}>Includes account setup and immediate access.</div>
+            </div>
+          </div>
+
+          {/* Intelligence */}
+          <GrowthOSCard onSignUp={onSignUp} C={C} />
+        </div>
+
+        {/* Comparison table */}
+        <div style={{ maxWidth: 760, margin: '0 auto 80px' }}>
+          <h3 style={{ fontFamily: serif, fontSize: 24, fontWeight: 700, color: C.ink, textAlign: 'center', marginBottom: 32 }}>What's included</h3>
+          <div style={{ border: `1px solid ${C.border}`, borderRadius: 14, overflow: 'hidden' }}>
+            {[
+              { feature: 'Full drill-down audit',             foundation: true,  intelligence: true },
+              { feature: 'Complete written report',           foundation: true,  intelligence: true },
+              { feature: 'Root cause diagnosis',              foundation: true,  intelligence: true },
+              { feature: 'Fix-first priority list',           foundation: true,  intelligence: true },
+              { feature: 'Email delivery',                    foundation: true,  intelligence: true },
+              { feature: 'Unlimited re-audits',               foundation: false, intelligence: true },
+              { feature: 'Persistent business intelligence',  foundation: false, intelligence: true },
+              { feature: 'AI opportunity breakdown',          foundation: false, intelligence: true },
+              { feature: 'Health score tracking',             foundation: false, intelligence: true },
+              { feature: 'Ask TSA (business Q&A)',            foundation: false, intelligence: true },
+              { feature: 'Risk alerts',                       foundation: false, intelligence: true },
+              { feature: 'Connector integrations',            foundation: false, intelligence: true },
+            ].map(({ feature, foundation, intelligence }, i) => (
+              <div key={feature} style={{
+                display: 'grid', gridTemplateColumns: '1fr 120px 120px',
+                padding: '14px 20px', alignItems: 'center',
+                borderBottom: i < 11 ? `1px solid ${C.border}` : 'none',
+                background: i % 2 === 0 ? 'transparent' : C.surface,
+              }}>
+                <span style={{ fontSize: 14, color: C.inkSoft }}>{feature}</span>
+                <span style={{ textAlign: 'center', fontSize: 16, color: foundation ? C.accentText : C.inkMuted }}>{foundation ? '✓' : '—'}</span>
+                <span style={{ textAlign: 'center', fontSize: 16, color: intelligence ? C.accentText : C.inkMuted }}>{intelligence ? '✓' : '—'}</span>
+              </div>
+            ))}
+            {/* Header row */}
+            <div style={{
+              display: 'grid', gridTemplateColumns: '1fr 120px 120px',
+              padding: '12px 20px', background: C.surface,
+              borderBottom: `1px solid ${C.border}`, order: -1,
+            }}>
+              <span />
+              <span style={{ textAlign: 'center', fontSize: 13, fontWeight: 600, color: C.ink, letterSpacing: '0.04em' }}>FOUNDATION</span>
+              <span style={{ textAlign: 'center', fontSize: 13, fontWeight: 600, color: C.accentText, letterSpacing: '0.04em' }}>INTELLIGENCE</span>
+            </div>
+          </div>
+        </div>
+
+        {/* FAQ */}
+        <div style={{ maxWidth: 680, margin: '0 auto 80px' }}>
+          <h3 style={{ fontFamily: serif, fontSize: 24, fontWeight: 700, color: C.ink, textAlign: 'center', marginBottom: 32 }}>Common questions</h3>
+          {pricingFAQ.map(({ q, a }, i) => (
+            <div key={i} style={{ borderBottom: `1px solid ${C.border}`, padding: '18px 0' }}>
+              <button
+                type="button"
+                style={{ width: '100%', background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, textAlign: 'left' }}
+                onClick={() => setOpenFAQ(openFAQ === i ? null : i)}
+              >
+                <span style={{ fontSize: 15, fontWeight: 500, color: C.ink }}>{q}</span>
+                <span style={{ fontSize: 18, color: C.inkMuted, flexShrink: 0 }}>{openFAQ === i ? '−' : '+'}</span>
+              </button>
+              {openFAQ === i && (
+                <p style={{ fontSize: 14, color: C.inkSoft, lineHeight: 1.7, margin: '12px 0 0' }}>{a}</p>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Bottom CTA */}
+        <div style={{ textAlign: 'center' }}>
+          <p style={{ fontFamily: serif, fontStyle: 'italic', fontSize: 20, color: C.inkSoft, marginBottom: 28 }}>
+            Not sure which plan? Start with the free audit first.
+          </p>
+          <PrimaryButton label="Start your free audit" onClick={() => onStartAudit('')} C={C} />
+          <div style={{ fontSize: 13, color: C.inkMuted, marginTop: 12 }}>5 minutes. No account needed. Brutally honest.</div>
+        </div>
+
+      </div>
+    </div>
+  )
+}
+
 // ── Main Component ────────────────────────────────────────────────────────────
 
 export default function Landing({ onStart, onSignUp, session }) {
@@ -1518,6 +1644,7 @@ export default function Landing({ onStart, onSignUp, session }) {
   const C = THEMES[theme]
   const [storiesOpen, setStoriesOpen] = useState(false)
   const [connectedOpen, setConnectedOpen] = useState(false)
+  const [pricingOpen, setPricingOpen] = useState(false)
   const [headlineIndex, setHeadlineIndex] = useState(0)
   const [headlineVisible, setHeadlineVisible] = useState(true)
   const [inputValue, setInputValue] = useState('')
@@ -1636,9 +1763,10 @@ export default function Landing({ onStart, onSignUp, session }) {
   }
 
   const handleLogoClick = () => {
-    if (storiesOpen || connectedOpen) {
+    if (storiesOpen || connectedOpen || pricingOpen) {
       setStoriesOpen(false)
       setConnectedOpen(false)
+      setPricingOpen(false)
       return
     }
     if (session) {
@@ -1657,20 +1785,23 @@ export default function Landing({ onStart, onSignUp, session }) {
   }
 
   const closePagesAndThen = (callback) => {
-    if (storiesOpen || connectedOpen) {
+    if (storiesOpen || connectedOpen || pricingOpen) {
       setStoriesOpen(false)
       setConnectedOpen(false)
+      setPricingOpen(false)
       window.setTimeout(callback, 30)
       return
     }
     callback()
   }
 
-  const handlePricingNav = () => closePagesAndThen(() => {
-    document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })
-  })
+  const handlePricingNav = () => {
+    setStoriesOpen(false)
+    setConnectedOpen(false)
+    setPricingOpen(true)
+  }
 
-  const pageOpen = storiesOpen || connectedOpen
+  const pageOpen = storiesOpen || connectedOpen || pricingOpen
 
   return (
     <div style={{ fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", background: C.bg, color: C.ink, lineHeight: 1.6, minHeight: '100vh' }}>
@@ -1681,17 +1812,21 @@ export default function Landing({ onStart, onSignUp, session }) {
         connectedOpen={connectedOpen}
         theme={theme}
         setTheme={setTheme}
+        pricingOpen={pricingOpen}
         onBack={() => {
           setStoriesOpen(false)
           setConnectedOpen(false)
+          setPricingOpen(false)
         }}
         onPricing={handlePricingNav}
         onStories={() => {
           setConnectedOpen(false)
+          setPricingOpen(false)
           setStoriesOpen(true)
         }}
         onConnected={() => {
           setStoriesOpen(false)
+          setPricingOpen(false)
           setConnectedOpen(true)
         }}
         onSignIn={() => { window.location.hash = 'login' }}
@@ -1707,6 +1842,11 @@ export default function Landing({ onStart, onSignUp, session }) {
       ) : connectedOpen ? (
         <>
           <ConnectedPage C={C} theme={theme} onStartAudit={handleAuditStart} />
+          <LandingFooter C={C} theme={theme} setTheme={setTheme} />
+        </>
+      ) : pricingOpen ? (
+        <>
+          <PricingPage C={C} onSignUp={handleSignUpWithPlan} onStartAudit={handleAuditStart} />
           <LandingFooter C={C} theme={theme} setTheme={setTheme} />
         </>
       ) : (
@@ -1962,41 +2102,15 @@ export default function Landing({ onStart, onSignUp, session }) {
         </div>
       </section>
 
-      {/* ── 7. Pricing ── */}
-      <section id="pricing" style={{ padding: '100px 0', background: C.surface }}>
-        <div style={wrap}>
+      {/* ── 7. Pricing teaser ── */}
+      <section style={{ padding: '72px 0', background: C.surface }}>
+        <div style={{ ...wrap, textAlign: 'center' }}>
           <div style={sectionLabel(C)}>Pricing</div>
-          <h2 style={h2Style(C)}>Two ways to run SelfAudit.</h2>
-          <p style={{ textAlign: 'center', fontSize: 19, color: C.inkSoft, maxWidth: 700, margin: '0 auto 60px' }}>
-            Choose the plan that fits how deep you want SelfAudit embedded in the business.
+          <h2 style={{ ...h2Style(C), marginBottom: 12 }}>Foundation $29 · Intelligence $99</h2>
+          <p style={{ fontSize: 17, color: C.inkSoft, maxWidth: 540, margin: '0 auto 32px' }}>
+            Two plans. No hidden fees. Cancel anytime.
           </p>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 24, maxWidth: 1080, margin: '0 auto' }}>
-            {/* Foundation */}
-            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 18, padding: 32, display: 'flex', flexDirection: 'column' }}>
-              <div style={{ fontFamily: serif, fontSize: 29, fontWeight: 700, color: C.ink, letterSpacing: '-0.03em', marginBottom: 10 }}>Foundation</div>
-              <div style={{ fontFamily: serif, fontSize: 48, fontWeight: 700, letterSpacing: '-0.04em', color: C.ink, lineHeight: 1 }}>
-                $29<span style={{ fontSize: 21, color: C.inkMuted, marginLeft: 4 }}>/mo</span>
-              </div>
-              <div style={{ fontSize: 15, color: C.inkMuted, marginTop: 8, marginBottom: 24 }}>The truth about your business.</div>
-
-              <div style={{ marginBottom: 24 }}>
-                <FeatureList items={freeFeatures} color={C.inkSoft} iconColor={C.accentText} />
-              </div>
-
-              <div style={{ marginTop: 'auto' }}>
-                <OutlineButton label="Start Foundation — $29/mo" onClick={() => handleSignUpWithPlan('essential')} C={C} />
-                <div style={{ fontSize: 13, color: C.inkMuted, marginTop: 12 }}>Includes account setup and immediate access.</div>
-              </div>
-            </div>
-
-            {/* Intelligence */}
-            <GrowthOSCard onSignUp={handleSignUpWithPlan} C={C} />
-          </div>
-
-          <p style={{ textAlign: 'center', marginTop: 34, fontFamily: serif, fontStyle: 'italic', fontSize: 21, color: C.inkSoft, maxWidth: 760, marginLeft: 'auto', marginRight: 'auto' }}>
-            Your competitors aren't smarter. They just have better data on their own business.
-          </p>
+          <OutlineButton label="See all plans →" onClick={handlePricingNav} C={C} />
         </div>
       </section>
 
