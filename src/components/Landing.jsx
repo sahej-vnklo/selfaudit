@@ -2102,17 +2102,6 @@ export default function Landing({ onStart, onSignUp, session }) {
         </div>
       </section>
 
-      {/* ── 7. Pricing teaser ── */}
-      <section style={{ padding: '72px 0', background: C.surface }}>
-        <div style={{ ...wrap, textAlign: 'center' }}>
-          <div style={sectionLabel(C)}>Pricing</div>
-          <h2 style={{ ...h2Style(C), marginBottom: 12 }}>Foundation $29 · Intelligence $99</h2>
-          <p style={{ fontSize: 17, color: C.inkSoft, maxWidth: 540, margin: '0 auto 32px' }}>
-            Two plans. No hidden fees. Cancel anytime.
-          </p>
-          <OutlineButton label="See all plans →" onClick={handlePricingNav} C={C} />
-        </div>
-      </section>
 
       {/* ── 8. Final CTA ── */}
       <section style={{ background: C.bg, textAlign: 'center', padding: '110px 0' }}>
