@@ -1500,16 +1500,8 @@ function TopButtons({ onDiagnose, onGoal }) {
   )
 }
 
-const CONNECTOR_LIST = [
-  { id: 'hubspot', name: 'HubSpot', category: 'CRM', available: true },
-  { id: 'stripe', name: 'Stripe', category: 'Revenue', available: false },
-  { id: 'slack', name: 'Slack', category: 'Comms', available: false },
-  { id: 'gmail', name: 'Gmail', category: 'Email', available: false },
-  { id: 'notion', name: 'Notion', category: 'Docs', available: false },
-]
-
 function ConnectorsSection({ user }) {
-  const [connectors, setConnectors] = useState({})
+  const [connectorList, setConnectorList] = useState([])
   const [loading, setLoading] = useState(true)
   const [disconnecting, setDisconnecting] = useState('')
   const [toast, setToast] = useState('')
@@ -1521,13 +1513,13 @@ function ConnectorsSection({ user }) {
     return session?.access_token || ''
   }
 
-  const loadStatus = async () => {
+  const loadConnectors = async () => {
     if (!user?.id) return
     setLoading(true)
     try {
       const token = await getSessionToken()
       if (!token) return
-      const response = await fetch('/api/connect/status', {
+      const response = await fetch('/api/connectors', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1536,9 +1528,9 @@ function ConnectorsSection({ user }) {
         body: JSON.stringify({ userId: user.id }),
       })
       const data = await response.json()
-      setConnectors(data?.connectors || {})
+      setConnectorList(Array.isArray(data?.connectors) ? data.connectors : [])
     } catch {
-      setConnectors({})
+      setConnectorList([])
     } finally {
       setLoading(false)
     }
@@ -1566,7 +1558,7 @@ function ConnectorsSection({ user }) {
   }
 
   useEffect(() => {
-    loadStatus()
+    loadConnectors()
   }, [user?.id])
 
   useEffect(() => {
@@ -1585,13 +1577,14 @@ function ConnectorsSection({ user }) {
     return () => window.clearTimeout(timer)
   }, [])
 
+  const hubspot = connectorList.find((c) => c.id === 'hubspot')
   useEffect(() => {
-    if (connectors?.hubspot?.connected) {
+    if (hubspot?.connected) {
       loadHubspotPreview()
       return
     }
     setPreview(null)
-  }, [connectors?.hubspot?.connected, connectors?.hubspot?.last_synced_at, user?.id])
+  }, [hubspot?.connected, hubspot?.last_synced_at, user?.id])
 
   const disconnect = async (provider) => {
     if (!user?.id) return
@@ -1608,7 +1601,7 @@ function ConnectorsSection({ user }) {
         body: JSON.stringify({ userId: user.id, provider }),
       })
       if (provider === 'hubspot') setPreview(null)
-      await loadStatus()
+      await loadConnectors()
     } finally {
       setDisconnecting('')
     }
@@ -1618,13 +1611,14 @@ function ConnectorsSection({ user }) {
     <PageShell title="Connectors" sub="Connect live systems so audits can reason from verified data, not just self-reported context.">
       {toast && <div style={styles.connectorsToast}>{toast}</div>}
       <div style={styles.connectorsGrid}>
-        {CONNECTOR_LIST.map((connector) => {
-          const status = connectors?.[connector.id] || {}
-          const connected = !!status.connected
+        {connectorList.map((connector) => {
+          const available = connector.status === 'available'
+          const comingSoon = connector.status === 'coming_soon'
+          const connected = !!connector.connected
           const busy = disconnecting === connector.id
 
           return (
-            <div key={connector.id} style={{ ...styles.connectorCard, opacity: connector.available ? 1 : 0.68 }}>
+            <div key={connector.id} style={{ ...styles.connectorCard, opacity: comingSoon ? 0.68 : 1 }}>
               <div style={styles.connectorCardTop}>
                 <div>
                   <div style={styles.connectorName}>{connector.name}</div>
@@ -1635,22 +1629,20 @@ function ConnectorsSection({ user }) {
                     ...styles.connectorBadge,
                     ...(connected
                       ? styles.connectorBadgeConnected
-                      : connector.available
+                      : available
                         ? styles.connectorBadgeAdd
                         : styles.connectorBadgeSoon),
                   }}
                 >
-                  {connected ? 'Connected' : connector.available ? 'Add' : 'Coming soon'}
+                  {connected ? 'Connected' : available ? 'Add' : 'Coming soon'}
                 </span>
               </div>
 
               <div style={styles.connectorBodyText}>
-                {connector.id === 'hubspot'
-                  ? 'Pipeline, contacts, and activity sync into the audit context.'
-                  : 'Reserved for the next connector release.'}
+                {connector.description || ''}
               </div>
 
-              {connector.available ? (
+              {available ? (
                 connected ? (
                   <button type="button" style={styles.connectorDisconnectBtn} onClick={() => disconnect(connector.id)} disabled={busy}>
                     {busy ? 'Disconnecting…' : 'Disconnect'}
@@ -1659,9 +1651,9 @@ function ConnectorsSection({ user }) {
                   <button
                     type="button"
                     style={styles.connectorConnectBtn}
-                    onClick={() => { window.location.href = `/api/connect/hubspot/auth?state=${user.id}` }}
+                    onClick={() => { window.location.href = `/api/connect/${connector.id}/auth?state=${user.id}` }}
                   >
-                    Connect HubSpot
+                    Connect {connector.name}
                   </button>
                 )
               ) : (
@@ -1671,7 +1663,7 @@ function ConnectorsSection({ user }) {
               {connector.id === 'hubspot' && connected && preview?.source === 'hubspot' && (
                 <div style={styles.connectorPreview}>
                   <div style={styles.connectorPreviewMeta}>
-                    Last synced: {formatRelativeTime(status.last_synced_at || preview.fetched_at)}
+                    Last synced: {formatRelativeTime(connector.last_synced_at || preview.fetched_at)}
                   </div>
                   {preview.pipeline && (
                     <div style={styles.connectorPreviewStat}>
@@ -1689,6 +1681,12 @@ function ConnectorsSection({ user }) {
                   <button type="button" style={styles.connectorSyncBtn} onClick={loadHubspotPreview}>
                     Sync now
                   </button>
+                </div>
+              )}
+
+              {connector.required_tier && (
+                <div style={styles.connectorTierLabel}>
+                  {connector.required_tier === 'intelligence' ? 'Intelligence tier' : connector.required_tier}
                 </div>
               )}
             </div>
@@ -3508,6 +3506,12 @@ const styles = {
     marginTop: 14,
     fontSize: 12,
     color: G.textFaint,
+  },
+  connectorTierLabel: {
+    fontSize: 11,
+    color: G.textFaint,
+    letterSpacing: '0.04em',
+    textTransform: 'uppercase',
   },
   reportCard: {
     background: G.surface2,
