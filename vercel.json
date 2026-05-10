@@ -11,6 +11,7 @@
     "api/connect/status.js": { "memory": 256 }
   },
   "crons": [
-    { "path": "/api/intelligence-synthesis", "schedule": "0 6 * * *" }
+    { "path": "/api/intelligence-synthesis",    "schedule": "0 6 * * *" },
+    { "path": "/api/cron/business-health",      "schedule": "0 8 * * *" }
   ]
 }
