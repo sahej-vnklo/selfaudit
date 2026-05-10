@@ -28,7 +28,7 @@ const HASH_SCREENS = new Set([
   SCREENS.ADMIN,
 ])
 
-const DASHBOARD_SECTION_HASHES = new Set(['home', 'reports', 'intelligence', 'billing', 'account'])
+const DASHBOARD_SECTION_HASHES = new Set(['home', 'reports', 'intelligence', 'connectors', 'agent', 'billing', 'account'])
 
 function screenFromHash(isAuthenticated = false) {
   const h = window.location.hash.replace(/^#\/?/, '')
@@ -246,7 +246,12 @@ export default function App() {
     window.location.replace('/')
   }
 
-  if (authLoading) return null
+  if (authLoading) return (
+    <div style={{ height: '100vh', background: '#0F1520', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ width: 32, height: 32, border: '2px solid #1E2D42', borderTopColor: '#4A7FA8', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  )
 
   // ── Auth screens ──────────────────────────────────────────────────────────
   if (screen === SCREENS.LOGIN) {
