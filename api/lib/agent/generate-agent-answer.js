@@ -40,22 +40,27 @@ function buildContextBlock(contextBlocks) {
 
 function buildUserMessage(query, plan, contextBlocks, conversationHistory) {
   const context = buildContextBlock(contextBlocks)
-  const missing = plan.missing_sources?.length
-    ? `\nMissing data sources (not connected): ${plan.missing_sources.join(', ')}`
-    : ''
   const history = conversationHistory?.length
     ? `\nPrevious context:\n${conversationHistory.slice(-4).map((m) => `${m.role}: ${m.content}`).join('\n')}`
     : ''
 
+  const planSection = [
+    `Intent: ${plan.intent}`,
+    plan.hypothesis   ? `Hypothesis going in: ${plan.hypothesis}` : null,
+    plan.focus_areas?.length ? `Focus areas: ${plan.focus_areas.join(', ')}` : null,
+    plan.rationale    ? `Why these sources: ${plan.rationale}` : null,
+  ].filter(Boolean).join('\n')
+
   return `Query: ${query}
 
-Intent detected: ${plan.intent}
-Investigation plan: ${plan.investigation_steps?.join(' → ')}${missing}${history}
+Investigation plan (decided before fetching):
+${planSection}
+${history}
 
-Available evidence:
-${context || 'No connected data available — answer from memory and general principles only.'}
+Evidence gathered:
+${context || 'No connected data available — answer from first principles only.'}
 
-Investigate the above evidence and produce your finding as JSON.`
+Now test the hypothesis against the evidence. Confirm, refute, or refine it. Produce your finding as JSON.`
 }
 
 export async function generateAgentAnswer({ query, plan, context, conversationHistory }) {

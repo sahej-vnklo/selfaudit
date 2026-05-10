@@ -1856,7 +1856,7 @@ function AgentSection({ user }) {
       {loading && (
         <div style={agent.thinkingBox}>
           <span style={agent.thinkingDot} />
-          TSA is investigating…
+          TSA is planning the investigation…
         </div>
       )}
 
@@ -1885,6 +1885,21 @@ function AgentSection({ user }) {
 
           {/* Answer */}
           <p style={agent.answerText}>{result.answer}</p>
+
+          {/* Investigation plan — what TSA decided to check and why */}
+          {!isConversational && result.investigation_plan?.hypothesis && (
+            <div style={agent.hypothesisBlock}>
+              <div style={agent.hypothesisLabel}>Hypothesis going in</div>
+              <p style={agent.hypothesisText}>{result.investigation_plan.hypothesis}</p>
+              {result.investigation_plan.focus_areas?.length > 0 && (
+                <div style={agent.focusAreaRow}>
+                  {result.investigation_plan.focus_areas.map((f) => (
+                    <span key={f} style={agent.focusChip}>{f}</span>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Root cause */}
           {result.root_cause && (
@@ -2041,6 +2056,11 @@ const agent = {
   confidenceTag: { fontSize: 12, fontWeight: 500 },
   severityTag: { fontSize: 12, color: G.textMuted },
   answerText: { fontSize: 15, color: G.text, lineHeight: 1.7, margin: '0 0 20px' },
+  hypothesisBlock: { background: G.surface2, borderRadius: 8, padding: '12px 16px', marginBottom: 20 },
+  hypothesisLabel: { fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: G.textMuted, fontWeight: 600, marginBottom: 6 },
+  hypothesisText: { fontSize: 13, color: G.textSecondary, lineHeight: 1.6, margin: '0 0 8px', fontStyle: 'italic' },
+  focusAreaRow: { display: 'flex', flexWrap: 'wrap', gap: 6 },
+  focusChip: { fontSize: 11, color: G.textMuted, background: G.surface, border: `1px solid ${G.border}`, borderRadius: 12, padding: '2px 10px' },
   subSection: { marginBottom: 16 },
   subLabel: { fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.07em', color: G.textMuted, marginBottom: 6, fontWeight: 600 },
   subText: { fontSize: 14, color: G.textSecondary, lineHeight: 1.6, margin: 0 },
