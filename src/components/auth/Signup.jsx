@@ -234,7 +234,14 @@ function SignupForm({ onSuccess, onLogin }) {
       if (data.session) {
         onSuccess(data.session)
       } else {
-        setEmailSent(true)
+        // No session returned (can happen if email was previously registered).
+        // Since email confirmation is disabled, signing in directly should work.
+        const { data: signInData } = await sb.auth.signInWithPassword({ email: form.email, password: form.password })
+        if (signInData?.session) {
+          onSuccess(signInData.session)
+        } else {
+          setEmailSent(true)
+        }
       }
     } catch (e) {
       Sentry.captureException(e)

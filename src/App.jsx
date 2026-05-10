@@ -178,10 +178,12 @@ export default function App() {
             const loginIntent = localStorage.getItem('sa-oauth-login-intent')
             if (loginIntent === '1') {
               localStorage.removeItem('sa-oauth-login-intent')
-              const created = new Date(session.user.created_at).getTime()
-              const isNewUser = Date.now() - created < 60_000
-              if (isNewUser) {
-                supabase?.auth.signOut().catch(() => {})
+              const { data: profile } = await sb.from('profiles')
+                .select('stripe_subscription_id, tier')
+                .eq('id', session.user.id)
+                .single()
+              if (!profile?.stripe_subscription_id && !profile?.tier) {
+                await sb.auth.signOut()
                 navigate(SCREENS.SIGNUP)
                 return
               }
