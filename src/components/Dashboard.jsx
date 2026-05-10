@@ -462,6 +462,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
   const [billingError, setBillingError] = useState('')
   const [portalLoading, setPortalLoading] = useState(false)
   const [section, setSection] = useState(() => getSectionFromHash())
+  const [requiresPayment, setRequiresPayment] = useState(false)
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
   const [goalModal, setGoalModal] = useState(false)
   const [scopeSetupOpen, setScopeSetupOpen] = useState(false)
@@ -513,6 +514,12 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
 
         if (data) {
           setProfile(data)
+          // No tier and no subscription means the user signed up via OAuth but
+          // never completed payment — gate them to the billing screen.
+          if (!data.tier && !data.stripe_subscription_id) {
+            setRequiresPayment(true)
+            setSection('billing')
+          }
         } else {
           await new Promise((resolve) => setTimeout(resolve, 800))
           const retry = await sb
@@ -520,7 +527,13 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
             .select('tier, industry, domain, context, name, phone, onboarding_complete, stripe_customer_id, stripe_subscription_id, intelligence_docs, intelligence_complete, shared_with_vnklo, shared_report_id')
             .eq('id', user.id)
             .single()
-          if (!cancelled && retry.data) setProfile(retry.data)
+          if (!cancelled && retry.data) {
+            setProfile(retry.data)
+            if (!retry.data.tier && !retry.data.stripe_subscription_id) {
+              setRequiresPayment(true)
+              setSection('billing')
+            }
+          }
         }
 
         const { data: reportData } = await sb
@@ -811,7 +824,18 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
           )}
 
           {section === 'billing' && (
-            <PageShell title="Subscription" sub="Your current plan is highlighted. Upgrade or downgrade any time.">
+            <PageShell
+              title="Subscription"
+              sub={requiresPayment ? 'Choose a plan to activate your account and access the full dashboard.' : 'Your current plan is highlighted. Upgrade or downgrade any time.'}
+            >
+              {requiresPayment && (
+                <div style={{ background: 'var(--amber-bg, #2a1f00)', border: '1px solid var(--amber, #d97706)', borderRadius: 8, padding: '14px 18px', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <span style={{ fontSize: 16 }}>⚠</span>
+                  <span style={{ fontSize: 14, color: 'var(--amber, #d97706)', fontWeight: 500 }}>
+                    Your account isn't active yet. Pick a plan below to get started.
+                  </span>
+                </div>
+              )}
               {(tier === 'intelligence' || tier === 'business' || tier === 'portfolio') && (
                 <LiveBillingCard
                   billing={billing}
