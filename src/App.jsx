@@ -285,7 +285,8 @@ export default function App() {
   }
 
   if (screen === SCREENS.SIGNUP) {
-    if (session) { navigate(SCREENS.DASHBOARD); return null }
+    // Don't redirect if signup is in progress — let the flow finish writing tier before navigating
+    if (session && !localStorage.getItem('sa-signup-in-progress')) { navigate(SCREENS.DASHBOARD); return null }
     return <Signup
       onSuccess={(session) => {
         if (session) {

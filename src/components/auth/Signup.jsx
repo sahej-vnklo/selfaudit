@@ -167,6 +167,7 @@ function SignupForm({ onSuccess, onLogin }) {
     setGlobalError(null)
     if (!validate()) return
     setLoading(true)
+    localStorage.setItem('sa-signup-in-progress', '1')
     const fullName = `${form.firstName.trim()} ${form.lastName.trim()}`
     posthog?.capture('signup_submitted', { plan: selectedPlan, email: form.email })
     try {
@@ -248,6 +249,7 @@ function SignupForm({ onSuccess, onLogin }) {
       posthog?.captureException(e)
       setGlobalError(e.message || 'Connection error. Please try again.')
     } finally {
+      localStorage.removeItem('sa-signup-in-progress')
       setLoading(false)
     }
   }
