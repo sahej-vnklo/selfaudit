@@ -690,7 +690,7 @@ function GrowthOSCard({ onSignUp, C }) {
         </div>
       )}
 
-      <PrimaryButton label="Start Intelligence — $99/mo" onClick={() => onSignUp('business')} C={C} />
+      <PrimaryButton label="Start Intelligence — $99/mo" onClick={() => onSignUp('intelligence')} C={C} />
       <div style={{ fontSize: 13, color: C.inkMuted, marginTop: 12 }}>Cancel anytime. No contracts.</div>
     </div>
   )

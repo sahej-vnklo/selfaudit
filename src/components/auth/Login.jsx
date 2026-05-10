@@ -78,16 +78,6 @@ function GoogleMark() {
   )
 }
 
-function MicrosoftMark() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
-      <rect x="3" y="3" width="8" height="8" fill="#F25022" />
-      <rect x="13" y="3" width="8" height="8" fill="#7FBA00" />
-      <rect x="3" y="13" width="8" height="8" fill="#00A4EF" />
-      <rect x="13" y="13" width="8" height="8" fill="#FFB900" />
-    </svg>
-  )
-}
 
 export default function Login({ onSuccess, onSignup }) {
   const [form, setForm] = useState({ email: '', password: '' })
@@ -129,6 +119,7 @@ export default function Login({ onSuccess, onSignup }) {
     setError(null)
     setLoading(true)
     try {
+      localStorage.setItem('sa-oauth-login-intent', '1')
       const sb = await initSupabase()
       const { data, error } = await sb.auth.signInWithOAuth({
         provider,
@@ -219,7 +210,6 @@ export default function Login({ onSuccess, onSignup }) {
           <div style={s.altAuthShell}>
             <div style={s.providerGrid}>
               <ProviderButton icon={<GoogleMark />} label="Continue with" onClick={() => handleOAuthLogin('google')} disabled={loading} />
-              <ProviderButton icon={<MicrosoftMark />} label="Continue with" onClick={() => handleOAuthLogin('azure')} disabled={loading} />
             </div>
             <button type="button" style={s.magicButton} onClick={handleMagicLinkLogin} disabled={loading}>
               Email me a magic link

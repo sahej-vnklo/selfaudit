@@ -96,16 +96,6 @@ function GoogleMark() {
   )
 }
 
-function MicrosoftMark() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
-      <rect x="3" y="3" width="8" height="8" fill="#F25022" />
-      <rect x="13" y="3" width="8" height="8" fill="#7FBA00" />
-      <rect x="3" y="13" width="8" height="8" fill="#00A4EF" />
-      <rect x="13" y="13" width="8" height="8" fill="#FFB900" />
-    </svg>
-  )
-}
 
 const stripePromise = fetch('/api/config')
   .then(r => r.ok ? r.json() : Promise.reject())
@@ -145,9 +135,10 @@ function SignupForm({ onSuccess, onLogin }) {
     const hash = window.location.hash.replace(/^#\/?/, '')
     if (hash.startsWith('signup?plan=')) {
       const plan = hash.split('plan=')[1]
-      if (['essential', 'business'].includes(plan)) return plan
+      if (plan === 'business' || plan === 'essential') return plan === 'business' ? 'intelligence' : 'foundation'
+      if (['foundation', 'intelligence'].includes(plan)) return plan
     }
-    return 'essential'
+    return 'foundation'
   })
   const [errors,       setErrors]       = useState({})
   const [loading,      setLoading]      = useState(false)
@@ -356,7 +347,7 @@ function SignupForm({ onSuccess, onLogin }) {
             <h2 style={s.title}>Your sign-in link is on the way</h2>
             <p style={{ fontSize: 15, color: 'var(--text-soft)', lineHeight: 1.7, marginTop: 12 }}>
               We sent a magic link to <strong style={{ color: 'var(--text)' }}>{form.email}</strong>.
-              Open it to create your account, then we&apos;ll take you into checkout for the {selectedPlan === 'business' ? 'Intelligence' : 'Foundation'} plan.
+              Open it to create your account, then we&apos;ll take you into checkout for the {selectedPlan === 'intelligence' ? 'Intelligence' : 'Foundation'} plan.
             </p>
             <button style={{ ...s.btn, marginTop: 28 }} onClick={onLogin}>
               Go to login
@@ -452,7 +443,6 @@ function SignupForm({ onSuccess, onLogin }) {
             </div>
             <div style={s.providerGrid}>
               <ProviderButton icon={<GoogleMark />} label="Continue with" onClick={() => handleOAuthSignup('google')} disabled={loading} />
-              <ProviderButton icon={<MicrosoftMark />} label="Continue with" onClick={() => handleOAuthSignup('azure')} disabled={loading} />
             </div>
             <button type="button" style={s.magicButton} onClick={handleMagicLinkSignup} disabled={loading}>
               Email me a magic link
@@ -496,8 +486,8 @@ function SignupForm({ onSuccess, onLogin }) {
 }
 
 const SIGNUP_PLANS = [
-  { key: 'essential', name: 'Foundation', price: '$29' },
-  { key: 'business',  name: 'Intelligence',  price: '$99',  popular: true },
+  { key: 'foundation',    name: 'Foundation',    price: '$29' },
+  { key: 'intelligence',  name: 'Intelligence',  price: '$99', popular: true },
 ]
 
 function StripeField({ label, children }) {

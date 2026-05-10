@@ -172,23 +172,25 @@ const BUSINESS_OPTIONS = [
 ]
 
 const TIER_BADGE = {
-  essential: { bg: 'var(--accent-light)', color: 'var(--accent-text)', label: 'Foundation' },
-  business: { bg: 'var(--surface3)', color: 'var(--blue)', label: 'Intelligence' },
-  portfolio: { bg: 'var(--surface3)', color: 'var(--violet)', label: 'Intelligence' },
-  free: { bg: 'var(--accent-light)', color: 'var(--accent-text)', label: 'Foundation' },
-  paid: { bg: 'var(--surface3)', color: 'var(--blue)', label: 'Intelligence' },
+  foundation:  { bg: 'var(--accent-light)', color: 'var(--accent-text)', label: 'Foundation' },
+  intelligence: { bg: 'var(--surface3)', color: 'var(--blue)', label: 'Intelligence' },
+  essential:   { bg: 'var(--accent-light)', color: 'var(--accent-text)', label: 'Foundation' },
+  business:    { bg: 'var(--surface3)', color: 'var(--blue)', label: 'Intelligence' },
+  portfolio:   { bg: 'var(--surface3)', color: 'var(--violet)', label: 'Intelligence' },
+  free:        { bg: 'var(--accent-light)', color: 'var(--accent-text)', label: 'Foundation' },
+  paid:        { bg: 'var(--surface3)', color: 'var(--blue)', label: 'Intelligence' },
 }
 
 const TIERS = [
   {
-    key: 'essential',
+    key: 'foundation',
     name: 'Foundation',
     price: '$29',
     desc: 'The truth about your business.',
     features: ['Full drill-down audit', 'Complete written report', 'Root cause diagnosis', 'Fix-first priority list', 'Email delivery'],
   },
   {
-    key: 'business',
+    key: 'intelligence',
     name: 'Intelligence',
     price: '$99',
     popular: true,
@@ -197,14 +199,15 @@ const TIERS = [
   },
 ]
 
-const TIER_ORDER = { essential: 0, business: 1, portfolio: 2, free: 0, paid: 1 }
+const TIER_ORDER = { foundation: 0, intelligence: 1, essential: 0, business: 1, portfolio: 2, free: 0, paid: 1 }
 const SECTIONS = ['home', 'reports', 'intelligence', 'connectors', 'agent', 'billing', 'account']
 
 function normalizeTier(raw) {
-  if (raw === 'paid') return 'business'
-  if (raw === 'free') return 'essential'
-  if (raw === 'business' || raw === 'portfolio') return raw
-  return 'essential'
+  if (raw === 'intelligence' || raw === 'foundation') return raw
+  if (raw === 'business' || raw === 'paid') return 'intelligence'
+  if (raw === 'portfolio') return 'intelligence'
+  if (raw === 'essential' || raw === 'free') return 'foundation'
+  return 'foundation'
 }
 
 function parseReportContent(input) {
@@ -380,7 +383,7 @@ function buildAiOpportunityItems(reports, tier) {
 
   if (parsedReports.length === 0) return []
 
-  if (tier !== 'business' && tier !== 'portfolio') {
+  if (tier !== 'intelligence' && tier !== 'business' && tier !== 'portfolio') {
     const source = parsedReports.find(({ parsed }) => Array.isArray(parsed.ai_opportunities) && parsed.ai_opportunities.length > 0)
     if (!source) return []
 
@@ -809,7 +812,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
 
           {section === 'billing' && (
             <PageShell title="Subscription" sub="Your current plan is highlighted. Upgrade or downgrade any time.">
-              {(tier === 'business' || tier === 'portfolio') && (
+              {(tier === 'intelligence' || tier === 'business' || tier === 'portfolio') && (
                 <LiveBillingCard
                   billing={billing}
                   billingLoading={billingLoading}
@@ -820,7 +823,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
               )}
               <div style={styles.tierGrid}>
                 {TIERS.map((item) => (
-                  <TierCard key={item.key} tier={item} currentTier={tier === 'portfolio' ? 'business' : tier} userId={user?.id} email={user?.email} />
+                  <TierCard key={item.key} tier={item} currentTier={tier === 'portfolio' || tier === 'business' ? 'intelligence' : tier} userId={user?.id} email={user?.email} />
                 ))}
               </div>
             </PageShell>
@@ -1162,7 +1165,7 @@ function AiOpportunitiesCard({ user, userInfo, reports, items, tier, initialShar
   const topItem = items[0] || null
   const sourceReport = topItem ? reports.find((report) => report.id === topItem.reportId) : null
   const sourcePayload = sourceReport ? parseReportContent(sourceReport) : null
-  const isIntelligence = tier === 'business' || tier === 'portfolio'
+  const isIntelligence = tier === 'intelligence' || tier === 'business' || tier === 'portfolio'
   const subtitle = items.length === 0
     ? 'No opportunities extracted yet'
     : isIntelligence

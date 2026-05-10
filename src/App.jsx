@@ -72,7 +72,7 @@ export default function App() {
       intent = null
     }
 
-    if (!intent?.plan || !['essential', 'business'].includes(intent.plan)) {
+    if (!intent?.plan || !['essential', 'business', 'foundation', 'intelligence'].includes(intent.plan)) {
       try { localStorage.removeItem(PENDING_AUTH_INTENT_KEY) } catch (_) {}
       return false
     }
@@ -173,6 +173,19 @@ export default function App() {
           }
 
           if (session && event === 'SIGNED_IN') {
+            // If the user clicked Google on the Login page but has no existing account,
+            // sign them out and redirect to signup instead of landing them in the dashboard.
+            const loginIntent = localStorage.getItem('sa-oauth-login-intent')
+            if (loginIntent === '1') {
+              localStorage.removeItem('sa-oauth-login-intent')
+              const created = new Date(session.user.created_at).getTime()
+              const isNewUser = Date.now() - created < 60_000
+              if (isNewUser) {
+                supabase?.auth.signOut().catch(() => {})
+                navigate(SCREENS.SIGNUP)
+                return
+              }
+            }
             const redirected = await maybeStartPendingCheckout(session)
             if (redirected) return
             setAuthLoading(false)
