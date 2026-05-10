@@ -4,151 +4,6 @@ import { sendMessage } from '../lib/audit.js'
 import { initSupabase } from '../lib/supabase.js'
 import { usePostHog } from '@posthog/react'
 
-// ─── Gating data ──────────────────────────────────────────────────────────────
-
-const ALL_DOMAINS = [
-  'Strategy', 'Operations', 'Sales', 'Marketing', 'Finance',
-  'People & Culture', 'Product', 'Customer Experience', 'Technology',
-  'Legal & Compliance', 'Supply Chain', 'Brand', 'Partnerships', 'Data & Analytics',
-]
-
-const ALL_INDUSTRIES = [
-  'SaaS', 'Agency', 'Retail', 'E-commerce', 'Restaurant / Food',
-  'Healthcare', 'Legal', 'Real Estate', 'Construction', 'Manufacturing',
-  'Logistics', 'Education', 'Finance / Accounting', 'Insurance',
-  'Consulting', 'Marketing', 'Media / Publishing', 'Travel / Hospitality',
-  'Nonprofit', 'Freelancer / Solo', 'Other',
-]
-
-const DOMAIN_MAP = {
-  'SaaS':                 ['Strategy', 'Product', 'Sales', 'Marketing', 'Customer Experience', 'Technology', 'Data & Analytics', 'Finance', 'People & Culture'],
-  'Agency':               ['Strategy', 'Sales', 'Marketing', 'Operations', 'Finance', 'People & Culture', 'Brand', 'Customer Experience'],
-  'Retail':               ['Strategy', 'Operations', 'Marketing', 'Sales', 'Supply Chain', 'Customer Experience', 'Finance', 'Brand'],
-  'E-commerce':           ['Strategy', 'Marketing', 'Operations', 'Technology', 'Customer Experience', 'Supply Chain', 'Data & Analytics', 'Finance'],
-  'Restaurant / Food':    ['Operations', 'Marketing', 'Finance', 'People & Culture', 'Customer Experience', 'Brand', 'Supply Chain'],
-  'Healthcare':           ['Operations', 'Strategy', 'Legal & Compliance', 'People & Culture', 'Finance', 'Technology', 'Customer Experience'],
-  'Legal':                ['Operations', 'Strategy', 'Legal & Compliance', 'Finance', 'People & Culture', 'Brand', 'Customer Experience'],
-  'Real Estate':          ['Sales', 'Marketing', 'Operations', 'Finance', 'Strategy', 'Brand', 'Customer Experience'],
-  'Construction':         ['Operations', 'Finance', 'People & Culture', 'Supply Chain', 'Strategy', 'Legal & Compliance'],
-  'Manufacturing':        ['Operations', 'Supply Chain', 'Finance', 'Technology', 'People & Culture', 'Strategy', 'Legal & Compliance'],
-  'Logistics':            ['Operations', 'Supply Chain', 'Technology', 'Finance', 'Strategy', 'People & Culture'],
-  'Education':            ['Strategy', 'Operations', 'Marketing', 'Technology', 'People & Culture', 'Finance', 'Customer Experience'],
-  'Finance / Accounting': ['Strategy', 'Operations', 'Legal & Compliance', 'Technology', 'People & Culture', 'Finance', 'Data & Analytics'],
-  'Insurance':            ['Operations', 'Legal & Compliance', 'Finance', 'Technology', 'Strategy', 'Customer Experience'],
-  'Consulting':           ['Strategy', 'Operations', 'Sales', 'Marketing', 'People & Culture', 'Finance', 'Brand'],
-  'Marketing':            ['Strategy', 'Brand', 'Data & Analytics', 'Operations', 'Sales', 'Customer Experience', 'Technology'],
-  'Media / Publishing':   ['Strategy', 'Brand', 'Marketing', 'Operations', 'Finance', 'Technology', 'Data & Analytics'],
-  'Travel / Hospitality': ['Operations', 'Customer Experience', 'Marketing', 'Finance', 'Brand', 'People & Culture'],
-  'Nonprofit':            ['Strategy', 'Operations', 'Finance', 'Marketing', 'People & Culture', 'Partnerships'],
-  'Freelancer / Solo':    ['Strategy', 'Sales', 'Marketing', 'Finance', 'Brand', 'Operations'],
-  'Other':                ['Strategy', 'Operations', 'Sales', 'Marketing', 'Finance', 'People & Culture', 'Technology', 'Customer Experience'],
-}
-
-// ─── Gating detection ─────────────────────────────────────────────────────────
-
-function detectDomainViolation(text, savedDomain) {
-  if (!savedDomain) return false
-  const lower = text.toLowerCase()
-  return ALL_DOMAINS.some(d =>
-    d.toLowerCase() !== savedDomain.toLowerCase() &&
-    lower.includes(d.toLowerCase())
-  )
-}
-
-function detectIndustryViolation(text, savedIndustry) {
-  if (!savedIndustry) return false
-  const lower = text.toLowerCase()
-  return ALL_INDUSTRIES.some(ind =>
-    ind.toLowerCase() !== savedIndustry.toLowerCase() &&
-    lower.includes(ind.toLowerCase())
-  )
-}
-
-// ─── Upgrade Panel ────────────────────────────────────────────────────────────
-
-function UpgradePanel({ type, tierData, userInfo, panelStyles, onDismiss }) {
-  const [checkoutLoading, setCheckoutLoading] = useState(false)
-  const [checkoutError,   setCheckoutError]   = useState(null)
-  const posthog = usePostHog()
-
-  const isDomain    = type === 'domain'
-  const isEssential = tierData?.tier === 'essential'
-  const targetTier  = isEssential ? 'business' : 'portfolio'
-  const ctaLabel    = isEssential ? 'Upgrade to Business — $99/mo' : 'Upgrade to Portfolio — $299/mo'
-  const pills       = isEssential ? (DOMAIN_MAP[tierData?.industry] || ALL_DOMAINS) : ALL_INDUSTRIES
-  const currentItem = isEssential ? tierData?.domain : tierData?.industry
-
-  useEffect(() => {
-    posthog?.capture('upgrade_panel_shown', {
-      trigger_type: type,
-      current_tier: tierData?.tier,
-      target_tier: targetTier,
-      industry: tierData?.industry,
-      domain: tierData?.domain,
-    })
-  }, [])
-
-  const handleUpgrade = async () => {
-    posthog?.capture('upgrade_clicked', {
-      current_tier: tierData?.tier,
-      target_tier: targetTier,
-      industry: tierData?.industry,
-      domain: tierData?.domain,
-    })
-    setCheckoutLoading(true)
-    setCheckoutError(null)
-    try {
-      const res = await fetch('/api/create-checkout-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tier: targetTier, userId: userInfo?.userId, email: userInfo?.email }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Failed to start checkout')
-      window.location.href = data.url
-    } catch (e) {
-      Sentry.captureException(e)
-      posthog?.captureException(e)
-      setCheckoutError(e.message)
-      setCheckoutLoading(false)
-    }
-  }
-
-  return (
-    <div style={panelStyles.panel}>
-      <button style={panelStyles.close} onClick={onDismiss} aria-label="Close">✕</button>
-      <div style={panelStyles.eyebrow}>SCOPE LIMIT</div>
-      <div style={panelStyles.title}>Outside your scope</div>
-      <p style={panelStyles.sub}>
-        {isEssential
-          ? `You're getting a ${tierData?.domain || 'selected domain'}-only audit. Unlock all ${pills.length} domains.`
-          : `You're getting a ${tierData?.industry || 'selected industry'}-only audit. Unlock all ${pills.length} industries.`}
-      </p>
-      <div style={panelStyles.sectionLabel}>YOUR PLAN</div>
-      <div style={panelStyles.pills}>
-        {pills.filter(item => item.toLowerCase() === currentItem?.toLowerCase()).map(item => (
-          <span key={item} style={{ ...panelStyles.pill, ...panelStyles.pillCurrent }}>{item}</span>
-        ))}
-      </div>
-      <div style={panelStyles.sectionLabel}>{isEssential ? 'UNLOCK WITH BUSINESS' : 'UNLOCK WITH PORTFOLIO'}</div>
-      <div style={panelStyles.pills}>
-        {pills.filter(item => item.toLowerCase() !== currentItem?.toLowerCase()).map(item => (
-          <span key={item} style={{ ...panelStyles.pill, ...panelStyles.pillLocked }}>{item}</span>
-        ))}
-      </div>
-      <button
-        style={{ ...panelStyles.cta, opacity: checkoutLoading ? 0.7 : 1 }}
-        onClick={handleUpgrade}
-        disabled={checkoutLoading}
-      >
-        {checkoutLoading ? 'Redirecting…' : ctaLabel}
-      </button>
-      {checkoutError && <div style={panelStyles.error}>{checkoutError}</div>}
-      <div style={panelStyles.stayLink} onClick={onDismiss}>Stay on my plan</div>
-    </div>
-  )
-}
-
 // ─── Chat helpers ─────────────────────────────────────────────────────────────
 
 const FIRST_MESSAGE = (userInfo) => {
@@ -252,7 +107,6 @@ export default function AuditChat({ theme = 'dark', userInfo, onReportReady, con
   const [loading,       setLoading]       = useState(false)
   const [initialized,   setInitialized]   = useState(false)
   const [tierData,      setTierData]      = useState(null)   // { tier, industry, domain }
-  const [scopePanel,    setScopePanel]    = useState(null)   // 'domain' | 'industry' | null
   const [memoryContext, setMemoryContext] = useState(null)
   const [contactInfo, setContactInfo] = useState({
     name: userInfo?.name || '',
@@ -266,7 +120,6 @@ export default function AuditChat({ theme = 'dark', userInfo, onReportReady, con
   const sessionIdRef = useRef(crypto.randomUUID())
   const posthog     = usePostHog()
   const themeStyles = getStyles(theme)
-  const panelStyles = getPanelStyles(theme)
   const resolvedUserInfo = React.useMemo(() => ({
     ...userInfo,
     name: contactInfo.name || userInfo?.name || '',
@@ -431,10 +284,8 @@ export default function AuditChat({ theme = 'dark', userInfo, onReportReady, con
         memoryContext,
       })
       const isReady      = response.includes('[READY_FOR_REPORT]')
-      const isScopeLimit = response.includes('[SCOPE_LIMIT]')
       const cleanResponse = response
         .replace('[READY_FOR_REPORT]', '')
-        .replace('[SCOPE_LIMIT]', '')
         .trim()
 
       const assistantMsg = { role: 'assistant', content: cleanResponse, display: cleanResponse }
@@ -461,7 +312,6 @@ export default function AuditChat({ theme = 'dark', userInfo, onReportReady, con
         ])).catch(e => console.warn('[chats] save failed:', e?.message))
       }
 
-      if (isScopeLimit) setScopePanel('domain')
       if (isReady) {
         const reportHistory = toSubstantiveHistory(finalHistory)
         posthog?.capture('audit_report_ready', {
@@ -517,16 +367,6 @@ export default function AuditChat({ theme = 'dark', userInfo, onReportReady, con
 
   return (
     <div style={themeStyles.page}>
-      {scopePanel && (
-        <UpgradePanel
-          type={scopePanel}
-          tierData={tierData}
-          userInfo={resolvedUserInfo}
-          panelStyles={panelStyles}
-          onDismiss={() => { setScopePanel(null); inputRef.current?.focus() }}
-        />
-      )}
-
       <nav style={themeStyles.nav}>
         <div style={{...themeStyles.logo, cursor: 'pointer'}} onClick={handleLogoClick}>
           self<span style={{ color: themeStyles.accentColor }}>audit</span>
@@ -768,61 +608,3 @@ function getStyles(theme) {
   }
 }
 
-// ─── Panel styles ─────────────────────────────────────────────────────────────
-
-function getPanelStyles(theme) {
-  const T = getTheme(theme)
-
-  return {
-    panel: {
-      position: 'fixed', right: 20, top: '50%', transform: 'translateY(-50%)',
-      width: 280, zIndex: 200, background: T.surface, borderRadius: 16,
-      boxShadow: theme === 'dark' ? '0 18px 44px rgba(0,0,0,0.34)' : '0 12px 34px rgba(58,34,18,0.12)',
-      padding: 24, border: `1px solid ${T.border}`,
-      color: T.text,
-    },
-    eyebrow: {
-      fontSize: 10, letterSpacing: '1.5px', textTransform: 'uppercase', color: T.textMuted,
-    },
-    title: {
-      fontSize: 18, fontWeight: 700, color: T.text, marginTop: 4,
-    },
-    close: {
-      position: 'absolute', top: 16, right: 16,
-      background: 'none', border: 'none', cursor: 'pointer',
-      fontSize: 14, color: T.textMuted, padding: 0, lineHeight: 1,
-    },
-    sub: {
-      fontSize: 13, color: T.textSoft, lineHeight: 1.5, marginTop: 6, marginBottom: 0,
-    },
-    sectionLabel: {
-      fontSize: 10, letterSpacing: '1.5px', textTransform: 'uppercase',
-      color: T.textMuted, marginTop: 20,
-    },
-    pills: {
-      display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8,
-    },
-    pill: {
-      fontSize: 12, borderRadius: 20, padding: '4px 12px',
-      border: 'none', cursor: 'default',
-    },
-    pillCurrent: {
-      background: T.accent, color: T.userText,
-    },
-    pillLocked: {
-      background: T.surface2, color: T.textSoft,
-    },
-    cta: {
-      width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: T.accent, color: T.userText, borderRadius: 10,
-      padding: '12px', fontWeight: 600, fontSize: 14,
-      border: 'none', cursor: 'pointer', marginTop: 20, boxSizing: 'border-box',
-    },
-    stayLink: {
-      textAlign: 'center', fontSize: 12, color: T.textMuted, cursor: 'pointer', marginTop: 10,
-    },
-    error: {
-      fontSize: 11, color: T.errorText, textAlign: 'center', marginTop: 8,
-    },
-  }
-}
