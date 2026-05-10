@@ -771,6 +771,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
               reportsLoading={reportsLoading}
               onStartAudit={startAudit}
               onStartGoalAudit={() => setGoalModal(true)}
+              healthIntel={healthIntel}
             />
           )}
 
@@ -856,7 +857,7 @@ function PageShell({ title, sub, actions, children }) {
   )
 }
 
-function HomeSection({ user, profile, businessState, businessStateLoading, reports, reportsLoading, onStartAudit, onStartGoalAudit }) {
+function HomeSection({ user, profile, businessState, businessStateLoading, reports, reportsLoading, onStartAudit, onStartGoalAudit, healthIntel }) {
   const issuesRef = useRef(null)
   const latestReport = reports[0] || null
   const latestDiagnosticReport = getLatestDiagnosticReport(reports)
