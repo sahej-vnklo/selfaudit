@@ -16,6 +16,7 @@
 
 import { createClient } from '@supabase/supabase-js'
 import { runBusinessHealthCheck } from './lib/monitoring/health-check.js'
+import { createRiskAlertsFromHealthCheck } from './lib/monitoring/risk-alerts.js'
 import { upsertCompanyBrain } from './lib/intelligence/company-brain.js'
 
 const supabase = createClient(
@@ -39,22 +40,35 @@ export default async function handler(req, res) {
     const result = await runBusinessHealthCheck(userId)
 
     // 2. Persist to business_health_checks — non-blocking on failure
+    let healthCheckId = null
     try {
-      await supabase.from('business_health_checks').insert({
-        user_id:             userId,
-        checked_at:          result.checked_at,
-        health_score:        result.health_score,
-        risks:               result.risks,
-        opportunities:       result.opportunities,
-        summary:             result.summary,
-        recommended_actions: result.recommended_actions,
-        evidence:            result.evidence,
-      })
+      const { data: hcRow } = await supabase
+        .from('business_health_checks')
+        .insert({
+          user_id:             userId,
+          checked_at:          result.checked_at,
+          health_score:        result.health_score,
+          risks:               result.risks,
+          opportunities:       result.opportunities,
+          summary:             result.summary,
+          recommended_actions: result.recommended_actions,
+          evidence:            result.evidence,
+        })
+        .select('id')
+        .single()
+      healthCheckId = hcRow?.id ?? null
     } catch (persistErr) {
       console.warn('[run-health-check] persist failed:', persistErr.message)
     }
 
-    // 3. Propagate new risk/opportunity signals into intelligence_profiles
+    // 3. Create risk alerts for medium/high/critical risks (deduped)
+    try {
+      await createRiskAlertsFromHealthCheck(userId, { ...result, id: healthCheckId })
+    } catch (alertErr) {
+      console.warn('[run-health-check] alert creation failed:', alertErr.message)
+    }
+
+    // 4. Propagate new risk/opportunity signals into intelligence_profiles
     //    so the company brain stays current without a full re-audit.
     //    watchouts ← critical+high risk titles
     //    opportunities ← opportunity titles from this run
