@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { getCompanyBrain, upsertCompanyBrain } from './lib/intelligence/company-brain.js'
-import { classifyAgentIntent, getAvailableDataSources, buildAgentInvestigationPlan } from './lib/agent/planner.js'
+import { classifyAgentIntent, isConversational, getAvailableDataSources, buildAgentInvestigationPlan } from './lib/agent/planner.js'
 import { gatherAgentContext } from './lib/agent/gather-context.js'
 import { generateAgentAnswer } from './lib/agent/generate-agent-answer.js'
 
@@ -63,15 +63,36 @@ export default async function handler(req, res) {
     getIntegrations(sb, userId),
   ])
 
-  // 2. Plan
+  // 2. Short-circuit conversational messages — no investigation needed
+  if (isConversational(query)) {
+    return res.status(200).json({
+      answer:              "Hey — ask me anything about your business. Revenue, hiring, operations, pricing, what's blocking you — I'll investigate and give you a direct answer.",
+      root_cause:          null,
+      severity_score:      null,
+      financial_impact:    null,
+      fix_priority:        null,
+      execution_plan:      [],
+      evidence:            [],
+      assumptions:         [],
+      missing_data:        [],
+      confidence:          null,
+      follow_up_question:  null,
+      risks_found:         [],
+      opportunities_found: [],
+      data_sources_used:   [],
+      intent:              'conversational',
+    })
+  }
+
+  // 3. Plan
   const intent          = classifyAgentIntent(query)
   const availableSources = getAvailableDataSources(brain, integrations)
   const plan            = buildAgentInvestigationPlan(intent, query, availableSources)
 
-  // 3. Gather context
+  // 4. Gather context
   const context = await gatherAgentContext(userId, plan)
 
-  // 4. Generate answer
+  // 5. Generate answer
   let result
   try {
     result = await generateAgentAnswer({ query, plan, context, conversationHistory })
@@ -79,7 +100,7 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: err.message || 'Agent answer generation failed' })
   }
 
-  // 5. Persist finding + update brain (non-blocking)
+  // 6. Persist finding + update brain (non-blocking)
   Promise.allSettled([
     sb.from('agent_findings').insert({
       user_id:     userId,
@@ -98,7 +119,7 @@ export default async function handler(req, res) {
       : Promise.resolve(),
   ]).catch(() => {})
 
-  // 6. Return
+  // 7. Return
   return res.status(200).json({
     answer:             result.answer,
     root_cause:         result.root_cause,

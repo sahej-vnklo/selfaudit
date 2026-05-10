@@ -3,6 +3,20 @@
 
 // ── Intent classification ─────────────────────────────────────────────────────
 
+// Short messages or pure greetings that should not trigger a full investigation
+const CONVERSATIONAL_PATTERNS = [
+  /^(hi|hey|hello|howdy|hiya|yo|sup)\b/i,
+  /^(thanks?|thank you|ty|cheers|cool|ok|okay|got it|nice|great|perfect|sounds good)\b/i,
+  /^(test|testing|ping|check|hello there)\b/i,
+]
+
+export function isConversational(query) {
+  const q = String(query || '').trim()
+  if (q.length < 15 && CONVERSATIONAL_PATTERNS.some((p) => p.test(q))) return true
+  if (q.split(/\s+/).length <= 2 && CONVERSATIONAL_PATTERNS.some((p) => p.test(q))) return true
+  return false
+}
+
 const INTENT_PATTERNS = [
   {
     intent: 'revenue_stuck',

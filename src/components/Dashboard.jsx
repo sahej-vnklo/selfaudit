@@ -1781,7 +1781,8 @@ function AgentSection({ user }) {
     }
   }
 
-  const fp = result ? (FIX_PRIORITY_LABEL[result.fix_priority] || FIX_PRIORITY_LABEL.monitor) : null
+  const fp = result?.fix_priority ? (FIX_PRIORITY_LABEL[result.fix_priority] || null) : null
+  const isConversational = result?.intent === 'conversational'
 
   return (
     <PageShell
@@ -1838,23 +1839,25 @@ function AgentSection({ user }) {
       {/* Result card */}
       {result && (
         <div style={agent.resultCard}>
-          {/* Header row */}
-          <div style={agent.resultHeader}>
-            <span style={agent.intentTag}>{(result.intent || '').replace(/_/g, ' ')}</span>
-            {fp && (
-              <span style={{ ...agent.priorityTag, color: fp.color, borderColor: fp.color }}>
-                {fp.label}
-              </span>
-            )}
-            {result.confidence && (
-              <span style={{ ...agent.confidenceTag, color: CONFIDENCE_COLOR[result.confidence] || G.textMuted }}>
-                {result.confidence} confidence
-              </span>
-            )}
-            {result.severity_score != null && (
-              <span style={agent.severityTag}>severity {result.severity_score}/10</span>
-            )}
-          </div>
+          {/* Header row — hidden for conversational responses */}
+          {!isConversational && (
+            <div style={agent.resultHeader}>
+              <span style={agent.intentTag}>{(result.intent || '').replace(/_/g, ' ')}</span>
+              {fp && (
+                <span style={{ ...agent.priorityTag, color: fp.color, borderColor: fp.color }}>
+                  {fp.label}
+                </span>
+              )}
+              {result.confidence && (
+                <span style={{ ...agent.confidenceTag, color: CONFIDENCE_COLOR[result.confidence] || G.textMuted }}>
+                  {result.confidence} confidence
+                </span>
+              )}
+              {result.severity_score != null && (
+                <span style={agent.severityTag}>severity {result.severity_score}/10</span>
+              )}
+            </div>
+          )}
 
           {/* Answer */}
           <p style={agent.answerText}>{result.answer}</p>
