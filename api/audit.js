@@ -11,6 +11,7 @@
 
 import { createClient } from '@supabase/supabase-js'
 import { fetchHubspotBusinessState } from './lib/connectors/hubspot.js'
+import { normalizeHubspotData, formatNormalizedForPrompt } from './lib/connectors/normalize.js'
 import { getCompanyBrain, formatBrainForPrompt } from './lib/intelligence/company-brain.js'
 
 const CLAUDE_API = 'https://api.anthropic.com/v1/messages'
@@ -74,27 +75,8 @@ async function fetchConnectorContext(userId, supabase) {
     const hubspotData = await fetchHubspotBusinessState(userId, data.integrations)
     if (!hubspotData) return ''
 
-    const lines = ['LIVE CONNECTOR DATA (verified from HubSpot):']
-    const p = hubspotData.pipeline
-    if (p) {
-      lines.push(`Open deals: ${p.total_open_deals} worth $${p.total_open_value?.toLocaleString()}`)
-      if (p.avg_deal_size) lines.push(`Avg deal size: $${p.avg_deal_size.toLocaleString()}`)
-      if (p.deals_closing_soon?.length) {
-        lines.push(`Closing soon: ${p.deals_closing_soon.map(
-          d => `${d.name} $${d.amount} by ${d.closedate}`
-        ).join(', ')}`)
-      }
-    }
-    if (hubspotData.contacts?.new_this_month) {
-      lines.push(`New contacts this month: ${hubspotData.contacts.new_this_month}`)
-    }
-    if (hubspotData.signals?.length) {
-      lines.push('Signals:')
-      hubspotData.signals.forEach(s => lines.push(`- ${s}`))
-    }
-    lines.push('')
-    lines.push('Use this data directly in your diagnosis. Reference specific numbers. Do not ask the user for information already present here.')
-    return lines.join('\n')
+    const normalized = normalizeHubspotData(hubspotData)
+    return formatNormalizedForPrompt(normalized)
   } catch {
     return ''
   }
