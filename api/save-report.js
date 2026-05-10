@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { synthesizeUserIntelligence } from './lib/intelligence/synthesize.js'
+import { upsertCompanyBrain } from './lib/intelligence/company-brain.js'
 
 const supabase = createClient(
   process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
@@ -103,46 +104,60 @@ export default async function handler(req, res) {
       console.warn('[save-report] memory update failed:', memErr.message)
     }
 
-    // Business state upsert — extract structured model from report
+    // Company brain update — safe merge into business_state + intelligence_profiles
+    // Uses upsertCompanyBrain so existing non-empty fields are never overwritten with nulls.
     try {
       const bs = r.business_state ?? {}
 
-      // Fetch existing row to compute goal_score_delta
-      const { data: existing } = await supabase
+      // Compute goal_score_delta before handing off to upsertCompanyBrain
+      const { data: existingBs } = await supabase
         .from('business_state')
         .select('goal_score')
         .eq('user_id', userId)
         .single()
 
-      const prevScore = existing?.goal_score ?? 0
+      const prevScore = existingBs?.goal_score ?? 0
       const newScore  = goalMode
         ? (goalScoreFromFeasibility(r.timeline_feasibility) ?? prevScore)
         : prevScore
-      const delta = newScore - prevScore
 
-      await supabase.from('business_state').upsert({
-        user_id:                userId,
-        revenue_streams:        bs.revenue_streams        ?? [],
-        core_offer:             bs.core_offer             ?? r.overall_verdict ?? null,
-        target_customer:        bs.target_customer        ?? null,
-        funnel_stages:          bs.funnel_stages          ?? [],
-        conversion_bottlenecks: bs.conversion_bottlenecks ?? [],
-        retention_signals:      bs.retention_churn_signals ?? [],
-        team_ownership:         bs.team_ownership         ?? null,
-        operational_blockers:   bs.operational_blockers   ?? [],
-        pricing_structure:      bs.pricing_structure      ?? null,
-        current_constraints:    bs.current_constraints    ?? [],
-        active_goal:            goalMode ? (r.goal_gap_analysis?.goal ?? null) : null,
-        goal_timeline:          goalTimeline              ?? null,
-        goal_baseline:          goalBaseline              ?? null,
-        goal_score:             newScore,
-        goal_score_delta:       delta,
-        last_audit_headline:    r.headline                ?? null,
-        assumptions_unverified: bs.assumptions_unverified ?? [],
-        updated_at:             new Date().toISOString(),
-      }, { onConflict: 'user_id' })
+      const brainPatch = {
+        // Business model fields → business_state
+        ...(bs.revenue_streams?.length        && { revenue_streams:        bs.revenue_streams }),
+        ...(bs.core_offer                     && { core_offer:             bs.core_offer }),
+        ...(bs.target_customer                && { target_customer:        bs.target_customer }),
+        ...(bs.funnel_stages?.length          && { funnel_stages:          bs.funnel_stages }),
+        ...(bs.conversion_bottlenecks?.length && { conversion_bottlenecks: bs.conversion_bottlenecks }),
+        ...(bs.retention_churn_signals?.length && { retention_signals:     bs.retention_churn_signals }),
+        ...(bs.team_ownership                 && { team_ownership:         bs.team_ownership }),
+        ...(bs.operational_blockers?.length   && { operational_blockers:   bs.operational_blockers }),
+        ...(bs.pricing_structure              && { pricing_structure:      bs.pricing_structure }),
+        ...(bs.current_constraints?.length    && { current_constraints:    bs.current_constraints }),
+        ...(bs.assumptions_unverified?.length && { assumptions_unverified: bs.assumptions_unverified }),
+        ...(goalMode && r.goal_gap_analysis?.goal && { active_goal: r.goal_gap_analysis.goal }),
+        ...(goalTimeline                      && { goal_timeline:          goalTimeline }),
+        ...(goalBaseline                      && { goal_baseline:          goalBaseline }),
+        goal_score:          newScore,
+        goal_score_delta:    newScore - prevScore,
+        last_audit_headline: r.headline ?? null,
+
+        // Intelligence fields → intelligence_profiles (appended/merged, not overwritten)
+        ...(r.ai_opportunities?.length && {
+          opportunities: r.ai_opportunities.map(a => typeof a === 'string' ? a : a.area ?? a.title ?? JSON.stringify(a)).filter(Boolean),
+        }),
+        ...(r.priority_actions?.length && { top_priorities: r.priority_actions.filter(Boolean) }),
+        ...(r.domains?.filter(d => d.status === 'critical').length && {
+          watchouts: r.domains.filter(d => d.status === 'critical').map(d => d.finding ?? d.name).filter(Boolean),
+        }),
+        ...(r.headline && { top_headlines: [r.headline] }),
+        ...(r.domains?.length && {
+          domains_audited: r.domains.map(d => d.name).filter(Boolean),
+        }),
+      }
+
+      await upsertCompanyBrain(userId, brainPatch)
     } catch (bsErr) {
-      console.warn('[save-report] business_state upsert failed:', bsErr.message)
+      console.warn('[save-report] company brain update failed:', bsErr.message)
     }
 
     // Pattern tracking — best-effort, capped per report
