@@ -68,7 +68,7 @@ export async function getCompanyBrain(userId) {
       .single(),
 
     sb.from('intelligence_profiles')
-      .select('summary, confidence, top_headlines, focus_areas, domains_audited, repeated_blockers, top_priorities, watchouts, opportunities, changes_since_last, goal_score, synthesized_profile, last_synthesized_at')
+      .select('summary, confidence, top_headlines, focus_areas, domains_audited, repeated_blockers, top_priorities, watchouts, opportunities, changes_since_last, synthesized_profile, last_synthesized_at')
       .eq('user_id', userId)
       .single(),
 
@@ -103,7 +103,7 @@ export async function getCompanyBrain(userId) {
     active_goal:           state?.active_goal              ?? null,
     goal_timeline:         state?.goal_timeline            ?? null,
     goal_baseline:         state?.goal_baseline            ?? null,
-    goal_score:            state?.goal_score               ?? intel?.goal_score ?? 0,
+    goal_score:            state?.goal_score               ?? 0,
     last_audit_headline:   state?.last_audit_headline      ?? null,
     assumptions_unverified: state?.assumptions_unverified  ?? [],
     team_ownership:        state?.team_ownership           ?? null,
