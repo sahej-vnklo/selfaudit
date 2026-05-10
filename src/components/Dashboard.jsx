@@ -198,7 +198,7 @@ const TIERS = [
 ]
 
 const TIER_ORDER = { essential: 0, business: 1, portfolio: 2, free: 0, paid: 1 }
-const SECTIONS = ['home', 'reports', 'intelligence', 'connectors', 'billing', 'account']
+const SECTIONS = ['home', 'reports', 'intelligence', 'connectors', 'agent', 'billing', 'account']
 
 function normalizeTier(raw) {
   if (raw === 'paid') return 'business'
@@ -713,6 +713,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
         <SidebarButton icon={<IconReports />} active={section === 'reports'} onClick={() => navigateSection('reports')} label="Reports" expanded={sidebarExpanded} />
         <SidebarButton icon={<IconIntelligence />} active={section === 'intelligence'} onClick={() => navigateSection('intelligence')} label="Intelligence brief" expanded={sidebarExpanded} />
         <SidebarButton icon={<IconConnectors />} active={section === 'connectors'} onClick={() => navigateSection('connectors')} label="Connectors" expanded={sidebarExpanded} />
+        <SidebarButton icon={<IconAgent />} active={section === 'agent'} onClick={() => navigateSection('agent')} label="Ask TSA" expanded={sidebarExpanded} />
         {sidebarExpanded && (
           <div style={styles.sidebarBusinessStateWrap}>
             <BusinessStateCard user={user} businessState={businessState} loading={businessStateLoading} />
@@ -799,6 +800,10 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
 
           {section === 'connectors' && (
             <ConnectorsSection user={user} />
+          )}
+
+          {section === 'agent' && (
+            <AgentSection user={user} />
           )}
 
           {section === 'billing' && (
@@ -1696,6 +1701,340 @@ function ConnectorsSection({ user }) {
       {loading && <div style={styles.connectorsLoading}>Checking connector status…</div>}
     </PageShell>
   )
+}
+
+const FIX_PRIORITY_LABEL = {
+  immediate:   { label: 'Immediate', color: '#A32D2D' },
+  this_week:   { label: 'This week', color: '#BA7517' },
+  this_month:  { label: 'This month', color: '#6B6860' },
+  monitor:     { label: 'Monitor',    color: '#6B6860' },
+}
+
+const CONFIDENCE_COLOR = { high: G.green, medium: G.amber, low: G.red }
+
+function AgentSection({ user }) {
+  const [query, setQuery]             = useState('')
+  const [loading, setLoading]         = useState(false)
+  const [result, setResult]           = useState(null)
+  const [error, setError]             = useState(null)
+  const [history, setHistory]         = useState([])
+  const textareaRef                   = useRef(null)
+
+  const SUGGESTED = [
+    'Why is revenue not growing?',
+    'What is blocking my pipeline?',
+    'Should I hire a salesperson now?',
+    'What is my biggest risk right now?',
+    'Where am I losing customers?',
+  ]
+
+  async function submit(q) {
+    const trimmed = (q || query).trim()
+    if (!trimmed || loading) return
+    setLoading(true)
+    setError(null)
+    setResult(null)
+
+    try {
+      const sb    = await initSupabase()
+      const { data: { session } } = await sb.auth.getSession()
+      const token = session?.access_token || null
+
+      const res = await fetch('/api/agent-query', {
+        method: 'POST',
+        headers: {
+          'Content-Type':  'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          query:               trimmed,
+          userId:              user?.id,
+          conversationHistory: history.slice(-6),
+        }),
+      })
+
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Agent query failed')
+
+      setResult(data)
+      setHistory((prev) => [
+        ...prev,
+        { role: 'user', content: trimmed },
+        { role: 'assistant', content: data.answer },
+      ])
+      setQuery('')
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  function handleKeyDown(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      submit()
+    }
+  }
+
+  const fp = result ? (FIX_PRIORITY_LABEL[result.fix_priority] || FIX_PRIORITY_LABEL.monitor) : null
+
+  return (
+    <PageShell
+      title="Ask TSA"
+      sub="Your operational strategist. Investigates your live business data before answering."
+    >
+      {/* Suggested prompts (only when no result yet) */}
+      {!result && !loading && (
+        <div style={agent.suggestedWrap}>
+          {SUGGESTED.map((s) => (
+            <button
+              key={s}
+              type="button"
+              style={agent.suggestedChip}
+              onClick={() => { setQuery(s); submit(s) }}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Input */}
+      <div style={agent.inputWrap}>
+        <textarea
+          ref={textareaRef}
+          style={agent.textarea}
+          placeholder="Ask anything about your business…"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={handleKeyDown}
+          rows={2}
+          disabled={loading}
+        />
+        <button
+          type="button"
+          style={{ ...agent.sendBtn, opacity: loading || !query.trim() ? 0.45 : 1 }}
+          onClick={() => submit()}
+          disabled={loading || !query.trim()}
+        >
+          {loading ? '…' : '→'}
+        </button>
+      </div>
+
+      {error && <div style={agent.errorBox}>{error}</div>}
+
+      {loading && (
+        <div style={agent.thinkingBox}>
+          <span style={agent.thinkingDot} />
+          TSA is investigating…
+        </div>
+      )}
+
+      {/* Result card */}
+      {result && (
+        <div style={agent.resultCard}>
+          {/* Header row */}
+          <div style={agent.resultHeader}>
+            <span style={agent.intentTag}>{(result.intent || '').replace(/_/g, ' ')}</span>
+            {fp && (
+              <span style={{ ...agent.priorityTag, color: fp.color, borderColor: fp.color }}>
+                {fp.label}
+              </span>
+            )}
+            {result.confidence && (
+              <span style={{ ...agent.confidenceTag, color: CONFIDENCE_COLOR[result.confidence] || G.textMuted }}>
+                {result.confidence} confidence
+              </span>
+            )}
+            {result.severity_score != null && (
+              <span style={agent.severityTag}>severity {result.severity_score}/10</span>
+            )}
+          </div>
+
+          {/* Answer */}
+          <p style={agent.answerText}>{result.answer}</p>
+
+          {/* Root cause */}
+          {result.root_cause && (
+            <div style={agent.subSection}>
+              <div style={agent.subLabel}>Root cause</div>
+              <p style={agent.subText}>{result.root_cause}</p>
+            </div>
+          )}
+
+          {/* Financial impact */}
+          {result.financial_impact && (
+            <div style={agent.subSection}>
+              <div style={agent.subLabel}>Financial impact</div>
+              <p style={agent.subText}>{result.financial_impact}</p>
+            </div>
+          )}
+
+          {/* Execution plan */}
+          {result.execution_plan?.length > 0 && (
+            <div style={agent.subSection}>
+              <div style={agent.subLabel}>Execution plan</div>
+              <ol style={agent.planList}>
+                {result.execution_plan.map((step, i) => (
+                  <li key={i} style={agent.planItem}>{step}</li>
+                ))}
+              </ol>
+            </div>
+          )}
+
+          {/* Evidence */}
+          {result.evidence?.length > 0 && (
+            <div style={agent.subSection}>
+              <div style={agent.subLabel}>Evidence used</div>
+              <ul style={agent.bulletList}>
+                {result.evidence.map((e, i) => <li key={i} style={agent.bulletItem}>{e}</li>)}
+              </ul>
+            </div>
+          )}
+
+          {/* Risks + Opportunities row */}
+          {(result.risks_found?.length > 0 || result.opportunities_found?.length > 0) && (
+            <div style={agent.roRow}>
+              {result.risks_found?.length > 0 && (
+                <div style={agent.roBox}>
+                  <div style={{ ...agent.subLabel, color: G.red }}>Risks identified</div>
+                  <ul style={agent.bulletList}>
+                    {result.risks_found.map((r, i) => <li key={i} style={agent.bulletItem}>{r}</li>)}
+                  </ul>
+                </div>
+              )}
+              {result.opportunities_found?.length > 0 && (
+                <div style={agent.roBox}>
+                  <div style={{ ...agent.subLabel, color: G.green }}>Opportunities</div>
+                  <ul style={agent.bulletList}>
+                    {result.opportunities_found.map((o, i) => <li key={i} style={agent.bulletItem}>{o}</li>)}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Follow-up question */}
+          {result.follow_up_question && (
+            <button
+              type="button"
+              style={agent.followUpBtn}
+              onClick={() => { setQuery(result.follow_up_question); submit(result.follow_up_question) }}
+            >
+              ↪ {result.follow_up_question}
+            </button>
+          )}
+
+          {/* Missing data / assumptions */}
+          {(result.missing_data?.length > 0 || result.assumptions?.length > 0) && (
+            <details style={agent.detailsBlock}>
+              <summary style={agent.detailsSummary}>Assumptions &amp; missing data</summary>
+              {result.assumptions?.length > 0 && (
+                <ul style={agent.bulletList}>
+                  {result.assumptions.map((a, i) => <li key={i} style={agent.bulletItem}>{a}</li>)}
+                </ul>
+              )}
+              {result.missing_data?.length > 0 && (
+                <ul style={{ ...agent.bulletList, color: G.amber }}>
+                  {result.missing_data.map((m, i) => <li key={i} style={agent.bulletItem}>{m}</li>)}
+                </ul>
+              )}
+            </details>
+          )}
+
+          {/* Data sources */}
+          {result.data_sources_used?.length > 0 && (
+            <div style={agent.sourcesRow}>
+              {result.data_sources_used.map((s) => (
+                <span key={s} style={agent.sourceChip}>{s.replace(/_/g, ' ')}</span>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Ask another */}
+      {result && (
+        <button type="button" style={agent.resetBtn} onClick={() => { setResult(null); setError(null) }}>
+          Ask another question
+        </button>
+      )}
+    </PageShell>
+  )
+}
+
+const agent = {
+  suggestedWrap: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 },
+  suggestedChip: {
+    background: 'transparent', border: `1px solid ${G.border}`, borderRadius: 20,
+    padding: '6px 14px', fontSize: 13, color: G.textSecondary, cursor: 'pointer',
+    whiteSpace: 'nowrap',
+  },
+  inputWrap: { display: 'flex', gap: 8, marginBottom: 16, alignItems: 'flex-end' },
+  textarea: {
+    flex: 1, background: G.surface, border: `1px solid ${G.border}`, borderRadius: 8,
+    color: G.text, fontSize: 14, padding: '10px 12px', resize: 'none',
+    fontFamily: 'inherit', lineHeight: 1.5, outline: 'none',
+  },
+  sendBtn: {
+    background: G.text, color: G.black, border: 'none', borderRadius: 8,
+    width: 40, height: 40, fontSize: 18, cursor: 'pointer', flexShrink: 0,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+  },
+  errorBox: {
+    background: G.redBg, border: `1px solid ${G.red}`, color: G.redText,
+    borderRadius: 8, padding: '10px 14px', fontSize: 13, marginBottom: 12,
+  },
+  thinkingBox: {
+    display: 'flex', alignItems: 'center', gap: 8, color: G.textMuted,
+    fontSize: 13, padding: '12px 0',
+  },
+  thinkingDot: {
+    width: 8, height: 8, borderRadius: '50%', background: G.accent,
+    display: 'inline-block', animation: 'pulse 1.2s ease-in-out infinite',
+  },
+  resultCard: {
+    background: G.surface, border: `1px solid ${G.border}`, borderRadius: 12,
+    padding: 24, marginBottom: 16,
+  },
+  resultHeader: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16, alignItems: 'center' },
+  intentTag: {
+    background: G.surface2, color: G.textSecondary, fontSize: 11,
+    padding: '3px 10px', borderRadius: 20, textTransform: 'uppercase', letterSpacing: '0.06em',
+  },
+  priorityTag: {
+    fontSize: 11, padding: '3px 10px', borderRadius: 20,
+    border: '1px solid', textTransform: 'uppercase', letterSpacing: '0.06em',
+  },
+  confidenceTag: { fontSize: 12, fontWeight: 500 },
+  severityTag: { fontSize: 12, color: G.textMuted },
+  answerText: { fontSize: 15, color: G.text, lineHeight: 1.7, margin: '0 0 20px' },
+  subSection: { marginBottom: 16 },
+  subLabel: { fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.07em', color: G.textMuted, marginBottom: 6, fontWeight: 600 },
+  subText: { fontSize: 14, color: G.textSecondary, lineHeight: 1.6, margin: 0 },
+  planList: { paddingLeft: 20, margin: 0 },
+  planItem: { fontSize: 14, color: G.textSecondary, lineHeight: 1.7, marginBottom: 4 },
+  bulletList: { paddingLeft: 18, margin: 0 },
+  bulletItem: { fontSize: 13, color: G.textSecondary, lineHeight: 1.6, marginBottom: 2 },
+  roRow: { display: 'flex', gap: 16, marginBottom: 16, flexWrap: 'wrap' },
+  roBox: { flex: 1, minWidth: 180 },
+  followUpBtn: {
+    display: 'block', width: '100%', textAlign: 'left', background: G.surface2,
+    border: `1px solid ${G.border}`, borderRadius: 8, padding: '10px 14px',
+    fontSize: 13, color: G.textSecondary, cursor: 'pointer', marginBottom: 16,
+  },
+  detailsBlock: { marginBottom: 12 },
+  detailsSummary: { fontSize: 12, color: G.textMuted, cursor: 'pointer', marginBottom: 6 },
+  sourcesRow: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 12 },
+  sourceChip: {
+    background: G.surface2, color: G.textFaint, fontSize: 11,
+    padding: '2px 8px', borderRadius: 10,
+  },
+  resetBtn: {
+    background: 'transparent', border: `1px solid ${G.border}`, borderRadius: 8,
+    padding: '8px 18px', fontSize: 13, color: G.textSecondary, cursor: 'pointer',
+  },
 }
 
 function AccountSection({ user, profile, onProfileChange, onSignOut }) {
@@ -2606,6 +2945,16 @@ function IconGear() {
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
       <path d="M8 5.5A2.5 2.5 0 1 0 8 10.5A2.5 2.5 0 1 0 8 5.5Z" stroke="currentColor" strokeWidth="1.5" />
       <path d="M8 1.75V3.25M8 12.75V14.25M12.45 3.55L11.39 4.61M4.61 11.39L3.55 12.45M14.25 8H12.75M3.25 8H1.75M12.45 12.45L11.39 11.39M4.61 4.61L3.55 3.55" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function IconAgent() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <circle cx="8" cy="5" r="2.5" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M3 14c0-2.76 2.24-5 5-5s5 2.24 5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M11.5 8.5l1.5 1.5-1.5 1.5" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
