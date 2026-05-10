@@ -10,9 +10,12 @@ const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, {
 })
 
 const PRICE_IDS: Record<string, string | undefined> = {
-  essential: Deno.env.get('STRIPE_PRICE_ESSENTIAL'),
-  business:  Deno.env.get('STRIPE_PRICE_BUSINESS'),
-  portfolio: Deno.env.get('STRIPE_PRICE_PORTFOLIO'),
+  foundation:   Deno.env.get('STRIPE_PRICE_FOUNDATION')   || Deno.env.get('STRIPE_PRICE_ESSENTIAL'),
+  intelligence: Deno.env.get('STRIPE_PRICE_INTELLIGENCE') || Deno.env.get('STRIPE_PRICE_BUSINESS'),
+  // legacy aliases — kept for backward compat with any in-flight sessions
+  essential:    Deno.env.get('STRIPE_PRICE_FOUNDATION')   || Deno.env.get('STRIPE_PRICE_ESSENTIAL'),
+  business:     Deno.env.get('STRIPE_PRICE_INTELLIGENCE') || Deno.env.get('STRIPE_PRICE_BUSINESS'),
+  portfolio:    Deno.env.get('STRIPE_PRICE_PORTFOLIO'),
 }
 
 Deno.serve(async (req) => {
