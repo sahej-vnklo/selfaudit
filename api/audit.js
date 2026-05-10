@@ -11,6 +11,7 @@
 
 import { createClient } from '@supabase/supabase-js'
 import { fetchHubspotBusinessState } from './lib/connectors/hubspot.js'
+import { getCompanyBrain, formatBrainForPrompt } from './lib/intelligence/company-brain.js'
 
 const CLAUDE_API = 'https://api.anthropic.com/v1/messages'
 
@@ -23,32 +24,8 @@ const supabase = createClient(
 async function fetchBusinessState(userId) {
   if (!userId) return ''
   try {
-    const { data } = await supabase
-      .from('business_state')
-      .select('*')
-      .eq('user_id', userId)
-      .single()
-
-    if (!data) return ''
-
-    const lines = ['STRUCTURED BUSINESS MODEL (verified across sessions):']
-    if (data.core_offer)                      lines.push(`Core offer: ${data.core_offer}`)
-    if (data.target_customer)                 lines.push(`Target customer: ${data.target_customer}`)
-    if (data.revenue_streams?.length)         lines.push(`Revenue streams: ${data.revenue_streams.join(', ')}`)
-    if (data.pricing_structure)               lines.push(`Pricing: ${data.pricing_structure}`)
-    if (data.funnel_stages?.length)           lines.push(`Funnel: ${data.funnel_stages.join(' → ')}`)
-    if (data.conversion_bottlenecks?.length)  lines.push(`Known bottlenecks: ${data.conversion_bottlenecks.join('; ')}`)
-    if (data.operational_blockers?.length)    lines.push(`Operational blockers: ${data.operational_blockers.join('; ')}`)
-    if (data.current_constraints?.length)     lines.push(`Current constraints: ${data.current_constraints.join(', ')}`)
-    if (data.active_goal)                     lines.push(`Active goal: ${data.active_goal}`)
-    if (data.goal_timeline)                   lines.push(`Goal timeline: ${data.goal_timeline}`)
-    if (data.last_audit_headline)             lines.push(`Last audit finding: ${data.last_audit_headline}`)
-    if (data.assumptions_unverified?.length)  lines.push(`Unverified assumptions: ${data.assumptions_unverified.join('; ')}`)
-
-    lines.push('')
-    lines.push('Use this model as ground truth for what you already know about this business. Do not re-ask questions already answered here. Update your understanding if the user corrects any field.')
-
-    return lines.join('\n')
+    const brain = await getCompanyBrain(userId)
+    return formatBrainForPrompt(brain)
   } catch {
     return ''
   }
