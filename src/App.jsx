@@ -193,6 +193,9 @@ export default function App() {
             setAuthLoading(false)
             const currentHash = window.location.hash.replace(/^#\/?/, '')
             if (currentHash === 'admin') return
+            // Don't navigate away from signup — let the signup flow finish writing
+            // the tier and subscription before onSuccess redirects to dashboard.
+            if (currentHash === 'signup' || currentHash.startsWith('signup?')) return
             navigate(SCREENS.DASHBOARD)
           }
         })
