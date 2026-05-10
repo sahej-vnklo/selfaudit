@@ -451,6 +451,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
   const [profile, setProfile] = useState(null)
   const [businessState, setBusinessState] = useState(null)
   const [businessStateLoading, setBusinessStateLoading] = useState(true)
+  const [healthIntel, setHealthIntel] = useState(null)
   const [reports, setReports] = useState([])
   const [reportsLoading, setReportsLoading] = useState(true)
   const [billing, setBilling] = useState(null)
@@ -594,6 +595,12 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
         }
 
         setBusinessState(data || null)
+
+        // Non-blocking: enrich health panel with cross-session intelligence
+        fetch(`/api/business-health?userId=${user.id}`)
+          .then(r => r.ok ? r.json() : null)
+          .then(d => { if (!cancelled && d) setHealthIntel(d) })
+          .catch(() => {})
       } catch (error) {
         if (!cancelled) {
           console.error('[dashboard] business_state fetch threw:', error?.message ?? error)
@@ -952,7 +959,7 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
         </div>
 
         <div style={styles.rightColumn}>
-          <BusinessHealthPanel latestDomains={latestDomains} />
+          <BusinessHealthPanel latestDomains={latestDomains} healthIntel={healthIntel} />
           <AiOpportunitiesCard
             user={user}
             userInfo={shareUserInfo}
@@ -1035,11 +1042,14 @@ function AuditHistoryPanel({ reports, reportsLoading }) {
   )
 }
 
-function BusinessHealthPanel({ latestDomains }) {
+function BusinessHealthPanel({ latestDomains, healthIntel }) {
   const score = latestDomains.length ? computeHealthScore(latestDomains) : 0
   const radius = 28
   const circumference = 2 * Math.PI * radius
   const fill = (score / 100) * circumference
+
+  const activeRisks       = healthIntel?.active_risks?.slice(0, 3)       ?? []
+  const unresolvedActions = healthIntel?.unresolved_actions?.slice(0, 3) ?? []
 
   return (
     <PanelCard title="business health">
@@ -1088,6 +1098,34 @@ function BusinessHealthPanel({ latestDomains }) {
               )
             })}
           </div>
+
+          {activeRisks.length > 0 && (
+            <div style={{ marginTop: 20 }}>
+              <div style={{ fontSize: 11, color: G.textFaint, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>active risks</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {activeRisks.map((risk, i) => (
+                  <div key={i} style={{ fontSize: 12, color: G.textSecondary, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                    <span style={{ color: G.red, flexShrink: 0 }}>↑</span>
+                    <span>{risk}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {unresolvedActions.length > 0 && (
+            <div style={{ marginTop: 16 }}>
+              <div style={{ fontSize: 11, color: G.textFaint, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>unresolved actions</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {unresolvedActions.map((action, i) => (
+                  <div key={i} style={{ fontSize: 12, color: G.textSecondary, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                    <span style={{ color: G.amber, flexShrink: 0 }}>→</span>
+                    <span>{action}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </>
       )}
     </PanelCard>
