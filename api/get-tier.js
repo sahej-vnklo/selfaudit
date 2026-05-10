@@ -26,5 +26,5 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: error.message })
   }
 
-  return res.json({ tier: data?.tier ?? 'essential', industry: data?.industry ?? null, domain: data?.domain ?? null })
+  return res.json({ tier: data?.tier ?? 'foundation', industry: data?.industry ?? null, domain: data?.domain ?? null })
 }
