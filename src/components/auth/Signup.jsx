@@ -142,6 +142,7 @@ function SignupForm({ onSuccess, onLogin }) {
   })
   const [errors,       setErrors]       = useState({})
   const [loading,      setLoading]      = useState(false)
+  const [loadingMsg,   setLoadingMsg]   = useState('')
   const [globalError,  setGlobalError]  = useState(null)
   const [emailSent,    setEmailSent]    = useState(false)
   const [magicLinkSent, setMagicLinkSent] = useState(false)
@@ -167,6 +168,7 @@ function SignupForm({ onSuccess, onLogin }) {
     setGlobalError(null)
     if (!validate()) return
     setLoading(true)
+    setLoadingMsg('Creating account…')
     localStorage.setItem('sa-signup-in-progress', '1')
     const fullName = `${form.firstName.trim()} ${form.lastName.trim()}`
     posthog?.capture('signup_submitted', { plan: selectedPlan, email: form.email })
@@ -191,6 +193,7 @@ function SignupForm({ onSuccess, onLogin }) {
         }).catch(e => console.warn('[signup] Attio failed:', e.message))
 
         // 2. Create Stripe payment method
+        setLoadingMsg('Verifying card…')
         if (!stripe || !elements) throw new Error('Stripe is not loaded yet. Please try again.')
         const cardNumber = elements.getElement(CardNumberElement)
         if (!cardNumber) throw new Error('Card element not found')
@@ -203,6 +206,7 @@ function SignupForm({ onSuccess, onLogin }) {
         if (pmError) throw new Error(pmError.message)
 
         // 3. Create Stripe subscription via edge function
+        setLoadingMsg('Activating plan…')
         const { data: subData, error: fnError } = await sb.functions.invoke(
           'create-stripe-subscription',
           { body: { userId: user.id, email: form.email, name: fullName, tier: selectedPlan, paymentMethodId: paymentMethod.id } }
@@ -251,6 +255,7 @@ function SignupForm({ onSuccess, onLogin }) {
     } finally {
       localStorage.removeItem('sa-signup-in-progress')
       setLoading(false)
+      setLoadingMsg('')
     }
   }
 
@@ -477,7 +482,7 @@ function SignupForm({ onSuccess, onLogin }) {
           {globalError && <p style={s.errorMsg}>{globalError}</p>}
 
           <button style={{ ...s.btn, opacity: loading ? 0.7 : 1 }} onClick={handleSubmit} disabled={loading || !stripe}>
-            {loading ? 'Creating account…' : 'Create account + start plan →'}
+            {loading ? (loadingMsg || 'Creating account…') : 'Create account + start plan →'}
           </button>
 
           <p style={s.privacy}>
