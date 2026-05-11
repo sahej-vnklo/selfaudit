@@ -19,6 +19,68 @@ async function getRawBody(req) {
   })
 }
 
+function tierFromPriceId(priceId) {
+  if (!priceId) return null
+  const foundationPrice  = process.env.STRIPE_PRICE_FOUNDATION  || process.env.STRIPE_PRICE_ESSENTIAL
+  const intelligencePrice = process.env.STRIPE_PRICE_INTELLIGENCE || process.env.STRIPE_PRICE_BUSINESS
+  if (priceId === foundationPrice)   return 'foundation'
+  if (priceId === intelligencePrice) return 'intelligence'
+  return null
+}
+
+async function handleSubscriptionCreatedOrUpdated(event, supabase) {
+  const subscription = event.data.object
+  const customerId   = subscription.customer
+  const priceId      = subscription.items?.data?.[0]?.price?.id
+  const tier         = tierFromPriceId(priceId)
+
+  if (!tier) {
+    console.warn('[stripe-webhook] unknown price ID — cannot map to tier:', priceId)
+    return
+  }
+
+  // Find the user whose profile has this stripe_customer_id
+  let { data: profile } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('stripe_customer_id', customerId)
+    .single()
+
+  // Fallback: look up by customer email if customer_id isn't written yet
+  if (!profile) {
+    const stripe    = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' })
+    const customer  = await stripe.customers.retrieve(customerId)
+    if (customer?.email) {
+      const { data: byEmail } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', customer.email)
+        .single()
+      profile = byEmail
+    }
+  }
+
+  if (!profile?.id) {
+    console.warn('[stripe-webhook] could not find profile for customer:', customerId)
+    return
+  }
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({
+      tier,
+      stripe_customer_id:     customerId,
+      stripe_subscription_id: subscription.id,
+    })
+    .eq('id', profile.id)
+
+  if (error) {
+    console.error('[stripe-webhook] profile update failed:', error.message)
+  } else {
+    console.log('[stripe-webhook] tier set to', tier, 'for user', profile.id)
+  }
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
@@ -41,30 +103,36 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: `Webhook signature invalid: ${err.message}` })
   }
 
+  const supabase = getSupabase()
+
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object
     const userId  = session.client_reference_id || session.metadata?.userId
     const { tier, priceId } = session.metadata || {}
 
     if (userId && tier) {
-      const supabase = getSupabase()
       const { error } = await supabase
         .from('profiles')
         .update({
           tier,
-          stripe_customer_id:      session.customer      || null,
-          stripe_subscription_id:  session.subscription  || null,
-          stripe_price_id:         priceId               || null,
+          stripe_customer_id:     session.customer     || null,
+          stripe_subscription_id: session.subscription || null,
+          stripe_price_id:        priceId              || null,
         })
         .eq('id', userId)
 
       if (error) {
-        console.error('[stripe-webhook] profile update failed:', error.message)
+        console.error('[stripe-webhook] checkout profile update failed:', error.message)
         return res.status(500).json({ error: error.message })
       }
-    } else {
-      console.warn('[stripe-webhook] missing userId or tier — skipping profile update', { userId, tier })
     }
+  }
+
+  if (
+    event.type === 'customer.subscription.created' ||
+    event.type === 'customer.subscription.updated'
+  ) {
+    await handleSubscriptionCreatedOrUpdated(event, supabase)
   }
 
   return res.status(200).json({ received: true })
