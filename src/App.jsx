@@ -182,7 +182,7 @@ export default function App() {
                 .select('stripe_subscription_id, tier')
                 .eq('id', session.user.id)
                 .single()
-              if (!profile?.stripe_subscription_id && !profile?.tier) {
+              if (!profile?.stripe_subscription_id) {
                 await sb.auth.signOut()
                 navigate(SCREENS.SIGNUP)
                 return
