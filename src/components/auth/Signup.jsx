@@ -202,14 +202,30 @@ function SignupForm({ onSuccess, onLogin }) {
         })
         if (pmError) throw new Error(pmError.message)
 
-        // 3. Create Stripe subscription — edge function writes tier + stripe IDs
-        //    to profiles using service role, bypassing RLS.
+        // 3. Create Stripe subscription via edge function
         const { data: subData, error: fnError } = await sb.functions.invoke(
           'create-stripe-subscription',
           { body: { userId: user.id, email: form.email, name: fullName, tier: selectedPlan, paymentMethodId: paymentMethod.id } }
         )
         if (fnError) throw fnError
         if (subData?.error) throw new Error(subData.error)
+
+        // 4. Write tier + stripe IDs to profile via server-side API (bypasses RLS)
+        const profileRes = await fetch('/api/set-profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId:               user.id,
+            name:                 fullName,
+            tier:                 selectedPlan,
+            stripeCustomerId:     subData.customerId,
+            stripeSubscriptionId: subData.subscriptionId,
+          }),
+        })
+        if (!profileRes.ok) {
+          const profileErr = await profileRes.json().catch(() => ({}))
+          throw new Error(profileErr.error || 'Failed to save account details')
+        }
 
         posthog?.identify(user.id, { email: form.email, name: fullName, plan: selectedPlan })
         posthog?.capture('signup_completed', { plan: selectedPlan, email: form.email })
