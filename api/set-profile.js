@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end()
 
-  const { userId, name, tier, stripeCustomerId, stripeSubscriptionId } = req.body || {}
+  const { userId, email, name, tier, stripeCustomerId, stripeSubscriptionId } = req.body || {}
   if (!userId || !tier) return res.status(400).json({ error: 'userId and tier required' })
 
   const supabaseUrl        = process.env.SUPABASE_URL
@@ -16,6 +16,7 @@ export default async function handler(req, res) {
   const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
   const payload = { id: userId, tier }
+  if (email)                payload.email                  = email
   if (name)                 payload.name                   = name
   if (stripeCustomerId)     payload.stripe_customer_id     = stripeCustomerId
   if (stripeSubscriptionId) payload.stripe_subscription_id = stripeSubscriptionId

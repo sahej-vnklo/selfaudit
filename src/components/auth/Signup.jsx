@@ -216,6 +216,7 @@ function SignupForm({ onSuccess, onLogin }) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             userId:               user.id,
+            email:                form.email,
             name:                 fullName,
             tier:                 selectedPlan,
             stripeCustomerId:     subData.customerId,
