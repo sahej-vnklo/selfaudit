@@ -150,6 +150,24 @@ export default function App() {
         clearTimeout(authTimeout)
         setSession(data?.session ?? null)
         if (data?.session) {
+          // If the user clicked Google on the Login page, check they have a paid account
+          // before letting them in. This runs on the OAuth redirect path (page reload),
+          // so it must be here — onAuthStateChange fires too late.
+          const loginIntent = localStorage.getItem('sa-oauth-login-intent')
+          if (loginIntent === '1') {
+            localStorage.removeItem('sa-oauth-login-intent')
+            const { data: profile } = await sb.from('profiles')
+              .select('stripe_subscription_id')
+              .eq('id', data.session.user.id)
+              .single()
+            if (!profile?.stripe_subscription_id) {
+              await sb.auth.signOut()
+              setSession(null)
+              setAuthLoading(false)
+              navigate(SCREENS.SIGNUP)
+              return
+            }
+          }
           const redirected = await maybeStartPendingCheckout(data.session)
           if (redirected) return
           const currentHash = window.location.hash.replace(/^#\/?/, '')
