@@ -40,7 +40,7 @@ export default async function handler(req, res) {
       customer_email: email,
       client_reference_id: userId,
       success_url: `${appUrl}/#dashboard`,
-      cancel_url:  `${appUrl}/#dashboard`,
+      cancel_url:  `${appUrl}/#signup`,
       metadata: { userId, tier, priceId },
     })
 
