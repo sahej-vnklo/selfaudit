@@ -190,20 +190,7 @@ function SignupForm({ onSuccess, onLogin }) {
           body: JSON.stringify({ action: 'create_user', email: form.email, name: fullName, tier: selectedPlan }),
         }).catch(e => console.warn('[signup] Attio failed:', e.message))
 
-        // 2. Upsert profile row with selected tier.
-        // Wait 300ms first so the handle_new_user trigger has time to create
-        // the row — without this the upsert and trigger can race, leaving tier=null.
-        await new Promise(r => setTimeout(r, 300))
-
-        const { data: profileData, error: profileError } = await sb
-          .from('profiles')
-          .upsert({ id: user.id, name: fullName }, { onConflict: 'id' })
-          .select('tier')
-          .single()
-        if (profileError) throw profileError
-        console.log('[signup] tier written:', profileData?.tier)
-
-        // 3. Create Stripe customer + subscription (all plans require card)
+        // 2. Create Stripe payment method
         if (!stripe || !elements) throw new Error('Stripe is not loaded yet. Please try again.')
         const cardNumber = elements.getElement(CardNumberElement)
         if (!cardNumber) throw new Error('Card element not found')
@@ -215,18 +202,14 @@ function SignupForm({ onSuccess, onLogin }) {
         })
         if (pmError) throw new Error(pmError.message)
 
+        // 3. Create Stripe subscription — edge function writes tier + stripe IDs
+        //    to profiles using service role, bypassing RLS.
         const { data: subData, error: fnError } = await sb.functions.invoke(
           'create-stripe-subscription',
           { body: { userId: user.id, email: form.email, name: fullName, tier: selectedPlan, paymentMethodId: paymentMethod.id } }
         )
         if (fnError) throw fnError
         if (subData?.error) throw new Error(subData.error)
-
-        await sb.from('profiles').update({
-          tier:                   selectedPlan,
-          stripe_customer_id:     subData.customerId,
-          stripe_subscription_id: subData.subscriptionId,
-        }).eq('id', user.id).throwOnError()
 
         posthog?.identify(user.id, { email: form.email, name: fullName, plan: selectedPlan })
         posthog?.capture('signup_completed', { plan: selectedPlan, email: form.email })

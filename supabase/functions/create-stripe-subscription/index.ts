@@ -1,4 +1,5 @@
 import Stripe from 'https://esm.sh/stripe@13.10.0?target=deno&no-check'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2?target=deno'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -52,11 +53,40 @@ Deno.serve(async (req) => {
       expand: ['latest_invoice.payment_intent'],
     })
 
+    // Write tier + stripe IDs to profile using service role (bypasses RLS)
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+    )
+    const { error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .upsert({
+        id:                     userId,
+        name:                   name || null,
+        tier:                   tier,
+        stripe_customer_id:     customer.id,
+        stripe_subscription_id: subscription.id,
+      }, { onConflict: 'id' })
+
+    if (profileError) {
+      console.error('[create-stripe-subscription] profile upsert error:', profileError.message)
+      // Still return success — subscription was created, just flag the DB write failure
+      return new Response(
+        JSON.stringify({
+          customerId:    customer.id,
+          subscriptionId: subscription.id,
+          status:        subscription.status,
+          profileError:  profileError.message,
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     return new Response(
       JSON.stringify({
-        customerId: customer.id,
+        customerId:    customer.id,
         subscriptionId: subscription.id,
-        status: subscription.status,
+        status:        subscription.status,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
