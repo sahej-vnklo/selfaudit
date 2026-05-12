@@ -25,24 +25,24 @@ const THEMES = {
   },
   light: {
     theme: 'light',
-    bg: '#F5F0E8',
-    surface: '#EDE6DC',
-    surface2: '#E8E0D4',
-    surface3: '#E2D8CC',
-    card: '#E8DFD3',
-    border: '#C4B4A4',
-    border2: '#BAA898',
+    bg: '#F0EAE0',
+    surface: '#E8DFD2',
+    surface2: '#DDD5C4',
+    surface3: '#D5C9B8',
+    card: '#FFFFFF',
+    border: '#C8B89A',
+    border2: '#B8A888',
     ink: '#1A1410',
-    inkSoft: '#5C4840',
-    inkMuted: '#6B5040',
-    inkFaint: '#8A6A58',
-    accent: '#8C4A42',
-    accentDark: '#7A3C36',
-    accentSoft: '#F0E4E0',
-    accentText: '#8C4A42',
-    redMuted: 'rgba(140, 74, 66, 0.85)',
-    redSoft: '#F5EDEB',
-    amber: '#8C6A30',
+    inkSoft: '#3A2E24',
+    inkMuted: '#4A3A2A',
+    inkFaint: '#6A5A48',
+    accent: '#8B4A2A',
+    accentDark: '#7A3C22',
+    accentSoft: '#EDE4DA',
+    accentText: '#8B4A2A',
+    redMuted: 'rgba(192, 57, 43, 0.90)',
+    redSoft: '#FDF0EE',
+    amber: '#6A5A48',
   },
 }
 
@@ -660,7 +660,7 @@ function TextNavLink({ label, onClick, C, muted = false, active = false }) {
         cursor: 'pointer',
         fontSize: 15,
         fontWeight: 500,
-        color: muted ? C.inkMuted : C.inkSoft,
+        color: '#9A8A78',
         fontFamily: 'inherit',
         opacity: hovered || active ? 1 : 0.84,
         textDecoration: hovered || active ? 'underline' : 'none',
@@ -700,7 +700,7 @@ function ThemeTextToggle({ theme, setTheme, C }) {
 
 function LandingNav({ C, pageOpen, onBack, onPricing, onStories, onConnected, onSignIn, onStartAudit, onLogoClick, storiesOpen, connectedOpen, pricingOpen, theme, setTheme }) {
   return (
-    <nav style={{ padding: '20px 0', borderBottom: `1px solid ${C.border}`, background: C.bg, position: 'sticky', top: 0, zIndex: 20 }}>
+    <nav style={{ padding: '20px 0', borderBottom: `1px solid ${C.border}`, background: '#1A1410', position: 'sticky', top: 0, zIndex: 20 }}>
       <div className="sa-nav-grid">
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0 }}>
           {pageOpen && (
@@ -779,11 +779,11 @@ function ConnectorLogo({ tool, src, brandColor, fallbackText }) {
 
 function LandingFooter({ C, theme, setTheme }) {
   return (
-    <footer style={{ background: C.surface, color: C.inkMuted, padding: '42px 0', borderTop: `1px solid ${C.border}` }}>
+    <footer style={{ background: '#1A1410', color: '#6A5A48', padding: '42px 0', borderTop: `1px solid ${C.border}` }}>
       <div style={{ ...wrap, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
         <div style={{ fontSize: 15 }}>
           Built by{' '}
-          <a href="https://vnklo.com" target="_blank" rel="noopener" style={{ color: C.accentText, textDecoration: 'none', fontWeight: 500 }}>
+          <a href="https://vnklo.com" target="_blank" rel="noopener" style={{ color: C.accent, textDecoration: 'none', fontWeight: 500 }}>
             Vnklo
           </a>
         </div>
@@ -1608,9 +1608,8 @@ const streamRows = [
 const erRows = [...streamRows, ...streamRows]
 const mono = "'JetBrains Mono', 'Fira Mono', 'Courier New', monospace"
 
-function EngineRoom() {
+function EngineRoom({ C }) {
   const [stats, setStats] = useState({ s1: 847, s2: 12, s3: 94, s4: 3.4 })
-  const D = THEMES.dark
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -1631,7 +1630,7 @@ function EngineRoom() {
   }
 
   return (
-    <section style={{ background: D.bg, padding: 'clamp(56px, 7vw, 100px) 0 clamp(64px, 8vw, 120px)' }}>
+    <section style={{ background: C.bg, padding: 'clamp(56px, 7vw, 100px) 0 clamp(64px, 8vw, 120px)' }}>
       <style>{`
         @keyframes erScroll {
           0%   { transform: translateY(0); }
@@ -1653,7 +1652,7 @@ function EngineRoom() {
             fontSize: 11,
             letterSpacing: '0.18em',
             textTransform: 'uppercase',
-            color: D.accent,
+            color: C.accent,
             marginBottom: 24,
           }}>
             Real-time intelligence layer
@@ -1666,16 +1665,16 @@ function EngineRoom() {
             lineHeight: 1.06,
             letterSpacing: '-0.03em',
             margin: '0 0 28px',
-            color: D.ink,
+            color: C.ink,
           }}>
             Inside the<br />
-            <em style={{ fontStyle: 'italic', color: D.redMuted }}>engine room.</em>
+            <em style={{ fontStyle: 'italic', color: C.redMuted }}>engine room.</em>
           </h2>
 
           <p style={{
             fontFamily: serif,
             fontSize: 'clamp(18px, 1.6vw, 22px)',
-            color: D.inkSoft,
+            color: C.inkSoft,
             lineHeight: 1.65,
             margin: '0 0 40px',
           }}>
@@ -1683,7 +1682,7 @@ function EngineRoom() {
             <em style={{ fontStyle: 'italic' }}>This is what&apos;s happening right now.</em>
           </p>
 
-          <div style={{ borderTop: `1px solid ${D.border}`, paddingTop: 36, display: 'grid', gridTemplateColumns: '1fr 1fr', rowGap: 32 }}>
+          <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 36, display: 'grid', gridTemplateColumns: '1fr 1fr', rowGap: 32 }}>
             {[
               { value: stats.s1.toString(), label: 'Signals processed / min' },
               { value: stats.s2.toString(), label: 'Active investigations' },
@@ -1696,7 +1695,7 @@ function EngineRoom() {
                   fontSize: 52,
                   fontWeight: 800,
                   fontStyle: 'italic',
-                  color: D.redMuted,
+                  color: C.redMuted,
                   lineHeight: 1,
                 }}>
                   {stat.value}
@@ -1706,7 +1705,7 @@ function EngineRoom() {
                   fontSize: 10,
                   letterSpacing: '0.14em',
                   textTransform: 'uppercase',
-                  color: D.inkFaint,
+                  color: C.inkFaint,
                   marginTop: 8,
                 }}>
                   {stat.label}
@@ -1718,21 +1717,21 @@ function EngineRoom() {
 
         {/* ── Right: stream panel ── */}
         <div className="sa-er-stream" style={{
-          background: D.surface2,
+          background: C.surface2,
           borderRadius: 12,
           height: 600,
           overflow: 'hidden',
-          border: `1px solid ${D.border}`,
+          border: `1px solid ${C.border}`,
           position: 'relative',
         }}>
           {/* Header bar */}
           <div style={{
-            background: D.bg,
+            background: C.bg,
             padding: '14px 20px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            borderBottom: `1px solid ${D.border}`,
+            borderBottom: `1px solid ${C.border}`,
           }}>
             <div style={{ fontFamily: mono, fontSize: 13, color: 'rgba(250,247,242,0.40)' }}>
               stream / <span style={{ color: '#FF4D1F' }}>live</span>
@@ -1746,13 +1745,13 @@ function EngineRoom() {
           {/* Top fade */}
           <div style={{
             position: 'absolute', top: 45, left: 0, right: 0, height: 56,
-            background: `linear-gradient(to bottom, ${D.surface2}, transparent)`,
+            background: `linear-gradient(to bottom, ${C.surface2}, transparent)`,
             zIndex: 2, pointerEvents: 'none',
           }} />
           {/* Bottom fade */}
           <div style={{
             position: 'absolute', bottom: 0, left: 0, right: 0, height: 80,
-            background: `linear-gradient(to top, ${D.surface2}, transparent)`,
+            background: `linear-gradient(to top, ${C.surface2}, transparent)`,
             zIndex: 2, pointerEvents: 'none',
           }} />
 
@@ -1781,7 +1780,7 @@ function EngineRoom() {
                     <span style={{
                       fontFamily: mono, fontSize: 10, letterSpacing: '0.06em',
                       color: isVerdict ? '#FF4D1F' : 'rgba(250,247,242,0.28)',
-                      border: `1px solid ${isVerdict ? '#FF4D1F' : D.border}`,
+                      border: `1px solid ${isVerdict ? '#FF4D1F' : C.border}`,
                       borderRadius: 3,
                       padding: '2px 5px',
                       textAlign: 'center',
@@ -1969,8 +1968,7 @@ function FourVerbs({ C }) {
 
 // ── Live Diagnosis ────────────────────────────────────────────────────────────
 
-function LiveDiagnosis() {
-  const D = THEMES.dark
+function LiveDiagnosis({ C }) {
   const sectionRef  = useRef(null)
   const symptomRef  = useRef(null)
   const step0Ref    = useRef(null)
@@ -2041,7 +2039,7 @@ function LiveDiagnosis() {
       let j = 0
       while (j < upTo) {
         if (chars[j].italic) {
-          html += `<em style="font-style:italic;color:${D.amber}">`
+          html += `<em style="font-style:italic;color:${C.amber}">`
           while (j < upTo && chars[j].italic) {
             const c = chars[j].char
             html += c === '<' ? '&lt;' : c === '>' ? '&gt;' : c === '&' ? '&amp;' : c
@@ -2134,10 +2132,9 @@ function LiveDiagnosis() {
     }
   }, [])
 
-  const D_ = THEMES.dark
 
   return (
-    <section ref={sectionRef} style={{ background: D_.bg, padding: 'clamp(64px, 8vw, 140px) 0' }}>
+    <section ref={sectionRef} style={{ background: C.bg, padding: 'clamp(64px, 8vw, 140px) 0' }}>
       <style>{`
         @keyframes ldcBlink {
           0%, 49% { opacity: 1; }
@@ -2148,7 +2145,7 @@ function LiveDiagnosis() {
           display: inline-block;
           width: 2px;
           height: 1.1em;
-          background: ${D_.amber};
+          background: ${C.amber};
           margin-left: 3px;
           vertical-align: text-bottom;
           animation: ldcBlink 0.9s steps(2) infinite;
@@ -2168,11 +2165,11 @@ function LiveDiagnosis() {
 
       {/* Intro */}
       <div style={{ textAlign: 'center', maxWidth: 560, margin: '0 auto 64px', padding: '0 28px' }}>
-        <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: D_.amber, marginBottom: 20 }}>
+        <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.amber, marginBottom: 20 }}>
           A live diagnosis
         </div>
-        <h2 style={{ fontFamily: serif, fontSize: 'clamp(32px, 5.5vw, 80px)', fontWeight: 700, letterSpacing: '-0.045em', lineHeight: 1.04, color: D_.ink, margin: '0 0 20px' }}>
-          Watch the brain <em style={{ fontStyle: 'italic', color: D_.amber }}>think.</em>
+        <h2 style={{ fontFamily: serif, fontSize: 'clamp(32px, 5.5vw, 80px)', fontWeight: 700, letterSpacing: '-0.045em', lineHeight: 1.04, color: C.ink, margin: '0 0 20px' }}>
+          Watch the brain <em style={{ fontStyle: 'italic', color: C.amber }}>think.</em>
         </h2>
         <p style={{ fontFamily: serif, fontSize: 20, color: 'rgba(250,247,242,0.60)', lineHeight: 1.6, margin: 0 }}>
           Not a chat. A reasoning process. Real signals. Real verdict. Real next move.
@@ -2226,23 +2223,23 @@ function LiveDiagnosis() {
             </div>
 
             {/* Verdict label */}
-            <div ref={vlabelRef} className="ldc-vlabel" style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', color: D_.amber, marginBottom: 14 }}>
+            <div ref={vlabelRef} className="ldc-vlabel" style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', color: C.amber, marginBottom: 14 }}>
               VERDICT
             </div>
 
             {/* Verdict text */}
             <div
               ref={vtextRef}
-              style={{ fontFamily: serif, fontSize: 'clamp(20px, 2.5vw, 28px)', fontWeight: 500, color: D_.ink, minHeight: 120, lineHeight: 1.55 }}
+              style={{ fontFamily: serif, fontSize: 'clamp(20px, 2.5vw, 28px)', fontWeight: 500, color: C.ink, minHeight: 120, lineHeight: 1.55 }}
             />
 
             {/* Meta grid */}
             <div ref={vmetaRef} className="ldc-meta sa-ld-meta" style={{ marginTop: 36, borderTop: '1px solid rgba(250,247,242,0.08)', paddingTop: 24 }}>
               {[
-                { label: 'ROOT CAUSE',     ref: m1Ref, color: D_.amber },
+                { label: 'ROOT CAUSE',     ref: m1Ref, color: C.amber },
                 { label: 'CONFIDENCE',     ref: m2Ref, color: '#28CA41' },
-                { label: 'REVENUE AT RISK',ref: m3Ref, color: D_.amber },
-                { label: 'NEXT MOVE',      ref: m4Ref, color: D_.ink },
+                { label: 'REVENUE AT RISK',ref: m3Ref, color: C.amber },
+                { label: 'NEXT MOVE',      ref: m4Ref, color: C.ink },
               ].map(item => (
                 <div key={item.label}>
                   <div style={{ fontFamily: mono, fontSize: 9, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(250,247,242,0.35)', marginBottom: 6 }}>{item.label}</div>
@@ -2538,8 +2535,7 @@ function CompoundingSection({ C }) {
 
 // ── Final CTA ─────────────────────────────────────────────────────────────────
 
-function FinalCTA({ onStart }) {
-  const D = THEMES.dark
+function FinalCTA({ onStart, C }) {
   const [inputVal, setInputVal]     = useState('')
   const [placeholder, setPlaceholder] = useState('')
   const userFocusedRef = useRef(false)
@@ -2574,12 +2570,11 @@ function FinalCTA({ onStart }) {
 
   const go = () => onStart(inputVal.trim())
 
-  // Solid base extracted from D.redMuted rgba(196,149,106,0.85)
-  const red       = '#C4956A'
-  const redBorder = 'rgba(196,149,106,0.55)'
+  const red       = C.accent
+  const redBorder = C.border
 
   return (
-    <section style={{ background: D.bg, padding: 'clamp(64px, 8vw, 130px) 0 clamp(48px, 6vw, 100px)' }}>
+    <section style={{ background: C.bg, padding: 'clamp(64px, 8vw, 130px) 0 clamp(48px, 6vw, 100px)' }}>
       <style>{`
         .fca-input::placeholder { color: rgba(250,247,242,0.32); }
       `}</style>
@@ -2591,12 +2586,12 @@ function FinalCTA({ onStart }) {
 
       {/* Begin. */}
       <div style={{ textAlign: 'center', lineHeight: 0.9, marginBottom: 40 }}>
-        <span style={{ fontFamily: serif, fontSize: 'clamp(52px, 14vw, 188px)', fontWeight: 700, fontStyle: 'italic', letterSpacing: '-0.04em', color: D.ink }}>Begin</span>
+        <span style={{ fontFamily: serif, fontSize: 'clamp(52px, 14vw, 188px)', fontWeight: 700, fontStyle: 'italic', letterSpacing: '-0.04em', color: C.ink }}>Begin</span>
         <span style={{ fontFamily: serif, fontSize: 'clamp(52px, 14vw, 188px)', fontWeight: 700, fontStyle: 'italic', letterSpacing: '-0.04em', color: red }}>.</span>
       </div>
 
       {/* Subtitle */}
-      <p style={{ textAlign: 'center', fontFamily: serif, fontSize: 'clamp(18px, 2.2vw, 26px)', fontStyle: 'italic', color: 'rgba(250,247,242,0.60)', lineHeight: 1.5, margin: '0 0 64px' }}>
+      <p style={{ textAlign: 'center', fontFamily: serif, fontSize: 'clamp(18px, 2.2vw, 26px)', fontStyle: 'italic', color: C.inkSoft, lineHeight: 1.5, margin: '0 0 64px' }}>
         Tell it what feels wrong. Get the truth in five minutes.
       </p>
 
@@ -2620,7 +2615,7 @@ function FinalCTA({ onStart }) {
               padding: '22px 28px',
               fontFamily: mono,
               fontSize: 15,
-              color: D.ink,
+              color: C.ink,
               minWidth: 0,
             }}
           />
@@ -2628,7 +2623,7 @@ function FinalCTA({ onStart }) {
             onClick={go}
             style={{
               background: red,
-              color: D.bg,
+              color: C.bg,
               border: 'none',
               padding: '0 36px',
               fontFamily: mono,
@@ -2649,7 +2644,7 @@ function FinalCTA({ onStart }) {
         </div>
 
         {/* Tagline */}
-        <div style={{ textAlign: 'center', marginTop: 26, fontFamily: mono, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'rgba(250,247,242,0.28)' }}>
+        <div style={{ textAlign: 'center', marginTop: 26, fontFamily: mono, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.inkFaint }}>
           FREE · NO ACCOUNT · BRUTALLY HONEST
         </div>
       </div>
@@ -2716,7 +2711,7 @@ export default function Landing({ onStart, onSignUp, session }) {
           radial-gradient(ellipse 50% 40% at 75% 20%, rgba(225,215,198,0.2) 0%, transparent 70%),
           radial-gradient(ellipse 45% 35% at 20% 80%, rgba(220,210,193,0.2) 0%, transparent 70%);
         background-attachment: fixed;
-        background-color: #F5F0E8;
+        background-color: #F0EAE0;
         background-size: 100% 100%;
       }
     `
@@ -3111,13 +3106,13 @@ export default function Landing({ onStart, onSignUp, session }) {
       </section>
 
       {/* ── 3. Engine Room ── */}
-      <EngineRoom />
+      <EngineRoom C={C} />
 
       {/* ── 4. Four Verbs ── */}
       <FourVerbs C={C} />
 
       {/* ── 5. Live Diagnosis ── */}
-      <LiveDiagnosis />
+      <LiveDiagnosis C={C} />
 
       {/* ── 6. The Moat, Named ── */}
       <section style={{ padding: 'clamp(56px, 7vw, 112px) 0', background: C.surface }}>
@@ -3432,7 +3427,7 @@ export default function Landing({ onStart, onSignUp, session }) {
         </div>
       </section>
 
-      <FinalCTA onStart={handleAuditStart} />
+      <FinalCTA onStart={handleAuditStart} C={C} />
 
       <LandingFooter C={C} theme={theme} setTheme={setTheme} />
         </>
