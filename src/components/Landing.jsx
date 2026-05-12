@@ -1921,9 +1921,9 @@ function FourVerbs({ C }) {
 
   return (
     <section className="sa-fv-section" style={{ background: C.bg, position: 'relative', borderTop: `1px solid ${C.border}` }}>
-      <div style={{ height: '400vh', position: 'relative' }}>
+      <div style={{ position: 'relative' }}>
 
-        {/* Sticky heading */}
+        {/* Sticky heading — pins for the whole section */}
         <div className="sa-fv-sticky-head" style={{
           position: 'sticky',
           top: 0,
@@ -1934,6 +1934,7 @@ function FourVerbs({ C }) {
           background: C.bg,
           zIndex: 1,
           minHeight: 'clamp(280px, 32vh, 360px)',
+          marginBottom: 'calc(-1 * clamp(280px, 32vh, 360px))',
         }}>
           <div style={{ maxWidth: 780 }}>
             <div style={{ fontFamily: mono, fontSize: 12, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 20 }}>
@@ -1956,52 +1957,59 @@ function FourVerbs({ C }) {
           </div>
         </div>
 
-        {/* Four sticky verb cards */}
+        {/* Scroll-trigger wrappers — each card gets its own dedicated 100vh runway */}
         {verbs.map((v, i) => (
           <div
             key={v.num}
-            className="sa-fv-card"
-            style={{
-              position: 'sticky',
-              top: `calc(clamp(280px, 32vh, 360px) + ${i * 24}px)`,
-              zIndex: 2 + i,
-              marginLeft: 'clamp(28px, 6vw, 80px)',
-              marginRight: 'clamp(28px, 6vw, 80px)',
-              marginBottom: i === 3 ? 0 : 'calc(100vh - clamp(360px, 36vh, 420px))',
-              background: C.bg,
-              borderTop: `1px solid ${C.ink}`,
-              paddingTop: 'clamp(40px, 6vw, 72px)',
-              paddingBottom: 'clamp(48px, 7vw, 80px)',
-              boxShadow: i === 0 ? 'none' : `0 -12px 40px ${C.theme === 'light' ? 'rgba(26,20,16,0.06)' : 'rgba(0,0,0,0.4)'}`,
-            }}
+            className="sa-fv-scroll-trigger"
+            style={{ height: '100vh', position: 'relative' }}
           >
-            <div className="sa-fv-card-grid">
-              {/* Left */}
-              <div>
-                <div style={{ fontFamily: mono, fontSize: 12, letterSpacing: '0.06em', textTransform: 'uppercase', color: C.accent, marginBottom: 16 }}>
-                  {v.num} / FOUR
+            <div
+              className="sa-fv-card"
+              style={{
+                position: 'sticky',
+                top: `calc(clamp(280px, 32vh, 360px) + ${i * 24}px)`,
+                zIndex: 2 + i,
+                marginLeft: 'clamp(28px, 6vw, 80px)',
+                marginRight: 'clamp(28px, 6vw, 80px)',
+                background: C.bg,
+                borderTop: `1px solid ${C.ink}`,
+                paddingTop: 'clamp(40px, 6vw, 72px)',
+                paddingBottom: 'clamp(48px, 7vw, 80px)',
+                boxShadow: i === 0 ? 'none' : `0 -12px 40px ${C.theme === 'light' ? 'rgba(26,20,16,0.06)' : 'rgba(0,0,0,0.4)'}`,
+              }}
+            >
+              <div className="sa-fv-card-grid">
+                {/* Left */}
+                <div>
+                  <div style={{ fontFamily: mono, fontSize: 12, letterSpacing: '0.06em', textTransform: 'uppercase', color: C.accent, marginBottom: 16 }}>
+                    {v.num} / FOUR
+                  </div>
+                  <h3 style={{
+                    fontFamily: serif,
+                    fontSize: 'clamp(32px, 6vw, 88px)',
+                    fontWeight: 700,
+                    lineHeight: 0.98,
+                    letterSpacing: '-0.045em',
+                    margin: '0 0 24px',
+                  }}>
+                    <span style={{ color: C.ink }}>It </span>
+                    <em style={{ fontStyle: 'italic', color: C.redMuted }}>{v.verb}</em>
+                  </h3>
+                  <p style={{ fontFamily: serif, fontSize: 20, color: C.inkSoft, lineHeight: 1.6, maxWidth: 480, margin: 0 }}>
+                    {v.desc}
+                  </p>
                 </div>
-                <h3 style={{
-                  fontFamily: serif,
-                  fontSize: 'clamp(32px, 6vw, 88px)',
-                  fontWeight: 700,
-                  lineHeight: 0.98,
-                  letterSpacing: '-0.045em',
-                  margin: '0 0 24px',
-                }}>
-                  <span style={{ color: C.ink }}>It </span>
-                  <em style={{ fontStyle: 'italic', color: C.redMuted }}>{v.verb}</em>
-                </h3>
-                <p style={{ fontFamily: serif, fontSize: 20, color: C.inkSoft, lineHeight: 1.6, maxWidth: 480, margin: 0 }}>
-                  {v.desc}
-                </p>
-              </div>
 
-              {/* Right: card */}
-              {v.card}
+                {/* Right: card */}
+                {v.card}
+              </div>
             </div>
           </div>
         ))}
+
+        {/* Tail spacer — breathing room before next section */}
+        <div style={{ height: 'clamp(40px, 6vw, 96px)' }} />
 
       </div>
     </section>
