@@ -25,24 +25,24 @@ const THEMES = {
   },
   light: {
     theme: 'light',
-    bg: '#F0EAE0',
-    surface: '#E8DFD2',
-    surface2: '#DDD5C4',
-    surface3: '#D5C9B8',
-    card: '#FFFFFF',
-    border: '#C8B89A',
-    border2: '#B8A888',
-    ink: '#1A1410',
-    inkSoft: '#3A2E24',
-    inkMuted: '#4A3A2A',
-    inkFaint: '#6A5A48',
-    accent: '#8B4A2A',
-    accentDark: '#7A3C22',
-    accentSoft: '#EDE4DA',
-    accentText: '#8B4A2A',
-    redMuted: 'rgba(192, 57, 43, 0.90)',
-    redSoft: '#FDF0EE',
-    amber: '#6A5A48',
+    bg: '#F7F4ED',
+    surface: '#F2EDE2',
+    surface2: '#EDE5D4',
+    surface3: '#E4DDD0',
+    card: '#FBFAF6',
+    border: '#E4DDD0',
+    border2: '#D8CFBC',
+    ink: '#1A1814',
+    inkSoft: '#3A352D',
+    inkMuted: '#5A5246',
+    inkFaint: '#8A8378',
+    accent: '#6E2A1E',
+    accentDark: '#5A2218',
+    accentSoft: '#F6EAE5',
+    accentText: '#6E2A1E',
+    redMuted: '#6E2A1E',
+    redSoft: '#F6EAE5',
+    amber: '#8A6F1A',
   },
 }
 
@@ -306,7 +306,7 @@ function PrimaryButton({ label, onClick, small = false, C }) {
         background: hovered ? C.accentDark : C.accent,
         color: '#fff',
         padding: small ? '10px 18px' : '16px 28px',
-        borderRadius: 999,
+        borderRadius: C.theme === 'light' ? 4 : 999,
         fontSize: small ? 15 : 17,
         fontWeight: 600,
         border: 'none',
@@ -502,7 +502,7 @@ function DiagnosticLoop({ C }) {
           <div style={{ fontSize: 14, color: C.inkMuted, marginBottom: 6 }}>Intelligence verdict</div>
           <div style={{
             fontSize: 16,
-            color: thread.a.startsWith('CRITICAL') ? '#C05050' : C.amber,
+            color: thread.a.startsWith('CRITICAL') ? (C.theme === 'light' ? '#6E2A1E' : '#C05050') : C.amber,
             fontWeight: 600,
             lineHeight: 1.5,
           }}>
@@ -734,6 +734,11 @@ function LandingNav({ C, pageOpen, onBack, onPricing, onStories, onConnected, on
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 14 }}>
+          {theme === 'light' && (
+            <span style={{ fontFamily: "'JetBrains Mono', 'Fira Mono', 'Courier New', monospace", fontSize: 10, letterSpacing: '0.18em', color: C.inkFaint, textTransform: 'uppercase' }}>
+              EST. 2024
+            </span>
+          )}
           <ThemeTextToggle theme={theme} setTheme={setTheme} C={C} />
           <PrimaryButton label="Start free audit" onClick={onStartAudit} small C={C} />
         </div>
@@ -1624,9 +1629,11 @@ function EngineRoom({ C }) {
   }, [])
 
   const typeColor = (type) => {
-    if (type === 'INGEST') return '#5DCAA5'
-    if (type === 'SIGNAL') return '#FF4D1F'
-    return '#FF4D1F'
+    const sage = '#7BAE89'
+    const salmon = '#E07A6A'
+    if (type === 'INGEST') return sage
+    if (type === 'SIGNAL') return salmon
+    return salmon
   }
 
   return (
@@ -1717,41 +1724,42 @@ function EngineRoom({ C }) {
 
         {/* ── Right: stream panel ── */}
         <div className="sa-er-stream" style={{
-          background: C.surface2,
+          background: '#0E0C0A',
           borderRadius: 12,
           height: 600,
           overflow: 'hidden',
-          border: `1px solid ${C.border}`,
+          border: '1px solid rgba(250,247,242,0.08)',
           position: 'relative',
+          boxShadow: C.theme === 'light' ? '0 2px 0 #E4DDD0, 0 20px 60px rgba(26,20,16,0.08)' : 'none',
         }}>
           {/* Header bar */}
           <div style={{
-            background: C.bg,
+            background: 'rgba(15,11,8,0.8)',
             padding: '14px 20px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            borderBottom: `1px solid ${C.border}`,
+            borderBottom: '1px solid rgba(250,247,242,0.08)',
           }}>
             <div style={{ fontFamily: mono, fontSize: 13, color: 'rgba(250,247,242,0.40)' }}>
-              stream / <span style={{ color: '#FF4D1F' }}>live</span>
+              stream / <span style={{ color: '#E07A6A' }}>live</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#5DCAA5', animation: 'erPulse 1.5s infinite' }} />
-              <span style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.14em', color: '#5DCAA5' }}>RECEIVING</span>
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#7BAE89', animation: 'erPulse 1.5s infinite' }} />
+              <span style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.14em', color: '#7BAE89' }}>RECEIVING</span>
             </div>
           </div>
 
           {/* Top fade */}
           <div style={{
             position: 'absolute', top: 45, left: 0, right: 0, height: 56,
-            background: `linear-gradient(to bottom, ${C.surface2}, transparent)`,
+            background: 'linear-gradient(to bottom, #0E0C0A, transparent)',
             zIndex: 2, pointerEvents: 'none',
           }} />
           {/* Bottom fade */}
           <div style={{
             position: 'absolute', bottom: 0, left: 0, right: 0, height: 80,
-            background: `linear-gradient(to top, ${C.surface2}, transparent)`,
+            background: 'linear-gradient(to top, #0E0C0A, transparent)',
             zIndex: 2, pointerEvents: 'none',
           }} />
 
@@ -1768,19 +1776,19 @@ function EngineRoom({ C }) {
                     alignItems: 'center',
                     padding: '11px 20px',
                     borderBottom: '1px solid rgba(250,247,242,0.06)',
-                    background: isVerdict ? 'rgba(255,77,31,0.06)' : 'transparent',
+                    background: isVerdict ? 'rgba(224,122,106,0.06)' : 'transparent',
                   }}>
                     <span style={{ fontFamily: mono, fontSize: 11, color: 'rgba(250,247,242,0.28)' }}>{row.time}</span>
                     <span style={{ fontFamily: mono, fontSize: 11, fontWeight: 700, color: typeColor(row.type) }}>{row.type}</span>
                     <span style={{
                       fontFamily: mono, fontSize: 12,
-                      color: isVerdict ? '#FF4D1F' : 'rgba(250,247,242,0.85)',
+                      color: isVerdict ? '#E07A6A' : 'rgba(250,247,242,0.85)',
                       whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                     }}>{row.text}</span>
                     <span style={{
                       fontFamily: mono, fontSize: 10, letterSpacing: '0.06em',
-                      color: isVerdict ? '#FF4D1F' : 'rgba(250,247,242,0.28)',
-                      border: `1px solid ${isVerdict ? '#FF4D1F' : C.border}`,
+                      color: isVerdict ? '#E07A6A' : 'rgba(250,247,242,0.28)',
+                      border: `1px solid ${isVerdict ? '#E07A6A' : C.border}`,
                       borderRadius: 3,
                       padding: '2px 5px',
                       textAlign: 'center',
@@ -2165,8 +2173,10 @@ function LiveDiagnosis({ C }) {
 
       {/* Intro */}
       <div style={{ textAlign: 'center', maxWidth: 560, margin: '0 auto 64px', padding: '0 28px' }}>
-        <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.amber, marginBottom: 20 }}>
+        <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.amber, marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0 }}>
+          {C.theme === 'light' && <span style={{ display: 'inline-block', width: 28, height: 1, background: C.border2, verticalAlign: 'middle', marginRight: 14 }} />}
           A live diagnosis
+          {C.theme === 'light' && <span style={{ display: 'inline-block', width: 28, height: 1, background: C.border2, verticalAlign: 'middle', marginLeft: 14 }} />}
         </div>
         <h2 style={{ fontFamily: serif, fontSize: 'clamp(32px, 5.5vw, 80px)', fontWeight: 700, letterSpacing: '-0.045em', lineHeight: 1.04, color: C.ink, margin: '0 0 20px' }}>
           Watch the brain <em style={{ fontStyle: 'italic', color: C.amber }}>think.</em>
@@ -2178,7 +2188,7 @@ function LiveDiagnosis({ C }) {
 
       {/* Console panel */}
       <div style={{ maxWidth: 920, margin: '0 auto', padding: '0 28px' }}>
-        <div style={{ background: 'rgba(250,247,242,0.02)', border: '1px solid rgba(250,247,242,0.08)', borderRadius: 16, overflow: 'hidden' }}>
+        <div style={{ background: 'rgba(250,247,242,0.02)', border: '1px solid rgba(250,247,242,0.08)', borderRadius: 16, overflow: 'hidden', boxShadow: C.theme === 'light' ? '0 2px 0 #E4DDD0, 0 20px 60px rgba(26,20,16,0.08)' : 'none' }}>
 
           {/* Top bar */}
           <div style={{ background: 'rgba(15,11,8,0.6)', borderBottom: '1px solid rgba(250,247,242,0.06)', padding: '14px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -2189,8 +2199,8 @@ function LiveDiagnosis({ C }) {
               <span style={{ fontFamily: mono, fontSize: 12, color: 'rgba(250,247,242,0.50)' }}>selfaudit · diagnosis console</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#28CA41', animation: 'erPulse 1.5s infinite' }} />
-              <span style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.14em', color: '#28CA41' }}>● LIVE</span>
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#7BAE89', animation: 'erPulse 1.5s infinite' }} />
+              <span style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.14em', color: '#7BAE89' }}>● LIVE</span>
             </div>
           </div>
 
@@ -2214,7 +2224,7 @@ function LiveDiagnosis({ C }) {
                 { ref: step3Ref, action: 'Isolating root cause ·', source: '4 candidates eliminated' },
               ].map(step => (
                 <div key={step.action} ref={step.ref} className="ldc-step" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ color: '#28CA41', fontFamily: mono, fontSize: 14, flexShrink: 0 }}>✓</span>
+                  <span style={{ color: '#7BAE89', fontFamily: mono, fontSize: 14, flexShrink: 0 }}>✓</span>
                   <span style={{ fontFamily: mono, fontSize: 13, color: 'rgba(250,247,242,0.50)' }}>
                     {step.action}{' '}<span style={{ color: 'rgba(250,247,242,0.85)' }}>{step.source}</span>
                   </span>
@@ -2237,7 +2247,7 @@ function LiveDiagnosis({ C }) {
             <div ref={vmetaRef} className="ldc-meta sa-ld-meta" style={{ marginTop: 36, borderTop: '1px solid rgba(250,247,242,0.08)', paddingTop: 24 }}>
               {[
                 { label: 'ROOT CAUSE',     ref: m1Ref, color: C.amber },
-                { label: 'CONFIDENCE',     ref: m2Ref, color: '#28CA41' },
+                { label: 'CONFIDENCE',     ref: m2Ref, color: '#7BAE89' },
                 { label: 'REVENUE AT RISK',ref: m3Ref, color: C.amber },
                 { label: 'NEXT MOVE',      ref: m4Ref, color: C.ink },
               ].map(item => (
@@ -2262,7 +2272,7 @@ function DashboardSection({ C }) {
   const goalRef   = useRef(null)
   const D = THEMES.dark
   const amber = D.amber          // #F5F0E8
-  const green = '#28CA41'
+  const green = '#7BAE89'
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -2303,8 +2313,10 @@ function DashboardSection({ C }) {
 
       {/* Intro */}
       <div style={{ textAlign: 'center', maxWidth: 620, margin: '0 auto 64px', padding: '0 28px' }}>
-        <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 20 }}>
+        <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0 }}>
+          {C.theme === 'light' && <span style={{ display: 'inline-block', width: 28, height: 1, background: C.border2, verticalAlign: 'middle', marginRight: 14 }} />}
           The brain, on day 47
+          {C.theme === 'light' && <span style={{ display: 'inline-block', width: 28, height: 1, background: C.border2, verticalAlign: 'middle', marginLeft: 14 }} />}
         </div>
         <h2 style={{ fontFamily: serif, fontSize: 'clamp(32px, 5.5vw, 80px)', fontWeight: 700, letterSpacing: '-0.045em', lineHeight: 1.04, color: C.ink, margin: '0 0 20px' }}>
           It remembers <em style={{ fontStyle: 'italic', color: C.redMuted }}>everything.</em>
@@ -2316,7 +2328,7 @@ function DashboardSection({ C }) {
 
       {/* Dashboard frame */}
       <div style={{ maxWidth: 1180, margin: '0 auto', padding: '0 28px' }}>
-        <div style={{ background: D.bg, borderRadius: 16, overflow: 'hidden', boxShadow: '0 40px 100px rgba(26,20,16,0.18)' }}>
+        <div style={{ background: D.bg, borderRadius: 16, overflow: 'hidden', boxShadow: C.theme === 'light' ? '0 2px 0 #E4DDD0, 0 20px 60px rgba(26,20,16,0.08)' : '0 40px 100px rgba(26,20,16,0.18)' }}>
 
           {/* Top bar */}
           <div style={{ background: 'rgba(15,11,8,0.6)', borderBottom: '1px solid rgba(250,247,242,0.06)', padding: '14px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -2419,7 +2431,7 @@ function DashboardSection({ C }) {
 
 function CompoundingSection({ C }) {
   const D     = THEMES.dark
-  const amber = D.amber
+  const amber = '#D9B05C'
 
   // Chart points [x, y] in a 560×210 viewbox (y=210 = baseline)
   const pts = [
@@ -2460,7 +2472,7 @@ function CompoundingSection({ C }) {
         </div>
 
         {/* ── Right: dark knowledge card ── */}
-        <div style={{ background: D.bg, borderRadius: 14, overflow: 'hidden', border: `1px solid ${D.border}` }}>
+        <div style={{ background: D.bg, borderRadius: 14, overflow: 'hidden', border: `1px solid ${D.border}`, boxShadow: C.theme === 'light' ? '0 2px 0 #E4DDD0, 0 20px 60px rgba(26,20,16,0.08)' : 'none' }}>
 
           {/* Card header */}
           <div style={{ padding: '28px 32px 12px' }}>
@@ -2711,7 +2723,7 @@ export default function Landing({ onStart, onSignUp, session }) {
           radial-gradient(ellipse 50% 40% at 75% 20%, rgba(225,215,198,0.2) 0%, transparent 70%),
           radial-gradient(ellipse 45% 35% at 20% 80%, rgba(220,210,193,0.2) 0%, transparent 70%);
         background-attachment: fixed;
-        background-color: #F0EAE0;
+        background-color: #F7F4ED;
         background-size: 100% 100%;
       }
     `
@@ -3057,10 +3069,10 @@ export default function Landing({ onStart, onSignUp, session }) {
                 onClick={handleDiagnose}
                 className="sa-hero-btn"
                 style={{
-                  background: C.accent,
-                  color: '#fff',
+                  background: C.theme === 'light' ? C.ink : C.accent,
+                  color: C.theme === 'light' ? C.bg : '#fff',
                   border: 'none',
-                  borderRadius: 999,
+                  borderRadius: C.theme === 'light' ? 4 : 999,
                   padding: '12px 22px',
                   fontSize: 16,
                   fontWeight: 600,
@@ -3070,8 +3082,8 @@ export default function Landing({ onStart, onSignUp, session }) {
                   transition: 'background 0.18s',
                   flexShrink: 0,
                 }}
-                onMouseEnter={e => e.currentTarget.style.background = C.accentDark}
-                onMouseLeave={e => e.currentTarget.style.background = C.accent}
+                onMouseEnter={e => e.currentTarget.style.background = C.theme === 'light' ? C.inkSoft : C.accentDark}
+                onMouseLeave={e => e.currentTarget.style.background = C.theme === 'light' ? C.ink : C.accent}
               >
                 Let&apos;s go →
               </button>
@@ -3242,8 +3254,10 @@ export default function Landing({ onStart, onSignUp, session }) {
 
           {/* Intro */}
           <div style={{ textAlign: 'center', marginBottom: 'clamp(36px, 4vw, 72px)' }}>
-            <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 18 }}>
+            <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0 }}>
+              {C.theme === 'light' && <span style={{ display: 'inline-block', width: 28, height: 1, background: C.border2, verticalAlign: 'middle', marginRight: 14 }} />}
               Real diagnoses
+              {C.theme === 'light' && <span style={{ display: 'inline-block', width: 28, height: 1, background: C.border2, verticalAlign: 'middle', marginLeft: 14 }} />}
             </div>
             <h2 style={{ fontFamily: serif, fontSize: 'clamp(28px, 5.5vw, 76px)', fontWeight: 700, lineHeight: 1.04, letterSpacing: '-0.04em', color: C.ink, margin: '0 0 20px' }}>
               What founders <em style={{ fontStyle: 'italic', color: C.redMuted }}>found out.</em>
@@ -3282,9 +3296,10 @@ export default function Landing({ onStart, onSignUp, session }) {
               },
             ].map(card => (
               <div key={card.domain} style={{
-                background: C.theme === 'dark' ? C.card : '#ffffff',
-                border: `1px solid ${C.border}`,
-                borderRadius: 12,
+                background: C.theme === 'light' ? 'transparent' : C.card,
+                border: C.theme === 'light' ? 'none' : `1px solid ${C.border}`,
+                borderTop: `1px solid ${C.border}`,
+                borderRadius: C.theme === 'light' ? 0 : 12,
                 padding: '28px 28px 32px',
                 display: 'flex',
                 flexDirection: 'column',
@@ -3332,8 +3347,10 @@ export default function Landing({ onStart, onSignUp, session }) {
 
           {/* Intro */}
           <div style={{ textAlign: 'center', marginBottom: 60 }}>
-            <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 20 }}>
+            <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0 }}>
+              {C.theme === 'light' && <span style={{ display: 'inline-block', width: 28, height: 1, background: C.border2, verticalAlign: 'middle', marginRight: 14 }} />}
               Pricing
+              {C.theme === 'light' && <span style={{ display: 'inline-block', width: 28, height: 1, background: C.border2, verticalAlign: 'middle', marginLeft: 14 }} />}
             </div>
             <h2 style={{ fontFamily: serif, fontSize: 'clamp(28px, 6vw, 80px)', fontWeight: 700, lineHeight: 1.04, letterSpacing: '-0.04em', color: C.ink, margin: '0 0 20px' }}>
               Less than one bad hour<br />
@@ -3403,7 +3420,7 @@ export default function Landing({ onStart, onSignUp, session }) {
                     background: C.ink,
                     color: C.bg,
                     border: 'none',
-                    borderRadius: 999,
+                    borderRadius: C.theme === 'light' ? 4 : 999,
                     padding: '15px 24px',
                     fontFamily: serif,
                     fontSize: 17,
