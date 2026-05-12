@@ -306,7 +306,7 @@ function PrimaryButton({ label, onClick, small = false, C }) {
         background: hovered ? C.accentDark : C.accent,
         color: '#fff',
         padding: small ? '10px 18px' : '16px 28px',
-        borderRadius: C.theme === 'light' ? 8 : 999,
+        borderRadius: 999,
         fontSize: small ? 15 : 17,
         fontWeight: 600,
         border: 'none',
@@ -2235,7 +2235,7 @@ function LiveDiagnosis({ C }) {
             {/* Verdict text */}
             <div
               ref={vtextRef}
-              style={{ fontFamily: serif, fontSize: 'clamp(20px, 2.5vw, 28px)', fontWeight: 500, color: C.ink, minHeight: 120, lineHeight: 1.55 }}
+              style={{ fontFamily: serif, fontSize: 'clamp(20px, 2.5vw, 28px)', fontWeight: 500, color: 'rgba(250,247,242,0.92)', minHeight: 120, lineHeight: 1.55 }}
             />
 
             {/* Meta grid */}
@@ -2244,7 +2244,7 @@ function LiveDiagnosis({ C }) {
                 { label: 'ROOT CAUSE',     ref: m1Ref, color: C.amber },
                 { label: 'CONFIDENCE',     ref: m2Ref, color: '#7BAE89' },
                 { label: 'REVENUE AT RISK',ref: m3Ref, color: C.amber },
-                { label: 'NEXT MOVE',      ref: m4Ref, color: C.ink },
+                { label: 'NEXT MOVE',      ref: m4Ref, color: 'rgba(250,247,242,0.85)' },
               ].map(item => (
                 <div key={item.label}>
                   <div style={{ fontFamily: mono, fontSize: 9, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(250,247,242,0.35)', marginBottom: 6 }}>{item.label}</div>
@@ -3067,7 +3067,7 @@ export default function Landing({ onStart, onSignUp, session }) {
                   background: C.theme === 'light' ? C.ink : C.accent,
                   color: C.theme === 'light' ? C.bg : '#fff',
                   border: 'none',
-                  borderRadius: C.theme === 'light' ? 8 : 999,
+                  borderRadius: 999,
                   padding: '12px 22px',
                   fontSize: 16,
                   fontWeight: 600,
@@ -3415,7 +3415,7 @@ export default function Landing({ onStart, onSignUp, session }) {
                     background: C.ink,
                     color: C.bg,
                     border: 'none',
-                    borderRadius: C.theme === 'light' ? 8 : 999,
+                    borderRadius: 999,
                     padding: '15px 24px',
                     fontFamily: serif,
                     fontSize: 17,
