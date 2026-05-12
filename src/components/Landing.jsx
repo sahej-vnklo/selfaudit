@@ -15,13 +15,13 @@ const THEMES = {
     inkSoft: '#C4A882',
     inkMuted: '#8A7260',
     inkFaint: '#6B5540',
-    accent: '#C4956A',
-    accentDark: '#B07D55',
+    accent: '#F5F0E8',
+    accentDark: '#E0D9CF',
     accentSoft: '#1E1510',
-    accentText: '#C4956A',
-    redMuted: 'rgba(196,149,106,0.85)',
+    accentText: '#F5F0E8',
+    redMuted: 'rgba(245,240,232,0.85)',
     redSoft: '#150E08',
-    amber: '#C4956A',
+    amber: '#F5F0E8',
   },
   light: {
     theme: 'light',
@@ -1625,9 +1625,9 @@ function EngineRoom() {
   }, [])
 
   const typeColor = (type) => {
-    if (type === 'INGEST') return D.accentText
-    if (type === 'SIGNAL') return D.amber
-    return D.redMuted
+    if (type === 'INGEST') return '#5DCAA5'
+    if (type === 'SIGNAL') return '#FF4D1F'
+    return '#FF4D1F'
   }
 
   return (
@@ -1734,12 +1734,12 @@ function EngineRoom() {
             justifyContent: 'space-between',
             borderBottom: `1px solid ${D.border}`,
           }}>
-            <div style={{ fontFamily: mono, fontSize: 13, color: D.inkFaint }}>
-              stream / <span style={{ color: D.accent }}>live</span>
+            <div style={{ fontFamily: mono, fontSize: 13, color: 'rgba(250,247,242,0.40)' }}>
+              stream / <span style={{ color: '#FF4D1F' }}>live</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#28CA41', animation: 'erPulse 1.5s infinite' }} />
-              <span style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.14em', color: '#28CA41' }}>RECEIVING</span>
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#5DCAA5', animation: 'erPulse 1.5s infinite' }} />
+              <span style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.14em', color: '#5DCAA5' }}>RECEIVING</span>
             </div>
           </div>
 
@@ -1768,20 +1768,20 @@ function EngineRoom() {
                     gap: '0 14px',
                     alignItems: 'center',
                     padding: '11px 20px',
-                    borderBottom: '1px solid rgba(30,45,66,0.5)',
-                    background: isVerdict ? 'rgba(196,149,106,0.06)' : 'transparent',
+                    borderBottom: '1px solid rgba(250,247,242,0.06)',
+                    background: isVerdict ? 'rgba(255,77,31,0.06)' : 'transparent',
                   }}>
-                    <span style={{ fontFamily: mono, fontSize: 11, color: D.inkFaint }}>{row.time}</span>
+                    <span style={{ fontFamily: mono, fontSize: 11, color: 'rgba(250,247,242,0.28)' }}>{row.time}</span>
                     <span style={{ fontFamily: mono, fontSize: 11, fontWeight: 700, color: typeColor(row.type) }}>{row.type}</span>
                     <span style={{
                       fontFamily: mono, fontSize: 12,
-                      color: isVerdict ? D.redMuted : D.inkMuted,
+                      color: isVerdict ? '#FF4D1F' : 'rgba(250,247,242,0.85)',
                       whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                     }}>{row.text}</span>
                     <span style={{
                       fontFamily: mono, fontSize: 10, letterSpacing: '0.06em',
-                      color: isVerdict ? D.redMuted : D.inkFaint,
-                      border: `1px solid ${isVerdict ? 'rgba(196,149,106,0.40)' : D.border}`,
+                      color: isVerdict ? '#FF4D1F' : 'rgba(250,247,242,0.28)',
+                      border: `1px solid ${isVerdict ? '#FF4D1F' : D.border}`,
                       borderRadius: 3,
                       padding: '2px 5px',
                       textAlign: 'center',
@@ -2264,7 +2264,7 @@ function DashboardSection({ C }) {
   const healthRef = useRef(null)
   const goalRef   = useRef(null)
   const D = THEMES.dark
-  const amber = D.amber          // #C4956A
+  const amber = D.amber          // #F5F0E8
   const green = '#28CA41'
 
   useEffect(() => {
@@ -2275,10 +2275,10 @@ function DashboardSection({ C }) {
     return () => clearInterval(id)
   }, [])
 
-  // Pre-computed rgba from amber (#C4956A → 201,160,64) and red (192,80,80)
-  const amberBg     = 'rgba(196,149,106,0.08)'
-  const amberBorder = 'rgba(196,149,106,0.25)'
-  const redBg       = 'rgba(196,149,106,0.15)'
+  // Pre-computed rgba from amber (#F5F0E8 → 201,160,64) and red (192,80,80)
+  const amberBg     = 'rgba(245,240,232,0.08)'
+  const amberBorder = 'rgba(245,240,232,0.25)'
+  const redBg       = 'rgba(245,240,232,0.15)'
 
   const Sidebar = () => (
     <div className="sa-dash-sidebar" style={{ background: 'rgba(15,11,8,0.7)', borderRight: '1px solid rgba(250,247,242,0.04)', padding: '22px 0', minHeight: 540 }}>
@@ -2574,9 +2574,9 @@ function FinalCTA({ onStart }) {
 
   const go = () => onStart(inputVal.trim())
 
-  // Solid base extracted from D.redMuted rgba(196,149,106,0.85)
-  const red       = '#C4956A'
-  const redBorder = 'rgba(196,149,106,0.55)'
+  // Solid base extracted from D.redMuted rgba(245,240,232,0.85)
+  const red       = '#F5F0E8'
+  const redBorder = 'rgba(245,240,232,0.55)'
 
   return (
     <section style={{ background: D.bg, padding: 'clamp(64px, 8vw, 130px) 0 clamp(48px, 6vw, 100px)' }}>
