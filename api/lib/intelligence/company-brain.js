@@ -73,17 +73,16 @@ export async function getCompanyBrain(userId) {
       .single(),
 
     sb.from('user_memory')
-      .select('headline, core_problem, root_causes, priority_actions, ai_opportunities, domains_audited, status, session_date')
+      .select('headline, core_problem, root_causes, priority_actions, ai_opportunities, domains_audited, status, session_date, created_at')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
-      .limit(1)
-      .single(),
+      .limit(6),
   ])
 
-  const profile = profileRes.status === 'fulfilled' ? profileRes.value.data : null
-  const state   = stateRes.status === 'fulfilled'   ? stateRes.value.data   : null
-  const intel   = intelRes.status === 'fulfilled'   ? intelRes.value.data   : null
-  const memory  = memoryRes.status === 'fulfilled'  ? memoryRes.value.data  : null
+  const profile  = profileRes.status === 'fulfilled' ? profileRes.value.data        : null
+  const state    = stateRes.status   === 'fulfilled' ? stateRes.value.data          : null
+  const intel    = intelRes.status   === 'fulfilled' ? intelRes.value.data          : null
+  const sessions = memoryRes.status  === 'fulfilled' ? (memoryRes.value.data ?? []) : []
 
   return {
     // Identity
@@ -123,16 +122,19 @@ export async function getCompanyBrain(userId) {
     last_synthesized_at:   intel?.last_synthesized_at      ?? null,
 
     // Latest session memory
-    last_session: memory ? {
-      headline:         memory.headline,
-      core_problem:     memory.core_problem,
-      root_causes:      memory.root_causes,
-      priority_actions: memory.priority_actions,
-      ai_opportunities: memory.ai_opportunities,
-      domains_audited:  memory.domains_audited,
-      status:           memory.status,
-      session_date:     memory.session_date,
+    last_session: sessions.length > 0 ? {
+      headline:         sessions[0].headline,
+      core_problem:     sessions[0].core_problem,
+      root_causes:      sessions[0].root_causes,
+      priority_actions: sessions[0].priority_actions,
+      ai_opportunities: sessions[0].ai_opportunities,
+      domains_audited:  sessions[0].domains_audited,
+      status:           sessions[0].status,
+      session_date:     sessions[0].session_date,
     } : null,
+
+    // All recent sessions for pattern detection
+    recent_sessions: sessions,
   }
 }
 
@@ -199,6 +201,45 @@ export async function upsertCompanyBrain(userId, patch) {
   }
 }
 
+// Detect recurring patterns across multiple audit sessions.
+// Returns structured insights for injection into the Claude prompt.
+function detectPatterns(sessions) {
+  if (!sessions || sessions.length < 2) return null
+
+  const domainFreq   = {}
+  const issueFreq    = {}
+
+  for (const s of sessions) {
+    for (const d of (s.domains_audited || [])) {
+      domainFreq[d] = (domainFreq[d] || 0) + 1
+    }
+    for (const rc of (s.root_causes || [])) {
+      if (rc && typeof rc === 'string' && rc.length > 4) {
+        issueFreq[rc] = (issueFreq[rc] || 0) + 1
+      }
+    }
+  }
+
+  const repeatedDomains = Object.entries(domainFreq)
+    .filter(([, n]) => n >= 2)
+    .sort((a, b) => b[1] - a[1])
+    .map(([d, n]) => `${d} (${n}x)`)
+
+  const recurringIssues = Object.entries(issueFreq)
+    .filter(([, n]) => n >= 2)
+    .sort((a, b) => b[1] - a[1])
+    .map(([issue, n]) => `"${issue}" — flagged ${n} sessions`)
+
+  const openSessions = sessions.filter(s => s.status === 'open' || s.status === 'unknown (not followed up)').length
+
+  return {
+    total:          sessions.length,
+    repeatedDomains,
+    recurringIssues,
+    openSessions,
+  }
+}
+
 // Format the company brain as a concise context string for Claude prompts.
 // Called by audit.js to inject structured business knowledge into the system prompt.
 export function formatBrainForPrompt(brain) {
@@ -231,6 +272,19 @@ export function formatBrainForPrompt(brain) {
                                   lines.push(`Known AI opportunities: ${brain.opportunities.join('; ')}`)
   if (brain.assumptions_unverified?.length)
                                   lines.push(`Unverified assumptions: ${brain.assumptions_unverified.join('; ')}`)
+
+  const patterns = detectPatterns(brain.recent_sessions)
+  if (patterns && patterns.total >= 2) {
+    lines.push('')
+    lines.push(`AUDIT HISTORY (${patterns.total} sessions on record):`)
+    if (patterns.repeatedDomains.length > 0)
+      lines.push(`  Domains flagged repeatedly: ${patterns.repeatedDomains.join(', ')}`)
+    if (patterns.recurringIssues.length > 0)
+      lines.push(`  Recurring issues across sessions: ${patterns.recurringIssues.join(' | ')}`)
+    if (patterns.openSessions > 0)
+      lines.push(`  Unresolved sessions: ${patterns.openSessions} — actions from previous audits not yet followed up`)
+    lines.push('  Do NOT re-diagnose issues already identified. Instead, ask what is blocking the fix.')
+  }
 
   if (brain.last_session) {
     const s = brain.last_session

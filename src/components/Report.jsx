@@ -156,6 +156,8 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
               goalMode:     userInfo.goalMode     ?? false,
               goalTimeline: userInfo.goalTimeline ?? '',
               goalBaseline: userInfo.goalBaseline ?? '',
+              userEmail:    userInfo.email        || '',
+              userName:     userInfo.name         || '',
             }),
           }).catch(e => console.warn('[save-report] failed:', e?.message))
 

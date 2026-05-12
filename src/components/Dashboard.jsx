@@ -502,7 +502,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
 
         const { data, error } = await sb
           .from('profiles')
-          .select('tier, industry, domain, context, name, phone, onboarding_complete, stripe_customer_id, stripe_subscription_id, intelligence_docs, intelligence_complete, shared_with_vnklo, shared_report_id')
+          .select('tier, industry, domain, context, name, phone, onboarding_complete, stripe_customer_id, stripe_subscription_id, intelligence_docs, intelligence_complete, shared_with_vnklo, shared_report_id, notification_email, last_digest_sent_at, last_digest_summary')
           .eq('id', user.id)
           .single()
 
@@ -524,7 +524,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
           await new Promise((resolve) => setTimeout(resolve, 800))
           const retry = await sb
             .from('profiles')
-            .select('tier, industry, domain, context, name, phone, onboarding_complete, stripe_customer_id, stripe_subscription_id, intelligence_docs, intelligence_complete, shared_with_vnklo, shared_report_id')
+            .select('tier, industry, domain, context, name, phone, onboarding_complete, stripe_customer_id, stripe_subscription_id, intelligence_docs, intelligence_complete, shared_with_vnklo, shared_report_id, notification_email, last_digest_sent_at, last_digest_summary')
             .eq('id', user.id)
             .single()
           if (!cancelled && retry.data) {
@@ -993,6 +993,7 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
 
         <div style={styles.rightColumn}>
           <BusinessHealthPanel latestDomains={latestDomains} healthIntel={healthIntel} />
+          <WeeklyDigestPanel profile={profile} />
           <AiOpportunitiesCard
             user={user}
             userInfo={shareUserInfo}
@@ -1178,6 +1179,89 @@ function GoalPanel({ goalState }) {
         <div>{goalState.timeline || 'Timeline still being assessed'}</div>
       </div>
     </PanelCard>
+  )
+}
+
+function WeeklyDigestPanel({ profile }) {
+  const digest   = profile?.last_digest_summary ?? null
+  const sentAt   = profile?.last_digest_sent_at ?? null
+  const sentDate = sentAt
+    ? new Date(sentAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    : null
+
+  const INTEL_TIERS = new Set(['business', 'portfolio'])
+  if (!INTEL_TIERS.has(profile?.tier)) return null
+
+  const scoreColor = digest?.health_score == null ? G.textFaint
+    : digest.health_score >= 70 ? G.greenText
+    : digest.health_score >= 40 ? G.amberText
+    : G.redText
+
+  return (
+    <div style={styles.panelCard}>
+      <div style={styles.panelHeader}>
+        <div style={styles.panelTitle}>weekly digest</div>
+        {sentDate && <div style={styles.panelMeta}>{sentDate}</div>}
+      </div>
+
+      {!sentDate ? (
+        <div style={{ fontSize: 13, color: G.textFaint, lineHeight: 1.6 }}>
+          No digest sent yet. Your first will arrive next Monday at 9am UTC.
+        </div>
+      ) : (
+        <>
+          {digest?.health_score != null && (
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 10 }}>
+              <span style={{ fontSize: 28, fontWeight: 700, color: scoreColor, lineHeight: 1 }}>
+                {digest.health_score}
+              </span>
+              <span style={{ fontSize: 12, color: G.textFaint }}>health score</span>
+              {digest.connector_used && (
+                <span style={{ fontSize: 11, color: G.textFaint, background: G.surface, borderRadius: 4, padding: '2px 6px', marginLeft: 4 }}>
+                  via {digest.connector_used}
+                </span>
+              )}
+            </div>
+          )}
+
+          {digest?.summary && (
+            <p style={{ fontSize: 13, color: G.textSecondary, lineHeight: 1.6, marginBottom: 10 }}>
+              {digest.summary}
+            </p>
+          )}
+
+          {digest?.top_risks?.length > 0 && (
+            <div style={{ marginBottom: 8 }}>
+              <div style={{ fontSize: 11, color: G.textFaint, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>
+                top risks covered
+              </div>
+              {digest.top_risks.map((r, i) => {
+                const dot = r.severity === 'critical' ? G.redText : r.severity === 'high' ? G.amberText : G.textFaint
+                return (
+                  <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginBottom: 4, fontSize: 12, color: G.textSecondary }}>
+                    <span style={{ color: dot, flexShrink: 0, marginTop: 2 }}>●</span>
+                    {r.title}
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 4 }}>
+            {digest?.risk_count > 0 && (
+              <span style={{ fontSize: 11, color: G.textFaint }}>
+                {digest.risk_count} risk{digest.risk_count !== 1 ? 's' : ''} flagged
+              </span>
+            )}
+            {digest?.open_alerts > 0 && (
+              <span style={{ fontSize: 11, color: G.textFaint }}>
+                {digest.open_alerts} open alert{digest.open_alerts !== 1 ? 's' : ''}
+              </span>
+            )}
+          </div>
+        </>
+      )}
+    </div>
   )
 }
 

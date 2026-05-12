@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { synthesizeUserIntelligence } from './lib/intelligence/synthesize.js'
 import { upsertCompanyBrain } from './lib/intelligence/company-brain.js'
+import { sendUserReportEmail } from './lib/notifications/user-report-email.js'
 
 const supabase = createClient(
   process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
@@ -58,7 +59,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { userId, sessionId, report: r, industry, domain, goalTimeline, goalBaseline, goalMode } = req.body
+  const { userId, sessionId, report: r, industry, domain, goalTimeline, goalBaseline, goalMode, userEmail, userName } = req.body
   if (!userId || !r) {
     return res.status(400).json({ error: 'Missing userId or report' })
   }
@@ -203,6 +204,19 @@ export default async function handler(req, res) {
       await synthesizeUserIntelligence(userId, { supabase })
     } catch (synthErr) {
       console.warn('[save-report] intelligence synthesis failed:', synthErr.message)
+    }
+
+    // Auto-email the report to the user — fire-and-forget, never blocks the response
+    if (userEmail) {
+      // Also persist notification_email so the weekly digest cron can use it
+      supabase.from('profiles').update({ notification_email: userEmail }).eq('id', userId).catch(() => {})
+
+      sendUserReportEmail({
+        userEmail,
+        userName:    userName || '',
+        report:      r,
+        resendApiKey: process.env.RESEND_API_KEY,
+      }).catch(e => console.warn('[save-report] user email failed:', e.message))
     }
 
     return res.status(200).json({ success: true })
