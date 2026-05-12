@@ -72,13 +72,6 @@ const h2Style = (C) => ({
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 
-const compareRows = [
-  { dim: 'Waiting weeks for a calendar invite', old: 'Full-day event / 4-8 weeks', neo: '5 minutes (Real-time)' },
-  { dim: 'Paying for generic advice', old: 'Generic templates & frameworks', neo: 'Domain-Specific Logic (Facts)' },
-  { dim: 'Solving one problem at a time', old: 'Speaker-dependent domain', neo: 'Persistent Intelligence (Scale)' },
-  { dim: 'Billed by the session', old: 'Once a year / Billed per session', neo: 'Always monitoring your health' },
-  { dim: 'Guesswork & intuition', old: 'Human bias, agenda, and error', neo: 'Pattern Recognition (The Edge)' },
-]
 
 const storyCards = [
   {
@@ -210,42 +203,7 @@ const timelineLabels = {
   '3+ years': 'in 3+ years',
 }
 
-const intelligencePillars = [
-  {
-    title: 'Built on how businesses actually fail.',
-    body: 'We studied the playbooks of scaled businesses and the exact points where failed ones went wrong. That failure library is not something a $400/hr consultant has access to.',
-  },
-  {
-    title: 'Incentivised to solve it. Not to extend it.',
-    body: 'Consultants stay paid by staying needed. Our system is built to close the problem and move you to the next stage — even if that means telling you something uncomfortable.',
-  },
-  {
-    title: "A pricing problem won't show up in your ads. We look everywhere.",
-    body: 'Businesses fail because they apply the wrong fix to the wrong layer. We map dependencies across your full operation before we tell you where to look.',
-  },
-  {
-    title: 'Every audit makes the next one smarter.',
-    body: "Each audit feeds the intelligence layer. The more you engage, the more precisely it understands your business trajectory, weak points, and patterns — unlike any consultant you'll ever hire.",
-  },
-]
 
-const aiCards = [
-  {
-    num: '1',
-    title: 'When we say no.',
-    body: 'Most of the time, the answer is no. A pricing problem is not an AI problem. A bad hire is not an AI problem. A broken sales process is not an AI problem. SelfAudit will name the real issue, even if it is less interesting than "deploy an agent."',
-  },
-  {
-    num: '2',
-    title: 'When we say yes.',
-    body: 'When AI genuinely fits, you will know exactly where: the workflow, the likely ROI, and the order of operations. No vague "AI for ops." Real specifics on where automation creates compounding leverage.',
-  },
-  {
-    num: '3',
-    title: 'Why we can tell.',
-    body: 'SelfAudit has run audits across industries and functions. It has seen what compounded for a 5-person agency and what wasted six figures at a 50-person firm. That pattern library is the difference between advice and judgment.',
-  },
-]
 
 const growthIntelligence = [
   'Persistent business state model',
@@ -329,15 +287,6 @@ const typewriterStatements = [
   'I want to be investor-ready in 6 months.',
   'Our ops are a mess and nobody owns anything.',
   'I want to go from 10 to 50 employees without breaking culture.',
-]
-
-const rotatingHeadlines = [
-  'Your problems, diagnosed.\nYour goals, reverse-engineered.',
-  'Most founders are fixing\nthe wrong problem.',
-  "Stop the leak.\nScale the rest.",
-  "Find what's broken.\nDouble what's working.",
-  "Find what's killing it.\nThen go all in.",
-  "Cut what's costing you.\nScale what's making you.",
 ]
 
 // ── Sub-components ────────────────────────────────────────────────────────────
@@ -1636,6 +1585,1091 @@ function PricingPage({ C, onSignUp, onStartAudit }) {
   )
 }
 
+// ── Engine Room ───────────────────────────────────────────────────────────────
+
+const streamRows = [
+  { time: '23:42:18', type: 'INGEST',  text: 'HubSpot · 4 deals updated',               pill: 'CRM'   },
+  { time: '23:42:21', type: 'INGEST',  text: 'Stripe · payment burst · $2,400',          pill: 'REV'   },
+  { time: '23:42:27', type: 'SIGNAL',  text: 'CAC trending up · 22% WoW',               pill: 'WATCH' },
+  { time: '23:42:31', type: 'INGEST',  text: 'Slack · 127 messages parsed',              pill: 'COMMS' },
+  { time: '23:42:38', type: 'VERDICT', text: 'Pipeline leak · $8.6K/mo · F#2547',       pill: 'CRIT'  },
+  { time: '23:42:44', type: 'INGEST',  text: 'Linear · 6 tickets shipped',               pill: 'OPS'   },
+  { time: '23:42:51', type: 'SIGNAL',  text: 'Goal #3 · 3 weeks behind pace',            pill: 'WATCH' },
+  { time: '23:42:57', type: 'INGEST',  text: 'Gmail · 14 customer threads',              pill: 'COMMS' },
+  { time: '23:43:04', type: 'VERDICT', text: 'Strategy drift · 35-person co · F#2548',  pill: 'HIGH'  },
+  { time: '23:43:09', type: 'INGEST',  text: 'Notion · OKRs Q3 indexed',                pill: 'DOCS'  },
+  { time: '23:43:14', type: 'SIGNAL',  text: 'Activation dropped 14% · onboarding',     pill: 'WATCH' },
+  { time: '23:43:19', type: 'INGEST',  text: 'Stripe · churn cohort shape change',      pill: 'REV'   },
+  { time: '23:43:24', type: 'VERDICT', text: 'Pricing positioning · B2B SaaS · F#2549', pill: 'HIGH'  },
+  { time: '23:43:30', type: 'INGEST',  text: 'HubSpot · 12 new leads scored',           pill: 'CRM'   },
+  { time: '23:43:36', type: 'SIGNAL',  text: 'Cohort LTV down 9% · last 4wk',           pill: 'WATCH' },
+]
+
+const erRows = [...streamRows, ...streamRows]
+const mono = "'JetBrains Mono', 'Fira Mono', 'Courier New', monospace"
+
+function EngineRoom() {
+  const [stats, setStats] = useState({ s1: 847, s2: 12, s3: 94, s4: 3.4 })
+  const D = THEMES.dark
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setStats({
+        s1: Math.floor(820 + Math.random() * 60),
+        s2: Math.floor(9 + Math.random() * 6),
+        s3: Math.floor(92 + Math.random() * 5),
+        s4: parseFloat((3.0 + Math.random() * 0.9).toFixed(1)),
+      })
+    }, 2200)
+    return () => clearInterval(id)
+  }, [])
+
+  const typeColor = (type) => {
+    if (type === 'INGEST') return D.accentText
+    if (type === 'SIGNAL') return D.amber
+    return D.redMuted
+  }
+
+  return (
+    <section style={{ background: D.bg, padding: '100px 0 120px' }}>
+      <style>{`
+        @keyframes erScroll {
+          0%   { transform: translateY(0); }
+          100% { transform: translateY(-50%); }
+        }
+        @keyframes erPulse {
+          0%, 100% { opacity: 1; }
+          50%       { opacity: 0.3; }
+        }
+      `}</style>
+
+      <div style={{
+        maxWidth: 1280,
+        margin: '0 auto',
+        padding: '0 48px',
+        display: 'grid',
+        gridTemplateColumns: '1fr 1.2fr',
+        gap: 80,
+        alignItems: 'start',
+      }}>
+
+        {/* ── Left: copy ── */}
+        <div style={{ position: 'sticky', top: 140 }}>
+
+          <div style={{
+            fontFamily: mono,
+            fontSize: 11,
+            letterSpacing: '0.18em',
+            textTransform: 'uppercase',
+            color: D.accent,
+            marginBottom: 24,
+          }}>
+            Real-time intelligence layer
+          </div>
+
+          <h2 style={{
+            fontFamily: serif,
+            fontSize: 'clamp(52px, 5.5vw, 76px)',
+            fontWeight: 700,
+            lineHeight: 1.06,
+            letterSpacing: '-0.03em',
+            margin: '0 0 28px',
+            color: D.ink,
+          }}>
+            Inside the<br />
+            <em style={{ fontStyle: 'italic', color: D.redMuted }}>engine room.</em>
+          </h2>
+
+          <p style={{
+            fontFamily: serif,
+            fontSize: 'clamp(18px, 1.6vw, 22px)',
+            color: D.inkSoft,
+            lineHeight: 1.65,
+            margin: '0 0 40px',
+          }}>
+            Every minute, the brain ingests signals from your tools, pattern-matches against thousands of business outcomes, and surfaces what matters.{' '}
+            <em style={{ fontStyle: 'italic' }}>This is what&apos;s happening right now.</em>
+          </p>
+
+          <div style={{ borderTop: `1px solid ${D.border}`, paddingTop: 36, display: 'grid', gridTemplateColumns: '1fr 1fr', rowGap: 32 }}>
+            {[
+              { value: stats.s1.toString(), label: 'Signals processed / min' },
+              { value: stats.s2.toString(), label: 'Active investigations' },
+              { value: `${stats.s3}%`,      label: 'Verdict confidence' },
+              { value: `${stats.s4}s`,      label: 'Median diagnosis time' },
+            ].map((stat) => (
+              <div key={stat.label}>
+                <div style={{
+                  fontFamily: serif,
+                  fontSize: 52,
+                  fontWeight: 800,
+                  fontStyle: 'italic',
+                  color: D.redMuted,
+                  lineHeight: 1,
+                }}>
+                  {stat.value}
+                </div>
+                <div style={{
+                  fontFamily: mono,
+                  fontSize: 10,
+                  letterSpacing: '0.14em',
+                  textTransform: 'uppercase',
+                  color: D.inkFaint,
+                  marginTop: 8,
+                }}>
+                  {stat.label}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Right: stream panel ── */}
+        <div style={{
+          background: D.surface2,
+          borderRadius: 12,
+          height: 600,
+          overflow: 'hidden',
+          border: `1px solid ${D.border}`,
+          position: 'relative',
+        }}>
+          {/* Header bar */}
+          <div style={{
+            background: D.bg,
+            padding: '14px 20px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            borderBottom: `1px solid ${D.border}`,
+          }}>
+            <div style={{ fontFamily: mono, fontSize: 13, color: D.inkFaint }}>
+              stream / <span style={{ color: D.accent }}>live</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#28CA41', animation: 'erPulse 1.5s infinite' }} />
+              <span style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.14em', color: '#28CA41' }}>RECEIVING</span>
+            </div>
+          </div>
+
+          {/* Top fade */}
+          <div style={{
+            position: 'absolute', top: 45, left: 0, right: 0, height: 56,
+            background: `linear-gradient(to bottom, ${D.surface2}, transparent)`,
+            zIndex: 2, pointerEvents: 'none',
+          }} />
+          {/* Bottom fade */}
+          <div style={{
+            position: 'absolute', bottom: 0, left: 0, right: 0, height: 80,
+            background: `linear-gradient(to top, ${D.surface2}, transparent)`,
+            zIndex: 2, pointerEvents: 'none',
+          }} />
+
+          {/* Scroll body */}
+          <div style={{ height: 'calc(100% - 45px)', overflow: 'hidden' }}>
+            <div style={{ animation: 'erScroll 28s linear infinite' }}>
+              {erRows.map((row, i) => {
+                const isVerdict = row.type === 'VERDICT'
+                return (
+                  <div key={i} style={{
+                    display: 'grid',
+                    gridTemplateColumns: '76px 68px 1fr 50px',
+                    gap: '0 14px',
+                    alignItems: 'center',
+                    padding: '11px 20px',
+                    borderBottom: '1px solid rgba(30,45,66,0.5)',
+                    background: isVerdict ? 'rgba(192,80,80,0.06)' : 'transparent',
+                  }}>
+                    <span style={{ fontFamily: mono, fontSize: 11, color: D.inkFaint }}>{row.time}</span>
+                    <span style={{ fontFamily: mono, fontSize: 11, fontWeight: 700, color: typeColor(row.type) }}>{row.type}</span>
+                    <span style={{
+                      fontFamily: mono, fontSize: 12,
+                      color: isVerdict ? D.redMuted : D.inkMuted,
+                      whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                    }}>{row.text}</span>
+                    <span style={{
+                      fontFamily: mono, fontSize: 10, letterSpacing: '0.06em',
+                      color: isVerdict ? D.redMuted : D.inkFaint,
+                      border: `1px solid ${isVerdict ? 'rgba(192,80,80,0.4)' : D.border}`,
+                      borderRadius: 3,
+                      padding: '2px 5px',
+                      textAlign: 'center',
+                    }}>{row.pill}</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  )
+}
+
+// ── Four Verbs ────────────────────────────────────────────────────────────────
+
+function FourVerbs({ C }) {
+  const cardBg = C.theme === 'dark' ? C.card : '#ffffff'
+
+  const verbs = [
+    {
+      num: '01',
+      verb: 'diagnoses.',
+      desc: 'Tell it a symptom. It investigates across your tools, history, and patterns — then names the cause, not the surface.',
+      card: (
+        <div style={{ background: cardBg, border: `1px solid ${C.border}`, borderRadius: 14, padding: 32, minHeight: 340, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 22 }}>SYMPTOM</div>
+          <div style={{ fontFamily: serif, fontSize: 22, fontStyle: 'italic', color: C.inkMuted, paddingBottom: 20, borderBottom: `1px solid ${C.border}`, marginBottom: 20 }}>
+            &ldquo;Why is our churn climbing?&rdquo;
+          </div>
+          <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.accent, marginBottom: 16 }}>
+            VERDICT · 3.4S
+          </div>
+          <div style={{ fontFamily: serif, fontSize: 22, fontWeight: 500, color: C.ink, lineHeight: 1.55 }}>
+            Retention <em style={{ fontStyle: 'italic', color: C.redMuted }}>looks fine</em> because acquisition is masking it. Your cohorts are weaker —{' '}
+            <em style={{ fontStyle: 'italic', color: C.redMuted }}>the curves cross in nine months.</em>
+          </div>
+        </div>
+      ),
+    },
+    {
+      num: '02',
+      verb: 'remembers.',
+      desc: 'Every diagnosis, signal, conversation — compounds. By day ninety, it knows your business better than your co-founder.',
+      card: (
+        <div style={{ background: cardBg, border: `1px solid ${C.border}`, borderRadius: 14, padding: 32, minHeight: 340 }}>
+          <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 22 }}>MEMORY · 11 WEEKS</div>
+          {[
+            { day: 'Day 04', text: 'Founder said hiring was the biggest constraint.', accent: false },
+            { day: 'Day 31', text: 'Pricing flagged as a leak. Was deprioritized.', accent: false },
+            { day: 'Day 58', text: 'Hiring discussion resurfaced — pricing still untouched.', accent: false },
+            { day: 'Day 77', text: 'Third time hiring has come up before pricing was settled. Pattern, not coincidence.', accent: true },
+          ].map((item, i, arr) => (
+            <div key={item.day} style={{
+              display: 'grid',
+              gridTemplateColumns: '60px 1fr',
+              gap: 16,
+              alignItems: 'start',
+              padding: '14px 0',
+              borderBottom: i < arr.length - 1 ? `1px solid ${C.border}` : 'none',
+            }}>
+              <span style={{ fontFamily: mono, fontSize: 12, color: C.accent, paddingTop: 2 }}>{item.day}</span>
+              {item.accent
+                ? <em style={{ fontFamily: serif, fontSize: 16, fontStyle: 'italic', color: C.redMuted, lineHeight: 1.55 }}>{item.text}</em>
+                : <span style={{ fontFamily: serif, fontSize: 16, color: C.inkSoft, lineHeight: 1.55 }}>{item.text}</span>
+              }
+            </div>
+          ))}
+        </div>
+      ),
+    },
+    {
+      num: '03',
+      verb: 'watches.',
+      desc: 'Weekly governance across your connected tools. If a metric drifts or a goal slips, you hear about it before the meeting.',
+      card: (
+        <div style={{ background: cardBg, border: `1px solid ${C.border}`, borderRadius: 14, padding: 32, minHeight: 340, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 22 }}>ALERTS · LAST 7 DAYS</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {[
+              { time: 'SUN · 23:42', body: <>CAC drifted <em style={{ fontStyle: 'italic', color: C.redMuted }}>22% this week.</em> Cause sits in Thursday&apos;s launch.</> },
+              { time: 'WED · 04:18', body: <>Goal &ldquo;Hit $500K Q3&rdquo; is now <em style={{ fontStyle: 'italic', color: C.redMuted }}>3 weeks behind pace.</em> Path salvageable.</> },
+              { time: 'FRI · 09:02', body: <>Onboarding completion dropped <em style={{ fontStyle: 'italic', color: C.redMuted }}>14%</em> after Tuesday&apos;s UX change.</> },
+            ].map((alert) => (
+              <div key={alert.time} style={{
+                borderLeft: `3px solid ${C.accent}`,
+                borderRadius: '0 8px 8px 0',
+                padding: '12px 16px',
+                background: C.surface2,
+              }}>
+                <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 6 }}>{alert.time}</div>
+                <div style={{ fontFamily: serif, fontSize: 16, color: C.inkSoft, lineHeight: 1.55 }}>{alert.body}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ),
+    },
+    {
+      num: '04',
+      verb: 'decides.',
+      desc: 'Other AI gives you ten options. The brain picks one move — ranked by impact, evidence, and what you can actually do this week.',
+      card: (
+        <div style={{ background: cardBg, border: `1px solid ${C.border}`, borderRadius: 14, padding: 32, minHeight: 340, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 24 }}>NEXT MOVE · RANKED</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 20 }}>
+            {['Hire a VP of Sales', 'Run a Google Ads test', 'Launch the new feature'].map((item) => (
+              <div key={item} style={{ fontFamily: serif, fontSize: 18, fontStyle: 'italic', color: C.inkFaint, textDecoration: 'line-through' }}>{item}</div>
+            ))}
+          </div>
+          <div style={{ borderTop: `2px solid ${C.accent}`, paddingTop: 14, marginTop: 'auto' }}>
+            <div style={{ fontFamily: serif, fontSize: 22, fontWeight: 500, color: C.ink, lineHeight: 1.55 }}>
+              <em style={{ fontStyle: 'italic', color: C.redMuted }}>Cancel the agency contract.</em>{' '}
+              Reallocate the $5K to Clay. 30-day test with one rep.{' '}
+              <em style={{ fontStyle: 'italic', color: C.redMuted }}>Stop everything else.</em>
+            </div>
+          </div>
+        </div>
+      ),
+    },
+  ]
+
+  return (
+    <section style={{ background: C.surface, padding: '140px 0', borderTop: `1px solid ${C.border}` }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 28px' }}>
+
+        {/* Intro block */}
+        <div style={{ maxWidth: 780, marginBottom: 120 }}>
+          <div style={{ fontFamily: mono, fontSize: 12, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 20 }}>
+            What an operating brain actually does
+          </div>
+          <h2 style={{
+            fontFamily: serif,
+            fontSize: 'clamp(36px, 5vw, 64px)',
+            fontWeight: 700,
+            lineHeight: 1.05,
+            letterSpacing: '-0.04em',
+            color: C.ink,
+            margin: '0 0 20px',
+          }}>
+            Four things <em style={{ fontStyle: 'italic', color: C.redMuted }}>only a brain</em> can do.
+          </h2>
+          <p style={{ fontFamily: serif, fontSize: 22, color: C.inkSoft, lineHeight: 1.6, margin: 0 }}>
+            Tools wait for prompts. Dashboards show numbers. Reports get filed. A brain <em style={{ fontStyle: 'italic' }}>works.</em>
+          </p>
+        </div>
+
+        {/* Verb rows */}
+        {verbs.map((v, i) => (
+          <div key={v.num} style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1.1fr',
+            gap: 80,
+            alignItems: 'center',
+            padding: '80px 0',
+            borderTop: i === 0 ? `2px solid ${C.ink}` : `1px solid ${C.border}`,
+          }}>
+            {/* Left */}
+            <div>
+              <div style={{ fontFamily: mono, fontSize: 12, letterSpacing: '0.06em', textTransform: 'uppercase', color: C.accent, marginBottom: 16 }}>
+                {v.num} / FOUR
+              </div>
+              <h3 style={{
+                fontFamily: serif,
+                fontSize: 'clamp(48px, 6vw, 88px)',
+                fontWeight: 700,
+                lineHeight: 0.98,
+                letterSpacing: '-0.045em',
+                margin: '0 0 24px',
+              }}>
+                <span style={{ color: C.ink }}>It </span>
+                <em style={{ fontStyle: 'italic', color: C.redMuted }}>{v.verb}</em>
+              </h3>
+              <p style={{ fontFamily: serif, fontSize: 20, color: C.inkSoft, lineHeight: 1.6, maxWidth: 480, margin: 0 }}>
+                {v.desc}
+              </p>
+            </div>
+
+            {/* Right: card */}
+            {v.card}
+          </div>
+        ))}
+
+      </div>
+    </section>
+  )
+}
+
+// ── Live Diagnosis ────────────────────────────────────────────────────────────
+
+function LiveDiagnosis() {
+  const D = THEMES.dark
+  const sectionRef  = useRef(null)
+  const symptomRef  = useRef(null)
+  const step0Ref    = useRef(null)
+  const step1Ref    = useRef(null)
+  const step2Ref    = useRef(null)
+  const step3Ref    = useRef(null)
+  const vlabelRef   = useRef(null)
+  const vtextRef    = useRef(null)
+  const vmetaRef    = useRef(null)
+  const m1Ref       = useRef(null)
+  const m2Ref       = useRef(null)
+  const m3Ref       = useRef(null)
+  const m4Ref       = useRef(null)
+  const cancelRef   = useRef(false)
+
+  useEffect(() => {
+    const stepRefs = [step0Ref, step1Ref, step2Ref, step3Ref]
+    const sleep = ms => new Promise(r => setTimeout(r, ms))
+
+    const cycles = [
+      {
+        symptom: 'Our team is busy every day but nothing seems to be moving forward.',
+        verdictSegments: [
+          { text: 'You’re not held back by effort. You have ', italic: false },
+          { text: 'strategic ambiguity', italic: true },
+          { text: ' — your team is making competent decisions about ', italic: false },
+          { text: 'three different versions', italic: true },
+          { text: ' of where this company is going.', italic: false },
+        ],
+        meta: { m1: 'Strategic ambiguity', m2: '91% · High', m3: '$340K / quarter', m4: 'Re-anchor the team by Friday' },
+      },
+      {
+        symptom: 'Revenue is up but margins keep getting worse every month.',
+        verdictSegments: [
+          { text: 'Your revenue is growing because ', italic: false },
+          { text: 'discounting hides the leak.', italic: true },
+          { text: ' Margin won’t recover until your ', italic: false },
+          { text: 'delivery model changes', italic: true },
+          { text: ' — not your pricing.', italic: false },
+        ],
+        meta: { m1: 'Delivery model leak', m2: '88% · High', m3: '$210K / quarter', m4: 'Rework delivery before Q4' },
+      },
+      {
+        symptom: 'Churn looks stable but new customer cohorts feel weaker.',
+        verdictSegments: [
+          { text: 'Your cohorts aren’t weaker. ', italic: false },
+          { text: 'Your onboarding moved', italic: true },
+          { text: ' when you redesigned the dashboard in March. Activation dropped ', italic: false },
+          { text: '31% the next week.', italic: true },
+          { text: ' Nobody told you.', italic: false },
+        ],
+        meta: { m1: 'Onboarding regression', m2: '94% · Very high', m3: '$185K LTV / cohort', m4: 'Revert flow · A/B in 7 days' },
+      },
+      {
+        symptom: 'We keep hiring and the work keeps slowing down.',
+        verdictSegments: [
+          { text: 'You’re hiring ahead of clarity. Every new person inherits ', italic: false },
+          { text: 'three competing priorities', italic: true },
+          { text: ' and picks one. That’s why work is slowing — ', italic: false },
+          { text: 'not because they’re not working.', italic: true },
+        ],
+        meta: { m1: 'Priority dilution', m2: '89% · High', m3: '1 quarter of velocity', m4: 'Freeze hiring · Re-spec roadmap' },
+      },
+    ]
+
+    const buildHtml = (chars, upTo) => {
+      let html = ''
+      let j = 0
+      while (j < upTo) {
+        if (chars[j].italic) {
+          html += `<em style="font-style:italic;color:${D.amber}">`
+          while (j < upTo && chars[j].italic) {
+            const c = chars[j].char
+            html += c === '<' ? '&lt;' : c === '>' ? '&gt;' : c === '&' ? '&amp;' : c
+            j++
+          }
+          html += '</em>'
+        } else {
+          const c = chars[j].char
+          html += c === '<' ? '&lt;' : c === '>' ? '&gt;' : c === '&' ? '&amp;' : c
+          j++
+        }
+      }
+      return html
+    }
+
+    let cycleIndex = 0
+
+    const runLoop = async () => {
+      while (!cancelRef.current) {
+        const cycle = cycles[cycleIndex % cycles.length]
+        cycleIndex++
+
+        // 1. Reset
+        if (symptomRef.current) { symptomRef.current.textContent = ''; symptomRef.current.classList.remove('ldc-done') }
+        stepRefs.forEach(r => { if (r.current) r.current.classList.remove('ldc-show') })
+        if (vlabelRef.current) vlabelRef.current.classList.remove('ldc-show')
+        if (vtextRef.current)  vtextRef.current.innerHTML = ''
+        if (vmetaRef.current)  vmetaRef.current.classList.remove('ldc-show')
+        await sleep(300)
+
+        // 2. Type symptom
+        for (let i = 1; i <= cycle.symptom.length; i++) {
+          if (cancelRef.current) return
+          if (symptomRef.current) symptomRef.current.textContent = cycle.symptom.slice(0, i)
+          await sleep(28)
+        }
+        if (symptomRef.current) symptomRef.current.classList.add('ldc-done')
+        await sleep(300)
+
+        // 3. Reveal steps
+        for (const ref of stepRefs) {
+          if (cancelRef.current) return
+          if (ref.current) ref.current.classList.add('ldc-show')
+          await sleep(380)
+        }
+        await sleep(300)
+
+        // 4. Verdict label
+        if (cancelRef.current) return
+        if (vlabelRef.current) vlabelRef.current.classList.add('ldc-show')
+        await sleep(200)
+
+        // 5. Type verdict
+        const flatChars = []
+        for (const seg of cycle.verdictSegments)
+          for (const char of [...seg.text])
+            flatChars.push({ char, italic: seg.italic })
+
+        for (let i = 1; i <= flatChars.length; i++) {
+          if (cancelRef.current) return
+          if (vtextRef.current) vtextRef.current.innerHTML = buildHtml(flatChars, i)
+          await sleep(22)
+        }
+
+        // 6. Meta
+        if (cancelRef.current) return
+        if (m1Ref.current) m1Ref.current.textContent = cycle.meta.m1
+        if (m2Ref.current) m2Ref.current.textContent = cycle.meta.m2
+        if (m3Ref.current) m3Ref.current.textContent = cycle.meta.m3
+        if (m4Ref.current) m4Ref.current.textContent = cycle.meta.m4
+        if (vmetaRef.current) vmetaRef.current.classList.add('ldc-show')
+
+        // 7. Hold
+        await sleep(5400)
+      }
+    }
+
+    const observer = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting) {
+        observer.disconnect()
+        runLoop()
+      }
+    }, { threshold: 0.3 })
+
+    if (sectionRef.current) observer.observe(sectionRef.current)
+
+    return () => {
+      cancelRef.current = true
+      observer.disconnect()
+    }
+  }, [])
+
+  const D_ = THEMES.dark
+
+  return (
+    <section ref={sectionRef} style={{ background: D_.bg, padding: '140px 0' }}>
+      <style>{`
+        @keyframes ldcBlink {
+          0%, 49% { opacity: 1; }
+          50%, 100% { opacity: 0; }
+        }
+        .ldc-symptom::after {
+          content: '';
+          display: inline-block;
+          width: 2px;
+          height: 1.1em;
+          background: ${D_.amber};
+          margin-left: 3px;
+          vertical-align: text-bottom;
+          animation: ldcBlink 0.9s steps(2) infinite;
+        }
+        .ldc-symptom.ldc-done::after { display: none; }
+        .ldc-step {
+          opacity: 0;
+          transform: translateX(-4px);
+          transition: opacity 0.35s ease, transform 0.35s ease;
+        }
+        .ldc-step.ldc-show { opacity: 1; transform: translateX(0); }
+        .ldc-vlabel { opacity: 0; transition: opacity 0.4s ease; }
+        .ldc-vlabel.ldc-show { opacity: 1; }
+        .ldc-meta { opacity: 0; transition: opacity 0.5s ease; }
+        .ldc-meta.ldc-show { opacity: 1; }
+      `}</style>
+
+      {/* Intro */}
+      <div style={{ textAlign: 'center', maxWidth: 560, margin: '0 auto 64px', padding: '0 28px' }}>
+        <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: D_.amber, marginBottom: 20 }}>
+          A live diagnosis
+        </div>
+        <h2 style={{ fontFamily: serif, fontSize: 'clamp(44px, 5.5vw, 80px)', fontWeight: 700, letterSpacing: '-0.045em', lineHeight: 1.04, color: D_.ink, margin: '0 0 20px' }}>
+          Watch the brain <em style={{ fontStyle: 'italic', color: D_.amber }}>think.</em>
+        </h2>
+        <p style={{ fontFamily: serif, fontSize: 20, color: 'rgba(232,226,216,0.6)', lineHeight: 1.6, margin: 0 }}>
+          Not a chat. A reasoning process. Real signals. Real verdict. Real next move.
+        </p>
+      </div>
+
+      {/* Console panel */}
+      <div style={{ maxWidth: 920, margin: '0 auto', padding: '0 28px' }}>
+        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, overflow: 'hidden' }}>
+
+          {/* Top bar */}
+          <div style={{ background: 'rgba(0,0,0,0.3)', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '14px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ display: 'flex', gap: 6 }}>
+                {[0, 1, 2].map(i => <div key={i} style={{ width: 10, height: 10, borderRadius: '50%', background: 'rgba(255,255,255,0.18)' }} />)}
+              </div>
+              <span style={{ fontFamily: mono, fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>selfaudit · diagnosis console</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#28CA41', animation: 'erPulse 1.5s infinite' }} />
+              <span style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.14em', color: '#28CA41' }}>● LIVE</span>
+            </div>
+          </div>
+
+          {/* Body */}
+          <div style={{ padding: 36 }}>
+
+            {/* Symptom */}
+            <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: 12 }}>SYMPTOM</div>
+            <div
+              ref={symptomRef}
+              className="ldc-symptom"
+              style={{ fontFamily: serif, fontSize: 24, fontStyle: 'italic', color: 'rgba(232,226,216,0.92)', minHeight: 68, lineHeight: 1.45 }}
+            />
+
+            {/* Thinking steps */}
+            <div style={{ padding: '22px 0', borderTop: '1px solid rgba(255,255,255,0.08)', borderBottom: '1px solid rgba(255,255,255,0.08)', margin: '22px 0', minHeight: 140, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 14 }}>
+              {[
+                { ref: step0Ref, action: 'Reading',               source: 'HubSpot · 92 deals · 8 weeks' },
+                { ref: step1Ref, action: 'Cross-referencing',     source: 'Stripe cohort revenue curves' },
+                { ref: step2Ref, action: 'Mapping',               source: 'decision velocity vs. execution surface area' },
+                { ref: step3Ref, action: 'Isolating root cause ·', source: '4 candidates eliminated' },
+              ].map(step => (
+                <div key={step.action} ref={step.ref} className="ldc-step" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{ color: '#28CA41', fontFamily: mono, fontSize: 14, flexShrink: 0 }}>✓</span>
+                  <span style={{ fontFamily: mono, fontSize: 13, color: 'rgba(255,255,255,0.5)' }}>
+                    {step.action}{' '}<span style={{ color: 'rgba(255,255,255,0.85)' }}>{step.source}</span>
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* Verdict label */}
+            <div ref={vlabelRef} className="ldc-vlabel" style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', color: D_.amber, marginBottom: 14 }}>
+              VERDICT
+            </div>
+
+            {/* Verdict text */}
+            <div
+              ref={vtextRef}
+              style={{ fontFamily: serif, fontSize: 'clamp(20px, 2.5vw, 28px)', fontWeight: 500, color: D_.ink, minHeight: 120, lineHeight: 1.55 }}
+            />
+
+            {/* Meta grid */}
+            <div ref={vmetaRef} className="ldc-meta" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginTop: 36, borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 24 }}>
+              {[
+                { label: 'ROOT CAUSE',     ref: m1Ref, color: D_.amber },
+                { label: 'CONFIDENCE',     ref: m2Ref, color: '#28CA41' },
+                { label: 'REVENUE AT RISK',ref: m3Ref, color: D_.amber },
+                { label: 'NEXT MOVE',      ref: m4Ref, color: D_.ink },
+              ].map(item => (
+                <div key={item.label}>
+                  <div style={{ fontFamily: mono, fontSize: 9, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: 6 }}>{item.label}</div>
+                  <div ref={item.ref} style={{ fontFamily: serif, fontSize: 15, color: item.color, fontWeight: 500, lineHeight: 1.45 }} />
+                </div>
+              ))}
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+// ── Dashboard Section ─────────────────────────────────────────────────────────
+
+function DashboardSection({ C }) {
+  const healthRef = useRef(null)
+  const goalRef   = useRef(null)
+  const D = THEMES.dark
+  const amber = D.amber          // #C9A040
+  const green = '#28CA41'
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (healthRef.current) healthRef.current.textContent = String(68 + Math.floor(Math.random() * 3))
+      if (goalRef.current)   goalRef.current.textContent   = `${42 + Math.floor(Math.random() * 2)}%`
+    }, 4500)
+    return () => clearInterval(id)
+  }, [])
+
+  // Pre-computed rgba from amber (#C9A040 → 201,160,64) and red (192,80,80)
+  const amberBg     = 'rgba(201,160,64,0.08)'
+  const amberBorder = 'rgba(201,160,64,0.25)'
+  const redBg       = 'rgba(192,80,80,0.15)'
+
+  const Sidebar = () => (
+    <div style={{ background: 'rgba(0,0,0,0.4)', borderRight: '1px solid rgba(255,255,255,0.04)', padding: '22px 0', minHeight: 540 }}>
+      <div style={{ fontFamily: mono, fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', padding: '0 22px', marginBottom: 8 }}>Workspace</div>
+
+      {/* Active item */}
+      <div style={{ display: 'flex', alignItems: 'center', padding: '9px 22px', borderLeft: `2px solid ${amber}`, background: amberBg }}>
+        <span style={{ fontFamily: mono, fontSize: 13, color: '#fff' }}>● Command centre</span>
+      </div>
+      {['■ Audits', '◐ Signals', '⊕ Connectors'].map(item => (
+        <div key={item} style={{ padding: '9px 22px 9px 24px', fontFamily: mono, fontSize: 13, color: 'rgba(255,255,255,0.65)' }}>{item}</div>
+      ))}
+
+      <div style={{ margin: '18px 22px', height: 1, background: 'rgba(255,255,255,0.04)' }} />
+
+      <div style={{ fontFamily: mono, fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', padding: '0 22px', marginBottom: 8 }}>Intelligence</div>
+      {['⎈ Brief', '✦ Ask SelfAudit', '◷ Governance'].map(item => (
+        <div key={item} style={{ padding: '9px 22px 9px 24px', fontFamily: mono, fontSize: 13, color: 'rgba(255,255,255,0.65)' }}>{item}</div>
+      ))}
+    </div>
+  )
+
+  return (
+    <section style={{ background: C.bg, padding: '160px 0', borderTop: `1px solid ${C.border}` }}>
+
+      {/* Intro */}
+      <div style={{ textAlign: 'center', maxWidth: 620, margin: '0 auto 64px', padding: '0 28px' }}>
+        <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 20 }}>
+          The brain, on day 47
+        </div>
+        <h2 style={{ fontFamily: serif, fontSize: 'clamp(44px, 5.5vw, 80px)', fontWeight: 700, letterSpacing: '-0.045em', lineHeight: 1.04, color: C.ink, margin: '0 0 20px' }}>
+          It remembers <em style={{ fontStyle: 'italic', color: C.redMuted }}>everything.</em>
+        </h2>
+        <p style={{ fontFamily: serif, fontSize: 20, color: C.inkSoft, lineHeight: 1.6, margin: 0 }}>
+          Your business state, tracked. Your goals, watched. Your patterns, learned. This is what the brain looks like once it knows you.
+        </p>
+      </div>
+
+      {/* Dashboard frame */}
+      <div style={{ maxWidth: 1180, margin: '0 auto', padding: '0 28px' }}>
+        <div style={{ background: D.bg, borderRadius: 16, overflow: 'hidden', boxShadow: '0 40px 100px rgba(26,20,16,0.18)' }}>
+
+          {/* Top bar */}
+          <div style={{ background: 'rgba(0,0,0,0.3)', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '14px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ display: 'flex', gap: 6 }}>
+                {[0, 1, 2].map(i => <div key={i} style={{ width: 10, height: 10, borderRadius: '50%', background: 'rgba(255,255,255,0.18)' }} />)}
+              </div>
+              <span style={{ fontFamily: mono, fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>selfaudit · command centre</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: green, animation: 'erPulse 1.5s infinite' }} />
+              <span style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.14em', color: green }}>LIVE</span>
+            </div>
+          </div>
+
+          {/* Body grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr' }}>
+            <Sidebar />
+
+            {/* Main panel */}
+            <div style={{ padding: '28px 32px' }}>
+
+              {/* Header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 24 }}>
+                <div style={{ fontFamily: serif, fontSize: 24, fontWeight: 600, color: D.ink }}>Your business · this week</div>
+                <div style={{ fontFamily: mono, fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>Last synced 2m ago</div>
+              </div>
+
+              {/* Alert banner */}
+              <div style={{ background: amberBg, borderLeft: `3px solid ${amber}`, borderRadius: '0 8px 8px 0', padding: '14px 16px', marginBottom: 22, display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                <div style={{ width: 6, height: 6, borderRadius: '50%', background: amber, marginTop: 5, flexShrink: 0 }} />
+                <span style={{ fontFamily: serif, fontSize: 13, color: 'rgba(232,226,216,0.85)', lineHeight: 1.5 }}>
+                  Market Validation is still flagged from your May 4 audit. Worth updating before it compounds.
+                </span>
+              </div>
+
+              {/* Stats grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10, marginBottom: 22 }}>
+                {[
+                  { label: 'HEALTH SCORE',  dynRef: healthRef, val: '68',  sub: '▲ 12 vs last week',  subColor: amber },
+                  { label: 'OPEN ISSUES',   dynRef: null,      val: '3',   sub: '2 critical · 1 high', subColor: 'rgba(255,255,255,0.5)' },
+                  { label: 'AUDITS RUN',    dynRef: null,      val: '4',   sub: 'Latest: today',        subColor: 'rgba(255,255,255,0.5)' },
+                  { label: 'GOAL PROGRESS', dynRef: goalRef,   val: '42%', sub: 'On pace · Q3',         subColor: green },
+                ].map(stat => (
+                  <div key={stat.label} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 10, padding: 16 }}>
+                    <div style={{ fontFamily: mono, fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: 8 }}>{stat.label}</div>
+                    <div ref={stat.dynRef} style={{ fontFamily: serif, fontSize: 30, fontWeight: 600, color: D.ink, lineHeight: 1 }}>{stat.val}</div>
+                    <div style={{ fontFamily: mono, fontSize: 10, color: stat.subColor, marginTop: 6 }}>{stat.sub}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Recommended next move */}
+              <div style={{ background: amberBg, border: `1px solid ${amberBorder}`, borderRadius: 12, padding: '20px 22px', marginBottom: 18 }}>
+                <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: amber, marginBottom: 10 }}>Recommended next move</div>
+                <p style={{ fontFamily: serif, fontSize: 17, fontWeight: 500, color: D.ink, lineHeight: 1.55, margin: '0 0 16px' }}>
+                  Cancel the agency contract this week. Run a{' '}
+                  <em style={{ fontStyle: 'italic', color: amber }}>30-day Clay test</em>
+                  {' '}with one rep before scaling outbound.
+                </p>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  <button style={{ background: amber, color: '#1A1410', border: 'none', borderRadius: 999, padding: '7px 14px', fontFamily: mono, fontSize: 12, fontWeight: 500, cursor: 'pointer' }}>
+                    Generate action plan
+                  </button>
+                  {['Draft cancellation email', 'Create SOP', '+3 more'].map(pill => (
+                    <button key={pill} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 999, padding: '7px 14px', fontFamily: mono, fontSize: 12, color: 'rgba(255,255,255,0.75)', cursor: 'pointer' }}>
+                      {pill}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Open issues */}
+              <div style={{ fontFamily: mono, fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: 8 }}>Open issues</div>
+              {[
+                { title: 'Market validation',             meta: 'Critical · flagged May 4',    badge: 'CRITICAL', badgeBg: redBg,       badgeColor: D.redMuted },
+                { title: 'Pricing model needs restructure', meta: 'High · 3 audits in a row',   badge: 'HIGH',     badgeBg: amberBg,     badgeColor: amber },
+                { title: 'Sales cycle drift',             meta: 'High · trending worse',       badge: 'HIGH',     badgeBg: amberBg,     badgeColor: amber },
+              ].map(issue => (
+                <div key={issue.title} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 8, padding: '12px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                  <div>
+                    <div style={{ fontFamily: serif, fontSize: 14, color: D.ink, marginBottom: 3 }}>{issue.title}</div>
+                    <div style={{ fontFamily: mono, fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>{issue.meta}</div>
+                  </div>
+                  <span style={{ background: issue.badgeBg, color: issue.badgeColor, fontFamily: mono, fontSize: 10, letterSpacing: '0.08em', borderRadius: 4, padding: '3px 8px', flexShrink: 0 }}>
+                    {issue.badge}
+                  </span>
+                </div>
+              ))}
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+// ── Compounding Section ───────────────────────────────────────────────────────
+
+function CompoundingSection({ C }) {
+  const D     = THEMES.dark
+  const amber = D.amber
+
+  // Chart points [x, y] in a 560×210 viewbox (y=210 = baseline)
+  const pts = [
+    { x: 20,  y: 188, label: 'DAY 1'  },
+    { x: 187, y: 148, label: 'DAY 30' },
+    { x: 373, y: 92,  label: 'DAY 60' },
+    { x: 540, y: 34,  label: 'DAY 90' },
+  ]
+
+  // Smooth cubic bezier through the four points
+  const curve = `M ${pts[0].x},${pts[0].y} C 85,184 135,162 ${pts[1].x},${pts[1].y} C 255,132 308,108 ${pts[2].x},${pts[2].y} C 448,80 492,50 ${pts[3].x},${pts[3].y}`
+  const fill  = `${curve} L ${pts[3].x},210 L ${pts[0].x},210 Z`
+
+  return (
+    <section style={{ background: C.bg, padding: '140px 0', borderTop: `1px solid ${C.border}` }}>
+      <div style={{ maxWidth: 1180, margin: '0 auto', padding: '0 28px', display: 'grid', gridTemplateColumns: '1fr 1.15fr', gap: 80, alignItems: 'center' }}>
+
+        {/* ── Left: copy ── */}
+        <div>
+          <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 28 }}>
+            The compounding advantage
+          </div>
+
+          <h2 style={{ fontFamily: serif, fontSize: 'clamp(48px, 5.5vw, 78px)', fontWeight: 700, lineHeight: 1.04, letterSpacing: '-0.04em', color: C.ink, margin: '0 0 28px' }}>
+            Day 1, it sees your business.<br />
+            <em style={{ fontStyle: 'italic', color: C.redMuted }}>Day 90, it sees you.</em>
+          </h2>
+
+          <p style={{ fontFamily: serif, fontSize: 20, color: C.inkSoft, lineHeight: 1.65, margin: '0 0 28px', maxWidth: 480 }}>
+            Most tools reset every session. The brain builds state. Every audit, every metric, every decision sharpens what it knows.
+          </p>
+
+          <blockquote style={{ borderLeft: `3px solid ${C.redMuted}`, paddingLeft: 20, margin: 0 }}>
+            <p style={{ fontFamily: serif, fontSize: 18, fontStyle: 'italic', color: C.inkMuted, lineHeight: 1.6, margin: 0 }}>
+              &ldquo;The longer you run it, the less you can run without it.&rdquo;
+            </p>
+          </blockquote>
+        </div>
+
+        {/* ── Right: dark knowledge card ── */}
+        <div style={{ background: D.bg, borderRadius: 14, overflow: 'hidden', border: `1px solid ${D.border}` }}>
+
+          {/* Card header */}
+          <div style={{ padding: '28px 32px 12px' }}>
+            <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: 10 }}>
+              Brain knowledge · over time
+            </div>
+            <div style={{ fontFamily: serif, fontSize: 22, fontWeight: 600, color: D.ink, lineHeight: 1.25 }}>
+              It stops asking and starts telling.
+            </div>
+          </div>
+
+          {/* SVG chart */}
+          <div style={{ padding: '8px 32px 4px' }}>
+            <svg viewBox="0 0 560 228" style={{ width: '100%', display: 'block', overflow: 'visible' }}>
+              <defs>
+                <linearGradient id="compGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%"   stopColor={amber} stopOpacity="0.28" />
+                  <stop offset="100%" stopColor={amber} stopOpacity="0.02" />
+                </linearGradient>
+              </defs>
+
+              {/* Filled area */}
+              <path d={fill} fill="url(#compGrad)" />
+
+              {/* Curve line */}
+              <path d={curve} fill="none" stroke={amber} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+
+              {/* Milestone dots */}
+              {pts.map(pt => (
+                <g key={pt.label}>
+                  <circle cx={pt.x} cy={pt.y} r="9"  fill={amber} fillOpacity="0.18" />
+                  <circle cx={pt.x} cy={pt.y} r="4.5" fill={amber} />
+                </g>
+              ))}
+
+              {/* X-axis labels */}
+              {pts.map(pt => (
+                <text
+                  key={`lbl-${pt.label}`}
+                  x={pt.x} y="226"
+                  textAnchor="middle"
+                  fontFamily={mono}
+                  fontSize="10"
+                  fill="rgba(255,255,255,0.35)"
+                  letterSpacing="0.06em"
+                >
+                  {pt.label}
+                </text>
+              ))}
+            </svg>
+          </div>
+
+          {/* Milestone rows */}
+          <div style={{ padding: '0 32px 28px' }}>
+            {[
+              { day: 'DAY 30', body: <>Catches a margin leak your CFO had written off as <em style={{ fontStyle: 'italic', color: amber }}>seasonality.</em></> },
+              { day: 'DAY 60', body: <>Questions a senior hire <em style={{ fontStyle: 'italic', color: amber }}>before</em> you sign the offer. It was right to.</> },
+              { day: 'DAY 90', body: <>Tells you what to do — <em style={{ fontStyle: 'italic', color: amber }}>before</em> you&apos;ve finished asking the question.</> },
+            ].map(m => (
+              <div key={m.day} style={{ display: 'grid', gridTemplateColumns: '72px 1fr', gap: 16, alignItems: 'start', padding: '16px 0', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+                <span style={{ fontFamily: mono, fontSize: 11, fontWeight: 700, color: amber, letterSpacing: '0.06em', paddingTop: 2 }}>{m.day}</span>
+                <span style={{ fontFamily: serif, fontSize: 16, color: 'rgba(232,226,216,0.82)', lineHeight: 1.58 }}>{m.body}</span>
+              </div>
+            ))}
+          </div>
+
+        </div>
+      </div>
+    </section>
+  )
+}
+
+// ── Final CTA ─────────────────────────────────────────────────────────────────
+
+function FinalCTA({ onStart }) {
+  const D = THEMES.dark
+  const [inputVal, setInputVal]     = useState('')
+  const [placeholder, setPlaceholder] = useState('')
+  const userFocusedRef = useRef(false)
+  const cancelledRef   = useRef(false)
+  const idxRef         = useRef(0)
+
+  // Same rotating typewriter as hero, independent instance
+  useEffect(() => {
+    const sleep = ms => new Promise(r => setTimeout(r, ms))
+    const run = async () => {
+      while (!cancelledRef.current) {
+        if (userFocusedRef.current) { await sleep(300); continue }
+        const stmt = typewriterStatements[idxRef.current % typewriterStatements.length]
+        idxRef.current++
+        for (let i = 0; i <= stmt.length; i++) {
+          if (cancelledRef.current || userFocusedRef.current) break
+          setPlaceholder(stmt.slice(0, i))
+          await sleep(36)
+        }
+        await sleep(2000)
+        for (let i = stmt.length; i >= 0; i--) {
+          if (cancelledRef.current || userFocusedRef.current) break
+          setPlaceholder(stmt.slice(0, i))
+          await sleep(18)
+        }
+        await sleep(400)
+      }
+    }
+    run()
+    return () => { cancelledRef.current = true }
+  }, [])
+
+  const go = () => onStart(inputVal.trim())
+
+  // Solid base extracted from D.redMuted rgba(192,80,80,0.78)
+  const red       = 'rgb(192,80,80)'
+  const redBorder = 'rgba(192,80,80,0.55)'
+
+  return (
+    <section style={{ background: D.bg, padding: '130px 0 100px' }}>
+      <style>{`
+        .fca-input::placeholder { color: rgba(232,226,216,0.32); }
+      `}</style>
+
+      {/* Eyebrow */}
+      <div style={{ textAlign: 'center', fontFamily: mono, fontSize: 12, letterSpacing: '0.22em', textTransform: 'uppercase', color: red, marginBottom: 48 }}>
+        — THE BUSINESS BRAIN · READY
+      </div>
+
+      {/* Begin. */}
+      <div style={{ textAlign: 'center', lineHeight: 0.9, marginBottom: 40 }}>
+        <span style={{ fontFamily: serif, fontSize: 'clamp(96px, 14vw, 188px)', fontWeight: 700, fontStyle: 'italic', letterSpacing: '-0.04em', color: D.ink }}>Begin</span>
+        <span style={{ fontFamily: serif, fontSize: 'clamp(96px, 14vw, 188px)', fontWeight: 700, fontStyle: 'italic', letterSpacing: '-0.04em', color: red }}>.</span>
+      </div>
+
+      {/* Subtitle */}
+      <p style={{ textAlign: 'center', fontFamily: serif, fontSize: 'clamp(18px, 2.2vw, 26px)', fontStyle: 'italic', color: 'rgba(232,226,216,0.6)', lineHeight: 1.5, margin: '0 0 64px' }}>
+        Tell it what feels wrong. Get the truth in five minutes.
+      </p>
+
+      {/* Input bar */}
+      <div style={{ maxWidth: 800, margin: '0 auto', padding: '0 28px' }}>
+        <div style={{ display: 'flex', border: `1px solid ${redBorder}`, borderRadius: 4, overflow: 'hidden' }}>
+          <input
+            className="fca-input"
+            type="text"
+            value={inputVal}
+            onChange={e => setInputVal(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && go()}
+            placeholder={placeholder}
+            onFocus={() => { userFocusedRef.current = true; setPlaceholder('') }}
+            onBlur={() => { userFocusedRef.current = false }}
+            style={{
+              flex: 1,
+              background: 'transparent',
+              border: 'none',
+              outline: 'none',
+              padding: '22px 28px',
+              fontFamily: mono,
+              fontSize: 15,
+              color: D.ink,
+              minWidth: 0,
+            }}
+          />
+          <button
+            onClick={go}
+            style={{
+              background: red,
+              color: D.bg,
+              border: 'none',
+              padding: '0 36px',
+              fontFamily: mono,
+              fontSize: 13,
+              fontWeight: 700,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+              flexShrink: 0,
+              transition: 'opacity 0.15s ease',
+            }}
+            onMouseEnter={e => e.currentTarget.style.opacity = '0.88'}
+            onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+          >
+            DIAGNOSE →
+          </button>
+        </div>
+
+        {/* Tagline */}
+        <div style={{ textAlign: 'center', marginTop: 26, fontFamily: mono, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'rgba(232,226,216,0.28)' }}>
+          FREE · NO ACCOUNT · BRUTALLY HONEST
+        </div>
+      </div>
+    </section>
+  )
+}
+
 // ── Main Component ────────────────────────────────────────────────────────────
 
 export default function Landing({ onStart, onSignUp, session }) {
@@ -1645,18 +2679,37 @@ export default function Landing({ onStart, onSignUp, session }) {
   const [storiesOpen, setStoriesOpen] = useState(false)
   const [connectedOpen, setConnectedOpen] = useState(false)
   const [pricingOpen, setPricingOpen] = useState(false)
-  const [headlineIndex, setHeadlineIndex] = useState(0)
-  const [headlineVisible, setHeadlineVisible] = useState(true)
   const [inputValue, setInputValue] = useState('')
   const [placeholder, setPlaceholder] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const typewriterRef = useRef(null)
   const statementIndexRef = useRef(0)
   const userFocusedRef = useRef(false)
+  const sbRef = useRef(null)
 
   useEffect(() => {
     localStorage.setItem('sa-theme', theme)
   }, [theme])
+
+  useEffect(() => {
+    const circumference = 163 // 2 * PI * 26
+    const arc = document.getElementById('sb-progress')
+    const el = sbRef.current
+    if (!el || !arc) return
+    const onScroll = () => {
+      const scrolled = window.scrollY
+      const docH = document.documentElement.scrollHeight - window.innerHeight
+      const pct = Math.min(1, Math.max(0, scrolled / docH))
+      arc.style.strokeDashoffset = circumference - pct * circumference
+      if (scrolled > 400 && scrolled < docH - 200) {
+        el.classList.add('scroll-brain-show')
+      } else {
+        el.classList.remove('scroll-brain-show')
+      }
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   useEffect(() => {
     const styleId = 'sa-bg-texture'
@@ -1736,22 +2789,6 @@ export default function Landing({ onStart, onSignUp, session }) {
     return () => { cancelled = true }
   }, [])
 
-  useEffect(() => {
-    const fadeTimeout = setTimeout(() => {
-      setHeadlineVisible(false)
-    }, 3500)
-
-    const rotateTimeout = setTimeout(() => {
-      setHeadlineIndex(i => (i + 1) % rotatingHeadlines.length)
-      setHeadlineVisible(true)
-    }, 4100)
-
-    return () => {
-      clearTimeout(fadeTimeout)
-      clearTimeout(rotateTimeout)
-    }
-  }, [headlineIndex])
-
   const handleAuditStart = (problem) => {
     posthog?.capture('audit_started', { source: 'landing', problem: problem || '' })
     onStart(problem ?? '')
@@ -1805,6 +2842,43 @@ export default function Landing({ onStart, onSignUp, session }) {
 
   return (
     <div style={{ fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", background: C.bg, color: C.ink, lineHeight: 1.6, minHeight: '100vh' }}>
+
+      <style>{`
+        .scroll-brain { opacity: 0; transition: opacity 0.4s ease; }
+        .scroll-brain-show { opacity: 1; }
+      `}</style>
+
+      {/* Scroll progress indicator */}
+      <div
+        ref={sbRef}
+        className="scroll-brain"
+        style={{ position: 'fixed', right: 36, bottom: 36, width: 60, height: 60, zIndex: 90, pointerEvents: 'none' }}
+      >
+        <svg viewBox="0 0 60 60" width="60" height="60" style={{ overflow: 'visible' }}>
+          {/* Background ring */}
+          <circle cx="30" cy="30" r="26" fill="none" stroke={C.ink} strokeWidth="1" opacity="0.15" />
+          {/* Progress arc */}
+          <circle
+            id="sb-progress"
+            cx="30" cy="30" r="26"
+            fill="none"
+            stroke={C.accent}
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeDasharray="163"
+            strokeDashoffset="163"
+            transform="rotate(-90 30 30)"
+          />
+          {/* Center dot */}
+          <circle cx="30" cy="30" r="3" fill={C.accent} />
+          {/* Label */}
+          <text
+            x="30" y="52"
+            textAnchor="middle"
+            style={{ fontFamily: mono, fontSize: 7, fill: C.ink, letterSpacing: '0.1em' }}
+          >SCROLL</text>
+        </svg>
+      </div>
       <LandingNav
         C={C}
         pageOpen={pageOpen}
@@ -1856,7 +2930,7 @@ export default function Landing({ onStart, onSignUp, session }) {
       <section style={{ padding: '112px 0 100px', textAlign: 'center', background: 'none' }}>
         <div style={wrap}>
           <div style={{ fontSize: 13, letterSpacing: '0.18em', textTransform: 'uppercase', color: C.accentText, fontWeight: 600, marginBottom: 24 }}>
-            Your problems. Your goals. Your next move. One system.
+            Now live — The ultimate business intelligence layer
           </div>
 
           <h1 style={{
@@ -1868,16 +2942,8 @@ export default function Landing({ onStart, onSignUp, session }) {
             textAlign: 'center',
             margin: '0 auto 16px',
             color: C.ink,
-            minHeight: '2.4em',
-            opacity: headlineVisible ? 1 : 0,
-            transition: 'opacity 0.6s ease',
           }}>
-            {rotatingHeadlines[headlineIndex].split('\n').map((line, idx, arr) => (
-              <React.Fragment key={`${headlineIndex}-${idx}`}>
-                {line}
-                {idx < arr.length - 1 && <br />}
-              </React.Fragment>
-            ))}
+            Introducing the next generation business brain
           </h1>
 
           <p style={{
@@ -1891,7 +2957,7 @@ export default function Landing({ onStart, onSignUp, session }) {
             color: C.inkSoft,
             maxWidth: 860,
           }}>
-            Your blind spots, exposed. Your next move, decided.
+            The missing layer that elevates your business to top-tier.
           </p>
 
           <p style={{
@@ -1903,7 +2969,7 @@ export default function Landing({ onStart, onSignUp, session }) {
             textAlign: 'center',
             fontWeight: 400,
           }}>
-            One system. Root-cause diagnosis, goal gap analysis, and a real execution plan — end to end.
+            Tell it what feels wrong. It reads your live data, finds the cause, and tells you the next move — before you have to ask.
           </p>
 
           {/* Interactive Input Bar */}
@@ -1968,153 +3034,351 @@ export default function Landing({ onStart, onSignUp, session }) {
         </div>
       </section>
 
-      {/* ── 2. Advisory Contrast ── */}
-      <section id="comparison" style={{ padding: '96px 0', background: C.surface }}>
-        <div style={wrap}>
-          <div style={sectionLabel(C)}>Advisory fatigue</div>
-          <h2 style={h2Style(C)}>Why founders are replacing advisory calls and meetings.</h2>
-          <p style={{ textAlign: 'center', fontSize: 19, color: C.inkSoft, maxWidth: 640, margin: '0 auto 56px' }}>
-            The old model was built for a world that moved slowly. Yours doesn't.
+      {/* ── 2. Business Brain Statement ── */}
+      <section style={{ padding: '112px 0 120px', background: C.surface }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 28px' }}>
+          <p style={{
+            fontFamily: serif,
+            fontSize: 'clamp(40px, 6.5vw, 88px)',
+            fontWeight: 700,
+            lineHeight: 1.08,
+            letterSpacing: '-0.03em',
+            margin: 0,
+            color: C.ink,
+          }}>
+            <span>Your business has a CRM. </span>
+            <span style={{ color: C.inkFaint }}>A payment processor. A docs tool. An analytics dashboard. A comms platform. </span>
+            <span>What it does </span>
+            <em style={{ color: C.redMuted, fontStyle: 'italic' }}>not</em>
+            <span> have — yet — is </span>
+            <em style={{ color: C.redMuted, fontStyle: 'italic' }}>a business brain.</em>
           </p>
+        </div>
+      </section>
 
-          <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 18, overflow: 'hidden', maxWidth: 900, margin: '0 auto' }}>
-            {/* Header */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderBottom: `1px solid ${C.border}`, background: C.surface2 }}>
-              <div style={{ padding: '20px 28px', borderRight: `1px solid ${C.border}` }}>
-                <div style={{ fontSize: 15, fontWeight: 600, color: C.inkMuted }}>What you're doing now</div>
-                <div style={{ fontSize: 13, color: C.inkFaint, marginTop: 4 }}>Slow, expensive, guessing</div>
+      {/* ── 3. Engine Room ── */}
+      <EngineRoom />
+
+      {/* ── 4. Four Verbs ── */}
+      <FourVerbs C={C} />
+
+      {/* ── 5. Live Diagnosis ── */}
+      <LiveDiagnosis />
+
+      {/* ── 6. The Moat, Named ── */}
+      <section style={{ padding: '112px 0', background: C.surface }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 28px' }}>
+
+          {/* Intro */}
+          <div style={{ textAlign: 'center', maxWidth: 720, margin: '0 auto 88px' }}>
+            <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 20 }}>
+              The moat, named
+            </div>
+            <h2 style={{ fontFamily: serif, fontSize: 'clamp(40px, 5vw, 72px)', fontWeight: 700, lineHeight: 1.05, letterSpacing: '-0.04em', color: C.ink, margin: '0 0 24px' }}>
+              Most tools answer.<br />
+              <em style={{ fontStyle: 'italic', color: C.redMuted }}>SelfAudit investigates.</em>
+            </h2>
+            <p style={{ fontFamily: serif, fontSize: 20, color: C.inkSoft, lineHeight: 1.6, margin: 0 }}>
+              Every founder has tried asking an AI about their business. They know exactly what&apos;s missing. We named it.
+            </p>
+          </div>
+
+          {/* Comparison table */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.15fr', gap: 40, alignItems: 'start' }}>
+
+            {/* Left — other tools */}
+            <div>
+              <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.inkFaint, paddingBottom: 16, borderBottom: `1px solid ${C.border}` }}>
+                Other AI tools
               </div>
-              <div style={{ padding: '20px 28px' }}>
-                <div style={{ fontSize: 15, fontWeight: 600, color: C.accentText }}>SelfAudit</div>
-                <div style={{ fontSize: 13, color: C.inkFaint, marginTop: 4 }}>Instant, data-driven, persistent</div>
-              </div>
+              {[
+                'Waits for your prompt',
+                'Forgets you between sessions',
+                'Gives you ten options to consider',
+                'Says "consider these factors"',
+                'Answers based on what you said',
+                'Hedges to stay polite',
+              ].map(item => (
+                <div key={item} style={{ fontFamily: serif, fontSize: 19, fontStyle: 'italic', color: C.inkFaint, padding: '22px 0', borderBottom: `1px solid ${C.border}` }}>
+                  {item}
+                </div>
+              ))}
             </div>
 
-            {compareRows.map((row, i) => (
-              <div key={row.dim} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderBottom: i < compareRows.length - 1 ? `1px solid ${C.border}` : 'none' }}>
-                <div style={{ padding: '18px 28px', borderRight: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  <div style={{ fontSize: 15, color: C.inkSoft, fontWeight: 500 }}>{row.dim}</div>
-                  <div style={{ fontSize: 14, color: C.inkFaint }}>{row.old}</div>
-                </div>
-                <div style={{ padding: '18px 28px', fontSize: 15, color: C.accentText, fontWeight: 600, display: 'flex', alignItems: 'center' }}>
-                  {row.neo}
-                </div>
+            {/* Right — SelfAudit card */}
+            <div style={{ background: C.theme === 'dark' ? C.card : '#ffffff', border: `1px solid ${C.border}`, borderRadius: 14, overflow: 'hidden' }}>
+              <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.inkFaint, padding: '20px 32px 16px', borderBottom: `1px solid ${C.border}` }}>
+                SelfAudit
               </div>
-            ))}
+              {[
+                { plain: 'Reads your ',          italic: 'actual business' },
+                { plain: 'Compounds ',           italic: 'every audit' },
+                { plain: 'Picks ',               italic: 'one move' },
+                { plain: 'Says ',                italic: '"your churn lies — here\'s why"' },
+                { plain: 'Answers based on ',    italic: 'what\'s happening' },
+                { plain: 'Says the thing ',      italic: 'no one will tell you' },
+              ].map((row, i, arr) => (
+                <div key={row.italic} style={{ fontFamily: serif, fontSize: 19, color: C.ink, padding: '22px 32px', borderBottom: i < arr.length - 1 ? `1px solid ${C.border}` : 'none' }}>
+                  {row.plain}<em style={{ fontStyle: 'italic', color: C.redMuted }}>{row.italic}</em>
+                </div>
+              ))}
+            </div>
+
           </div>
         </div>
       </section>
 
-      {/* ── 3. Intelligence Moat ── */}
-      <section style={{ padding: '96px 0', background: C.bg }}>
-        <div style={wrap}>
-          <div style={sectionLabel(C)}>Why this works</div>
-          <h2 style={h2Style(C)}>The intelligence moat.</h2>
-          <p style={{ textAlign: 'center', fontSize: 19, color: C.inkSoft, maxWidth: 640, margin: '0 auto 56px' }}>
-            We're not "honest." We're technically superior. Here's why.
-          </p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20, maxWidth: 1040, margin: '0 auto' }}>
-            {intelligencePillars.map(pillar => (
-              <div key={pillar.title} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, padding: 28 }}>
-                <div style={{ color: C.accentText, fontSize: 21, marginBottom: 16 }}>→</div>
-                <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 12, letterSpacing: '-0.02em', color: C.ink }}>{pillar.title}</h3>
-                <p style={{ color: C.inkSoft, fontSize: 16, margin: 0 }}>{pillar.body}</p>
-              </div>
-            ))}
+
+      {/* ── 7. Dashboard ── */}
+      <DashboardSection C={C} />
+
+      {/* ── 8. Compounding ── */}
+      <CompoundingSection C={C} />
+
+      {/* ── 9. Always On ── */}
+      <section style={{ background: C.bg, padding: '120px 0', borderTop: `1px solid ${C.border}` }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 28px' }}>
+
+          {/* Header */}
+          <div style={{ maxWidth: 760, marginBottom: 64 }}>
+            <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 24 }}>
+              Always on
+            </div>
+            <h2 style={{ fontFamily: serif, fontSize: 'clamp(48px, 6vw, 80px)', fontWeight: 700, lineHeight: 1.04, letterSpacing: '-0.04em', color: C.ink, margin: '0 0 20px' }}>
+              It works while{' '}
+              <em style={{ fontStyle: 'italic', color: C.redMuted }}>you&apos;re not looking.</em>
+            </h2>
+            <p style={{ fontFamily: serif, fontSize: 20, color: C.inkSoft, lineHeight: 1.6, margin: 0 }}>
+              Set the goal. Connect the tools. The brain takes the rest.
+            </p>
           </div>
-        </div>
-      </section>
 
-      {/* ── 4. Diagnostic Loop ── */}
-      <section style={{ padding: '96px 0', background: C.surface }}>
-        <div style={wrap}>
-          <div style={sectionLabel(C)}>The engine, live</div>
-          <h2 style={h2Style(C)}>Where business failure hides.</h2>
-          <p style={{ textAlign: 'center', fontSize: 19, color: C.inkSoft, maxWidth: 640, margin: '0 auto 48px' }}>
-            Our Intelligence Layer maps 40+ industries and 200+ failure points. Watch it work.
-          </p>
-          <DiagnosticLoop C={C} />
-        </div>
-      </section>
-
-      {/* ── 5. Accountability Loop ── */}
-      <section style={{ padding: '96px 0', background: C.surface }}>
-        <div style={wrap}>
-          <div style={sectionLabel(C)}>The unfair advantage</div>
-          <h2 style={h2Style(C)}>Advice you can't ignore.</h2>
-          <p style={{ textAlign: 'center', fontSize: 19, color: C.inkSoft, maxWidth: 680, margin: '0 auto 60px' }}>
-            Most audits are static. A PDF you open once and file away. SelfAudit creates an intelligent loop that monitors your progress, alerts you when you're slipping, and forces the discipline of execution.
-          </p>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 28, maxWidth: 1040, margin: '0 auto' }}>
+          {/* Feed rows */}
+          <div style={{ borderTop: `1px solid ${C.border}` }}>
             {[
               {
-                title: 'We track the fix.',
-                icon: '🔁',
-                body: 'After every audit, SelfAudit monitors whether the critical findings are being addressed. You can\'t close an issue until the Intelligence Layer is satisfied.',
+                label: 'SUN · 11:42 PM',
+                body: <>Your CAC drifted <em style={{ fontStyle: 'italic', color: C.redMuted }}>22% this week.</em> The cause sits in last Thursday&apos;s launch. Fix is in your inbox by Monday 7 AM.</>,
               },
               {
-                title: 'We tap you on the shoulder.',
-                icon: '🔔',
-                body: 'Re-engagement alerts fire when your business health score drops, a critical finding goes unaddressed, or a goal you set is at risk. Think of it as a COO that never goes offline.',
+                label: 'MAR · GOAL #3',
+                body: <>Quietly checked every Friday. <em style={{ fontStyle: 'italic', color: C.redMuted }}>You&apos;re three weeks behind</em> — but salvageable. Here&apos;s what to drop.</>,
               },
               {
-                title: 'The system compounds.',
-                icon: '📈',
-                body: 'Every re-audit builds on the last. The Intelligence Layer knows your business trajectory, your weak points, and your patterns. Over time, it becomes your most knowledgeable advisor.',
+                label: 'METRIC · CHURN',
+                body: <>It opens an investigation <em style={{ fontStyle: 'italic', color: C.redMuted }}>without being asked.</em> By the time you log in, the diagnosis is already on your dashboard.</>,
               },
-            ].map(item => (
-              <div key={item.title} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, padding: 28 }}>
-                <h3 style={{ fontSize: 21, fontWeight: 600, marginBottom: 12, letterSpacing: '-0.02em', color: C.ink }}>{item.title}</h3>
-                <p style={{ color: C.inkSoft, fontSize: 16, margin: 0 }}>{item.body}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <SocialProofTicker C={C} />
-
-      {/* ── 6. AI Graveyard ── */}
-      <section style={{ padding: '96px 0', background: C.bg }}>
-        <div style={wrap}>
-          <div style={sectionLabel(C)}>The AI question, answered honestly</div>
-          <h2 style={h2Style(C)}>The "AI Strategy" Graveyard.</h2>
-          <p style={{ textAlign: 'center', fontSize: 19, color: C.inkSoft, maxWidth: 680, margin: '0 auto 60px' }}>
-            Most AI projects are expensive science experiments that die in a slide deck. SelfAudit doesn't just "deploy AI" — it validates whether AI is even the solution.
-          </p>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 28, maxWidth: 1040, margin: '0 auto' }}>
-            {aiCards.map(card => (
-              <div key={card.title} style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, padding: 30, display: 'flex', flexDirection: 'column' }}>
-                <div style={{ width: 36, height: 36, borderRadius: '50%', background: C.accentSoft, color: C.accentText, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: serif, fontSize: 19, fontWeight: 700, marginBottom: 18, flexShrink: 0 }}>
-                  {card.num}
+              {
+                label: 'CONNECTOR · STRIPE',
+                body: <>Revenue cohort shape changed last week. <em style={{ fontStyle: 'italic', color: C.redMuted }}>Three reasons surfaced</em>, ranked by likelihood. Awaiting your review.</>,
+              },
+            ].map(row => (
+              <div key={row.label} style={{ display: 'grid', gridTemplateColumns: '164px 1fr', gap: 48, alignItems: 'start', padding: '42px 0', borderBottom: `1px solid ${C.border}` }}>
+                <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.accent, paddingTop: 5 }}>
+                  {row.label}
                 </div>
-                <h3 style={{ fontFamily: serif, fontSize: 23, fontWeight: 700, letterSpacing: '-0.02em', margin: '0 0 14px', lineHeight: 1.2, color: C.ink }}>{card.title}</h3>
-                <p style={{ fontSize: 16, color: C.inkSoft, margin: 0 }}>{card.body}</p>
+                <div style={{ fontFamily: serif, fontSize: 22, color: C.ink, lineHeight: 1.55 }}>
+                  {row.body}
+                </div>
               </div>
             ))}
           </div>
 
-          <p style={{ textAlign: 'center', marginTop: 52, fontFamily: serif, fontStyle: 'italic', fontSize: 23, color: C.inkSoft, maxWidth: 760, marginLeft: 'auto', marginRight: 'auto' }}>
-            You'll leave knowing exactly which problems deserve AI, and which ones deserve a manager, a process, or a hard conversation.
-          </p>
         </div>
       </section>
 
+      {/* ── 10. What founders found out ── */}
+      <section style={{ background: C.bg, padding: '120px 0', borderTop: `1px solid ${C.border}` }}>
+        <div style={{ maxWidth: 1140, margin: '0 auto', padding: '0 28px' }}>
 
-      {/* ── 8. Final CTA ── */}
-      <section style={{ background: C.bg, textAlign: 'center', padding: '110px 0' }}>
-        <div style={wrap}>
-          <h2 style={h2Style(C)}>Stop guessing. Get a diagnosis.</h2>
-          <div style={{ marginTop: 28 }}>
-            <PrimaryButton label="Start your free audit" onClick={() => handleAuditStart('')} C={C} />
+          {/* Intro */}
+          <div style={{ textAlign: 'center', marginBottom: 72 }}>
+            <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 18 }}>
+              Real diagnoses
+            </div>
+            <h2 style={{ fontFamily: serif, fontSize: 'clamp(44px, 5.5vw, 76px)', fontWeight: 700, lineHeight: 1.04, letterSpacing: '-0.04em', color: C.ink, margin: '0 0 20px' }}>
+              What founders <em style={{ fontStyle: 'italic', color: C.redMuted }}>found out.</em>
+            </h2>
+            <p style={{ fontFamily: serif, fontSize: 20, color: C.inkSoft, lineHeight: 1.6, margin: 0 }}>
+              These are not testimonials. They&apos;re moments where someone<br />finally got an honest answer.
+            </p>
           </div>
-          <div style={{ fontSize: 14, color: C.inkMuted, marginTop: 14 }}>
-            5 minutes. No account needed. Brutally honest.
+
+          {/* 2×2 card grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 20 }}>
+            {[
+              {
+                severity: 'CRITICAL', domain: 'PIPELINE', severityColor: C.redMuted,
+                meta: 'May · Series A SaaS',
+                quote: '“You’re burning $8,600 a month to maintain the illusion of pipeline activity.”',
+                result: <><strong>Cancelled the agency.</strong> Reallocated to Clay. Conversion rate moved from 1.4% to 11.2% in 30 days.</>,
+              },
+              {
+                severity: 'CRITICAL', domain: 'STRATEGY', severityColor: C.redMuted,
+                meta: 'April · Pre-seed',
+                quote: '“You built a SaaS no one asked for. Funding won’t fix that. Revenue might.”',
+                result: <><strong>20 discovery calls. Six paid pilots.</strong> Investor conversations restarted from a position of evidence.</>,
+              },
+              {
+                severity: 'HIGH', domain: 'TEAM', severityColor: C.amber,
+                meta: 'March · 35-person team',
+                quote: '“Your team isn’t underperforming. They’re solving last quarter’s strategy.”',
+                result: <><strong>One re-anchor meeting.</strong> OKRs rewritten in 48 hours. Velocity recovered within one sprint.</>,
+              },
+              {
+                severity: 'HIGH', domain: 'PRICING', severityColor: C.amber,
+                meta: 'February · B2B SaaS',
+                quote: '“You don’t have a sales problem. You have a positioning problem dressed up as one.”',
+                result: <><strong>Pricing page rewritten.</strong> Inbound conversion up 41% in 19 days. VP of Sales hire cancelled.</>,
+              },
+            ].map(card => (
+              <div key={card.domain} style={{
+                background: C.theme === 'dark' ? C.card : '#ffffff',
+                border: `1px solid ${C.border}`,
+                borderRadius: 12,
+                padding: '28px 28px 32px',
+                display: 'flex',
+                flexDirection: 'column',
+                position: 'relative',
+              }}>
+                {/* Arrow icon */}
+                <div style={{ position: 'absolute', top: 20, right: 20, opacity: 0.22 }}>
+                  <svg viewBox="0 0 18 18" fill="none" width="18" height="18">
+                    <path d="M3 15 L15 3 M6 3 H15 V12" stroke={C.ink} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+
+                {/* Header */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                  <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 700 }}>
+                    <span style={{ color: card.severityColor }}>{card.severity}</span>
+                    <span style={{ color: C.inkFaint }}> · {card.domain}</span>
+                  </div>
+                  <div style={{ fontFamily: mono, fontSize: 11, color: C.inkFaint }}>{card.meta}</div>
+                </div>
+
+                <div style={{ borderTop: `1px solid ${C.border}`, marginBottom: 22 }} />
+
+                {/* Quote */}
+                <p style={{ fontFamily: serif, fontSize: 22, fontStyle: 'italic', fontWeight: 600, color: C.ink, lineHeight: 1.45, margin: '0 0 22px' }}>
+                  {card.quote}
+                </p>
+
+                <div style={{ borderTop: `1px solid ${C.border}`, marginBottom: 18 }} />
+
+                {/* Result */}
+                <p style={{ fontFamily: serif, fontSize: 16, color: C.inkSoft, lineHeight: 1.65, margin: 0 }}>
+                  {card.result}
+                </p>
+              </div>
+            ))}
           </div>
+
         </div>
       </section>
+
+      {/* ── 11. Pricing ── */}
+      <section style={{ background: C.bg, padding: '120px 0', borderTop: `1px solid ${C.border}` }}>
+        <div style={{ maxWidth: 980, margin: '0 auto', padding: '0 28px' }}>
+
+          {/* Intro */}
+          <div style={{ textAlign: 'center', marginBottom: 60 }}>
+            <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 20 }}>
+              Pricing
+            </div>
+            <h2 style={{ fontFamily: serif, fontSize: 'clamp(44px, 6vw, 80px)', fontWeight: 700, lineHeight: 1.04, letterSpacing: '-0.04em', color: C.ink, margin: '0 0 20px' }}>
+              Less than one bad hour<br />
+              <em style={{ fontStyle: 'italic', color: C.redMuted }}>with a consultant.</em>
+            </h2>
+            <p style={{ fontFamily: serif, fontSize: 20, fontStyle: 'italic', color: C.inkSoft, lineHeight: 1.6, margin: 0 }}>
+              Two ways to run the brain. Start free. Upgrade when you&apos;re convinced.
+            </p>
+          </div>
+
+          {/* Plan rows */}
+          <div style={{ borderTop: `1px solid ${C.border}` }}>
+            {[
+              {
+                price: '$29',
+                label: 'FOUNDATION',
+                heading: <>The <em style={{ fontStyle: 'italic', color: C.redMuted }}>diagnosis</em>, on demand.</>,
+                body: 'Unlimited audits. Full reports. Action plans, SOPs, and email drafts generated from any finding.',
+                features: ['Unlimited diagnoses', 'Root-cause reports', 'Action plans & SOPs', 'Health score · history'],
+                cta: 'Start Foundation →',
+                plan: 'foundation',
+              },
+              {
+                price: '$99',
+                label: 'INTELLIGENCE',
+                heading: <>The <em style={{ fontStyle: 'italic', color: C.redMuted }}>full brain.</em></>,
+                body: 'Live connectors. Compounding memory. Weekly governance. Ask SelfAudit anything — it investigates before answering.',
+                features: ['Everything in Foundation', 'HubSpot, Stripe, Slack, Gmail', 'Memory · Agent · Governance', 'Goal tracking with reality checks'],
+                cta: 'Turn on the brain →',
+                plan: 'intelligence',
+              },
+            ].map(p => (
+              <div key={p.label} style={{ display: 'grid', gridTemplateColumns: '150px 1fr 1fr 200px', gap: '0 44px', alignItems: 'center', padding: '56px 0', borderBottom: `1px solid ${C.border}` }}>
+
+                {/* Price */}
+                <div style={{ lineHeight: 1 }}>
+                  <span style={{ fontFamily: serif, fontSize: 68, fontWeight: 700, letterSpacing: '-0.04em', color: C.ink }}>
+                    {p.price}
+                  </span>
+                  <span style={{ fontFamily: serif, fontSize: 18, color: C.inkMuted, marginLeft: 3 }}>/mo</span>
+                </div>
+
+                {/* Description */}
+                <div>
+                  <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.accent, marginBottom: 12 }}>
+                    {p.label}
+                  </div>
+                  <h3 style={{ fontFamily: serif, fontSize: 34, fontWeight: 700, lineHeight: 1.14, letterSpacing: '-0.03em', color: C.ink, margin: '0 0 14px' }}>
+                    {p.heading}
+                  </h3>
+                  <p style={{ fontFamily: serif, fontSize: 16, color: C.inkSoft, lineHeight: 1.65, margin: 0 }}>
+                    {p.body}
+                  </p>
+                </div>
+
+                {/* Features */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {p.features.map(f => (
+                    <div key={f} style={{ fontFamily: mono, fontSize: 12, color: C.inkFaint, lineHeight: 1.5 }}>{f}</div>
+                  ))}
+                </div>
+
+                {/* CTA */}
+                <button
+                  onClick={() => handleSignUpWithPlan(p.plan)}
+                  style={{
+                    background: C.ink,
+                    color: C.bg,
+                    border: 'none',
+                    borderRadius: 999,
+                    padding: '15px 24px',
+                    fontFamily: serif,
+                    fontSize: 17,
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    width: '100%',
+                    letterSpacing: '-0.01em',
+                    transition: 'opacity 0.15s ease',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.opacity = '0.88'}
+                  onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+                >
+                  {p.cta}
+                </button>
+
+              </div>
+            ))}
+          </div>
+
+        </div>
+      </section>
+
+      <FinalCTA onStart={handleAuditStart} />
 
       <LandingFooter C={C} theme={theme} setTheme={setTheme} />
         </>
