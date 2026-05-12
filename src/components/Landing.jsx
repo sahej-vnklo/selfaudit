@@ -4,24 +4,24 @@ import { usePostHog } from '@posthog/react'
 const THEMES = {
   dark: {
     theme: 'dark',
-    bg: '#0F1520',
-    surface: '#141D2B',
-    surface2: '#111827',
-    surface3: '#1A2535',
-    card: '#111827',
-    border: '#1E2D42',
-    border2: '#243247',
-    ink: '#E8E2D8',
-    inkSoft: '#B8B0A4',
-    inkMuted: '#7A8FA8',
-    inkFaint: '#4A6080',
-    accent: '#4A7FA8',
-    accentDark: '#3A6A90',
-    accentSoft: '#1A2535',
-    accentText: '#8FBAD8',
-    redMuted: 'rgba(192, 80, 80, 0.78)',
-    redSoft: '#1A0A0A',
-    amber: '#C9A040',
+    bg: '#0F0B08',
+    surface: '#150F0B',
+    surface2: '#0F0B08',
+    surface3: '#0F0B08',
+    card: '#0F0B08',
+    border: '#2A2018',
+    border2: '#2A2018',
+    ink: '#FAF7F2',
+    inkSoft: '#C4A882',
+    inkMuted: '#8A7260',
+    inkFaint: '#6B5540',
+    accent: '#C4956A',
+    accentDark: '#B07D55',
+    accentSoft: '#1E1510',
+    accentText: '#C4956A',
+    redMuted: 'rgba(196,149,106,0.85)',
+    redSoft: '#150E08',
+    amber: '#C4956A',
   },
   light: {
     theme: 'light',
@@ -1769,7 +1769,7 @@ function EngineRoom() {
                     alignItems: 'center',
                     padding: '11px 20px',
                     borderBottom: '1px solid rgba(30,45,66,0.5)',
-                    background: isVerdict ? 'rgba(192,80,80,0.06)' : 'transparent',
+                    background: isVerdict ? 'rgba(196,149,106,0.06)' : 'transparent',
                   }}>
                     <span style={{ fontFamily: mono, fontSize: 11, color: D.inkFaint }}>{row.time}</span>
                     <span style={{ fontFamily: mono, fontSize: 11, fontWeight: 700, color: typeColor(row.type) }}>{row.type}</span>
@@ -1781,7 +1781,7 @@ function EngineRoom() {
                     <span style={{
                       fontFamily: mono, fontSize: 10, letterSpacing: '0.06em',
                       color: isVerdict ? D.redMuted : D.inkFaint,
-                      border: `1px solid ${isVerdict ? 'rgba(192,80,80,0.4)' : D.border}`,
+                      border: `1px solid ${isVerdict ? 'rgba(196,149,106,0.40)' : D.border}`,
                       borderRadius: 3,
                       padding: '2px 5px',
                       textAlign: 'center',
@@ -2174,22 +2174,22 @@ function LiveDiagnosis() {
         <h2 style={{ fontFamily: serif, fontSize: 'clamp(32px, 5.5vw, 80px)', fontWeight: 700, letterSpacing: '-0.045em', lineHeight: 1.04, color: D_.ink, margin: '0 0 20px' }}>
           Watch the brain <em style={{ fontStyle: 'italic', color: D_.amber }}>think.</em>
         </h2>
-        <p style={{ fontFamily: serif, fontSize: 20, color: 'rgba(232,226,216,0.6)', lineHeight: 1.6, margin: 0 }}>
+        <p style={{ fontFamily: serif, fontSize: 20, color: 'rgba(250,247,242,0.60)', lineHeight: 1.6, margin: 0 }}>
           Not a chat. A reasoning process. Real signals. Real verdict. Real next move.
         </p>
       </div>
 
       {/* Console panel */}
       <div style={{ maxWidth: 920, margin: '0 auto', padding: '0 28px' }}>
-        <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, overflow: 'hidden' }}>
+        <div style={{ background: 'rgba(250,247,242,0.02)', border: '1px solid rgba(250,247,242,0.08)', borderRadius: 16, overflow: 'hidden' }}>
 
           {/* Top bar */}
-          <div style={{ background: 'rgba(0,0,0,0.3)', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '14px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ background: 'rgba(15,11,8,0.6)', borderBottom: '1px solid rgba(250,247,242,0.06)', padding: '14px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{ display: 'flex', gap: 6 }}>
-                {[0, 1, 2].map(i => <div key={i} style={{ width: 10, height: 10, borderRadius: '50%', background: 'rgba(255,255,255,0.18)' }} />)}
+                {[0, 1, 2].map(i => <div key={i} style={{ width: 10, height: 10, borderRadius: '50%', background: 'rgba(250,247,242,0.18)' }} />)}
               </div>
-              <span style={{ fontFamily: mono, fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>selfaudit · diagnosis console</span>
+              <span style={{ fontFamily: mono, fontSize: 12, color: 'rgba(250,247,242,0.50)' }}>selfaudit · diagnosis console</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#28CA41', animation: 'erPulse 1.5s infinite' }} />
@@ -2201,15 +2201,15 @@ function LiveDiagnosis() {
           <div style={{ padding: 36 }}>
 
             {/* Symptom */}
-            <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: 12 }}>SYMPTOM</div>
+            <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'rgba(250,247,242,0.35)', marginBottom: 12 }}>SYMPTOM</div>
             <div
               ref={symptomRef}
               className="ldc-symptom"
-              style={{ fontFamily: serif, fontSize: 24, fontStyle: 'italic', color: 'rgba(232,226,216,0.92)', minHeight: 68, lineHeight: 1.45 }}
+              style={{ fontFamily: serif, fontSize: 24, fontStyle: 'italic', color: 'rgba(250,247,242,0.92)', minHeight: 68, lineHeight: 1.45 }}
             />
 
             {/* Thinking steps */}
-            <div style={{ padding: '22px 0', borderTop: '1px solid rgba(255,255,255,0.08)', borderBottom: '1px solid rgba(255,255,255,0.08)', margin: '22px 0', minHeight: 140, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 14 }}>
+            <div style={{ padding: '22px 0', borderTop: '1px solid rgba(250,247,242,0.08)', borderBottom: '1px solid rgba(250,247,242,0.08)', margin: '22px 0', minHeight: 140, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 14 }}>
               {[
                 { ref: step0Ref, action: 'Reading',               source: 'HubSpot · 92 deals · 8 weeks' },
                 { ref: step1Ref, action: 'Cross-referencing',     source: 'Stripe cohort revenue curves' },
@@ -2218,8 +2218,8 @@ function LiveDiagnosis() {
               ].map(step => (
                 <div key={step.action} ref={step.ref} className="ldc-step" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <span style={{ color: '#28CA41', fontFamily: mono, fontSize: 14, flexShrink: 0 }}>✓</span>
-                  <span style={{ fontFamily: mono, fontSize: 13, color: 'rgba(255,255,255,0.5)' }}>
-                    {step.action}{' '}<span style={{ color: 'rgba(255,255,255,0.85)' }}>{step.source}</span>
+                  <span style={{ fontFamily: mono, fontSize: 13, color: 'rgba(250,247,242,0.50)' }}>
+                    {step.action}{' '}<span style={{ color: 'rgba(250,247,242,0.85)' }}>{step.source}</span>
                   </span>
                 </div>
               ))}
@@ -2237,7 +2237,7 @@ function LiveDiagnosis() {
             />
 
             {/* Meta grid */}
-            <div ref={vmetaRef} className="ldc-meta sa-ld-meta" style={{ marginTop: 36, borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 24 }}>
+            <div ref={vmetaRef} className="ldc-meta sa-ld-meta" style={{ marginTop: 36, borderTop: '1px solid rgba(250,247,242,0.08)', paddingTop: 24 }}>
               {[
                 { label: 'ROOT CAUSE',     ref: m1Ref, color: D_.amber },
                 { label: 'CONFIDENCE',     ref: m2Ref, color: '#28CA41' },
@@ -2245,7 +2245,7 @@ function LiveDiagnosis() {
                 { label: 'NEXT MOVE',      ref: m4Ref, color: D_.ink },
               ].map(item => (
                 <div key={item.label}>
-                  <div style={{ fontFamily: mono, fontSize: 9, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: 6 }}>{item.label}</div>
+                  <div style={{ fontFamily: mono, fontSize: 9, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(250,247,242,0.35)', marginBottom: 6 }}>{item.label}</div>
                   <div ref={item.ref} style={{ fontFamily: serif, fontSize: 15, color: item.color, fontWeight: 500, lineHeight: 1.45 }} />
                 </div>
               ))}
@@ -2264,7 +2264,7 @@ function DashboardSection({ C }) {
   const healthRef = useRef(null)
   const goalRef   = useRef(null)
   const D = THEMES.dark
-  const amber = D.amber          // #C9A040
+  const amber = D.amber          // #C4956A
   const green = '#28CA41'
 
   useEffect(() => {
@@ -2275,28 +2275,28 @@ function DashboardSection({ C }) {
     return () => clearInterval(id)
   }, [])
 
-  // Pre-computed rgba from amber (#C9A040 → 201,160,64) and red (192,80,80)
-  const amberBg     = 'rgba(201,160,64,0.08)'
-  const amberBorder = 'rgba(201,160,64,0.25)'
-  const redBg       = 'rgba(192,80,80,0.15)'
+  // Pre-computed rgba from amber (#C4956A → 201,160,64) and red (192,80,80)
+  const amberBg     = 'rgba(196,149,106,0.08)'
+  const amberBorder = 'rgba(196,149,106,0.25)'
+  const redBg       = 'rgba(196,149,106,0.15)'
 
   const Sidebar = () => (
-    <div className="sa-dash-sidebar" style={{ background: 'rgba(0,0,0,0.4)', borderRight: '1px solid rgba(255,255,255,0.04)', padding: '22px 0', minHeight: 540 }}>
-      <div style={{ fontFamily: mono, fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', padding: '0 22px', marginBottom: 8 }}>Workspace</div>
+    <div className="sa-dash-sidebar" style={{ background: 'rgba(15,11,8,0.7)', borderRight: '1px solid rgba(250,247,242,0.04)', padding: '22px 0', minHeight: 540 }}>
+      <div style={{ fontFamily: mono, fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(250,247,242,0.30)', padding: '0 22px', marginBottom: 8 }}>Workspace</div>
 
       {/* Active item */}
       <div style={{ display: 'flex', alignItems: 'center', padding: '9px 22px', borderLeft: `2px solid ${amber}`, background: amberBg }}>
         <span style={{ fontFamily: mono, fontSize: 13, color: '#fff' }}>● Command centre</span>
       </div>
       {['■ Audits', '◐ Signals', '⊕ Connectors'].map(item => (
-        <div key={item} style={{ padding: '9px 22px 9px 24px', fontFamily: mono, fontSize: 13, color: 'rgba(255,255,255,0.65)' }}>{item}</div>
+        <div key={item} style={{ padding: '9px 22px 9px 24px', fontFamily: mono, fontSize: 13, color: 'rgba(250,247,242,0.65)' }}>{item}</div>
       ))}
 
-      <div style={{ margin: '18px 22px', height: 1, background: 'rgba(255,255,255,0.04)' }} />
+      <div style={{ margin: '18px 22px', height: 1, background: 'rgba(250,247,242,0.04)' }} />
 
-      <div style={{ fontFamily: mono, fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', padding: '0 22px', marginBottom: 8 }}>Intelligence</div>
+      <div style={{ fontFamily: mono, fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(250,247,242,0.30)', padding: '0 22px', marginBottom: 8 }}>Intelligence</div>
       {['⎈ Brief', '✦ Ask SelfAudit', '◷ Governance'].map(item => (
-        <div key={item} style={{ padding: '9px 22px 9px 24px', fontFamily: mono, fontSize: 13, color: 'rgba(255,255,255,0.65)' }}>{item}</div>
+        <div key={item} style={{ padding: '9px 22px 9px 24px', fontFamily: mono, fontSize: 13, color: 'rgba(250,247,242,0.65)' }}>{item}</div>
       ))}
     </div>
   )
@@ -2322,12 +2322,12 @@ function DashboardSection({ C }) {
         <div style={{ background: D.bg, borderRadius: 16, overflow: 'hidden', boxShadow: '0 40px 100px rgba(26,20,16,0.18)' }}>
 
           {/* Top bar */}
-          <div style={{ background: 'rgba(0,0,0,0.3)', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '14px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ background: 'rgba(15,11,8,0.6)', borderBottom: '1px solid rgba(250,247,242,0.06)', padding: '14px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{ display: 'flex', gap: 6 }}>
-                {[0, 1, 2].map(i => <div key={i} style={{ width: 10, height: 10, borderRadius: '50%', background: 'rgba(255,255,255,0.18)' }} />)}
+                {[0, 1, 2].map(i => <div key={i} style={{ width: 10, height: 10, borderRadius: '50%', background: 'rgba(250,247,242,0.18)' }} />)}
               </div>
-              <span style={{ fontFamily: mono, fontSize: 12, color: 'rgba(255,255,255,0.5)' }}>selfaudit · command centre</span>
+              <span style={{ fontFamily: mono, fontSize: 12, color: 'rgba(250,247,242,0.50)' }}>selfaudit · command centre</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{ width: 6, height: 6, borderRadius: '50%', background: green, animation: 'erPulse 1.5s infinite' }} />
@@ -2345,13 +2345,13 @@ function DashboardSection({ C }) {
               {/* Header */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 24 }}>
                 <div style={{ fontFamily: serif, fontSize: 24, fontWeight: 600, color: D.ink }}>Your business · this week</div>
-                <div style={{ fontFamily: mono, fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>Last synced 2m ago</div>
+                <div style={{ fontFamily: mono, fontSize: 10, color: 'rgba(250,247,242,0.40)' }}>Last synced 2m ago</div>
               </div>
 
               {/* Alert banner */}
               <div style={{ background: amberBg, borderLeft: `3px solid ${amber}`, borderRadius: '0 8px 8px 0', padding: '14px 16px', marginBottom: 22, display: 'flex', alignItems: 'flex-start', gap: 10 }}>
                 <div style={{ width: 6, height: 6, borderRadius: '50%', background: amber, marginTop: 5, flexShrink: 0 }} />
-                <span style={{ fontFamily: serif, fontSize: 13, color: 'rgba(232,226,216,0.85)', lineHeight: 1.5 }}>
+                <span style={{ fontFamily: serif, fontSize: 13, color: 'rgba(250,247,242,0.85)', lineHeight: 1.5 }}>
                   Market Validation is still flagged from your May 4 audit. Worth updating before it compounds.
                 </span>
               </div>
@@ -2360,12 +2360,12 @@ function DashboardSection({ C }) {
               <div className="sa-dash-stats">
                 {[
                   { label: 'HEALTH SCORE',  dynRef: healthRef, val: '68',  sub: '▲ 12 vs last week',  subColor: amber },
-                  { label: 'OPEN ISSUES',   dynRef: null,      val: '3',   sub: '2 critical · 1 high', subColor: 'rgba(255,255,255,0.5)' },
-                  { label: 'AUDITS RUN',    dynRef: null,      val: '4',   sub: 'Latest: today',        subColor: 'rgba(255,255,255,0.5)' },
+                  { label: 'OPEN ISSUES',   dynRef: null,      val: '3',   sub: '2 critical · 1 high', subColor: 'rgba(250,247,242,0.50)' },
+                  { label: 'AUDITS RUN',    dynRef: null,      val: '4',   sub: 'Latest: today',        subColor: 'rgba(250,247,242,0.50)' },
                   { label: 'GOAL PROGRESS', dynRef: goalRef,   val: '42%', sub: 'On pace · Q3',         subColor: green },
                 ].map(stat => (
-                  <div key={stat.label} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 10, padding: 16 }}>
-                    <div style={{ fontFamily: mono, fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: 8 }}>{stat.label}</div>
+                  <div key={stat.label} style={{ background: 'rgba(250,247,242,0.02)', border: '1px solid rgba(250,247,242,0.06)', borderRadius: 10, padding: 16 }}>
+                    <div style={{ fontFamily: mono, fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(250,247,242,0.40)', marginBottom: 8 }}>{stat.label}</div>
                     <div ref={stat.dynRef} style={{ fontFamily: serif, fontSize: 30, fontWeight: 600, color: D.ink, lineHeight: 1 }}>{stat.val}</div>
                     <div style={{ fontFamily: mono, fontSize: 10, color: stat.subColor, marginTop: 6 }}>{stat.sub}</div>
                   </div>
@@ -2385,7 +2385,7 @@ function DashboardSection({ C }) {
                     Generate action plan
                   </button>
                   {['Draft cancellation email', 'Create SOP', '+3 more'].map(pill => (
-                    <button key={pill} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 999, padding: '7px 14px', fontFamily: mono, fontSize: 12, color: 'rgba(255,255,255,0.75)', cursor: 'pointer' }}>
+                    <button key={pill} style={{ background: 'rgba(250,247,242,0.04)', border: '1px solid rgba(250,247,242,0.08)', borderRadius: 999, padding: '7px 14px', fontFamily: mono, fontSize: 12, color: 'rgba(250,247,242,0.75)', cursor: 'pointer' }}>
                       {pill}
                     </button>
                   ))}
@@ -2393,16 +2393,16 @@ function DashboardSection({ C }) {
               </div>
 
               {/* Open issues */}
-              <div style={{ fontFamily: mono, fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: 8 }}>Open issues</div>
+              <div style={{ fontFamily: mono, fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(250,247,242,0.40)', marginBottom: 8 }}>Open issues</div>
               {[
                 { title: 'Market validation',             meta: 'Critical · flagged May 4',    badge: 'CRITICAL', badgeBg: redBg,       badgeColor: D.redMuted },
                 { title: 'Pricing model needs restructure', meta: 'High · 3 audits in a row',   badge: 'HIGH',     badgeBg: amberBg,     badgeColor: amber },
                 { title: 'Sales cycle drift',             meta: 'High · trending worse',       badge: 'HIGH',     badgeBg: amberBg,     badgeColor: amber },
               ].map(issue => (
-                <div key={issue.title} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 8, padding: '12px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                <div key={issue.title} style={{ background: 'rgba(250,247,242,0.02)', border: '1px solid rgba(250,247,242,0.06)', borderRadius: 8, padding: '12px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                   <div>
                     <div style={{ fontFamily: serif, fontSize: 14, color: D.ink, marginBottom: 3 }}>{issue.title}</div>
-                    <div style={{ fontFamily: mono, fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>{issue.meta}</div>
+                    <div style={{ fontFamily: mono, fontSize: 10, color: 'rgba(250,247,242,0.40)' }}>{issue.meta}</div>
                   </div>
                   <span style={{ background: issue.badgeBg, color: issue.badgeColor, fontFamily: mono, fontSize: 10, letterSpacing: '0.08em', borderRadius: 4, padding: '3px 8px', flexShrink: 0 }}>
                     {issue.badge}
@@ -2574,14 +2574,14 @@ function FinalCTA({ onStart }) {
 
   const go = () => onStart(inputVal.trim())
 
-  // Solid base extracted from D.redMuted rgba(192,80,80,0.78)
-  const red       = 'rgb(192,80,80)'
-  const redBorder = 'rgba(192,80,80,0.55)'
+  // Solid base extracted from D.redMuted rgba(196,149,106,0.85)
+  const red       = '#C4956A'
+  const redBorder = 'rgba(196,149,106,0.55)'
 
   return (
     <section style={{ background: D.bg, padding: 'clamp(64px, 8vw, 130px) 0 clamp(48px, 6vw, 100px)' }}>
       <style>{`
-        .fca-input::placeholder { color: rgba(232,226,216,0.32); }
+        .fca-input::placeholder { color: rgba(250,247,242,0.32); }
       `}</style>
 
       {/* Eyebrow */}
@@ -2596,7 +2596,7 @@ function FinalCTA({ onStart }) {
       </div>
 
       {/* Subtitle */}
-      <p style={{ textAlign: 'center', fontFamily: serif, fontSize: 'clamp(18px, 2.2vw, 26px)', fontStyle: 'italic', color: 'rgba(232,226,216,0.6)', lineHeight: 1.5, margin: '0 0 64px' }}>
+      <p style={{ textAlign: 'center', fontFamily: serif, fontSize: 'clamp(18px, 2.2vw, 26px)', fontStyle: 'italic', color: 'rgba(250,247,242,0.60)', lineHeight: 1.5, margin: '0 0 64px' }}>
         Tell it what feels wrong. Get the truth in five minutes.
       </p>
 
@@ -2649,7 +2649,7 @@ function FinalCTA({ onStart }) {
         </div>
 
         {/* Tagline */}
-        <div style={{ textAlign: 'center', marginTop: 26, fontFamily: mono, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'rgba(232,226,216,0.28)' }}>
+        <div style={{ textAlign: 'center', marginTop: 26, fontFamily: mono, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'rgba(250,247,242,0.28)' }}>
           FREE · NO ACCOUNT · BRUTALLY HONEST
         </div>
       </div>
