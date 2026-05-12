@@ -15,13 +15,13 @@ const THEMES = {
     inkSoft: '#C4A882',
     inkMuted: '#8A7260',
     inkFaint: '#6B5540',
-    accent: '#F5F0E8',
-    accentDark: '#E0D9CF',
+    accent: '#C4956A',
+    accentDark: '#B07D55',
     accentSoft: '#1E1510',
-    accentText: '#F5F0E8',
-    redMuted: 'rgba(245,240,232,0.85)',
+    accentText: '#C4956A',
+    redMuted: 'rgba(196,149,106,0.85)',
     redSoft: '#150E08',
-    amber: '#F5F0E8',
+    amber: '#C4956A',
   },
   light: {
     theme: 'light',
@@ -2276,9 +2276,9 @@ function DashboardSection({ C }) {
   }, [])
 
   // Pre-computed rgba from amber (#F5F0E8 → 201,160,64) and red (192,80,80)
-  const amberBg     = 'rgba(245,240,232,0.08)'
-  const amberBorder = 'rgba(245,240,232,0.25)'
-  const redBg       = 'rgba(245,240,232,0.15)'
+  const amberBg     = 'rgba(196,149,106,0.08)'
+  const amberBorder = 'rgba(196,149,106,0.25)'
+  const redBg       = 'rgba(196,149,106,0.15)'
 
   const Sidebar = () => (
     <div className="sa-dash-sidebar" style={{ background: 'rgba(15,11,8,0.7)', borderRight: '1px solid rgba(250,247,242,0.04)', padding: '22px 0', minHeight: 540 }}>
@@ -2574,9 +2574,9 @@ function FinalCTA({ onStart }) {
 
   const go = () => onStart(inputVal.trim())
 
-  // Solid base extracted from D.redMuted rgba(245,240,232,0.85)
-  const red       = '#F5F0E8'
-  const redBorder = 'rgba(245,240,232,0.55)'
+  // Solid base extracted from D.redMuted rgba(196,149,106,0.85)
+  const red       = '#C4956A'
+  const redBorder = 'rgba(196,149,106,0.55)'
 
   return (
     <section style={{ background: D.bg, padding: 'clamp(64px, 8vw, 130px) 0 clamp(48px, 6vw, 100px)' }}>
