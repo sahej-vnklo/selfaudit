@@ -306,7 +306,7 @@ function PrimaryButton({ label, onClick, small = false, C }) {
         background: hovered ? C.accentDark : C.accent,
         color: '#fff',
         padding: small ? '10px 18px' : '16px 28px',
-        borderRadius: C.theme === 'light' ? 4 : 999,
+        borderRadius: C.theme === 'light' ? 8 : 999,
         fontSize: small ? 15 : 17,
         fontWeight: 600,
         border: 'none',
@@ -700,7 +700,7 @@ function ThemeTextToggle({ theme, setTheme, C }) {
 
 function LandingNav({ C, pageOpen, onBack, onPricing, onStories, onConnected, onSignIn, onStartAudit, onLogoClick, storiesOpen, connectedOpen, pricingOpen, theme, setTheme }) {
   return (
-    <nav style={{ padding: '20px 0', borderBottom: `1px solid ${C.border}`, background: '#1A1410', position: 'sticky', top: 0, zIndex: 20 }}>
+    <nav style={{ padding: '20px 0', borderBottom: `1px solid ${C.border}`, background: C.theme === 'light' ? C.surface : '#1A1410', position: 'sticky', top: 0, zIndex: 20 }}>
       <div className="sa-nav-grid">
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0 }}>
           {pageOpen && (
@@ -734,11 +734,6 @@ function LandingNav({ C, pageOpen, onBack, onPricing, onStories, onConnected, on
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 14 }}>
-          {theme === 'light' && (
-            <span style={{ fontFamily: "'JetBrains Mono', 'Fira Mono', 'Courier New', monospace", fontSize: 10, letterSpacing: '0.18em', color: C.inkFaint, textTransform: 'uppercase' }}>
-              EST. 2024
-            </span>
-          )}
           <ThemeTextToggle theme={theme} setTheme={setTheme} C={C} />
           <PrimaryButton label="Start free audit" onClick={onStartAudit} small C={C} />
         </div>
@@ -2188,7 +2183,7 @@ function LiveDiagnosis({ C }) {
 
       {/* Console panel */}
       <div style={{ maxWidth: 920, margin: '0 auto', padding: '0 28px' }}>
-        <div style={{ background: 'rgba(250,247,242,0.02)', border: '1px solid rgba(250,247,242,0.08)', borderRadius: 16, overflow: 'hidden', boxShadow: C.theme === 'light' ? '0 2px 0 #E4DDD0, 0 20px 60px rgba(26,20,16,0.08)' : 'none' }}>
+        <div style={{ background: '#0E0C0A', border: '1px solid rgba(250,247,242,0.08)', borderRadius: 16, overflow: 'hidden', boxShadow: C.theme === 'light' ? '0 2px 0 #E4DDD0, 0 20px 60px rgba(26,20,16,0.08)' : 'none' }}>
 
           {/* Top bar */}
           <div style={{ background: 'rgba(15,11,8,0.6)', borderBottom: '1px solid rgba(250,247,242,0.06)', padding: '14px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -3072,7 +3067,7 @@ export default function Landing({ onStart, onSignUp, session }) {
                   background: C.theme === 'light' ? C.ink : C.accent,
                   color: C.theme === 'light' ? C.bg : '#fff',
                   border: 'none',
-                  borderRadius: C.theme === 'light' ? 4 : 999,
+                  borderRadius: C.theme === 'light' ? 8 : 999,
                   padding: '12px 22px',
                   fontSize: 16,
                   fontWeight: 600,
@@ -3420,7 +3415,7 @@ export default function Landing({ onStart, onSignUp, session }) {
                     background: C.ink,
                     color: C.bg,
                     border: 'none',
-                    borderRadius: C.theme === 'light' ? 4 : 999,
+                    borderRadius: C.theme === 'light' ? 8 : 999,
                     padding: '15px 24px',
                     fontFamily: serif,
                     fontSize: 17,
