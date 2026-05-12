@@ -2769,7 +2769,7 @@ export default function Landing({ onStart, onSignUp, session }) {
       body {
         background-image: none;
         background-attachment: scroll;
-        background-color: #0F1520;
+        background-color: #0E0C0A;
       }
     `
     }
