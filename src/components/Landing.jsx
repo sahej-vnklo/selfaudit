@@ -3090,13 +3090,13 @@ export default function Landing({ onStart, onSignUp, session }) {
 
       {/* ── 2. Business Brain Statement ── */}
       <section style={{ padding: 'clamp(56px, 7vw, 112px) 0 clamp(56px, 7vw, 120px)', background: C.surface }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 28px' }}>
+        <div style={{ maxWidth: 860, margin: '0 auto', padding: '0 28px', textAlign: 'center' }}>
           <p style={{
             fontFamily: serif,
-            fontSize: 'clamp(28px, 6.5vw, 88px)',
+            fontSize: 'clamp(22px, 3.8vw, 52px)',
             fontWeight: 700,
-            lineHeight: 1.08,
-            letterSpacing: '-0.03em',
+            lineHeight: 1.18,
+            letterSpacing: '-0.025em',
             margin: 0,
             color: C.ink,
           }}>
@@ -3367,7 +3367,7 @@ export default function Landing({ onStart, onSignUp, session }) {
                 heading: <>The <em style={{ fontStyle: 'italic', color: C.redMuted }}>full brain.</em></>,
                 body: 'Live connectors. Compounding memory. Weekly governance. Ask SelfAudit anything — it investigates before answering.',
                 features: ['Everything in Foundation', 'HubSpot, Stripe, Slack, Gmail', 'Memory · Agent · Governance', 'Goal tracking with reality checks'],
-                cta: 'Turn on the brain →',
+                cta: 'Start Intelligence →',
                 plan: 'intelligence',
               },
             ].map(p => (
