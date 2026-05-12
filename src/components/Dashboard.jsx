@@ -307,11 +307,15 @@ function extractGoalFromContext(context) {
 
 function extractGoalState(profile, reports, businessState) {
   const savedScore = typeof businessState?.goal_score === 'number' ? businessState.goal_score : null
+  const delta = typeof businessState?.goal_score_delta === 'number' ? businessState.goal_score_delta : null
+  const bsTimeline = businessState?.goal_timeline || ''
   const fromProfile = extractGoalFromContext(profile?.context)
   if (fromProfile.goal) {
     return {
       ...fromProfile,
       progress: savedScore ?? fromProfile.progress,
+      delta,
+      timeline: bsTimeline || fromProfile.timeline || '',
     }
   }
 
@@ -319,7 +323,7 @@ function extractGoalState(profile, reports, businessState) {
     const parsed = parseReportContent(report.content)
     if (!parsed) continue
     const goal = parsed.goal_gap_analysis?.goal || parsed.business_state?.goal_state || parsed.business_state?.active_goal || ''
-    const timeline = parsed.timeline_feasibility || parsed.goal_gap_analysis?.realistic_timeline || parsed.timeline_reality?.honest_take || ''
+    const timeline = bsTimeline || parsed.timeline_feasibility || parsed.goal_gap_analysis?.realistic_timeline || parsed.timeline_reality?.honest_take || ''
     const timelineText = String(timeline || '').trim().toLowerCase()
     const fallbackProgress = savedScore != null
       ? savedScore
@@ -330,10 +334,10 @@ function extractGoalState(profile, reports, businessState) {
           : timelineText.startsWith('unrealistic')
             ? 20
             : null
-    if (goal) return { goal, progress: fallbackProgress, timeline }
+    if (goal) return { goal, progress: fallbackProgress, timeline, delta }
   }
 
-  return { goal: '', progress: null, timeline: '' }
+  return { goal: '', progress: null, timeline: '', delta: null }
 }
 
 function formatAuditDate(dateString, options = { month: 'short', day: 'numeric' }) {
@@ -455,6 +459,8 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
   const [businessState, setBusinessState] = useState(null)
   const [businessStateLoading, setBusinessStateLoading] = useState(true)
   const [healthIntel, setHealthIntel] = useState(null)
+  const [healthHistory, setHealthHistory] = useState([])
+  const [riskAlerts, setRiskAlerts] = useState([])
   const [reports, setReports] = useState([])
   const [reportsLoading, setReportsLoading] = useState(true)
   const [billing, setBilling] = useState(null)
@@ -544,6 +550,15 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
           .limit(24)
 
         if (!cancelled) setReports(reportData ?? [])
+
+        const { data: alertData } = await sb
+          .from('risk_alerts')
+          .select('id, severity, category, title, description, recommended_action, status')
+          .eq('user_id', user.id)
+          .eq('status', 'open')
+          .order('created_at', { ascending: false })
+          .limit(10)
+        if (!cancelled) setRiskAlerts(alertData ?? [])
       } catch (err) {
         console.error('[dashboard] profile fetch threw:', err?.message ?? err)
       } finally {
@@ -616,6 +631,15 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
         fetch(`/api/business-health?userId=${user.id}`)
           .then(r => r.ok ? r.json() : null)
           .then(d => { if (!cancelled && d) setHealthIntel(d) })
+          .catch(() => {})
+
+        // Non-blocking: fetch health check history for trend
+        sb.from('business_health_checks')
+          .select('health_score, checked_at')
+          .eq('user_id', user.id)
+          .order('checked_at', { ascending: false })
+          .limit(7)
+          .then(({ data: hData }) => { if (!cancelled && hData?.length) setHealthHistory(hData) })
           .catch(() => {})
       } catch (error) {
         if (!cancelled) {
@@ -788,6 +812,8 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
               onStartAudit={startAudit}
               onStartGoalAudit={() => setGoalModal(true)}
               healthIntel={healthIntel}
+              healthHistory={healthHistory}
+              riskAlerts={riskAlerts}
             />
           )}
 
@@ -884,7 +910,7 @@ function PageShell({ title, sub, actions, children }) {
   )
 }
 
-function HomeSection({ user, profile, businessState, businessStateLoading, reports, reportsLoading, onStartAudit, onStartGoalAudit, healthIntel }) {
+function HomeSection({ user, profile, businessState, businessStateLoading, reports, reportsLoading, onStartAudit, onStartGoalAudit, healthIntel, healthHistory, riskAlerts }) {
   const issuesRef = useRef(null)
   const latestReport = reports[0] || null
   const latestDiagnosticReport = getLatestDiagnosticReport(reports)
@@ -972,7 +998,9 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
         <KpiCard
           label="Goal progress"
           value={goalState.goal ? (typeof goalState.progress === 'number' ? `${goalState.progress}%` : '—') : '—'}
-          delta={goalState.goal ? goalState.goal : 'No active goal'}
+          delta={goalState.goal
+            ? `${goalState.goal}${typeof goalState.delta === 'number' && goalState.delta !== 0 ? ` · ${goalState.delta > 0 ? '+' : ''}${goalState.delta} pts` : ''}`
+            : 'No active goal'}
           tone={typeof goalState.progress === 'number' ? 'up' : 'neutral'}
         />
       </div>
@@ -992,8 +1020,10 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
         </div>
 
         <div style={styles.rightColumn}>
-          <BusinessHealthPanel latestDomains={latestDomains} healthIntel={healthIntel} />
+          <BusinessHealthPanel latestDomains={latestDomains} healthIntel={healthIntel} healthHistory={healthHistory} />
+          <BrainTransparencyCard businessState={businessState} healthIntel={healthIntel} />
           <WeeklyDigestPanel profile={profile} />
+          <RiskAlertsPanel user={user} riskAlerts={riskAlerts} />
           <AiOpportunitiesCard
             user={user}
             userInfo={shareUserInfo}
@@ -1076,7 +1106,7 @@ function AuditHistoryPanel({ reports, reportsLoading }) {
   )
 }
 
-function BusinessHealthPanel({ latestDomains, healthIntel }) {
+function BusinessHealthPanel({ latestDomains, healthIntel, healthHistory }) {
   const score = latestDomains.length ? computeHealthScore(latestDomains) : 0
   const radius = 28
   const circumference = 2 * Math.PI * radius
@@ -1157,6 +1187,26 @@ function BusinessHealthPanel({ latestDomains, healthIntel }) {
                     <span>{action}</span>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {healthHistory.length >= 2 && (
+            <div style={{ marginTop: 18 }}>
+              <div style={{ fontSize: 11, color: G.textFaint, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>score trend</div>
+              <div style={{ display: 'flex', gap: 4, alignItems: 'flex-end', height: 32 }}>
+                {[...healthHistory].reverse().map((h, i) => {
+                  const barH = Math.max(4, Math.round((h.health_score / 100) * 32))
+                  const barColor = h.health_score >= 70 ? G.green : h.health_score >= 45 ? G.amber : G.red
+                  const label = `${h.health_score} on ${new Date(h.checked_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+                  return (
+                    <div
+                      key={i}
+                      title={label}
+                      style={{ flex: 1, height: barH, background: barColor, borderRadius: 2, opacity: 0.55 + (i / healthHistory.length) * 0.45 }}
+                    />
+                  )
+                })}
               </div>
             </div>
           )}
@@ -1262,6 +1312,122 @@ function WeeklyDigestPanel({ profile }) {
         </>
       )}
     </div>
+  )
+}
+
+function RiskAlertsPanel({ user, riskAlerts: initialAlerts }) {
+  const [alerts, setAlerts] = useState(initialAlerts ?? [])
+  const [resolving, setResolving] = useState('')
+
+  useEffect(() => { setAlerts(initialAlerts ?? []) }, [initialAlerts])
+
+  if (!alerts.length) return null
+
+  const sevColor = (sev) => {
+    if (sev === 'critical') return G.redText
+    if (sev === 'high') return G.redText
+    if (sev === 'medium') return G.amberText
+    return G.textFaint
+  }
+
+  const resolve = async (id) => {
+    if (!user?.id || resolving) return
+    setResolving(id)
+    try {
+      const sb = await initSupabase()
+      await sb.from('risk_alerts').update({ status: 'resolved' }).eq('id', id).eq('user_id', user.id)
+      setAlerts((prev) => prev.filter((a) => a.id !== id))
+    } catch {}
+    setResolving('')
+  }
+
+  return (
+    <PanelCard
+      title="risk alerts"
+      right={<span style={{ fontSize: 11, color: G.redText, fontWeight: 600 }}>{alerts.length} open</span>}
+    >
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {alerts.slice(0, 5).map((alert) => (
+          <div key={alert.id} style={{ paddingBottom: 12, borderBottom: `1px solid ${G.border}` }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+              <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: sevColor(alert.severity) }}>
+                {alert.severity}
+              </span>
+              {alert.category && (
+                <span style={{ fontSize: 10, color: G.textFaint }}>{alert.category}</span>
+              )}
+            </div>
+            <div style={{ fontSize: 13, color: G.text, lineHeight: 1.4, marginBottom: 4 }}>{alert.title}</div>
+            {alert.description && (
+              <div style={{ fontSize: 12, color: G.textSecondary, lineHeight: 1.5, marginBottom: 6 }}>{alert.description}</div>
+            )}
+            <button
+              type="button"
+              style={{ fontSize: 11, color: G.textFaint, background: 'transparent', border: `1px solid ${G.border}`, borderRadius: 4, padding: '2px 8px', cursor: 'pointer' }}
+              onClick={() => resolve(alert.id)}
+              disabled={resolving === alert.id}
+            >
+              {resolving === alert.id ? 'Resolving…' : 'Mark resolved'}
+            </button>
+          </div>
+        ))}
+      </div>
+    </PanelCard>
+  )
+}
+
+function BrainTransparencyCard({ businessState, healthIntel }) {
+  const topPriorities = healthIntel?.top_priorities?.slice(0, 3) ?? []
+  const watchouts = healthIntel?.watchouts?.slice(0, 2) ?? []
+  const hasMaterial = businessState?.active_goal || topPriorities.length > 0 || watchouts.length > 0
+  if (!hasMaterial) return null
+
+  return (
+    <PanelCard title="what AI knows">
+      {businessState?.active_goal && (
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontSize: 11, color: G.textFaint, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 5 }}>active goal</div>
+          <div style={{ fontSize: 13, color: G.text, lineHeight: 1.45 }}>{businessState.active_goal}</div>
+          {typeof businessState.goal_score === 'number' && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
+              <div style={{ flex: 1, height: 4, background: G.border, borderRadius: 2 }}>
+                <div style={{ width: `${businessState.goal_score}%`, height: '100%', background: G.accent, borderRadius: 2 }} />
+              </div>
+              <span style={{ fontSize: 12, color: G.accentText, minWidth: 32, flexShrink: 0 }}>
+                {businessState.goal_score}%
+              </span>
+              {typeof businessState.goal_score_delta === 'number' && businessState.goal_score_delta !== 0 && (
+                <span style={{ fontSize: 11, color: businessState.goal_score_delta > 0 ? G.greenText : G.redText, flexShrink: 0 }}>
+                  {businessState.goal_score_delta > 0 ? '+' : ''}{businessState.goal_score_delta} pts
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {topPriorities.length > 0 && (
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontSize: 11, color: G.textFaint, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>priorities flagged</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+            {topPriorities.map((p, i) => (
+              <div key={i} style={{ fontSize: 12, color: G.textSecondary, lineHeight: 1.5, paddingLeft: 8, borderLeft: `2px solid ${G.accent}` }}>{p}</div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {watchouts.length > 0 && (
+        <div>
+          <div style={{ fontSize: 11, color: G.textFaint, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>watchouts</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+            {watchouts.map((w, i) => (
+              <div key={i} style={{ fontSize: 12, color: G.textSecondary, lineHeight: 1.5, paddingLeft: 8, borderLeft: `2px solid ${G.amber}` }}>{w}</div>
+            ))}
+          </div>
+        </div>
+      )}
+    </PanelCard>
   )
 }
 
@@ -1830,7 +1996,25 @@ function AgentSection({ user }) {
   const [result, setResult]           = useState(null)
   const [error, setError]             = useState(null)
   const [history, setHistory]         = useState([])
+  const [tsaHistory, setTsaHistory]   = useState([])
+  const [histExpanded, setHistExpanded] = useState(false)
   const textareaRef                   = useRef(null)
+
+  useEffect(() => {
+    if (!user?.id) return
+    ;(async () => {
+      try {
+        const sb = await initSupabase()
+        const { data } = await sb
+          .from('agent_findings')
+          .select('id, query, intent, created_at')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(10)
+        setTsaHistory(data ?? [])
+      } catch {}
+    })()
+  }, [user?.id])
 
   const SUGGESTED = [
     'Why is revenue not growing?',
@@ -1897,6 +2081,44 @@ function AgentSection({ user }) {
       title="Ask TSA"
       sub="Your operational strategist. Investigates your live business data before answering."
     >
+      {/* Past questions history */}
+      {tsaHistory.length > 0 && !result && !loading && (
+        <div style={{ marginBottom: 16 }}>
+          <button
+            type="button"
+            style={{ ...agent.suggestedChip, display: 'flex', alignItems: 'center', gap: 6 }}
+            onClick={() => setHistExpanded((p) => !p)}
+          >
+            <span>Past questions ({tsaHistory.length})</span>
+            <span style={{ color: G.textFaint, fontSize: 11 }}>{histExpanded ? '↑' : '↓'}</span>
+          </button>
+          {histExpanded && (
+            <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {tsaHistory.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  style={{ textAlign: 'left', background: G.surface, border: `1px solid ${G.border}`, borderRadius: 8, padding: '10px 12px', cursor: 'pointer', width: '100%' }}
+                  onClick={() => { setQuery(item.query); submit(item.query) }}
+                >
+                  <div style={{ fontSize: 13, color: G.text, marginBottom: 4 }}>{item.query}</div>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    {item.intent && (
+                      <span style={{ fontSize: 10, color: G.textFaint, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                        {item.intent.replace(/_/g, ' ')}
+                      </span>
+                    )}
+                    <span style={{ fontSize: 11, color: G.textFaint }}>
+                      {new Date(item.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Suggested prompts (only when no result yet) */}
       {!result && !loading && (
         <div style={agent.suggestedWrap}>
