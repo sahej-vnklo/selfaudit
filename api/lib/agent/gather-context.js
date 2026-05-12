@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import { getCompanyBrain } from '../intelligence/company-brain.js'
+import { getCompanyBrain, formatBrainForPrompt } from '../intelligence/company-brain.js'
 import { fetchHubspotBusinessState } from '../connectors/hubspot.js'
 import { normalizeHubspotData } from '../connectors/normalize.js'
 
@@ -148,6 +148,8 @@ export async function gatherAgentContext(userId, plan) {
       if (brain.repeated_blockers?.length)       lines.push(`Repeated blockers: ${brain.repeated_blockers.join('; ')}`)
       if (brain.last_session?.headline)          lines.push(`Last audit: ${brain.last_session.headline}`)
 
+      const patternSection = formatBrainForPrompt(brain)
+      if (patternSection) lines.push('', patternSection)
       contextBlocks.push({ source: 'company_brain', summary: lines.join('\n') })
       sourcesUsed.push('company_brain')
     }
