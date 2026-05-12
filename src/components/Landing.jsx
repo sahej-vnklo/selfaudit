@@ -1725,7 +1725,7 @@ function EngineRoom({ C }) {
           overflow: 'hidden',
           border: '1px solid rgba(250,247,242,0.08)',
           position: 'relative',
-          boxShadow: C.theme === 'light' ? '0 2px 0 #E4DDD0, 0 20px 60px rgba(26,20,16,0.08)' : 'none',
+          boxShadow: C.theme === 'light' ? '0 1px 0 #D8CFBC, 0 8px 0 rgba(26,20,16,0.04), 0 32px 80px rgba(26,20,16,0.22), 0 12px 32px rgba(26,20,16,0.14)' : 'none',
         }}>
           {/* Header bar */}
           <div style={{
@@ -2176,14 +2176,14 @@ function LiveDiagnosis({ C }) {
         <h2 style={{ fontFamily: serif, fontSize: 'clamp(32px, 5.5vw, 80px)', fontWeight: 700, letterSpacing: '-0.045em', lineHeight: 1.04, color: C.ink, margin: '0 0 20px' }}>
           Watch the brain <em style={{ fontStyle: 'italic', color: C.amber }}>think.</em>
         </h2>
-        <p style={{ fontFamily: serif, fontSize: 20, color: 'rgba(250,247,242,0.60)', lineHeight: 1.6, margin: 0 }}>
+        <p style={{ fontFamily: serif, fontSize: 20, color: C.inkSoft, lineHeight: 1.6, margin: 0 }}>
           Not a chat. A reasoning process. Real signals. Real verdict. Real next move.
         </p>
       </div>
 
       {/* Console panel */}
       <div style={{ maxWidth: 920, margin: '0 auto', padding: '0 28px' }}>
-        <div style={{ background: '#0E0C0A', border: '1px solid rgba(250,247,242,0.08)', borderRadius: 16, overflow: 'hidden', boxShadow: C.theme === 'light' ? '0 2px 0 #E4DDD0, 0 20px 60px rgba(26,20,16,0.08)' : 'none' }}>
+        <div style={{ background: '#0E0C0A', border: '1px solid rgba(250,247,242,0.10)', borderRadius: 16, overflow: 'hidden', boxShadow: C.theme === 'light' ? '0 1px 0 #D8CFBC, 0 8px 0 rgba(26,20,16,0.04), 0 32px 80px rgba(26,20,16,0.22), 0 12px 32px rgba(26,20,16,0.14)' : 'none' }}>
 
           {/* Top bar */}
           <div style={{ background: 'rgba(15,11,8,0.6)', borderBottom: '1px solid rgba(250,247,242,0.06)', padding: '14px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -2323,7 +2323,7 @@ function DashboardSection({ C }) {
 
       {/* Dashboard frame */}
       <div style={{ maxWidth: 1180, margin: '0 auto', padding: '0 28px' }}>
-        <div style={{ background: D.bg, borderRadius: 16, overflow: 'hidden', boxShadow: C.theme === 'light' ? '0 2px 0 #E4DDD0, 0 20px 60px rgba(26,20,16,0.08)' : '0 40px 100px rgba(26,20,16,0.18)' }}>
+        <div style={{ background: D.bg, borderRadius: 16, overflow: 'hidden', boxShadow: C.theme === 'light' ? '0 1px 0 #D8CFBC, 0 8px 0 rgba(26,20,16,0.04), 0 32px 80px rgba(26,20,16,0.22), 0 12px 32px rgba(26,20,16,0.14)' : '0 40px 100px rgba(26,20,16,0.18)' }}>
 
           {/* Top bar */}
           <div style={{ background: 'rgba(15,11,8,0.6)', borderBottom: '1px solid rgba(250,247,242,0.06)', padding: '14px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -2467,7 +2467,7 @@ function CompoundingSection({ C }) {
         </div>
 
         {/* ── Right: dark knowledge card ── */}
-        <div style={{ background: D.bg, borderRadius: 14, overflow: 'hidden', border: `1px solid ${D.border}`, boxShadow: C.theme === 'light' ? '0 2px 0 #E4DDD0, 0 20px 60px rgba(26,20,16,0.08)' : 'none' }}>
+        <div style={{ background: D.bg, borderRadius: 14, overflow: 'hidden', border: `1px solid ${D.border}`, boxShadow: C.theme === 'light' ? '0 1px 0 #D8CFBC, 0 8px 0 rgba(26,20,16,0.04), 0 32px 80px rgba(26,20,16,0.22), 0 12px 32px rgba(26,20,16,0.14)' : 'none' }}>
 
           {/* Card header */}
           <div style={{ padding: '28px 32px 12px' }}>
