@@ -701,7 +701,7 @@ function ThemeTextToggle({ theme, setTheme, C }) {
 function LandingNav({ C, pageOpen, onBack, onPricing, onStories, onConnected, onSignIn, onStartAudit, onLogoClick, storiesOpen, connectedOpen, pricingOpen, theme, setTheme }) {
   return (
     <nav style={{ padding: '20px 0', borderBottom: `1px solid ${C.border}`, background: C.bg, position: 'sticky', top: 0, zIndex: 20 }}>
-      <div style={{ ...wrap, display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 20 }}>
+      <div className="sa-nav-grid">
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0 }}>
           {pageOpen && (
             <button
@@ -726,7 +726,7 @@ function LandingNav({ C, pageOpen, onBack, onPricing, onStories, onConnected, on
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 28 }}>
+        <div className="sa-nav-center" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 28 }}>
           <TextNavLink label="Pricing" onClick={onPricing} C={C} active={pricingOpen} />
           <TextNavLink label="Stories" onClick={onStories} C={C} active={storiesOpen} />
           <TextNavLink label="Integrations" onClick={onConnected} C={C} active={connectedOpen} />
@@ -1631,7 +1631,7 @@ function EngineRoom() {
   }
 
   return (
-    <section style={{ background: D.bg, padding: '100px 0 120px' }}>
+    <section style={{ background: D.bg, padding: 'clamp(56px, 7vw, 100px) 0 clamp(64px, 8vw, 120px)' }}>
       <style>{`
         @keyframes erScroll {
           0%   { transform: translateY(0); }
@@ -1643,18 +1643,10 @@ function EngineRoom() {
         }
       `}</style>
 
-      <div style={{
-        maxWidth: 1280,
-        margin: '0 auto',
-        padding: '0 48px',
-        display: 'grid',
-        gridTemplateColumns: '1fr 1.2fr',
-        gap: 80,
-        alignItems: 'start',
-      }}>
+      <div className="sa-er-grid">
 
         {/* ── Left: copy ── */}
-        <div style={{ position: 'sticky', top: 140 }}>
+        <div className="sa-er-sticky" style={{ position: 'sticky', top: 140 }}>
 
           <div style={{
             fontFamily: mono,
@@ -1725,7 +1717,7 @@ function EngineRoom() {
         </div>
 
         {/* ── Right: stream panel ── */}
-        <div style={{
+        <div className="sa-er-stream" style={{
           background: D.surface2,
           borderRadius: 12,
           height: 600,
@@ -1915,11 +1907,11 @@ function FourVerbs({ C }) {
   ]
 
   return (
-    <section style={{ background: C.surface, padding: '140px 0', borderTop: `1px solid ${C.border}` }}>
+    <section style={{ background: C.surface, padding: 'clamp(64px, 8vw, 140px) 0', borderTop: `1px solid ${C.border}` }}>
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 28px' }}>
 
         {/* Intro block */}
-        <div style={{ maxWidth: 780, marginBottom: 120 }}>
+        <div style={{ maxWidth: 780, marginBottom: 'clamp(48px, 6vw, 120px)' }}>
           <div style={{ fontFamily: mono, fontSize: 12, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 20 }}>
             What an operating brain actually does
           </div>
@@ -1941,12 +1933,7 @@ function FourVerbs({ C }) {
 
         {/* Verb rows */}
         {verbs.map((v, i) => (
-          <div key={v.num} style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 1.1fr',
-            gap: 80,
-            alignItems: 'center',
-            padding: '80px 0',
+          <div key={v.num} className="sa-fv-row" style={{
             borderTop: i === 0 ? `2px solid ${C.ink}` : `1px solid ${C.border}`,
           }}>
             {/* Left */}
@@ -1956,7 +1943,7 @@ function FourVerbs({ C }) {
               </div>
               <h3 style={{
                 fontFamily: serif,
-                fontSize: 'clamp(48px, 6vw, 88px)',
+                fontSize: 'clamp(32px, 6vw, 88px)',
                 fontWeight: 700,
                 lineHeight: 0.98,
                 letterSpacing: '-0.045em',
@@ -2150,7 +2137,7 @@ function LiveDiagnosis() {
   const D_ = THEMES.dark
 
   return (
-    <section ref={sectionRef} style={{ background: D_.bg, padding: '140px 0' }}>
+    <section ref={sectionRef} style={{ background: D_.bg, padding: 'clamp(64px, 8vw, 140px) 0' }}>
       <style>{`
         @keyframes ldcBlink {
           0%, 49% { opacity: 1; }
@@ -2184,7 +2171,7 @@ function LiveDiagnosis() {
         <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: D_.amber, marginBottom: 20 }}>
           A live diagnosis
         </div>
-        <h2 style={{ fontFamily: serif, fontSize: 'clamp(44px, 5.5vw, 80px)', fontWeight: 700, letterSpacing: '-0.045em', lineHeight: 1.04, color: D_.ink, margin: '0 0 20px' }}>
+        <h2 style={{ fontFamily: serif, fontSize: 'clamp(32px, 5.5vw, 80px)', fontWeight: 700, letterSpacing: '-0.045em', lineHeight: 1.04, color: D_.ink, margin: '0 0 20px' }}>
           Watch the brain <em style={{ fontStyle: 'italic', color: D_.amber }}>think.</em>
         </h2>
         <p style={{ fontFamily: serif, fontSize: 20, color: 'rgba(232,226,216,0.6)', lineHeight: 1.6, margin: 0 }}>
@@ -2250,7 +2237,7 @@ function LiveDiagnosis() {
             />
 
             {/* Meta grid */}
-            <div ref={vmetaRef} className="ldc-meta" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginTop: 36, borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 24 }}>
+            <div ref={vmetaRef} className="ldc-meta sa-ld-meta" style={{ marginTop: 36, borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 24 }}>
               {[
                 { label: 'ROOT CAUSE',     ref: m1Ref, color: D_.amber },
                 { label: 'CONFIDENCE',     ref: m2Ref, color: '#28CA41' },
@@ -2294,7 +2281,7 @@ function DashboardSection({ C }) {
   const redBg       = 'rgba(192,80,80,0.15)'
 
   const Sidebar = () => (
-    <div style={{ background: 'rgba(0,0,0,0.4)', borderRight: '1px solid rgba(255,255,255,0.04)', padding: '22px 0', minHeight: 540 }}>
+    <div className="sa-dash-sidebar" style={{ background: 'rgba(0,0,0,0.4)', borderRight: '1px solid rgba(255,255,255,0.04)', padding: '22px 0', minHeight: 540 }}>
       <div style={{ fontFamily: mono, fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', padding: '0 22px', marginBottom: 8 }}>Workspace</div>
 
       {/* Active item */}
@@ -2315,14 +2302,14 @@ function DashboardSection({ C }) {
   )
 
   return (
-    <section style={{ background: C.bg, padding: '160px 0', borderTop: `1px solid ${C.border}` }}>
+    <section style={{ background: C.bg, padding: 'clamp(64px, 8vw, 160px) 0', borderTop: `1px solid ${C.border}` }}>
 
       {/* Intro */}
       <div style={{ textAlign: 'center', maxWidth: 620, margin: '0 auto 64px', padding: '0 28px' }}>
         <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 20 }}>
           The brain, on day 47
         </div>
-        <h2 style={{ fontFamily: serif, fontSize: 'clamp(44px, 5.5vw, 80px)', fontWeight: 700, letterSpacing: '-0.045em', lineHeight: 1.04, color: C.ink, margin: '0 0 20px' }}>
+        <h2 style={{ fontFamily: serif, fontSize: 'clamp(32px, 5.5vw, 80px)', fontWeight: 700, letterSpacing: '-0.045em', lineHeight: 1.04, color: C.ink, margin: '0 0 20px' }}>
           It remembers <em style={{ fontStyle: 'italic', color: C.redMuted }}>everything.</em>
         </h2>
         <p style={{ fontFamily: serif, fontSize: 20, color: C.inkSoft, lineHeight: 1.6, margin: 0 }}>
@@ -2349,7 +2336,7 @@ function DashboardSection({ C }) {
           </div>
 
           {/* Body grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr' }}>
+          <div className="sa-dash-body">
             <Sidebar />
 
             {/* Main panel */}
@@ -2370,7 +2357,7 @@ function DashboardSection({ C }) {
               </div>
 
               {/* Stats grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10, marginBottom: 22 }}>
+              <div className="sa-dash-stats">
                 {[
                   { label: 'HEALTH SCORE',  dynRef: healthRef, val: '68',  sub: '▲ 12 vs last week',  subColor: amber },
                   { label: 'OPEN ISSUES',   dynRef: null,      val: '3',   sub: '2 critical · 1 high', subColor: 'rgba(255,255,255,0.5)' },
@@ -2450,8 +2437,8 @@ function CompoundingSection({ C }) {
   const fill  = `${curve} L ${pts[3].x},210 L ${pts[0].x},210 Z`
 
   return (
-    <section style={{ background: C.bg, padding: '140px 0', borderTop: `1px solid ${C.border}` }}>
-      <div style={{ maxWidth: 1180, margin: '0 auto', padding: '0 28px', display: 'grid', gridTemplateColumns: '1fr 1.15fr', gap: 80, alignItems: 'center' }}>
+    <section style={{ background: C.bg, padding: 'clamp(64px, 8vw, 140px) 0', borderTop: `1px solid ${C.border}` }}>
+      <div className="sa-comp-grid">
 
         {/* ── Left: copy ── */}
         <div>
@@ -2459,7 +2446,7 @@ function CompoundingSection({ C }) {
             The compounding advantage
           </div>
 
-          <h2 style={{ fontFamily: serif, fontSize: 'clamp(48px, 5.5vw, 78px)', fontWeight: 700, lineHeight: 1.04, letterSpacing: '-0.04em', color: C.ink, margin: '0 0 28px' }}>
+          <h2 style={{ fontFamily: serif, fontSize: 'clamp(32px, 5.5vw, 78px)', fontWeight: 700, lineHeight: 1.04, letterSpacing: '-0.04em', color: C.ink, margin: '0 0 28px' }}>
             Day 1, it sees your business.<br />
             <em style={{ fontStyle: 'italic', color: C.redMuted }}>Day 90, it sees you.</em>
           </h2>
@@ -2592,7 +2579,7 @@ function FinalCTA({ onStart }) {
   const redBorder = 'rgba(192,80,80,0.55)'
 
   return (
-    <section style={{ background: D.bg, padding: '130px 0 100px' }}>
+    <section style={{ background: D.bg, padding: 'clamp(64px, 8vw, 130px) 0 clamp(48px, 6vw, 100px)' }}>
       <style>{`
         .fca-input::placeholder { color: rgba(232,226,216,0.32); }
       `}</style>
@@ -2604,8 +2591,8 @@ function FinalCTA({ onStart }) {
 
       {/* Begin. */}
       <div style={{ textAlign: 'center', lineHeight: 0.9, marginBottom: 40 }}>
-        <span style={{ fontFamily: serif, fontSize: 'clamp(96px, 14vw, 188px)', fontWeight: 700, fontStyle: 'italic', letterSpacing: '-0.04em', color: D.ink }}>Begin</span>
-        <span style={{ fontFamily: serif, fontSize: 'clamp(96px, 14vw, 188px)', fontWeight: 700, fontStyle: 'italic', letterSpacing: '-0.04em', color: red }}>.</span>
+        <span style={{ fontFamily: serif, fontSize: 'clamp(52px, 14vw, 188px)', fontWeight: 700, fontStyle: 'italic', letterSpacing: '-0.04em', color: D.ink }}>Begin</span>
+        <span style={{ fontFamily: serif, fontSize: 'clamp(52px, 14vw, 188px)', fontWeight: 700, fontStyle: 'italic', letterSpacing: '-0.04em', color: red }}>.</span>
       </div>
 
       {/* Subtitle */}
@@ -2844,8 +2831,74 @@ export default function Landing({ onStart, onSignUp, session }) {
     <div style={{ fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", background: C.bg, color: C.ink, lineHeight: 1.6, minHeight: '100vh' }}>
 
       <style>{`
+        /* ── Scroll indicator ── */
         .scroll-brain { opacity: 0; transition: opacity 0.4s ease; }
         .scroll-brain-show { opacity: 1; }
+
+        /* ── Responsive layout ── */
+
+        /* Nav */
+        .sa-nav-grid { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:20px; max-width:1140px; margin:0 auto; padding:0 28px; }
+        @media(max-width:768px){
+          .sa-nav-grid { grid-template-columns:1fr auto; }
+          .sa-nav-center { display:none !important; }
+        }
+
+        /* Engine Room */
+        .sa-er-grid { max-width:1280px; margin:0 auto; padding:0 48px; display:grid; grid-template-columns:1fr 1.2fr; gap:80px; align-items:start; }
+        @media(max-width:960px){
+          .sa-er-grid { grid-template-columns:1fr; padding:0 24px; gap:48px; }
+          .sa-er-sticky { position:static !important; top:auto !important; }
+          .sa-er-stream { height:380px !important; }
+        }
+        @media(max-width:480px){
+          .sa-er-grid { padding:0 16px; }
+          .sa-er-stream { height:300px !important; }
+        }
+
+        /* Four Verbs */
+        .sa-fv-row { display:grid; grid-template-columns:1fr 1.1fr; gap:80px; align-items:center; padding:80px 0; }
+        @media(max-width:960px){ .sa-fv-row { grid-template-columns:1fr; gap:32px; padding:48px 0; } }
+        @media(max-width:480px){ .sa-fv-row { gap:24px; padding:36px 0; } }
+
+        /* Live Diagnosis meta */
+        .sa-ld-meta { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+        @media(max-width:600px){ .sa-ld-meta { grid-template-columns:repeat(2,1fr); } }
+
+        /* Moat comparison */
+        .sa-moat-grid { display:grid; grid-template-columns:1fr 1.15fr; gap:40px; align-items:start; }
+        @media(max-width:768px){ .sa-moat-grid { grid-template-columns:1fr; } }
+
+        /* Dashboard */
+        .sa-dash-body { display:grid; grid-template-columns:220px 1fr; }
+        .sa-dash-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:22px; }
+        @media(max-width:960px){
+          .sa-dash-body { grid-template-columns:1fr; }
+          .sa-dash-sidebar { display:none !important; }
+          .sa-dash-stats { grid-template-columns:repeat(2,1fr); }
+        }
+
+        /* Compounding */
+        .sa-comp-grid { max-width:1180px; margin:0 auto; padding:0 28px; display:grid; grid-template-columns:1fr 1.15fr; gap:80px; align-items:center; }
+        @media(max-width:960px){ .sa-comp-grid { grid-template-columns:1fr; gap:48px; } }
+
+        /* Always On feed rows */
+        .sa-always-row { display:grid; grid-template-columns:164px 1fr; gap:48px; align-items:start; padding:42px 0; }
+        @media(max-width:640px){ .sa-always-row { grid-template-columns:1fr; gap:8px; padding:28px 0; } }
+
+        /* Founders cards */
+        .sa-founders-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:20px; }
+        @media(max-width:768px){ .sa-founders-grid { grid-template-columns:1fr; } }
+
+        /* Pricing rows */
+        .sa-pricing-row { display:grid; grid-template-columns:150px 1fr 1fr 200px; gap:0 44px; align-items:center; padding:56px 0; }
+        @media(max-width:960px){ .sa-pricing-row { grid-template-columns:1fr; gap:20px; padding:36px 0; } }
+
+        /* Hero input: stack on tiny screens */
+        @media(max-width:480px){
+          .sa-hero-bar { flex-direction:column !important; border-radius:16px !important; padding:12px !important; }
+          .sa-hero-btn { border-radius:10px !important; width:100%; text-align:center; padding:14px !important; }
+        }
       `}</style>
 
       {/* Scroll progress indicator */}
@@ -2927,7 +2980,7 @@ export default function Landing({ onStart, onSignUp, session }) {
         <>
 
       {/* ── 1. Hero ── */}
-      <section style={{ padding: '112px 0 100px', textAlign: 'center', background: 'none' }}>
+      <section style={{ padding: 'clamp(56px, 7vw, 112px) 0 clamp(48px, 6vw, 100px)', textAlign: 'center', background: 'none' }}>
         <div style={wrap}>
           <div style={{ fontSize: 13, letterSpacing: '0.18em', textTransform: 'uppercase', color: C.accentText, fontWeight: 600, marginBottom: 24 }}>
             Now live — The ultimate business intelligence layer
@@ -2935,7 +2988,7 @@ export default function Landing({ onStart, onSignUp, session }) {
 
           <h1 style={{
             fontFamily: serif,
-            fontSize: 'clamp(42px, 5.5vw, 72px)',
+            fontSize: 'clamp(30px, 5.5vw, 72px)',
             fontWeight: 700,
             lineHeight: 1.05,
             letterSpacing: '-0.04em',
@@ -2974,7 +3027,7 @@ export default function Landing({ onStart, onSignUp, session }) {
 
           {/* Interactive Input Bar */}
           <div style={{ maxWidth: 680, margin: '0 auto' }}>
-            <div style={{
+            <div className="sa-hero-bar" style={{
               display: 'flex',
               alignItems: 'center',
               background: C.surface,
@@ -3007,6 +3060,7 @@ export default function Landing({ onStart, onSignUp, session }) {
               />
               <button
                 onClick={handleDiagnose}
+                className="sa-hero-btn"
                 style={{
                   background: C.accent,
                   color: '#fff',
@@ -3035,11 +3089,11 @@ export default function Landing({ onStart, onSignUp, session }) {
       </section>
 
       {/* ── 2. Business Brain Statement ── */}
-      <section style={{ padding: '112px 0 120px', background: C.surface }}>
+      <section style={{ padding: 'clamp(56px, 7vw, 112px) 0 clamp(56px, 7vw, 120px)', background: C.surface }}>
         <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 28px' }}>
           <p style={{
             fontFamily: serif,
-            fontSize: 'clamp(40px, 6.5vw, 88px)',
+            fontSize: 'clamp(28px, 6.5vw, 88px)',
             fontWeight: 700,
             lineHeight: 1.08,
             letterSpacing: '-0.03em',
@@ -3066,15 +3120,15 @@ export default function Landing({ onStart, onSignUp, session }) {
       <LiveDiagnosis />
 
       {/* ── 6. The Moat, Named ── */}
-      <section style={{ padding: '112px 0', background: C.surface }}>
+      <section style={{ padding: 'clamp(56px, 7vw, 112px) 0', background: C.surface }}>
         <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 28px' }}>
 
           {/* Intro */}
-          <div style={{ textAlign: 'center', maxWidth: 720, margin: '0 auto 88px' }}>
+          <div style={{ textAlign: 'center', maxWidth: 720, margin: '0 auto clamp(40px, 5vw, 88px)' }}>
             <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 20 }}>
               The moat, named
             </div>
-            <h2 style={{ fontFamily: serif, fontSize: 'clamp(40px, 5vw, 72px)', fontWeight: 700, lineHeight: 1.05, letterSpacing: '-0.04em', color: C.ink, margin: '0 0 24px' }}>
+            <h2 style={{ fontFamily: serif, fontSize: 'clamp(28px, 5vw, 72px)', fontWeight: 700, lineHeight: 1.05, letterSpacing: '-0.04em', color: C.ink, margin: '0 0 24px' }}>
               Most tools answer.<br />
               <em style={{ fontStyle: 'italic', color: C.redMuted }}>SelfAudit investigates.</em>
             </h2>
@@ -3084,7 +3138,7 @@ export default function Landing({ onStart, onSignUp, session }) {
           </div>
 
           {/* Comparison table */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.15fr', gap: 40, alignItems: 'start' }}>
+          <div className="sa-moat-grid">
 
             {/* Left — other tools */}
             <div>
@@ -3136,15 +3190,15 @@ export default function Landing({ onStart, onSignUp, session }) {
       <CompoundingSection C={C} />
 
       {/* ── 9. Always On ── */}
-      <section style={{ background: C.bg, padding: '120px 0', borderTop: `1px solid ${C.border}` }}>
+      <section style={{ background: C.bg, padding: 'clamp(56px, 7vw, 120px) 0', borderTop: `1px solid ${C.border}` }}>
         <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 28px' }}>
 
           {/* Header */}
-          <div style={{ maxWidth: 760, marginBottom: 64 }}>
+          <div style={{ maxWidth: 760, marginBottom: 'clamp(32px, 4vw, 64px)' }}>
             <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 24 }}>
               Always on
             </div>
-            <h2 style={{ fontFamily: serif, fontSize: 'clamp(48px, 6vw, 80px)', fontWeight: 700, lineHeight: 1.04, letterSpacing: '-0.04em', color: C.ink, margin: '0 0 20px' }}>
+            <h2 style={{ fontFamily: serif, fontSize: 'clamp(30px, 6vw, 80px)', fontWeight: 700, lineHeight: 1.04, letterSpacing: '-0.04em', color: C.ink, margin: '0 0 20px' }}>
               It works while{' '}
               <em style={{ fontStyle: 'italic', color: C.redMuted }}>you&apos;re not looking.</em>
             </h2>
@@ -3173,7 +3227,7 @@ export default function Landing({ onStart, onSignUp, session }) {
                 body: <>Revenue cohort shape changed last week. <em style={{ fontStyle: 'italic', color: C.redMuted }}>Three reasons surfaced</em>, ranked by likelihood. Awaiting your review.</>,
               },
             ].map(row => (
-              <div key={row.label} style={{ display: 'grid', gridTemplateColumns: '164px 1fr', gap: 48, alignItems: 'start', padding: '42px 0', borderBottom: `1px solid ${C.border}` }}>
+              <div key={row.label} className="sa-always-row" style={{ borderBottom: `1px solid ${C.border}` }}>
                 <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.accent, paddingTop: 5 }}>
                   {row.label}
                 </div>
@@ -3188,15 +3242,15 @@ export default function Landing({ onStart, onSignUp, session }) {
       </section>
 
       {/* ── 10. What founders found out ── */}
-      <section style={{ background: C.bg, padding: '120px 0', borderTop: `1px solid ${C.border}` }}>
+      <section style={{ background: C.bg, padding: 'clamp(56px, 7vw, 120px) 0', borderTop: `1px solid ${C.border}` }}>
         <div style={{ maxWidth: 1140, margin: '0 auto', padding: '0 28px' }}>
 
           {/* Intro */}
-          <div style={{ textAlign: 'center', marginBottom: 72 }}>
+          <div style={{ textAlign: 'center', marginBottom: 'clamp(36px, 4vw, 72px)' }}>
             <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 18 }}>
               Real diagnoses
             </div>
-            <h2 style={{ fontFamily: serif, fontSize: 'clamp(44px, 5.5vw, 76px)', fontWeight: 700, lineHeight: 1.04, letterSpacing: '-0.04em', color: C.ink, margin: '0 0 20px' }}>
+            <h2 style={{ fontFamily: serif, fontSize: 'clamp(28px, 5.5vw, 76px)', fontWeight: 700, lineHeight: 1.04, letterSpacing: '-0.04em', color: C.ink, margin: '0 0 20px' }}>
               What founders <em style={{ fontStyle: 'italic', color: C.redMuted }}>found out.</em>
             </h2>
             <p style={{ fontFamily: serif, fontSize: 20, color: C.inkSoft, lineHeight: 1.6, margin: 0 }}>
@@ -3205,7 +3259,7 @@ export default function Landing({ onStart, onSignUp, session }) {
           </div>
 
           {/* 2×2 card grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 20 }}>
+          <div className="sa-founders-grid">
             {[
               {
                 severity: 'CRITICAL', domain: 'PIPELINE', severityColor: C.redMuted,
@@ -3278,7 +3332,7 @@ export default function Landing({ onStart, onSignUp, session }) {
       </section>
 
       {/* ── 11. Pricing ── */}
-      <section style={{ background: C.bg, padding: '120px 0', borderTop: `1px solid ${C.border}` }}>
+      <section style={{ background: C.bg, padding: 'clamp(56px, 7vw, 120px) 0', borderTop: `1px solid ${C.border}` }}>
         <div style={{ maxWidth: 980, margin: '0 auto', padding: '0 28px' }}>
 
           {/* Intro */}
@@ -3286,7 +3340,7 @@ export default function Landing({ onStart, onSignUp, session }) {
             <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 20 }}>
               Pricing
             </div>
-            <h2 style={{ fontFamily: serif, fontSize: 'clamp(44px, 6vw, 80px)', fontWeight: 700, lineHeight: 1.04, letterSpacing: '-0.04em', color: C.ink, margin: '0 0 20px' }}>
+            <h2 style={{ fontFamily: serif, fontSize: 'clamp(28px, 6vw, 80px)', fontWeight: 700, lineHeight: 1.04, letterSpacing: '-0.04em', color: C.ink, margin: '0 0 20px' }}>
               Less than one bad hour<br />
               <em style={{ fontStyle: 'italic', color: C.redMuted }}>with a consultant.</em>
             </h2>
@@ -3317,7 +3371,7 @@ export default function Landing({ onStart, onSignUp, session }) {
                 plan: 'intelligence',
               },
             ].map(p => (
-              <div key={p.label} style={{ display: 'grid', gridTemplateColumns: '150px 1fr 1fr 200px', gap: '0 44px', alignItems: 'center', padding: '56px 0', borderBottom: `1px solid ${C.border}` }}>
+              <div key={p.label} className="sa-pricing-row" style={{ borderBottom: `1px solid ${C.border}` }}>
 
                 {/* Price */}
                 <div style={{ lineHeight: 1 }}>
