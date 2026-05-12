@@ -1920,58 +1920,86 @@ function FourVerbs({ C }) {
   ]
 
   return (
-    <section style={{ background: C.surface, padding: 'clamp(64px, 8vw, 140px) 0', borderTop: `1px solid ${C.border}` }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 28px' }}>
+    <section className="sa-fv-section" style={{ background: C.bg, position: 'relative', borderTop: `1px solid ${C.border}` }}>
+      <div style={{ height: '400vh', position: 'relative' }}>
 
-        {/* Intro block */}
-        <div style={{ maxWidth: 780, marginBottom: 'clamp(48px, 6vw, 120px)' }}>
-          <div style={{ fontFamily: mono, fontSize: 12, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 20 }}>
-            What an operating brain actually does
+        {/* Sticky heading */}
+        <div className="sa-fv-sticky-head" style={{
+          position: 'sticky',
+          top: 0,
+          paddingTop: 'clamp(64px, 9vw, 140px)',
+          paddingLeft: 'clamp(28px, 6vw, 80px)',
+          paddingRight: 'clamp(28px, 6vw, 80px)',
+          paddingBottom: 40,
+          background: C.bg,
+          zIndex: 1,
+          minHeight: 'clamp(280px, 32vh, 360px)',
+        }}>
+          <div style={{ maxWidth: 780 }}>
+            <div style={{ fontFamily: mono, fontSize: 12, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 20 }}>
+              What an operating brain actually does
+            </div>
+            <h2 style={{
+              fontFamily: serif,
+              fontSize: 'clamp(36px, 5vw, 64px)',
+              fontWeight: 700,
+              lineHeight: 1.05,
+              letterSpacing: '-0.04em',
+              color: C.ink,
+              margin: '0 0 20px',
+            }}>
+              Four things <em style={{ fontStyle: 'italic', color: C.redMuted }}>only a brain</em> can do.
+            </h2>
+            <p style={{ fontFamily: serif, fontSize: 22, color: C.inkSoft, lineHeight: 1.6, margin: 0 }}>
+              Tools wait for prompts. Dashboards show numbers. Reports get filed. A brain <em style={{ fontStyle: 'italic' }}>works.</em>
+            </p>
           </div>
-          <h2 style={{
-            fontFamily: serif,
-            fontSize: 'clamp(36px, 5vw, 64px)',
-            fontWeight: 700,
-            lineHeight: 1.05,
-            letterSpacing: '-0.04em',
-            color: C.ink,
-            margin: '0 0 20px',
-          }}>
-            Four things <em style={{ fontStyle: 'italic', color: C.redMuted }}>only a brain</em> can do.
-          </h2>
-          <p style={{ fontFamily: serif, fontSize: 22, color: C.inkSoft, lineHeight: 1.6, margin: 0 }}>
-            Tools wait for prompts. Dashboards show numbers. Reports get filed. A brain <em style={{ fontStyle: 'italic' }}>works.</em>
-          </p>
         </div>
 
-        {/* Verb rows */}
+        {/* Four sticky verb cards */}
         {verbs.map((v, i) => (
-          <div key={v.num} className="sa-fv-row" style={{
-            borderTop: i === 0 ? `2px solid ${C.ink}` : `1px solid ${C.border}`,
-          }}>
-            {/* Left */}
-            <div>
-              <div style={{ fontFamily: mono, fontSize: 12, letterSpacing: '0.06em', textTransform: 'uppercase', color: C.accent, marginBottom: 16 }}>
-                {v.num} / FOUR
+          <div
+            key={v.num}
+            className="sa-fv-card"
+            style={{
+              position: 'sticky',
+              top: `calc(clamp(280px, 32vh, 360px) + ${i * 24}px)`,
+              zIndex: 2 + i,
+              marginLeft: 'clamp(28px, 6vw, 80px)',
+              marginRight: 'clamp(28px, 6vw, 80px)',
+              marginBottom: i === 3 ? 0 : 'calc(100vh - clamp(360px, 36vh, 420px))',
+              background: C.bg,
+              borderTop: `1px solid ${C.ink}`,
+              paddingTop: 'clamp(40px, 6vw, 72px)',
+              paddingBottom: 'clamp(48px, 7vw, 80px)',
+              boxShadow: i === 0 ? 'none' : `0 -12px 40px ${C.theme === 'light' ? 'rgba(26,20,16,0.06)' : 'rgba(0,0,0,0.4)'}`,
+            }}
+          >
+            <div className="sa-fv-card-grid">
+              {/* Left */}
+              <div>
+                <div style={{ fontFamily: mono, fontSize: 12, letterSpacing: '0.06em', textTransform: 'uppercase', color: C.accent, marginBottom: 16 }}>
+                  {v.num} / FOUR
+                </div>
+                <h3 style={{
+                  fontFamily: serif,
+                  fontSize: 'clamp(32px, 6vw, 88px)',
+                  fontWeight: 700,
+                  lineHeight: 0.98,
+                  letterSpacing: '-0.045em',
+                  margin: '0 0 24px',
+                }}>
+                  <span style={{ color: C.ink }}>It </span>
+                  <em style={{ fontStyle: 'italic', color: C.redMuted }}>{v.verb}</em>
+                </h3>
+                <p style={{ fontFamily: serif, fontSize: 20, color: C.inkSoft, lineHeight: 1.6, maxWidth: 480, margin: 0 }}>
+                  {v.desc}
+                </p>
               </div>
-              <h3 style={{
-                fontFamily: serif,
-                fontSize: 'clamp(32px, 6vw, 88px)',
-                fontWeight: 700,
-                lineHeight: 0.98,
-                letterSpacing: '-0.045em',
-                margin: '0 0 24px',
-              }}>
-                <span style={{ color: C.ink }}>It </span>
-                <em style={{ fontStyle: 'italic', color: C.redMuted }}>{v.verb}</em>
-              </h3>
-              <p style={{ fontFamily: serif, fontSize: 20, color: C.inkSoft, lineHeight: 1.6, maxWidth: 480, margin: 0 }}>
-                {v.desc}
-              </p>
-            </div>
 
-            {/* Right: card */}
-            {v.card}
+              {/* Right: card */}
+              {v.card}
+            </div>
           </div>
         ))}
 
@@ -2900,10 +2928,14 @@ export default function Landing({ onStart, onSignUp, session }) {
           .sa-er-stream { height:300px !important; }
         }
 
-        /* Four Verbs */
-        .sa-fv-row { display:grid; grid-template-columns:1fr 1.1fr; gap:80px; align-items:center; padding:80px 0; }
-        @media(max-width:960px){ .sa-fv-row { grid-template-columns:1fr; gap:32px; padding:48px 0; } }
-        @media(max-width:480px){ .sa-fv-row { gap:24px; padding:36px 0; } }
+        /* Four Verbs sticky stack */
+        .sa-fv-card-grid { display:grid; grid-template-columns:1fr 1fr; gap:clamp(32px,5vw,64px); align-items:start; max-width:1200px; margin:0 auto; }
+        @media(max-width:768px){
+          .sa-fv-section > div { height:auto !important; }
+          .sa-fv-sticky-head { position:relative !important; top:auto !important; min-height:auto !important; }
+          .sa-fv-card { position:relative !important; top:auto !important; margin-bottom:0 !important; box-shadow:none !important; }
+          .sa-fv-card-grid { grid-template-columns:1fr !important; gap:32px !important; }
+        }
 
         /* Live Diagnosis meta */
         .sa-ld-meta { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
