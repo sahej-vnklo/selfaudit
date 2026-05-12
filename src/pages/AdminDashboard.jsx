@@ -1157,13 +1157,30 @@ function UserDetailView({ user, detail, onBack, onTierChange, tierSaving }) {
   const profile = detail?.profile || user
   const reports = detail?.reports || []
   const chatSessions = detail?.chat_sessions || []
+  const liveBrain = detail?.brain ?? null
   const intel = extractBusinessIntel(detail || { reports })
-  const summaryParts = []
-  if (intel.coreOffer) summaryParts.push(stripAssumption(intel.coreOffer))
-  if (intel.targetCustomer) summaryParts.push(`targeting ${stripAssumption(intel.targetCustomer)}`)
-  if (intel.activeGoal) summaryParts.push(`working toward ${stripAssumption(intel.activeGoal)}`)
-  if (intel.lastAuditHeadline) summaryParts.push(`Last finding: ${intel.lastAuditHeadline}`)
-  const summaryText = summaryParts.join('. ')
+
+  // Prefer live brain state (from business_state + intelligence_profiles tables)
+  // over values parsed from report JSON — fall back to intel when brain is absent
+  const coreOffer            = liveBrain?.core_offer             || intel.coreOffer
+  const targetCustomer       = liveBrain?.target_customer        || intel.targetCustomer
+  const activeGoal           = liveBrain?.active_goal            || intel.activeGoal
+  const goalScore            = liveBrain?.goal_score             ?? intel.goalScore
+  const operationalBlockers  = liveBrain?.operational_blockers?.length  ? liveBrain.operational_blockers  : intel.operationalBlockers
+  const assumptionsUnverified= liveBrain?.assumptions_unverified?.length? liveBrain.assumptions_unverified : intel.assumptionsUnverified
+  const domainsAudited       = liveBrain?.domains_audited?.length        ? liveBrain.domains_audited        : intel.domainsAudited
+  const lastAuditHeadline    = liveBrain?.last_audit_headline    || intel.lastAuditHeadline
+  const topPriorities        = liveBrain?.top_priorities  ?? []
+  const watchouts            = liveBrain?.watchouts        ?? []
+
+  const summaryText = liveBrain?.intelligence_summary || (() => {
+    const parts = []
+    if (coreOffer)          parts.push(stripAssumption(coreOffer))
+    if (targetCustomer)     parts.push(`targeting ${stripAssumption(targetCustomer)}`)
+    if (activeGoal)         parts.push(`working toward ${stripAssumption(activeGoal)}`)
+    if (lastAuditHeadline)  parts.push(`Last finding: ${lastAuditHeadline}`)
+    return parts.join('. ')
+  })()
   const displayedReports = showAllReports ? reports : reports.slice(0, 5)
   const stripeCustomerId = profile?.stripe_customer_id || profile?.customer_id || '—'
   const stripeSubscriptionId = profile?.stripe_subscription_id || profile?.subscription_id || '—'
@@ -1245,23 +1262,23 @@ function UserDetailView({ user, detail, onBack, onTierChange, tierSaving }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div>
               <SectionLabel>core offer</SectionLabel>
-              <div style={{ color: isAssumption(intel.coreOffer) ? G.textMuted : G.text, fontSize: 13, fontStyle: isAssumption(intel.coreOffer) ? 'italic' : 'normal', lineHeight: 1.7 }}>
-                {intel.coreOffer ? stripAssumption(intel.coreOffer) : <EmptyText />}
+              <div style={{ color: isAssumption(coreOffer) ? G.textMuted : G.text, fontSize: 13, fontStyle: isAssumption(coreOffer) ? 'italic' : 'normal', lineHeight: 1.7 }}>
+                {coreOffer ? stripAssumption(coreOffer) : <EmptyText />}
               </div>
             </div>
             <div>
               <SectionLabel>target customer</SectionLabel>
-              <div style={{ color: isAssumption(intel.targetCustomer) ? G.textMuted : G.text, fontSize: 13, fontStyle: isAssumption(intel.targetCustomer) ? 'italic' : 'normal', lineHeight: 1.7 }}>
-                {intel.targetCustomer ? stripAssumption(intel.targetCustomer) : <EmptyText />}
+              <div style={{ color: isAssumption(targetCustomer) ? G.textMuted : G.text, fontSize: 13, fontStyle: isAssumption(targetCustomer) ? 'italic' : 'normal', lineHeight: 1.7 }}>
+                {targetCustomer ? stripAssumption(targetCustomer) : <EmptyText />}
               </div>
             </div>
             <div>
               <SectionLabel>operational blockers</SectionLabel>
-              {intel.operationalBlockers.length === 0 ? (
+              {operationalBlockers.length === 0 ? (
                 <EmptyText />
               ) : (
                 <ul style={{ margin: 0, paddingLeft: 18, color: G.textMuted, fontSize: 13, lineHeight: 1.7 }}>
-                  {intel.operationalBlockers.map((blocker, index) => (
+                  {operationalBlockers.map((blocker, index) => (
                     <li key={index} style={{ fontStyle: isAssumption(blocker) ? 'italic' : 'normal' }}>
                       {stripAssumption(blocker)}
                     </li>
@@ -1269,30 +1286,46 @@ function UserDetailView({ user, detail, onBack, onTierChange, tierSaving }) {
                 </ul>
               )}
             </div>
+            {topPriorities.length > 0 && (
+              <div>
+                <SectionLabel>unresolved priorities</SectionLabel>
+                <ul style={{ margin: 0, paddingLeft: 18, color: G.textMuted, fontSize: 13, lineHeight: 1.7 }}>
+                  {topPriorities.slice(0, 4).map((p, i) => <li key={i}>{p}</li>)}
+                </ul>
+              </div>
+            )}
+            {watchouts.length > 0 && (
+              <div>
+                <SectionLabel>watchouts</SectionLabel>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {watchouts.slice(0, 4).map((w, i) => <Badge key={i} tone="red">{w}</Badge>)}
+                </div>
+              </div>
+            )}
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <div>
               <SectionLabel>active goal</SectionLabel>
               <div style={{ color: G.text, fontSize: 13, marginBottom: 8 }}>
-                {intel.activeGoal ? stripAssumption(intel.activeGoal) : <EmptyText />}
+                {activeGoal ? stripAssumption(activeGoal) : <EmptyText />}
               </div>
-              <ProgressBar value={intel.goalScore || 0} />
-              <div style={{ marginTop: 6, color: G.accentText, fontSize: 11, ...monoStyle() }}>{Math.round(intel.goalScore || 0)} / 100</div>
+              <ProgressBar value={goalScore || 0} />
+              <div style={{ marginTop: 6, color: G.accentText, fontSize: 11, ...monoStyle() }}>{Math.round(goalScore || 0)} / 100</div>
             </div>
             <div>
               <SectionLabel>last audit headline</SectionLabel>
               <div style={{ color: G.textMuted, fontSize: 13, lineHeight: 1.7 }}>
-                {intel.lastAuditHeadline || <EmptyText />}
+                {lastAuditHeadline || <EmptyText />}
               </div>
             </div>
             <div>
               <SectionLabel>assumptions unverified</SectionLabel>
-              {intel.assumptionsUnverified.length === 0 ? (
+              {assumptionsUnverified.length === 0 ? (
                 <EmptyText />
               ) : (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                  {intel.assumptionsUnverified.map((item, index) => (
+                  {assumptionsUnverified.map((item, index) => (
                     <Badge key={index} tone="amber">{stripAssumption(item)}</Badge>
                   ))}
                 </div>
@@ -1300,11 +1333,11 @@ function UserDetailView({ user, detail, onBack, onTierChange, tierSaving }) {
             </div>
             <div>
               <SectionLabel>domains audited</SectionLabel>
-              {intel.domainsAudited.length === 0 ? (
+              {domainsAudited.length === 0 ? (
                 <EmptyText />
               ) : (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                  {intel.domainsAudited.map((domain, index) => (
+                  {domainsAudited.map((domain, index) => (
                     <Badge key={`${domain}-${index}`}>{domain}</Badge>
                   ))}
                 </div>
@@ -1404,18 +1437,9 @@ function UserDetailView({ user, detail, onBack, onTierChange, tierSaving }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {chatSessions.map(session => {
               const open = expandedSessions.has(session.session_id)
-              const pseudoRows = [
-                {
-                  id: `${session.session_id}-user`,
-                  role: 'user',
-                  message: session.preview || 'No captured preview for this session.',
-                },
-                {
-                  id: `${session.session_id}-assistant`,
-                  role: 'assistant',
-                  message: 'The admin MCP feed currently returns session summaries here. Full thread rendering stays wired through MessageThread whenever raw messages are available in the stored report payload.',
-                },
-              ]
+              const pseudoRows = session.messages?.length
+                ? session.messages
+                : [{ id: `${session.session_id}-empty`, role: 'assistant', message: 'No messages captured for this session.' }]
               return (
                 <div key={session.session_id} style={{ ...panelStyle({ background: G.surface2, overflow: 'hidden' }) }}>
                   <button
@@ -1447,7 +1471,7 @@ function UserDetailView({ user, detail, onBack, onTierChange, tierSaving }) {
                   </button>
                   {open && (
                     <div style={{ borderTop: `0.5px solid ${G.border}`, padding: '0 14px 14px' }}>
-                      <MessageThread rows={extractChatRowsFromReport(reports[0]) || pseudoRows} />
+                      <MessageThread rows={pseudoRows} />
                     </div>
                   )}
                 </div>

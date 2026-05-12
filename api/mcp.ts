@@ -86,15 +86,22 @@ function buildServer() {
 
       if (pErr || !profile) throw new Error(pErr?.message ?? "User not found");
 
-      const [{ data: reports, error: rErr }, { data: chatRows, error: cErr }] = await Promise.all([
-        sb.from("reports").select("id, title, content, created_at").eq("user_id", profile.id).order("created_at", { ascending: false }),
+      const [
+        { data: reports, error: rErr },
+        { data: chatRows, error: cErr },
+        { data: bsData },
+        { data: intelData },
+      ] = await Promise.all([
+        sb.from("reports").select("id, title, content, created_at, conversation_mode").eq("user_id", profile.id).order("created_at", { ascending: false }),
         sb.from("chats").select("id, session_id, role, message, created_at").eq("user_id", profile.id).order("created_at", { ascending: true }),
+        sb.from("business_state").select("core_offer, target_customer, active_goal, goal_score, operational_blockers, assumptions_unverified, funnel_stages, revenue_streams, last_audit_headline, conversion_bottlenecks, current_constraints, pricing_structure").eq("user_id", profile.id).single(),
+        sb.from("intelligence_profiles").select("summary, top_priorities, watchouts, repeated_blockers, opportunities, domains_audited, confidence").eq("user_id", profile.id).single(),
       ]);
 
       if (rErr) throw new Error(rErr.message);
       if (cErr) throw new Error(cErr.message);
 
-      // Group chat rows into sessions
+      // Group chat rows into sessions — include full messages for replay
       const sessionMap: Record<string, typeof chatRows> = {};
       for (const row of chatRows ?? []) {
         const key = row.session_id ?? row.id;
@@ -108,10 +115,34 @@ function buildServer() {
           message_count: rows!.length,
           preview: (firstUser?.message ?? "").slice(0, 100),
           started_at: rows![0]?.created_at,
+          messages: rows!.map((r) => ({ id: r.id, role: r.role, message: r.message })),
         };
       });
 
-      return ok({ profile, reports: reports ?? [], chat_sessions });
+      // Live brain state — what the AI actually knows about this user right now
+      const brain = {
+        core_offer:             bsData?.core_offer             ?? null,
+        target_customer:        bsData?.target_customer        ?? null,
+        active_goal:            bsData?.active_goal            ?? null,
+        goal_score:             bsData?.goal_score             ?? 0,
+        operational_blockers:   bsData?.operational_blockers   ?? [],
+        assumptions_unverified: bsData?.assumptions_unverified ?? [],
+        funnel_stages:          bsData?.funnel_stages          ?? [],
+        revenue_streams:        bsData?.revenue_streams        ?? [],
+        last_audit_headline:    bsData?.last_audit_headline    ?? null,
+        conversion_bottlenecks: bsData?.conversion_bottlenecks ?? [],
+        current_constraints:    bsData?.current_constraints    ?? [],
+        pricing_structure:      bsData?.pricing_structure      ?? null,
+        top_priorities:         intelData?.top_priorities      ?? [],
+        watchouts:              intelData?.watchouts           ?? [],
+        repeated_blockers:      intelData?.repeated_blockers   ?? [],
+        opportunities:          intelData?.opportunities       ?? [],
+        domains_audited:        intelData?.domains_audited     ?? [],
+        intelligence_summary:   intelData?.summary             ?? null,
+        confidence:             intelData?.confidence          ?? null,
+      };
+
+      return ok({ profile, reports: reports ?? [], chat_sessions, brain });
     },
   );
 
