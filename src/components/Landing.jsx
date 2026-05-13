@@ -61,6 +61,34 @@ const LIGHT = {
   consoleAmber: '#B7927A',
 }
 
+const SHARP = {
+  page: '#F2F4F6',
+  band: '#E6EBF0',
+  panel: '#FBFCFD',
+  panel2: '#DCE3EA',
+  line: '#B7C1CB',
+  lineStrong: '#8896A4',
+  ink: '#151B22',
+  soft: '#465462',
+  muted: '#657483',
+  faint: '#7B8896',
+  accent: '#6D89AA',
+  accentDeep: '#526E8E',
+  consoleBg: '#313B45',
+  consoleSurface: '#3B4752',
+  consolePanel: '#39444F',
+  consolePanel2: '#45515E',
+  consoleBorder: '#5A6A79',
+  consoleBorderSoft: '#718394',
+  consoleInk: '#F3F6F8',
+  consoleSoft: '#D8E0E7',
+  consoleMuted: '#B5C1CC',
+  consoleFaint: '#93A1AE',
+  consoleVerdict: '#86A2C2',
+  consoleVerdictBg: '#465463',
+  consoleAmber: '#87A4C6',
+}
+
 const THEMES = {
   dark: {
     theme: 'dark',
@@ -104,7 +132,30 @@ const THEMES = {
     redSoft: LIGHT.panel2,
     amber: LIGHT.accent,
   },
+  sharp: {
+    theme: 'sharp',
+    bg: SHARP.page,
+    surface: SHARP.band,
+    surface2: SHARP.panel2,
+    surface3: SHARP.panel,
+    card: SHARP.panel,
+    border: SHARP.line,
+    border2: SHARP.lineStrong,
+    ink: SHARP.ink,
+    inkSoft: SHARP.soft,
+    inkMuted: SHARP.muted,
+    inkFaint: SHARP.faint,
+    accent: SHARP.accent,
+    accentDark: SHARP.accentDeep,
+    accentSoft: SHARP.panel2,
+    accentText: SHARP.accentDeep,
+    redMuted: SHARP.accentDeep,
+    redSoft: SHARP.panel2,
+    amber: SHARP.accent,
+  },
 }
+
+const THEME_ORDER = ['dark', 'light', 'sharp']
 
 const serif = "'Playfair Display', Georgia, serif"
 const wrap = { maxWidth: 1140, margin: '0 auto', padding: '0 28px' }
@@ -735,9 +786,15 @@ function TextNavLink({ label, onClick, C, muted = false, active = false }) {
 }
 
 function ThemeTextToggle({ theme, setTheme, C }) {
+  const cycleTheme = () => {
+    const currentIndex = THEME_ORDER.indexOf(theme)
+    const nextTheme = THEME_ORDER[(currentIndex + 1) % THEME_ORDER.length]
+    setTheme(nextTheme)
+  }
+
   return (
     <button
-      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+      onClick={cycleTheme}
       style={{
         background: 'none',
         border: `1px solid ${C.border2}`,
@@ -753,13 +810,17 @@ function ThemeTextToggle({ theme, setTheme, C }) {
         gap: 6,
       }}
     >
-      {theme === 'dark' ? '☾ Dark' : '☀ Light'}
+      ◐ Theme
     </button>
   )
 }
 
 function LandingNav({ C, pageOpen, onBack, onPricing, onStories, onConnected, onSignIn, onStartAudit, onLogoClick, storiesOpen, connectedOpen, pricingOpen, theme, setTheme }) {
-  const navBg = C.theme === 'dark' ? 'rgba(10, 6, 6, 0.88)' : 'rgba(245, 240, 234, 0.86)'
+  const navBg = C.theme === 'dark'
+    ? 'rgba(10, 6, 6, 0.88)'
+    : C.theme === 'sharp'
+      ? 'rgba(242, 244, 246, 0.88)'
+      : 'rgba(245, 240, 234, 0.86)'
   return (
     <nav style={{ padding: '20px 0', borderBottom: `1px solid ${C.border}`, background: navBg, backdropFilter: 'blur(18px)', position: 'sticky', top: 0, zIndex: 20 }}>
       <div className="sa-nav-grid">
@@ -1670,20 +1731,21 @@ function EngineRoom({ C }) {
     return () => clearInterval(id)
   }, [])
 
-  const lightMode = C.theme === 'light'
-  const panelBg        = lightMode ? LIGHT.consoleBg : CONSOLE.crimson1
-  const panelSurface   = lightMode ? LIGHT.consoleSurface : CONSOLE.crimson2
-  const panelBorder    = lightMode ? LIGHT.consoleBorder : '#2B1D1B'
-  const panelBorderSoft = lightMode ? LIGHT.consoleBorderSoft : '#2B1D1B'
-  const panelInkFaint  = lightMode ? LIGHT.consoleFaint : CONSOLE.sequoia
-  const panelInkDim    = lightMode ? LIGHT.consoleMuted : CONSOLE.sequoia
-  const panelInkSoft   = lightMode ? LIGHT.consoleSoft : CONSOLE.barberry
-  const panelRowBorder = lightMode ? LIGHT.consoleBorder : '#2B1D1B'
-  const panelVerdictBg = lightMode ? LIGHT.consoleVerdictBg : '#2B1514'
-  const panelVerdictColor = lightMode ? LIGHT.consoleAmber : '#FF6432'
-  const panelTextColor = lightMode ? LIGHT.consoleInk : PALETTE.platinum
-  const panelIngestColor  = lightMode ? '#7BD8B6' : '#77E8BE'
-  const panelSignalColor  = lightMode ? LIGHT.consoleAmber : '#FF6432'
+  const softPalette = C.theme === 'sharp' ? SHARP : LIGHT
+  const tonedMode = C.theme !== 'dark'
+  const panelBg        = tonedMode ? softPalette.consoleBg : CONSOLE.crimson1
+  const panelSurface   = tonedMode ? softPalette.consoleSurface : CONSOLE.crimson2
+  const panelBorder    = tonedMode ? softPalette.consoleBorder : '#2B1D1B'
+  const panelBorderSoft = tonedMode ? softPalette.consoleBorderSoft : '#2B1D1B'
+  const panelInkFaint  = tonedMode ? softPalette.consoleFaint : CONSOLE.sequoia
+  const panelInkDim    = tonedMode ? softPalette.consoleMuted : CONSOLE.sequoia
+  const panelInkSoft   = tonedMode ? softPalette.consoleSoft : CONSOLE.barberry
+  const panelRowBorder = tonedMode ? softPalette.consoleBorder : '#2B1D1B'
+  const panelVerdictBg = tonedMode ? softPalette.consoleVerdictBg : '#2B1514'
+  const panelVerdictColor = tonedMode ? softPalette.consoleAmber : '#FF6432'
+  const panelTextColor = tonedMode ? softPalette.consoleInk : PALETTE.platinum
+  const panelIngestColor  = tonedMode ? '#7BD8B6' : '#77E8BE'
+  const panelSignalColor  = tonedMode ? softPalette.consoleAmber : '#FF6432'
 
   const typeColor = (type) => {
     if (type === 'INGEST') return panelIngestColor
@@ -2276,19 +2338,20 @@ function LiveDiagnosis({ C }) {
     }
   }, [])
 
-  const lightMode = C.theme === 'light'
-  const panelBg         = lightMode ? LIGHT.consoleBg : CONSOLE.crimson1
-  const panelSurface    = lightMode ? LIGHT.consoleSurface : CONSOLE.crimson2
-  const panelBorder     = lightMode ? LIGHT.consoleBorder : '#2B1D1B'
-  const panelBorderSoft = lightMode ? LIGHT.consoleBorderSoft : '#2B1D1B'
-  const panelInkFaint   = lightMode ? LIGHT.consoleFaint : CONSOLE.sequoia
-  const panelInkMuted   = lightMode ? LIGHT.consoleMuted : CONSOLE.sequoia
-  const panelInkSoft    = lightMode ? LIGHT.consoleSoft : CONSOLE.barberry
-  const panelInk        = lightMode ? LIGHT.consoleInk : PALETTE.platinum
+  const softPalette = C.theme === 'sharp' ? SHARP : LIGHT
+  const tonedMode = C.theme !== 'dark'
+  const panelBg         = tonedMode ? softPalette.consoleBg : CONSOLE.crimson1
+  const panelSurface    = tonedMode ? softPalette.consoleSurface : CONSOLE.crimson2
+  const panelBorder     = tonedMode ? softPalette.consoleBorder : '#2B1D1B'
+  const panelBorderSoft = tonedMode ? softPalette.consoleBorderSoft : '#2B1D1B'
+  const panelInkFaint   = tonedMode ? softPalette.consoleFaint : CONSOLE.sequoia
+  const panelInkMuted   = tonedMode ? softPalette.consoleMuted : CONSOLE.sequoia
+  const panelInkSoft    = tonedMode ? softPalette.consoleSoft : CONSOLE.barberry
+  const panelInk        = tonedMode ? softPalette.consoleInk : PALETTE.platinum
   const macDots = ['#FF5F57', '#FFBD2E', '#28C840']
   const panelHealthy    = CONSOLE.green
-  const panelAmber      = lightMode ? LIGHT.consoleAmber : CONSOLE.barberry
-  const panelCritical   = lightMode ? LIGHT.consoleMuted : CONSOLE.sequoia
+  const panelAmber      = tonedMode ? softPalette.consoleAmber : CONSOLE.barberry
+  const panelCritical   = tonedMode ? softPalette.consoleMuted : CONSOLE.sequoia
 
   return (
     <section ref={sectionRef} style={{ background: C.bg, padding: 'clamp(64px, 8vw, 140px) 0' }}>
@@ -2302,7 +2365,7 @@ function LiveDiagnosis({ C }) {
           display: inline-block;
           width: 2px;
           height: 1.1em;
-          background: ${lightMode ? LIGHT.consoleAmber : CONSOLE.barberry};
+          background: ${tonedMode ? softPalette.consoleAmber : CONSOLE.barberry};
           margin-left: 3px;
           vertical-align: text-bottom;
           animation: ldcBlink 0.9s steps(2) infinite;
@@ -2419,8 +2482,9 @@ function LiveDiagnosis({ C }) {
 function DashboardSection({ C }) {
   const healthRef = useRef(null)
   const goalRef   = useRef(null)
-  const lightMode = C.theme === 'light'
-  const amber = lightMode ? LIGHT.consoleAmber : CONSOLE.barberry
+  const softPalette = C.theme === 'sharp' ? SHARP : LIGHT
+  const tonedMode = C.theme !== 'dark'
+  const amber = tonedMode ? softPalette.consoleAmber : CONSOLE.barberry
   const green = CONSOLE.green
 
   useEffect(() => {
@@ -2432,26 +2496,26 @@ function DashboardSection({ C }) {
   }, [])
 
   // Pre-computed rgba from amber (#F5F0E8 → 201,160,64) and red (192,80,80)
-  const amberBg     = lightMode ? '#51403A' : '#201614'
-  const amberBorder = lightMode ? LIGHT.consoleBorderSoft : '#4A312B'
-  const redBg       = lightMode ? '#694541' : '#4A2320'
+  const amberBg     = tonedMode ? '#51403A' : '#201614'
+  const amberBorder = tonedMode ? softPalette.consoleBorderSoft : '#4A312B'
+  const redBg       = tonedMode ? '#694541' : '#4A2320'
 
-  const panelBg         = lightMode ? LIGHT.consoleBg : CONSOLE.black
-  const panelBorderSoft = lightMode ? LIGHT.consoleBorderSoft : '#2B1D1B'
-  const panelInkFaint   = lightMode ? LIGHT.consoleFaint : CONSOLE.sequoia
-  const panelInkDim     = lightMode ? LIGHT.consoleMuted : CONSOLE.sequoia
-  const panelInkMuted   = lightMode ? LIGHT.consoleMuted : CONSOLE.sequoia
-  const panelInkSoft    = lightMode ? LIGHT.consoleSoft : CONSOLE.barberry
-  const panelSurface    = lightMode ? LIGHT.consoleSurface : '#100B0A'
-  const panelCardBg     = lightMode ? LIGHT.consolePanel : CONSOLE.crimson1
-  const panelCardBorder = lightMode ? LIGHT.consoleBorder : '#2B1D1B'
+  const panelBg         = tonedMode ? softPalette.consoleBg : CONSOLE.black
+  const panelBorderSoft = tonedMode ? softPalette.consoleBorderSoft : '#2B1D1B'
+  const panelInkFaint   = tonedMode ? softPalette.consoleFaint : CONSOLE.sequoia
+  const panelInkDim     = tonedMode ? softPalette.consoleMuted : CONSOLE.sequoia
+  const panelInkMuted   = tonedMode ? softPalette.consoleMuted : CONSOLE.sequoia
+  const panelInkSoft    = tonedMode ? softPalette.consoleSoft : CONSOLE.barberry
+  const panelSurface    = tonedMode ? softPalette.consoleSurface : '#100B0A'
+  const panelCardBg     = tonedMode ? softPalette.consolePanel : CONSOLE.crimson1
+  const panelCardBorder = tonedMode ? softPalette.consoleBorder : '#2B1D1B'
   const macDots = ['#FF5F57', '#FFBD2E', '#28C840']
-  const panelPillBg     = lightMode ? LIGHT.consolePanel2 : '#231917'
-  const panelPillBorder = lightMode ? LIGHT.consoleBorderSoft : '#4A312B'
-  const panelPillText   = lightMode ? LIGHT.consoleSoft : CONSOLE.barberry
-  const panelSidebarBg  = lightMode ? '#322826' : '#050403'
-  const panelSidebarDivider = lightMode ? LIGHT.consoleBorder : '#1A1211'
-  const panelActiveItem = lightMode ? LIGHT.consoleInk : PALETTE.platinum
+  const panelPillBg     = tonedMode ? softPalette.consolePanel2 : '#231917'
+  const panelPillBorder = tonedMode ? softPalette.consoleBorderSoft : '#4A312B'
+  const panelPillText   = tonedMode ? softPalette.consoleSoft : CONSOLE.barberry
+  const panelSidebarBg  = tonedMode ? '#322826' : '#050403'
+  const panelSidebarDivider = tonedMode ? softPalette.consoleBorder : '#1A1211'
+  const panelActiveItem = tonedMode ? softPalette.consoleInk : PALETTE.platinum
   const panelActiveItemBg = amberBg
 
   const Sidebar = () => (
@@ -2597,14 +2661,15 @@ function DashboardSection({ C }) {
 // ── Compounding Section ───────────────────────────────────────────────────────
 
 function CompoundingSection({ C }) {
-  const lightMode = C.theme === 'light'
-  const amber = lightMode ? LIGHT.consoleAmber : '#F0AE76'
-  const axisFill = lightMode ? LIGHT.consoleFaint : CONSOLE.sequoia
-  const cardBg = lightMode ? LIGHT.consoleBg : CONSOLE.black
-  const cardBorder = lightMode ? LIGHT.consoleBorder : '#2B1D1B'
-  const cardInk = lightMode ? LIGHT.consoleInk : PALETTE.platinum
-  const cardSoft = lightMode ? LIGHT.consoleSoft : CONSOLE.barberry
-  const cardFaint = lightMode ? LIGHT.consoleFaint : CONSOLE.sequoia
+  const softPalette = C.theme === 'sharp' ? SHARP : LIGHT
+  const tonedMode = C.theme !== 'dark'
+  const amber = tonedMode ? softPalette.consoleAmber : '#F0AE76'
+  const axisFill = tonedMode ? softPalette.consoleFaint : CONSOLE.sequoia
+  const cardBg = tonedMode ? softPalette.consoleBg : CONSOLE.black
+  const cardBorder = tonedMode ? softPalette.consoleBorder : '#2B1D1B'
+  const cardInk = tonedMode ? softPalette.consoleInk : PALETTE.platinum
+  const cardSoft = tonedMode ? softPalette.consoleSoft : CONSOLE.barberry
+  const cardFaint = tonedMode ? softPalette.consoleFaint : CONSOLE.sequoia
 
   // Chart points [x, y] in a 560×210 viewbox (y=210 = baseline)
   const pts = [
