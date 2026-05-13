@@ -1633,10 +1633,11 @@ function EngineRoom({ C }) {
   const panelInkDim    = CONSOLE.sequoia
   const panelInkSoft   = CONSOLE.barberry
   const panelRowBorder = '#2B1D1B'
-  const panelVerdictBg = '#160D0D'
-  const panelVerdictColor = PALETTE.platinum
-  const panelIngestColor  = CONSOLE.green
-  const panelSignalColor  = CONSOLE.barberry
+  const panelVerdictBg = '#2B1514'
+  const panelVerdictColor = '#FF6432'
+  const panelTextColor = PALETTE.platinum
+  const panelIngestColor  = '#77E8BE'
+  const panelSignalColor  = '#FF6432'
 
   const typeColor = (type) => {
     if (type === 'INGEST') return panelIngestColor
@@ -1750,7 +1751,7 @@ function EngineRoom({ C }) {
             borderBottom: `1px solid ${panelBorder}`,
           }}>
             <div style={{ fontFamily: mono, fontSize: 13, color: panelInkFaint }}>
-              stream / <span style={{ color: panelVerdictColor }}>live</span>
+              stream / <span style={{ color: panelVerdictColor, fontWeight: 700 }}>live</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{ width: 6, height: 6, borderRadius: '50%', background: panelIngestColor, animation: 'erPulse 1.5s infinite' }} />
@@ -1787,10 +1788,11 @@ function EngineRoom({ C }) {
                     background: isVerdict ? panelVerdictBg : 'transparent',
                   }}>
                     <span style={{ fontFamily: mono, fontSize: 11, color: panelInkDim }}>{row.time}</span>
-                    <span style={{ fontFamily: mono, fontSize: 11, fontWeight: 700, color: typeColor(row.type) }}>{row.type}</span>
+                    <span style={{ fontFamily: mono, fontSize: 11, fontWeight: 700, color: typeColor(row.type), letterSpacing: '0.04em' }}>{row.type}</span>
                     <span style={{
                       fontFamily: mono, fontSize: 12,
-                      color: isVerdict ? panelVerdictColor : panelInkSoft,
+                      color: isVerdict ? panelVerdictColor : panelTextColor,
+                      fontWeight: isVerdict ? 500 : 400,
                       whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                     }}>{row.text}</span>
                     <span style={{
@@ -1821,15 +1823,15 @@ function FourVerbs({ C }) {
   const cardRefs    = useRef([])
 
   const I = {
-    bg: PALETTE.graphite,
-    border: PALETTE.ash,
-    border2: PALETTE.ash,
-    ink: PALETTE.platinum,
-    inkSoft: PALETTE.ash,
-    inkMuted: PALETTE.ash,
-    inkFaint: PALETTE.ash,
-    accent: PALETTE.platinum,
-    redMuted: PALETTE.platinum,
+    bg: C.bg,
+    border: C.border,
+    border2: C.border,
+    ink: C.ink,
+    inkSoft: C.inkSoft,
+    inkMuted: C.inkMuted,
+    inkFaint: C.inkFaint,
+    accent: CONSOLE.barberry,
+    redMuted: CONSOLE.barberry,
   }
 
   const cardBg = C.card
@@ -2236,7 +2238,7 @@ function LiveDiagnosis({ C }) {
   const panelInkMuted   = CONSOLE.sequoia
   const panelInkSoft    = CONSOLE.barberry
   const panelInk        = PALETTE.platinum
-  const panelDotBg      = '#45302E'
+  const macDots = ['#FF5F57', '#FFBD2E', '#28C840']
   const panelHealthy    = CONSOLE.green
   const panelAmber      = CONSOLE.barberry
   const panelCritical   = CONSOLE.sequoia
@@ -2294,7 +2296,7 @@ function LiveDiagnosis({ C }) {
           <div style={{ background: panelSurface, borderBottom: `1px solid ${panelBorderSoft}`, padding: '14px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{ display: 'flex', gap: 6 }}>
-                {[0, 1, 2].map(i => <div key={i} style={{ width: 10, height: 10, borderRadius: '50%', background: panelDotBg }} />)}
+                {macDots.map(color => <div key={color} style={{ width: 10, height: 10, borderRadius: '50%', background: color }} />)}
               </div>
               <span style={{ fontFamily: mono, fontSize: 12, color: panelInkMuted }}>selfaudit · diagnosis console</span>
             </div>
@@ -2395,7 +2397,7 @@ function DashboardSection({ C }) {
   const panelSurface    = '#100B0A'
   const panelCardBg     = CONSOLE.crimson1
   const panelCardBorder = '#2B1D1B'
-  const panelDotBg      = '#45302E'
+  const macDots = ['#FF5F57', '#FFBD2E', '#28C840']
   const panelPillBg     = '#231917'
   const panelPillBorder = '#4A312B'
   const panelPillText   = CONSOLE.barberry
@@ -2451,7 +2453,7 @@ function DashboardSection({ C }) {
           <div style={{ background: panelSurface, borderBottom: `1px solid ${panelBorderSoft}`, padding: '14px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{ display: 'flex', gap: 6 }}>
-                {[0, 1, 2].map(i => <div key={i} style={{ width: 10, height: 10, borderRadius: '50%', background: panelDotBg }} />)}
+                {macDots.map(color => <div key={color} style={{ width: 10, height: 10, borderRadius: '50%', background: color }} />)}
               </div>
               <span style={{ fontFamily: mono, fontSize: 12, color: panelInkMuted }}>selfaudit · command centre</span>
             </div>
