@@ -62,31 +62,31 @@ const LIGHT = {
 }
 
 const SHARP = {
-  page: '#F2F4F6',
-  band: '#E6EBF0',
-  panel: '#FBFCFD',
-  panel2: '#DCE3EA',
-  line: '#B7C1CB',
-  lineStrong: '#8896A4',
-  ink: '#151B22',
-  soft: '#465462',
-  muted: '#657483',
-  faint: '#7B8896',
-  accent: '#6D89AA',
-  accentDeep: '#526E8E',
-  consoleBg: '#313B45',
-  consoleSurface: '#3B4752',
-  consolePanel: '#39444F',
-  consolePanel2: '#45515E',
-  consoleBorder: '#5A6A79',
-  consoleBorderSoft: '#718394',
-  consoleInk: '#F3F6F8',
-  consoleSoft: '#D8E0E7',
-  consoleMuted: '#B5C1CC',
-  consoleFaint: '#93A1AE',
-  consoleVerdict: '#86A2C2',
-  consoleVerdictBg: '#465463',
-  consoleAmber: '#87A4C6',
+  page: '#EEF3FB',
+  band: '#E6EDF7',
+  panel: '#F8FBFF',
+  panel2: '#D9E4F1',
+  line: '#C5D1E0',
+  lineStrong: '#9DB0C8',
+  ink: '#162235',
+  soft: '#465C7A',
+  muted: '#667C99',
+  faint: '#8193AA',
+  accent: '#2F5EA8',
+  accentDeep: '#214A88',
+  consoleBg: '#1D2736',
+  consoleSurface: '#243042',
+  consolePanel: '#273446',
+  consolePanel2: '#2D3B50',
+  consoleBorder: '#3B4B62',
+  consoleBorderSoft: '#52647C',
+  consoleInk: '#F4F8FD',
+  consoleSoft: '#D7E0EB',
+  consoleMuted: '#A4B2C4',
+  consoleFaint: '#7E8DA3',
+  consoleVerdict: '#78A3EB',
+  consoleVerdictBg: '#334764',
+  consoleAmber: '#6F95D6',
 }
 
 const THEMES = {
@@ -2496,9 +2496,9 @@ function DashboardSection({ C }) {
   }, [])
 
   // Pre-computed rgba from amber (#F5F0E8 → 201,160,64) and red (192,80,80)
-  const amberBg     = tonedMode ? '#51403A' : '#201614'
+  const amberBg     = C.theme === 'sharp' ? '#31445F' : tonedMode ? '#51403A' : '#201614'
   const amberBorder = tonedMode ? softPalette.consoleBorderSoft : '#4A312B'
-  const redBg       = tonedMode ? '#694541' : '#4A2320'
+  const redBg       = C.theme === 'sharp' ? '#40516A' : tonedMode ? '#694541' : '#4A2320'
 
   const panelBg         = tonedMode ? softPalette.consoleBg : CONSOLE.black
   const panelBorderSoft = tonedMode ? softPalette.consoleBorderSoft : '#2B1D1B'
@@ -2513,7 +2513,7 @@ function DashboardSection({ C }) {
   const panelPillBg     = tonedMode ? softPalette.consolePanel2 : '#231917'
   const panelPillBorder = tonedMode ? softPalette.consoleBorderSoft : '#4A312B'
   const panelPillText   = tonedMode ? softPalette.consoleSoft : CONSOLE.barberry
-  const panelSidebarBg  = tonedMode ? '#322826' : '#050403'
+  const panelSidebarBg  = C.theme === 'sharp' ? '#202A39' : tonedMode ? '#322826' : '#050403'
   const panelSidebarDivider = tonedMode ? softPalette.consoleBorder : '#1A1211'
   const panelActiveItem = tonedMode ? softPalette.consoleInk : PALETTE.platinum
   const panelActiveItemBg = amberBg
