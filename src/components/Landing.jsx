@@ -1930,17 +1930,22 @@ function FourVerbs({ C }) {
       }
 
       const headingH = heading.offsetHeight
+      const vh       = window.innerHeight
 
       cards.forEach((card, i) => {
-        const triggerStart = headingH + i * window.innerHeight
-        const pinTop       = headingH + i * CARD_STAGGER
+        // Each card starts (i+1) viewports below the heading.
+        // Switch to sticky exactly when the card reaches its pinTop in the viewport
+        // (seamless — no jump). Trigger point: scrolled = (i+1)*vh - i*STAGGER.
+        const absTop   = headingH + (i + 1) * vh
+        const pinTop   = headingH + i * CARD_STAGGER
+        const switchAt = (i + 1) * vh - i * CARD_STAGGER
 
-        if (scrolled < triggerStart) {
-          card.style.position  = 'absolute'
-          card.style.top       = `${triggerStart}px`
+        if (scrolled < switchAt) {
+          card.style.position = 'absolute'
+          card.style.top      = `${absTop}px`
         } else {
-          card.style.position  = 'sticky'
-          card.style.top       = `${pinTop}px`
+          card.style.position = 'sticky'
+          card.style.top      = `${pinTop}px`
         }
       })
     }
@@ -1958,7 +1963,7 @@ function FourVerbs({ C }) {
         background:  C.bg,
         borderTop:   `1px solid ${C.border}`,
         position:    'relative',
-        height:      '500vh',
+        height:      '600vh',
       }}
     >
       <style>{`
@@ -2000,10 +2005,12 @@ function FourVerbs({ C }) {
           className="sa-fv-card-wrap"
           style={{
             position:      'absolute',
-            left:          'clamp(28px, 6vw, 80px)',
-            right:         'clamp(28px, 6vw, 80px)',
+            width:         '100%',
+            boxSizing:     'border-box',
             background:    C.bg,
             borderTop:     `1px solid ${C.ink}`,
+            paddingLeft:   'clamp(28px, 6vw, 80px)',
+            paddingRight:  'clamp(28px, 6vw, 80px)',
             paddingTop:    'clamp(40px, 6vw, 72px)',
             paddingBottom: 'clamp(48px, 7vw, 80px)',
             zIndex:        10 + i,
