@@ -33,6 +33,34 @@ const ELITE = {
   accentDeep: '#8F7069',
 }
 
+const LIGHT = {
+  page: '#F5F0EA',
+  band: '#EFE7DF',
+  panel: '#FBF7F2',
+  panel2: '#E8DDD3',
+  line: '#D9C9BE',
+  lineStrong: '#C7B3A7',
+  ink: '#261B19',
+  soft: '#6E5B55',
+  muted: '#8A746D',
+  faint: '#A28D84',
+  accent: '#A98D86',
+  accentDeep: '#8F7069',
+  consoleBg: '#3A2E2B',
+  consoleSurface: '#473734',
+  consolePanel: '#433431',
+  consolePanel2: '#4C3C38',
+  consoleBorder: '#5A4641',
+  consoleBorderSoft: '#6B544E',
+  consoleInk: '#F3EAE3',
+  consoleSoft: '#D7C2B8',
+  consoleMuted: '#B59F97',
+  consoleFaint: '#9E8982',
+  consoleVerdict: '#8F7069',
+  consoleVerdictBg: '#54403A',
+  consoleAmber: '#B7927A',
+}
+
 const THEMES = {
   dark: {
     theme: 'dark',
@@ -57,24 +85,24 @@ const THEMES = {
   },
   light: {
     theme: 'light',
-    bg: PALETTE.platinum,
-    surface: PALETTE.ash,
-    surface2: PALETTE.platinum,
-    surface3: PALETTE.ash,
-    card: PALETTE.platinum,
-    border: PALETTE.ash,
-    border2: PALETTE.graphite,
-    ink: PALETTE.jet,
-    inkSoft: PALETTE.onyx,
-    inkMuted: PALETTE.graphite,
-    inkFaint: PALETTE.graphite,
-    accent: PALETTE.onyx,
-    accentDark: PALETTE.jet,
-    accentSoft: PALETTE.ash,
-    accentText: PALETTE.onyx,
-    redMuted: PALETTE.onyx,
-    redSoft: PALETTE.ash,
-    amber: PALETTE.graphite,
+    bg: LIGHT.page,
+    surface: LIGHT.band,
+    surface2: LIGHT.panel2,
+    surface3: LIGHT.panel,
+    card: LIGHT.panel,
+    border: LIGHT.line,
+    border2: LIGHT.lineStrong,
+    ink: LIGHT.ink,
+    inkSoft: LIGHT.soft,
+    inkMuted: LIGHT.muted,
+    inkFaint: LIGHT.faint,
+    accent: LIGHT.accent,
+    accentDark: LIGHT.accentDeep,
+    accentSoft: LIGHT.panel2,
+    accentText: LIGHT.accentDeep,
+    redMuted: LIGHT.accentDeep,
+    redSoft: LIGHT.panel2,
+    amber: LIGHT.accent,
   },
 }
 
@@ -326,6 +354,7 @@ const typewriterStatements = [
 function PrimaryButton({ label, onClick, small = false, C }) {
   const [hovered, setHovered] = useState(false)
   const darkTheme = C.theme === 'dark'
+  const buttonText = darkTheme ? C.ink : C.ink
   return (
     <button
       onClick={onClick}
@@ -337,7 +366,7 @@ function PrimaryButton({ label, onClick, small = false, C }) {
         justifyContent: 'center',
         gap: 10,
         background: darkTheme ? (hovered ? C.surface2 : C.bg) : (hovered ? C.accentDark : C.accent),
-        color: darkTheme ? C.ink : PALETTE.platinum,
+        color: buttonText,
         padding: small ? '10px 18px' : '16px 28px',
         borderRadius: 999,
         fontSize: small ? 15 : 17,
@@ -708,7 +737,7 @@ function TextNavLink({ label, onClick, C, muted = false, active = false }) {
 function ThemeTextToggle({ theme, setTheme, C }) {
   return (
     <button
-      onClick={() => setTheme('dark')}
+      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
       style={{
         background: 'none',
         border: `1px solid ${C.border2}`,
@@ -724,14 +753,15 @@ function ThemeTextToggle({ theme, setTheme, C }) {
         gap: 6,
       }}
     >
-      ☾ Dark
+      {theme === 'dark' ? '☾ Dark' : '☀ Light'}
     </button>
   )
 }
 
 function LandingNav({ C, pageOpen, onBack, onPricing, onStories, onConnected, onSignIn, onStartAudit, onLogoClick, storiesOpen, connectedOpen, pricingOpen, theme, setTheme }) {
+  const navBg = C.theme === 'dark' ? 'rgba(10, 6, 6, 0.88)' : 'rgba(245, 240, 234, 0.86)'
   return (
-    <nav style={{ padding: '20px 0', borderBottom: `1px solid ${C.border}`, background: 'rgba(10, 6, 6, 0.88)', backdropFilter: 'blur(18px)', position: 'sticky', top: 0, zIndex: 20 }}>
+    <nav style={{ padding: '20px 0', borderBottom: `1px solid ${C.border}`, background: navBg, backdropFilter: 'blur(18px)', position: 'sticky', top: 0, zIndex: 20 }}>
       <div className="sa-nav-grid">
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0 }}>
           {pageOpen && (
@@ -1456,7 +1486,7 @@ function VisionWidget({ C, serif, visionOpen, setVisionOpen, visionGoal, setVisi
                 style={{
                   width: '100%',
                   background: C.accent,
-                  color: C.theme === 'dark' ? PALETTE.jet : PALETTE.platinum,
+                  color: C.ink,
                   border: 'none',
                   borderRadius: 999,
                   padding: '12px 20px',
@@ -1640,19 +1670,20 @@ function EngineRoom({ C }) {
     return () => clearInterval(id)
   }, [])
 
-  const panelBg        = CONSOLE.crimson1
-  const panelSurface   = CONSOLE.crimson2
-  const panelBorder    = '#2B1D1B'
-  const panelBorderSoft = '#2B1D1B'
-  const panelInkFaint  = CONSOLE.sequoia
-  const panelInkDim    = CONSOLE.sequoia
-  const panelInkSoft   = CONSOLE.barberry
-  const panelRowBorder = '#2B1D1B'
-  const panelVerdictBg = '#2B1514'
-  const panelVerdictColor = '#FF6432'
-  const panelTextColor = PALETTE.platinum
-  const panelIngestColor  = '#77E8BE'
-  const panelSignalColor  = '#FF6432'
+  const lightMode = C.theme === 'light'
+  const panelBg        = lightMode ? LIGHT.consoleBg : CONSOLE.crimson1
+  const panelSurface   = lightMode ? LIGHT.consoleSurface : CONSOLE.crimson2
+  const panelBorder    = lightMode ? LIGHT.consoleBorder : '#2B1D1B'
+  const panelBorderSoft = lightMode ? LIGHT.consoleBorderSoft : '#2B1D1B'
+  const panelInkFaint  = lightMode ? LIGHT.consoleFaint : CONSOLE.sequoia
+  const panelInkDim    = lightMode ? LIGHT.consoleMuted : CONSOLE.sequoia
+  const panelInkSoft   = lightMode ? LIGHT.consoleSoft : CONSOLE.barberry
+  const panelRowBorder = lightMode ? LIGHT.consoleBorder : '#2B1D1B'
+  const panelVerdictBg = lightMode ? LIGHT.consoleVerdictBg : '#2B1514'
+  const panelVerdictColor = lightMode ? LIGHT.consoleAmber : '#FF6432'
+  const panelTextColor = lightMode ? LIGHT.consoleInk : PALETTE.platinum
+  const panelIngestColor  = lightMode ? '#7BD8B6' : '#77E8BE'
+  const panelSignalColor  = lightMode ? LIGHT.consoleAmber : '#FF6432'
 
   const typeColor = (type) => {
     if (type === 'INGEST') return panelIngestColor
@@ -2245,18 +2276,19 @@ function LiveDiagnosis({ C }) {
     }
   }, [])
 
-  const panelBg         = CONSOLE.crimson1
-  const panelSurface    = CONSOLE.crimson2
-  const panelBorder     = '#2B1D1B'
-  const panelBorderSoft = '#2B1D1B'
-  const panelInkFaint   = CONSOLE.sequoia
-  const panelInkMuted   = CONSOLE.sequoia
-  const panelInkSoft    = CONSOLE.barberry
-  const panelInk        = PALETTE.platinum
+  const lightMode = C.theme === 'light'
+  const panelBg         = lightMode ? LIGHT.consoleBg : CONSOLE.crimson1
+  const panelSurface    = lightMode ? LIGHT.consoleSurface : CONSOLE.crimson2
+  const panelBorder     = lightMode ? LIGHT.consoleBorder : '#2B1D1B'
+  const panelBorderSoft = lightMode ? LIGHT.consoleBorderSoft : '#2B1D1B'
+  const panelInkFaint   = lightMode ? LIGHT.consoleFaint : CONSOLE.sequoia
+  const panelInkMuted   = lightMode ? LIGHT.consoleMuted : CONSOLE.sequoia
+  const panelInkSoft    = lightMode ? LIGHT.consoleSoft : CONSOLE.barberry
+  const panelInk        = lightMode ? LIGHT.consoleInk : PALETTE.platinum
   const macDots = ['#FF5F57', '#FFBD2E', '#28C840']
   const panelHealthy    = CONSOLE.green
-  const panelAmber      = CONSOLE.barberry
-  const panelCritical   = CONSOLE.sequoia
+  const panelAmber      = lightMode ? LIGHT.consoleAmber : CONSOLE.barberry
+  const panelCritical   = lightMode ? LIGHT.consoleMuted : CONSOLE.sequoia
 
   return (
     <section ref={sectionRef} style={{ background: C.bg, padding: 'clamp(64px, 8vw, 140px) 0' }}>
@@ -2270,7 +2302,7 @@ function LiveDiagnosis({ C }) {
           display: inline-block;
           width: 2px;
           height: 1.1em;
-          background: ${CONSOLE.barberry};
+          background: ${lightMode ? LIGHT.consoleAmber : CONSOLE.barberry};
           margin-left: 3px;
           vertical-align: text-bottom;
           animation: ldcBlink 0.9s steps(2) infinite;
@@ -2290,13 +2322,13 @@ function LiveDiagnosis({ C }) {
 
       {/* Intro */}
       <div style={{ textAlign: 'center', maxWidth: 560, margin: '0 auto 64px', padding: '0 28px' }}>
-        <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: CONSOLE.barberry, marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0 }}>
+        <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: panelAmber, marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0 }}>
           {C.theme === 'light' && <span style={{ display: 'inline-block', width: 28, height: 1, background: C.border2, verticalAlign: 'middle', marginRight: 14 }} />}
           A live diagnosis
           {C.theme === 'light' && <span style={{ display: 'inline-block', width: 28, height: 1, background: C.border2, verticalAlign: 'middle', marginLeft: 14 }} />}
         </div>
         <h2 style={{ fontFamily: serif, fontSize: 'clamp(32px, 5.5vw, 80px)', fontWeight: 700, letterSpacing: '-0.045em', lineHeight: 1.04, color: C.ink, margin: '0 0 20px' }}>
-          Watch the brain <em style={{ fontStyle: 'italic', color: CONSOLE.barberry }}>think.</em>
+          Watch the brain <em style={{ fontStyle: 'italic', color: panelAmber }}>think.</em>
         </h2>
         <p style={{ fontFamily: serif, fontSize: 20, color: C.inkSoft, lineHeight: 1.6, margin: 0 }}>
           Not a chat. A reasoning process. Real signals. Real verdict. Real next move.
@@ -2387,7 +2419,8 @@ function LiveDiagnosis({ C }) {
 function DashboardSection({ C }) {
   const healthRef = useRef(null)
   const goalRef   = useRef(null)
-  const amber = CONSOLE.barberry
+  const lightMode = C.theme === 'light'
+  const amber = lightMode ? LIGHT.consoleAmber : CONSOLE.barberry
   const green = CONSOLE.green
 
   useEffect(() => {
@@ -2399,26 +2432,26 @@ function DashboardSection({ C }) {
   }, [])
 
   // Pre-computed rgba from amber (#F5F0E8 → 201,160,64) and red (192,80,80)
-  const amberBg     = '#201614'
-  const amberBorder = '#4A312B'
-  const redBg       = '#4A2320'
+  const amberBg     = lightMode ? '#51403A' : '#201614'
+  const amberBorder = lightMode ? LIGHT.consoleBorderSoft : '#4A312B'
+  const redBg       = lightMode ? '#694541' : '#4A2320'
 
-  const panelBg         = CONSOLE.black
-  const panelBorderSoft = '#2B1D1B'
-  const panelInkFaint   = CONSOLE.sequoia
-  const panelInkDim     = CONSOLE.sequoia
-  const panelInkMuted   = CONSOLE.sequoia
-  const panelInkSoft    = CONSOLE.barberry
-  const panelSurface    = '#100B0A'
-  const panelCardBg     = CONSOLE.crimson1
-  const panelCardBorder = '#2B1D1B'
+  const panelBg         = lightMode ? LIGHT.consoleBg : CONSOLE.black
+  const panelBorderSoft = lightMode ? LIGHT.consoleBorderSoft : '#2B1D1B'
+  const panelInkFaint   = lightMode ? LIGHT.consoleFaint : CONSOLE.sequoia
+  const panelInkDim     = lightMode ? LIGHT.consoleMuted : CONSOLE.sequoia
+  const panelInkMuted   = lightMode ? LIGHT.consoleMuted : CONSOLE.sequoia
+  const panelInkSoft    = lightMode ? LIGHT.consoleSoft : CONSOLE.barberry
+  const panelSurface    = lightMode ? LIGHT.consoleSurface : '#100B0A'
+  const panelCardBg     = lightMode ? LIGHT.consolePanel : CONSOLE.crimson1
+  const panelCardBorder = lightMode ? LIGHT.consoleBorder : '#2B1D1B'
   const macDots = ['#FF5F57', '#FFBD2E', '#28C840']
-  const panelPillBg     = '#231917'
-  const panelPillBorder = '#4A312B'
-  const panelPillText   = CONSOLE.barberry
-  const panelSidebarBg  = '#050403'
-  const panelSidebarDivider = '#1A1211'
-  const panelActiveItem = PALETTE.platinum
+  const panelPillBg     = lightMode ? LIGHT.consolePanel2 : '#231917'
+  const panelPillBorder = lightMode ? LIGHT.consoleBorderSoft : '#4A312B'
+  const panelPillText   = lightMode ? LIGHT.consoleSoft : CONSOLE.barberry
+  const panelSidebarBg  = lightMode ? '#322826' : '#050403'
+  const panelSidebarDivider = lightMode ? LIGHT.consoleBorder : '#1A1211'
+  const panelActiveItem = lightMode ? LIGHT.consoleInk : PALETTE.platinum
   const panelActiveItemBg = amberBg
 
   const Sidebar = () => (
@@ -2564,8 +2597,14 @@ function DashboardSection({ C }) {
 // ── Compounding Section ───────────────────────────────────────────────────────
 
 function CompoundingSection({ C }) {
-  const amber = '#F0AE76'
-  const axisFill = CONSOLE.sequoia
+  const lightMode = C.theme === 'light'
+  const amber = lightMode ? LIGHT.consoleAmber : '#F0AE76'
+  const axisFill = lightMode ? LIGHT.consoleFaint : CONSOLE.sequoia
+  const cardBg = lightMode ? LIGHT.consoleBg : CONSOLE.black
+  const cardBorder = lightMode ? LIGHT.consoleBorder : '#2B1D1B'
+  const cardInk = lightMode ? LIGHT.consoleInk : PALETTE.platinum
+  const cardSoft = lightMode ? LIGHT.consoleSoft : CONSOLE.barberry
+  const cardFaint = lightMode ? LIGHT.consoleFaint : CONSOLE.sequoia
 
   // Chart points [x, y] in a 560×210 viewbox (y=210 = baseline)
   const pts = [
@@ -2606,14 +2645,14 @@ function CompoundingSection({ C }) {
         </div>
 
         {/* ── Right: knowledge card ── */}
-        <div style={{ background: CONSOLE.black, borderRadius: 14, overflow: 'hidden', border: '1px solid #2B1D1B', boxShadow: 'none' }}>
+        <div style={{ background: cardBg, borderRadius: 14, overflow: 'hidden', border: `1px solid ${cardBorder}`, boxShadow: 'none' }}>
 
           {/* Card header */}
           <div style={{ padding: '28px 32px 12px' }}>
-            <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: CONSOLE.sequoia, marginBottom: 10 }}>
+            <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: cardFaint, marginBottom: 10 }}>
               Brain knowledge · over time
             </div>
-            <div style={{ fontFamily: serif, fontSize: 22, fontWeight: 600, color: PALETTE.platinum, lineHeight: 1.25 }}>
+            <div style={{ fontFamily: serif, fontSize: 22, fontWeight: 600, color: cardInk, lineHeight: 1.25 }}>
               It stops asking and starts telling.
             </div>
           </div>
@@ -2666,9 +2705,9 @@ function CompoundingSection({ C }) {
               { day: 'DAY 60', body: <>Questions a senior hire <em style={{ fontStyle: 'italic', color: amber }}>before</em> you sign the offer. It was right to.</> },
               { day: 'DAY 90', body: <>Tells you what to do — <em style={{ fontStyle: 'italic', color: amber }}>before</em> you&apos;ve finished asking the question.</> },
             ].map(m => (
-              <div key={m.day} style={{ display: 'grid', gridTemplateColumns: '72px 1fr', gap: 16, alignItems: 'start', padding: '16px 0', borderTop: '1px solid #2B1D1B' }}>
+              <div key={m.day} style={{ display: 'grid', gridTemplateColumns: '72px 1fr', gap: 16, alignItems: 'start', padding: '16px 0', borderTop: `1px solid ${cardBorder}` }}>
                 <span style={{ fontFamily: mono, fontSize: 11, fontWeight: 700, color: amber, letterSpacing: '0.06em', paddingTop: 2 }}>{m.day}</span>
-                <span style={{ fontFamily: serif, fontSize: 16, color: CONSOLE.barberry, lineHeight: 1.58 }}>{m.body}</span>
+                <span style={{ fontFamily: serif, fontSize: 16, color: cardSoft, lineHeight: 1.58 }}>{m.body}</span>
               </div>
             ))}
           </div>
@@ -2769,7 +2808,7 @@ function FinalCTA({ onStart, C }) {
             onClick={go}
             style={{
               background: red,
-              color: C.theme === 'dark' ? PALETTE.platinum : C.bg,
+              color: C.ink,
               border: 'none',
               padding: '0 36px',
               fontFamily: mono,
@@ -2802,7 +2841,10 @@ function FinalCTA({ onStart, C }) {
 
 export default function Landing({ onStart, onSignUp, session }) {
   const posthog = usePostHog()
-  const [theme, setTheme] = useState('dark')
+  const [theme, setTheme] = useState(() => {
+    if (typeof window === 'undefined') return 'dark'
+    return localStorage.getItem('sa-theme') || 'dark'
+  })
   const C = THEMES[theme]
   const [storiesOpen, setStoriesOpen] = useState(false)
   const [connectedOpen, setConnectedOpen] = useState(false)
@@ -3190,7 +3232,7 @@ export default function Landing({ onStart, onSignUp, session }) {
                 className="sa-hero-btn"
                 style={{
                   background: C.accent,
-                  color: C.bg,
+                  color: C.ink,
                   border: 'none',
                   borderRadius: 999,
                   padding: '12px 22px',
