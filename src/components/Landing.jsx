@@ -436,6 +436,7 @@ function PrimaryButton({ label, onClick, small = false, C }) {
 
 function OutlineButton({ label, onClick, C }) {
   const [hovered, setHovered] = useState(false)
+  const sharpTheme = C.theme === 'sharp'
   return (
     <button
       onClick={onClick}
@@ -446,13 +447,13 @@ function OutlineButton({ label, onClick, C }) {
         alignItems: 'center',
         justifyContent: 'center',
         gap: 10,
-        background: hovered ? C.surface2 : 'transparent',
+        background: sharpTheme ? (hovered ? C.accentDark : C.accent) : (hovered ? C.surface2 : 'transparent'),
         color: C.ink,
         padding: '14px 22px',
         borderRadius: 999,
         fontSize: 16,
         fontWeight: 600,
-        border: `1px solid ${C.border2}`,
+        border: sharpTheme ? 'none' : `1px solid ${C.border2}`,
         cursor: 'pointer',
         transition: 'background 0.18s ease, border-color 0.18s ease',
         fontFamily: 'inherit',
@@ -3441,7 +3442,7 @@ export default function Landing({ onStart, onSignUp, session }) {
 
           {/* Header */}
           <div style={{ maxWidth: 760, marginBottom: 'clamp(32px, 4vw, 64px)' }}>
-            <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 24 }}>
+            <div style={{ fontFamily: C.theme === 'sharp' ? 'inherit' : mono, fontSize: 11, letterSpacing: C.theme === 'sharp' ? '0.1em' : '0.16em', textTransform: 'uppercase', color: C.theme === 'sharp' ? C.inkMuted : C.inkFaint, fontWeight: C.theme === 'sharp' ? 600 : 500, marginBottom: 24 }}>
               Always on
             </div>
             <h2 style={{ fontFamily: serif, fontSize: 'clamp(30px, 6vw, 80px)', fontWeight: 700, lineHeight: 1.04, letterSpacing: '-0.04em', color: C.ink, margin: '0 0 20px' }}>
@@ -3474,7 +3475,7 @@ export default function Landing({ onStart, onSignUp, session }) {
               },
             ].map(row => (
               <div key={row.label} className="sa-always-row" style={{ borderBottom: `1px solid ${C.border}` }}>
-                <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.accent, paddingTop: 5 }}>
+                <div style={{ fontFamily: C.theme === 'sharp' ? 'inherit' : mono, fontSize: 11, letterSpacing: C.theme === 'sharp' ? '0.08em' : '0.1em', textTransform: 'uppercase', color: C.theme === 'sharp' ? C.accentText : C.accent, fontWeight: C.theme === 'sharp' ? 600 : 500, paddingTop: 5 }}>
                   {row.label}
                 </div>
                 <div style={{ fontFamily: serif, fontSize: 22, color: C.ink, lineHeight: 1.55 }}>
@@ -3493,7 +3494,7 @@ export default function Landing({ onStart, onSignUp, session }) {
 
           {/* Intro */}
           <div style={{ textAlign: 'center', marginBottom: 'clamp(36px, 4vw, 72px)' }}>
-            <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0 }}>
+            <div style={{ fontFamily: C.theme === 'sharp' ? 'inherit' : mono, fontSize: 11, letterSpacing: C.theme === 'sharp' ? '0.1em' : '0.16em', textTransform: 'uppercase', color: C.theme === 'sharp' ? C.inkMuted : C.inkFaint, fontWeight: C.theme === 'sharp' ? 600 : 500, marginBottom: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0 }}>
               {C.theme === 'light' && <span style={{ display: 'inline-block', width: 28, height: 1, background: C.border2, verticalAlign: 'middle', marginRight: 14 }} />}
               Real diagnoses
               {C.theme === 'light' && <span style={{ display: 'inline-block', width: 28, height: 1, background: C.border2, verticalAlign: 'middle', marginLeft: 14 }} />}
@@ -3586,7 +3587,7 @@ export default function Landing({ onStart, onSignUp, session }) {
 
           {/* Intro */}
           <div style={{ textAlign: 'center', marginBottom: 60 }}>
-            <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0 }}>
+            <div style={{ fontFamily: C.theme === 'sharp' ? 'inherit' : mono, fontSize: 11, letterSpacing: C.theme === 'sharp' ? '0.1em' : '0.16em', textTransform: 'uppercase', color: C.theme === 'sharp' ? C.inkMuted : C.inkFaint, fontWeight: C.theme === 'sharp' ? 600 : 500, marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0 }}>
               {C.theme === 'light' && <span style={{ display: 'inline-block', width: 28, height: 1, background: C.border2, verticalAlign: 'middle', marginRight: 14 }} />}
               Pricing
               {C.theme === 'light' && <span style={{ display: 'inline-block', width: 28, height: 1, background: C.border2, verticalAlign: 'middle', marginLeft: 14 }} />}
@@ -3634,7 +3635,7 @@ export default function Landing({ onStart, onSignUp, session }) {
 
                 {/* Description */}
                 <div>
-                  <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.accent, marginBottom: 12 }}>
+                  <div style={{ fontFamily: C.theme === 'sharp' ? 'inherit' : mono, fontSize: 12, letterSpacing: C.theme === 'sharp' ? '0.08em' : '0.14em', textTransform: 'uppercase', color: C.theme === 'sharp' ? C.accentText : C.accent, fontWeight: C.theme === 'sharp' ? 700 : 500, marginBottom: 12 }}>
                     {p.label}
                   </div>
                   <h3 style={{ fontFamily: serif, fontSize: 34, fontWeight: 700, lineHeight: 1.14, letterSpacing: '-0.03em', color: C.ink, margin: '0 0 14px' }}>
@@ -3648,7 +3649,7 @@ export default function Landing({ onStart, onSignUp, session }) {
                 {/* Features */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {p.features.map(f => (
-                    <div key={f} style={{ fontFamily: mono, fontSize: 12, color: C.inkFaint, lineHeight: 1.5 }}>{f}</div>
+                    <div key={f} style={{ fontFamily: C.theme === 'sharp' ? 'inherit' : mono, fontSize: 13, color: C.theme === 'sharp' ? C.inkMuted : C.inkFaint, lineHeight: 1.5, fontWeight: C.theme === 'sharp' ? 500 : 400 }}>{f}</div>
                   ))}
                 </div>
 
@@ -3656,12 +3657,12 @@ export default function Landing({ onStart, onSignUp, session }) {
                 <button
                   onClick={() => handleSignUpWithPlan(p.plan)}
                   style={{
-                    background: C.ink,
-                    color: C.bg,
+                    background: C.accent,
+                    color: C.ink,
                     border: 'none',
                     borderRadius: 999,
                     padding: '15px 24px',
-                    fontFamily: serif,
+                    fontFamily: 'inherit',
                     fontSize: 17,
                     fontWeight: 600,
                     cursor: 'pointer',
