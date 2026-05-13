@@ -2264,7 +2264,7 @@ function LiveDiagnosis({ C }) {
           {C.theme === 'light' && <span style={{ display: 'inline-block', width: 28, height: 1, background: C.border2, verticalAlign: 'middle', marginLeft: 14 }} />}
         </div>
         <h2 style={{ fontFamily: serif, fontSize: 'clamp(32px, 5.5vw, 80px)', fontWeight: 700, letterSpacing: '-0.045em', lineHeight: 1.04, color: C.ink, margin: '0 0 20px' }}>
-          Watch the brain <em style={{ fontStyle: 'italic', color: C.amber }}>think.</em>
+          Watch the brain <em style={{ fontStyle: 'italic', color: C.accent }}>think.</em>
         </h2>
         <p style={{ fontFamily: serif, fontSize: 20, color: C.inkSoft, lineHeight: 1.6, margin: 0 }}>
           Not a chat. A reasoning process. Real signals. Real verdict. Real next move.
