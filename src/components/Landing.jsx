@@ -2544,14 +2544,14 @@ function DashboardSection({ C }) {
   const panelInkDim     = tonedMode ? softPalette.consoleMuted : CONSOLE.sequoia
   const panelInkMuted   = tonedMode ? softPalette.consoleMuted : CONSOLE.sequoia
   const panelInkSoft    = tonedMode ? softPalette.consoleSoft : CONSOLE.barberry
-  const panelSurface    = tonedMode ? softPalette.consoleSurface : '#100B0A'
+  const panelSurface    = C.theme === 'sharp' ? '#13253C' : tonedMode ? softPalette.consoleSurface : '#100B0A'
   const panelCardBg     = tonedMode ? softPalette.consolePanel : CONSOLE.crimson1
   const panelCardBorder = tonedMode ? softPalette.consoleBorder : '#2B1D1B'
   const macDots = ['#FF5F57', '#FFBD2E', '#28C840']
   const panelPillBg     = tonedMode ? softPalette.consolePanel2 : '#231917'
   const panelPillBorder = tonedMode ? softPalette.consoleBorderSoft : '#4A312B'
   const panelPillText   = tonedMode ? softPalette.consoleSoft : CONSOLE.barberry
-  const panelSidebarBg  = C.theme === 'sharp' ? 'linear-gradient(180deg, #182B43 0%, #14253A 100%)' : C.theme === 'light' ? 'linear-gradient(180deg, #342A27 0%, #2C2421 100%)' : 'linear-gradient(180deg, #060403 0%, #030202 100%)'
+  const panelSidebarBg  = C.theme === 'sharp' ? 'linear-gradient(180deg, #13253C 0%, #102033 100%)' : C.theme === 'light' ? 'linear-gradient(180deg, #342A27 0%, #2C2421 100%)' : 'linear-gradient(180deg, #060403 0%, #030202 100%)'
   const panelSidebarDivider = tonedMode ? softPalette.consoleBorder : '#1A1211'
   const panelActiveItem = tonedMode ? softPalette.consoleInk : PALETTE.platinum
   const panelActiveItemBg = amberBg
@@ -2573,7 +2573,7 @@ function DashboardSection({ C }) {
   const panelBodyBg = C.theme === 'light'
     ? '#40332F'
     : C.theme === 'sharp'
-      ? '#0D182A'
+      ? '#172B44'
       : '#030202'
   const cardFill = C.theme === 'light'
     ? '#4E3F3A'
