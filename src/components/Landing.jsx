@@ -21,24 +21,24 @@ const CONSOLE = {
 const THEMES = {
   dark: {
     theme: 'dark',
-    bg: PALETTE.jet,
-    surface: PALETTE.onyx,
-    surface2: PALETTE.graphite,
-    surface3: PALETTE.onyx,
-    card: PALETTE.onyx,
-    border: PALETTE.graphite,
-    border2: PALETTE.ash,
+    bg: CONSOLE.black,
+    surface: CONSOLE.crimson1,
+    surface2: CONSOLE.crimson2,
+    surface3: '#231514',
+    card: '#140D0D',
+    border: '#2B1D1B',
+    border2: '#4A312B',
     ink: PALETTE.platinum,
-    inkSoft: PALETTE.ash,
-    inkMuted: PALETTE.ash,
-    inkFaint: PALETTE.graphite,
-    accent: PALETTE.platinum,
-    accentDark: PALETTE.ash,
-    accentSoft: PALETTE.graphite,
-    accentText: PALETTE.platinum,
-    redMuted: PALETTE.platinum,
-    redSoft: PALETTE.graphite,
-    amber: PALETTE.ash,
+    inkSoft: CONSOLE.barberry,
+    inkMuted: CONSOLE.sequoia,
+    inkFaint: CONSOLE.sequoia,
+    accent: CONSOLE.barberry,
+    accentDark: CONSOLE.sequoia,
+    accentSoft: CONSOLE.crimson2,
+    accentText: CONSOLE.barberry,
+    redMuted: CONSOLE.barberry,
+    redSoft: CONSOLE.crimson2,
+    amber: CONSOLE.barberry,
   },
   light: {
     theme: 'light',
@@ -310,6 +310,7 @@ const typewriterStatements = [
 
 function PrimaryButton({ label, onClick, small = false, C }) {
   const [hovered, setHovered] = useState(false)
+  const darkTheme = C.theme === 'dark'
   return (
     <button
       onClick={onClick}
@@ -320,15 +321,15 @@ function PrimaryButton({ label, onClick, small = false, C }) {
         alignItems: 'center',
         justifyContent: 'center',
         gap: 10,
-        background: hovered ? C.accentDark : C.accent,
-        color: C.theme === 'dark' ? PALETTE.jet : PALETTE.platinum,
+        background: darkTheme ? (hovered ? C.surface2 : C.bg) : (hovered ? C.accentDark : C.accent),
+        color: darkTheme ? C.ink : PALETTE.platinum,
         padding: small ? '10px 18px' : '16px 28px',
         borderRadius: 999,
         fontSize: small ? 15 : 17,
         fontWeight: 600,
-        border: 'none',
+        border: darkTheme ? `1px solid ${C.border2}` : 'none',
         cursor: 'pointer',
-        transition: 'background 0.18s ease',
+        transition: 'background 0.18s ease, border-color 0.18s ease',
         fontFamily: 'inherit',
       }}
     >
@@ -2699,7 +2700,7 @@ function FinalCTA({ onStart, C }) {
   const go = () => onStart(inputVal.trim())
 
   const red       = C.accent
-  const redBorder = C.border
+  const redBorder = C.border2
 
   return (
     <section style={{ background: C.bg, padding: 'clamp(64px, 8vw, 130px) 0 clamp(48px, 6vw, 100px)' }}>
@@ -2725,7 +2726,7 @@ function FinalCTA({ onStart, C }) {
 
       {/* Input bar */}
       <div style={{ maxWidth: 800, margin: '0 auto', padding: '0 28px' }}>
-        <div style={{ display: 'flex', border: `1px solid ${redBorder}`, borderRadius: 4, overflow: 'hidden' }}>
+        <div style={{ display: 'flex', border: `1px solid ${redBorder}`, borderRadius: 4, overflow: 'hidden', background: C.surface }}>
           <input
             className="fca-input"
             type="text"
@@ -2751,7 +2752,7 @@ function FinalCTA({ onStart, C }) {
             onClick={go}
             style={{
               background: red,
-              color: C.bg,
+              color: C.theme === 'dark' ? PALETTE.platinum : C.bg,
               border: 'none',
               padding: '0 36px',
               fontFamily: mono,
