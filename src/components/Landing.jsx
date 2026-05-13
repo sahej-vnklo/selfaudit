@@ -1814,6 +1814,10 @@ function EngineRoom({ C }) {
 // ── Four Verbs ────────────────────────────────────────────────────────────────
 
 function FourVerbs({ C }) {
+  const sectionRef  = useRef(null)
+  const headingRef  = useRef(null)
+  const cardRefs    = useRef([])
+
   const cardBg = C.theme === 'dark' ? C.card : '#ffffff'
 
   const verbs = [
@@ -1827,9 +1831,7 @@ function FourVerbs({ C }) {
           <div style={{ fontFamily: serif, fontSize: 22, fontStyle: 'italic', color: C.inkMuted, paddingBottom: 20, borderBottom: `1px solid ${C.border}`, marginBottom: 20 }}>
             &ldquo;Why is our churn climbing?&rdquo;
           </div>
-          <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.accent, marginBottom: 16 }}>
-            VERDICT · 3.4S
-          </div>
+          <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.accent, marginBottom: 16 }}>VERDICT · 3.4S</div>
           <div style={{ fontFamily: serif, fontSize: 22, fontWeight: 500, color: C.ink, lineHeight: 1.55 }}>
             Retention <em style={{ fontStyle: 'italic', color: C.redMuted }}>looks fine</em> because acquisition is masking it. Your cohorts are weaker —{' '}
             <em style={{ fontStyle: 'italic', color: C.redMuted }}>the curves cross in nine months.</em>
@@ -1850,14 +1852,7 @@ function FourVerbs({ C }) {
             { day: 'Day 58', text: 'Hiring discussion resurfaced — pricing still untouched.', accent: false },
             { day: 'Day 77', text: 'Third time hiring has come up before pricing was settled. Pattern, not coincidence.', accent: true },
           ].map((item, i, arr) => (
-            <div key={item.day} style={{
-              display: 'grid',
-              gridTemplateColumns: '60px 1fr',
-              gap: 16,
-              alignItems: 'start',
-              padding: '14px 0',
-              borderBottom: i < arr.length - 1 ? `1px solid ${C.border}` : 'none',
-            }}>
+            <div key={item.day} style={{ display: 'grid', gridTemplateColumns: '60px 1fr', gap: 16, alignItems: 'start', padding: '14px 0', borderBottom: i < arr.length - 1 ? `1px solid ${C.border}` : 'none' }}>
               <span style={{ fontFamily: mono, fontSize: 12, color: C.accent, paddingTop: 2 }}>{item.day}</span>
               {item.accent
                 ? <em style={{ fontFamily: serif, fontSize: 16, fontStyle: 'italic', color: C.redMuted, lineHeight: 1.55 }}>{item.text}</em>
@@ -1881,12 +1876,7 @@ function FourVerbs({ C }) {
               { time: 'WED · 04:18', body: <>Goal &ldquo;Hit $500K Q3&rdquo; is now <em style={{ fontStyle: 'italic', color: C.redMuted }}>3 weeks behind pace.</em> Path salvageable.</> },
               { time: 'FRI · 09:02', body: <>Onboarding completion dropped <em style={{ fontStyle: 'italic', color: C.redMuted }}>14%</em> after Tuesday&apos;s UX change.</> },
             ].map((alert) => (
-              <div key={alert.time} style={{
-                borderLeft: `3px solid ${C.accent}`,
-                borderRadius: '0 8px 8px 0',
-                padding: '12px 16px',
-                background: C.surface2,
-              }}>
+              <div key={alert.time} style={{ borderLeft: `3px solid ${C.accent}`, borderRadius: '0 8px 8px 0', padding: '12px 16px', background: C.surface2 }}>
                 <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 6 }}>{alert.time}</div>
                 <div style={{ fontFamily: serif, fontSize: 16, color: C.inkSoft, lineHeight: 1.55 }}>{alert.body}</div>
               </div>
@@ -1919,98 +1909,124 @@ function FourVerbs({ C }) {
     },
   ]
 
-  return (
-    <section className="sa-fv-section" style={{ background: C.bg, position: 'relative', borderTop: `1px solid ${C.border}` }}>
-      <div style={{ position: 'relative' }}>
+  useEffect(() => {
+    const section = sectionRef.current
+    const heading = headingRef.current
+    const cards   = cardRefs.current
+    if (!section || !heading || cards.some(c => !c)) return
 
-        {/* Sticky heading — pins for the whole section */}
-        <div className="sa-fv-sticky-head" style={{
-          position: 'sticky',
-          top: 0,
-          paddingTop: 'clamp(64px, 9vw, 140px)',
-          paddingLeft: 'clamp(28px, 6vw, 80px)',
-          paddingRight: 'clamp(28px, 6vw, 80px)',
-          paddingBottom: 40,
+    const CARD_STAGGER = 24
+
+    function onScroll() {
+      const sectionTop = section.getBoundingClientRect().top
+      const scrolled   = -sectionTop
+
+      if (scrolled <= 0) {
+        heading.style.position = 'relative'
+        heading.style.top      = '0'
+      } else {
+        heading.style.position = 'sticky'
+        heading.style.top      = '0'
+      }
+
+      const headingH = heading.offsetHeight
+
+      cards.forEach((card, i) => {
+        const triggerStart = headingH + i * window.innerHeight
+        const pinTop       = headingH + i * CARD_STAGGER
+
+        if (scrolled < triggerStart) {
+          card.style.position  = 'absolute'
+          card.style.top       = `${triggerStart}px`
+        } else {
+          card.style.position  = 'sticky'
+          card.style.top       = `${pinTop}px`
+        }
+      })
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true })
+    onScroll()
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  return (
+    <section
+      ref={sectionRef}
+      className="sa-fv-section"
+      style={{
+        background:  C.bg,
+        borderTop:   `1px solid ${C.border}`,
+        position:    'relative',
+        height:      '500vh',
+      }}
+    >
+      <style>{`
+        @media (max-width: 768px) {
+          .sa-fv-section { height: auto !important; }
+          .sa-fv-heading { position: relative !important; top: auto !important; }
+          .sa-fv-card-wrap { position: relative !important; top: auto !important; margin-bottom: 48px !important; }
+        }
+      `}</style>
+
+      {/* Heading */}
+      <div
+        ref={headingRef}
+        className="sa-fv-heading"
+        style={{
           background: C.bg,
-          zIndex: 1,
-          minHeight: 'clamp(280px, 32vh, 360px)',
-        }}>
-          <div style={{ maxWidth: 780 }}>
-            <div style={{ fontFamily: mono, fontSize: 12, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 20 }}>
-              What an operating brain actually does
+          zIndex:     10,
+          padding:    `clamp(64px, 9vw, 140px) clamp(28px, 6vw, 80px) 40px`,
+        }}
+      >
+        <div style={{ maxWidth: 780 }}>
+          <div style={{ fontFamily: mono, fontSize: 12, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 20 }}>
+            What an operating brain actually does
+          </div>
+          <h2 style={{ fontFamily: serif, fontSize: 'clamp(36px, 5vw, 64px)', fontWeight: 700, lineHeight: 1.05, letterSpacing: '-0.04em', color: C.ink, margin: '0 0 20px' }}>
+            Four things <em style={{ fontStyle: 'italic', color: C.redMuted }}>only a brain</em> can do.
+          </h2>
+          <p style={{ fontFamily: serif, fontSize: 22, color: C.inkSoft, lineHeight: 1.6, margin: 0 }}>
+            Tools wait for prompts. Dashboards show numbers. Reports get filed. A brain <em style={{ fontStyle: 'italic' }}>works.</em>
+          </p>
+        </div>
+      </div>
+
+      {/* Cards — JS positions them inside the tall section */}
+      {verbs.map((v, i) => (
+        <div
+          key={v.num}
+          ref={el => cardRefs.current[i] = el}
+          className="sa-fv-card-wrap"
+          style={{
+            position:      'absolute',
+            left:          'clamp(28px, 6vw, 80px)',
+            right:         'clamp(28px, 6vw, 80px)',
+            background:    C.bg,
+            borderTop:     `1px solid ${C.ink}`,
+            paddingTop:    'clamp(40px, 6vw, 72px)',
+            paddingBottom: 'clamp(48px, 7vw, 80px)',
+            zIndex:        10 + i,
+            boxShadow:     i === 0 ? 'none' : `0 -12px 40px ${C.theme === 'light' ? 'rgba(26,20,16,0.08)' : 'rgba(0,0,0,0.5)'}`,
+          }}
+        >
+          <div className="sa-fv-card-grid">
+            <div>
+              <div style={{ fontFamily: mono, fontSize: 12, letterSpacing: '0.06em', textTransform: 'uppercase', color: C.accent, marginBottom: 16 }}>
+                {v.num} / FOUR
+              </div>
+              <h3 style={{ fontFamily: serif, fontSize: 'clamp(32px, 6vw, 88px)', fontWeight: 700, lineHeight: 0.98, letterSpacing: '-0.045em', margin: '0 0 24px' }}>
+                <span style={{ color: C.ink }}>It </span>
+                <em style={{ fontStyle: 'italic', color: C.redMuted }}>{v.verb}</em>
+              </h3>
+              <p style={{ fontFamily: serif, fontSize: 20, color: C.inkSoft, lineHeight: 1.6, maxWidth: 480, margin: 0 }}>
+                {v.desc}
+              </p>
             </div>
-            <h2 style={{
-              fontFamily: serif,
-              fontSize: 'clamp(36px, 5vw, 64px)',
-              fontWeight: 700,
-              lineHeight: 1.05,
-              letterSpacing: '-0.04em',
-              color: C.ink,
-              margin: '0 0 20px',
-            }}>
-              Four things <em style={{ fontStyle: 'italic', color: C.redMuted }}>only a brain</em> can do.
-            </h2>
-            <p style={{ fontFamily: serif, fontSize: 22, color: C.inkSoft, lineHeight: 1.6, margin: 0 }}>
-              Tools wait for prompts. Dashboards show numbers. Reports get filed. A brain <em style={{ fontStyle: 'italic' }}>works.</em>
-            </p>
+            {v.card}
           </div>
         </div>
-
-        {/* Scroll-trigger wrappers — each card gets its own dedicated 100vh runway */}
-        {verbs.map((v, i) => (
-          <div
-            key={v.num}
-            className="sa-fv-scroll-trigger"
-            style={{ height: '100vh', position: 'relative', background: C.bg, overflow: 'hidden' }}
-          >
-            <div
-              className="sa-fv-card"
-              style={{
-                position: 'sticky',
-                top: `calc(clamp(280px, 32vh, 360px) + ${i * 24}px)`,
-                zIndex: 2 + i,
-                marginLeft: 'clamp(28px, 6vw, 80px)',
-                marginRight: 'clamp(28px, 6vw, 80px)',
-                background: C.bg,
-                borderTop: `1px solid ${C.ink}`,
-                paddingTop: 'clamp(40px, 6vw, 72px)',
-                paddingBottom: 'clamp(48px, 7vw, 80px)',
-                boxShadow: i === 0 ? 'none' : `0 -12px 40px ${C.theme === 'light' ? 'rgba(26,20,16,0.06)' : 'rgba(0,0,0,0.4)'}`,
-              }}
-            >
-              <div className="sa-fv-card-grid">
-                {/* Left */}
-                <div>
-                  <div style={{ fontFamily: mono, fontSize: 12, letterSpacing: '0.06em', textTransform: 'uppercase', color: C.accent, marginBottom: 16 }}>
-                    {v.num} / FOUR
-                  </div>
-                  <h3 style={{
-                    fontFamily: serif,
-                    fontSize: 'clamp(32px, 6vw, 88px)',
-                    fontWeight: 700,
-                    lineHeight: 0.98,
-                    letterSpacing: '-0.045em',
-                    margin: '0 0 24px',
-                  }}>
-                    <span style={{ color: C.ink }}>It </span>
-                    <em style={{ fontStyle: 'italic', color: C.redMuted }}>{v.verb}</em>
-                  </h3>
-                  <p style={{ fontFamily: serif, fontSize: 20, color: C.inkSoft, lineHeight: 1.6, maxWidth: 480, margin: 0 }}>
-                    {v.desc}
-                  </p>
-                </div>
-
-                {/* Right: card */}
-                {v.card}
-              </div>
-            </div>
-          </div>
-        ))}
-
-        {/* Tail spacer — breathing room before next section */}
-        <div style={{ height: '100vh' }} />
-
-      </div>
+      ))}
     </section>
   )
 }
