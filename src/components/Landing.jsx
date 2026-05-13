@@ -1934,7 +1934,6 @@ function FourVerbs({ C }) {
           background: C.bg,
           zIndex: 1,
           minHeight: 'clamp(280px, 32vh, 360px)',
-          marginBottom: 'calc(-1 * clamp(280px, 32vh, 360px))',
         }}>
           <div style={{ maxWidth: 780 }}>
             <div style={{ fontFamily: mono, fontSize: 12, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 20 }}>
@@ -1962,7 +1961,7 @@ function FourVerbs({ C }) {
           <div
             key={v.num}
             className="sa-fv-scroll-trigger"
-            style={{ height: '100vh', position: 'relative' }}
+            style={{ height: '100vh', position: 'relative', background: C.bg, overflow: 'hidden' }}
           >
             <div
               className="sa-fv-card"
@@ -2009,7 +2008,7 @@ function FourVerbs({ C }) {
         ))}
 
         {/* Tail spacer — breathing room before next section */}
-        <div style={{ height: 'clamp(40px, 6vw, 96px)' }} />
+        <div style={{ height: '100vh' }} />
 
       </div>
     </section>
