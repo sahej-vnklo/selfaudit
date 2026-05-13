@@ -1819,9 +1819,7 @@ function FourVerbs({ C }) {
   const cardRefs    = useRef([])
 
   const I = {
-    bg: '#2F3A63',
-    surface: '#35416B',
-    surface2: '#3B4772',
+    bg: '#252D50',
     border: 'rgba(236,231,223,0.16)',
     border2: 'rgba(236,231,223,0.24)',
     ink: '#F2EEE7',
@@ -1829,10 +1827,11 @@ function FourVerbs({ C }) {
     inkMuted: '#B9BBC8',
     inkFaint: '#9298AD',
     accent: '#8CCF9C',
-    redMuted: '#E3A097',
+    redMuted: '#43322D',
   }
 
-  const cardBg = I.surface
+  const cardBg = C.card
+  const cardPanelBg = C.surface
 
   const verbs = [
     {
@@ -1840,13 +1839,13 @@ function FourVerbs({ C }) {
       verb: 'diagnoses.',
       desc: 'Tell it a symptom. It investigates across your tools, history, and patterns — then names the cause, not the surface.',
       card: (
-        <div style={{ background: cardBg, border: `1px solid ${I.border}`, borderRadius: 14, padding: 32, minHeight: 340, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: I.inkFaint, marginBottom: 22 }}>SYMPTOM</div>
-          <div style={{ fontFamily: serif, fontSize: 22, fontStyle: 'italic', color: I.inkMuted, paddingBottom: 20, borderBottom: `1px solid ${I.border}`, marginBottom: 20 }}>
+        <div style={{ background: cardBg, border: `1px solid ${C.border}`, borderRadius: 14, padding: 32, minHeight: 340, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 22 }}>SYMPTOM</div>
+          <div style={{ fontFamily: serif, fontSize: 22, fontStyle: 'italic', color: C.inkMuted, paddingBottom: 20, borderBottom: `1px solid ${C.border}`, marginBottom: 20 }}>
             &ldquo;Why is our churn climbing?&rdquo;
           </div>
-          <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: I.accent, marginBottom: 16 }}>VERDICT · 3.4S</div>
-          <div style={{ fontFamily: serif, fontSize: 22, fontWeight: 500, color: I.ink, lineHeight: 1.55 }}>
+          <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: I.redMuted, marginBottom: 16 }}>VERDICT · 3.4S</div>
+          <div style={{ fontFamily: serif, fontSize: 22, fontWeight: 500, color: C.ink, lineHeight: 1.55 }}>
             Retention <em style={{ fontStyle: 'italic', color: I.redMuted }}>looks fine</em> because acquisition is masking it. Your cohorts are weaker —{' '}
             <em style={{ fontStyle: 'italic', color: I.redMuted }}>the curves cross in nine months.</em>
           </div>
@@ -1858,19 +1857,19 @@ function FourVerbs({ C }) {
       verb: 'remembers.',
       desc: 'Every diagnosis, signal, conversation — compounds. By day ninety, it knows your business better than your co-founder.',
       card: (
-        <div style={{ background: cardBg, border: `1px solid ${I.border}`, borderRadius: 14, padding: 32, minHeight: 340 }}>
-          <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: I.inkFaint, marginBottom: 22 }}>MEMORY · 11 WEEKS</div>
+        <div style={{ background: cardBg, border: `1px solid ${C.border}`, borderRadius: 14, padding: 32, minHeight: 340 }}>
+          <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 22 }}>MEMORY · 11 WEEKS</div>
           {[
             { day: 'Day 04', text: 'Founder said hiring was the biggest constraint.', accent: false },
             { day: 'Day 31', text: 'Pricing flagged as a leak. Was deprioritized.', accent: false },
             { day: 'Day 58', text: 'Hiring discussion resurfaced — pricing still untouched.', accent: false },
             { day: 'Day 77', text: 'Third time hiring has come up before pricing was settled. Pattern, not coincidence.', accent: true },
           ].map((item, i, arr) => (
-            <div key={item.day} style={{ display: 'grid', gridTemplateColumns: '60px 1fr', gap: 16, alignItems: 'start', padding: '14px 0', borderBottom: i < arr.length - 1 ? `1px solid ${I.border}` : 'none' }}>
-              <span style={{ fontFamily: mono, fontSize: 12, color: I.accent, paddingTop: 2 }}>{item.day}</span>
+            <div key={item.day} style={{ display: 'grid', gridTemplateColumns: '60px 1fr', gap: 16, alignItems: 'start', padding: '14px 0', borderBottom: i < arr.length - 1 ? `1px solid ${C.border}` : 'none' }}>
+              <span style={{ fontFamily: mono, fontSize: 12, color: I.redMuted, paddingTop: 2 }}>{item.day}</span>
               {item.accent
                 ? <em style={{ fontFamily: serif, fontSize: 16, fontStyle: 'italic', color: I.redMuted, lineHeight: 1.55 }}>{item.text}</em>
-                : <span style={{ fontFamily: serif, fontSize: 16, color: I.inkSoft, lineHeight: 1.55 }}>{item.text}</span>
+                : <span style={{ fontFamily: serif, fontSize: 16, color: C.inkSoft, lineHeight: 1.55 }}>{item.text}</span>
               }
             </div>
           ))}
@@ -1882,17 +1881,17 @@ function FourVerbs({ C }) {
       verb: 'watches.',
       desc: 'Weekly governance across your connected tools. If a metric drifts or a goal slips, you hear about it before the meeting.',
       card: (
-        <div style={{ background: cardBg, border: `1px solid ${I.border}`, borderRadius: 14, padding: 32, minHeight: 340, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: I.inkFaint, marginBottom: 22 }}>ALERTS · LAST 7 DAYS</div>
+        <div style={{ background: cardBg, border: `1px solid ${C.border}`, borderRadius: 14, padding: 32, minHeight: 340, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 22 }}>ALERTS · LAST 7 DAYS</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {[
               { time: 'SUN · 23:42', body: <>CAC drifted <em style={{ fontStyle: 'italic', color: I.redMuted }}>22% this week.</em> Cause sits in Thursday&apos;s launch.</> },
               { time: 'WED · 04:18', body: <>Goal &ldquo;Hit $500K Q3&rdquo; is now <em style={{ fontStyle: 'italic', color: I.redMuted }}>3 weeks behind pace.</em> Path salvageable.</> },
               { time: 'FRI · 09:02', body: <>Onboarding completion dropped <em style={{ fontStyle: 'italic', color: I.redMuted }}>14%</em> after Tuesday&apos;s UX change.</> },
             ].map((alert) => (
-              <div key={alert.time} style={{ borderLeft: `3px solid ${I.accent}`, borderRadius: '0 8px 8px 0', padding: '12px 16px', background: I.surface2 }}>
-                <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: I.inkFaint, marginBottom: 6 }}>{alert.time}</div>
-                <div style={{ fontFamily: serif, fontSize: 16, color: I.inkSoft, lineHeight: 1.55 }}>{alert.body}</div>
+              <div key={alert.time} style={{ borderLeft: `3px solid ${I.redMuted}`, borderRadius: '0 8px 8px 0', padding: '12px 16px', background: cardPanelBg }}>
+                <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 6 }}>{alert.time}</div>
+                <div style={{ fontFamily: serif, fontSize: 16, color: C.inkSoft, lineHeight: 1.55 }}>{alert.body}</div>
               </div>
             ))}
           </div>
@@ -1904,15 +1903,15 @@ function FourVerbs({ C }) {
       verb: 'decides.',
       desc: 'Other AI gives you ten options. The brain picks one move — ranked by impact, evidence, and what you can actually do this week.',
       card: (
-        <div style={{ background: cardBg, border: `1px solid ${I.border}`, borderRadius: 14, padding: 32, minHeight: 340, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: I.inkFaint, marginBottom: 24 }}>NEXT MOVE · RANKED</div>
+        <div style={{ background: cardBg, border: `1px solid ${C.border}`, borderRadius: 14, padding: 32, minHeight: 340, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 24 }}>NEXT MOVE · RANKED</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 20 }}>
             {['Hire a VP of Sales', 'Run a Google Ads test', 'Launch the new feature'].map((item) => (
-              <div key={item} style={{ fontFamily: serif, fontSize: 18, fontStyle: 'italic', color: I.inkFaint, textDecoration: 'line-through' }}>{item}</div>
+              <div key={item} style={{ fontFamily: serif, fontSize: 18, fontStyle: 'italic', color: C.inkFaint, textDecoration: 'line-through' }}>{item}</div>
             ))}
           </div>
-          <div style={{ borderTop: `2px solid ${I.accent}`, paddingTop: 14, marginTop: 'auto' }}>
-            <div style={{ fontFamily: serif, fontSize: 22, fontWeight: 500, color: I.ink, lineHeight: 1.55 }}>
+          <div style={{ borderTop: `2px solid ${I.redMuted}`, paddingTop: 14, marginTop: 'auto' }}>
+            <div style={{ fontFamily: serif, fontSize: 22, fontWeight: 500, color: C.ink, lineHeight: 1.55 }}>
               <em style={{ fontStyle: 'italic', color: I.redMuted }}>Cancel the agency contract.</em>{' '}
               Reallocate the $5K to Clay. 30-day test with one rep.{' '}
               <em style={{ fontStyle: 'italic', color: I.redMuted }}>Stop everything else.</em>
