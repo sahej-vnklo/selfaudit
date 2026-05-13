@@ -2670,11 +2670,31 @@ function CompoundingSection({ C }) {
   const tonedMode = C.theme !== 'dark'
   const amber = tonedMode ? softPalette.consoleAmber : '#F0AE76'
   const axisFill = tonedMode ? softPalette.consoleFaint : CONSOLE.sequoia
-  const cardBg = tonedMode ? softPalette.consoleBg : CONSOLE.black
-  const cardBorder = tonedMode ? softPalette.consoleBorder : '#2B1D1B'
-  const cardInk = tonedMode ? softPalette.consoleInk : PALETTE.platinum
-  const cardSoft = tonedMode ? softPalette.consoleSoft : CONSOLE.barberry
-  const cardFaint = tonedMode ? softPalette.consoleFaint : CONSOLE.sequoia
+  const cardBg = C.theme === 'light'
+    ? '#433835'
+    : tonedMode ? softPalette.consoleBg : '#090505'
+  const cardBorder = C.theme === 'light'
+    ? '#6F5C56'
+    : tonedMode ? softPalette.consoleBorder : '#2F211E'
+  const cardInk = C.theme === 'light'
+    ? '#F5EEEA'
+    : tonedMode ? softPalette.consoleInk : PALETTE.platinum
+  const cardSoft = C.theme === 'light'
+    ? '#D7C3BA'
+    : tonedMode ? softPalette.consoleSoft : CONSOLE.barberry
+  const cardFaint = C.theme === 'light'
+    ? '#B79F97'
+    : tonedMode ? softPalette.consoleFaint : CONSOLE.sequoia
+  const cardShadow = C.theme === 'light'
+    ? '0 32px 80px rgba(64, 45, 40, 0.22), 0 10px 28px rgba(64, 45, 40, 0.16)'
+    : C.theme === 'dark'
+      ? '0 28px 72px rgba(0, 0, 0, 0.42), 0 0 0 1px rgba(74, 49, 43, 0.2)'
+      : '0 24px 60px rgba(8, 18, 34, 0.24)'
+  const cardGlow = C.theme === 'dark'
+    ? 'radial-gradient(circle at 50% 42%, rgba(90, 63, 58, 0.18), transparent 62%)'
+    : C.theme === 'light'
+      ? 'radial-gradient(circle at 50% 38%, rgba(111, 92, 86, 0.14), transparent 64%)'
+      : 'none'
 
   // Chart points [x, y] in a 560×210 viewbox (y=210 = baseline)
   const pts = [
@@ -2715,7 +2735,20 @@ function CompoundingSection({ C }) {
         </div>
 
         {/* ── Right: knowledge card ── */}
-        <div style={{ background: cardBg, borderRadius: 14, overflow: 'hidden', border: `1px solid ${cardBorder}`, boxShadow: 'none' }}>
+        <div style={{ position: 'relative' }}>
+          {cardGlow !== 'none' && (
+            <div
+              aria-hidden="true"
+              style={{
+                position: 'absolute',
+                inset: '-34px -32px',
+                background: cardGlow,
+                pointerEvents: 'none',
+                zIndex: 0,
+              }}
+            />
+          )}
+          <div style={{ position: 'relative', zIndex: 1, background: cardBg, borderRadius: 14, overflow: 'hidden', border: `1px solid ${cardBorder}`, boxShadow: cardShadow }}>
 
           {/* Card header */}
           <div style={{ padding: '28px 32px 12px' }}>
@@ -2782,6 +2815,7 @@ function CompoundingSection({ C }) {
             ))}
           </div>
 
+        </div>
         </div>
       </div>
     </section>
