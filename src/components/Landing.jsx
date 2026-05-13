@@ -9,6 +9,15 @@ const PALETTE = {
   ash: '#BFBFBF',
 }
 
+const CONSOLE = {
+  black: '#000000',
+  crimson1: '#110909',
+  crimson2: '#1C1514',
+  sequoia: '#7D615E',
+  barberry: '#A98D86',
+  green: '#88D8A8',
+}
+
 const THEMES = {
   dark: {
     theme: 'dark',
@@ -1615,18 +1624,18 @@ function EngineRoom({ C }) {
     return () => clearInterval(id)
   }, [])
 
-  const panelBg        = C.theme === 'dark' ? PALETTE.onyx : PALETTE.jet
-  const panelSurface   = PALETTE.graphite
-  const panelBorder    = PALETTE.graphite
-  const panelBorderSoft = PALETTE.graphite
-  const panelInkFaint  = PALETTE.ash
-  const panelInkDim    = PALETTE.ash
-  const panelInkSoft   = PALETTE.platinum
-  const panelRowBorder = PALETTE.graphite
-  const panelVerdictBg = PALETTE.jet
+  const panelBg        = CONSOLE.crimson1
+  const panelSurface   = CONSOLE.crimson2
+  const panelBorder    = '#2B1D1B'
+  const panelBorderSoft = '#2B1D1B'
+  const panelInkFaint  = CONSOLE.sequoia
+  const panelInkDim    = CONSOLE.sequoia
+  const panelInkSoft   = CONSOLE.barberry
+  const panelRowBorder = '#2B1D1B'
+  const panelVerdictBg = '#160D0D'
   const panelVerdictColor = PALETTE.platinum
-  const panelIngestColor  = PALETTE.ash
-  const panelSignalColor  = PALETTE.platinum
+  const panelIngestColor  = CONSOLE.green
+  const panelSignalColor  = CONSOLE.barberry
 
   const typeColor = (type) => {
     if (type === 'INGEST') return panelIngestColor
@@ -2125,7 +2134,7 @@ function LiveDiagnosis({ C }) {
       let j = 0
       while (j < upTo) {
         if (chars[j].italic) {
-          html += `<em style="font-style:italic;color:${C.accent}">`
+          html += `<em style="font-style:italic;color:${CONSOLE.barberry}">`
           while (j < upTo && chars[j].italic) {
             const c = chars[j].char
             html += c === '<' ? '&lt;' : c === '>' ? '&gt;' : c === '&' ? '&amp;' : c
@@ -2218,18 +2227,18 @@ function LiveDiagnosis({ C }) {
     }
   }, [])
 
-  const panelBg         = C.theme === 'dark' ? PALETTE.onyx : PALETTE.jet
-  const panelSurface    = PALETTE.graphite
-  const panelBorder     = PALETTE.graphite
-  const panelBorderSoft = PALETTE.graphite
-  const panelInkFaint   = PALETTE.ash
-  const panelInkMuted   = PALETTE.ash
-  const panelInkSoft    = PALETTE.platinum
+  const panelBg         = CONSOLE.crimson1
+  const panelSurface    = CONSOLE.crimson2
+  const panelBorder     = '#2B1D1B'
+  const panelBorderSoft = '#2B1D1B'
+  const panelInkFaint   = CONSOLE.sequoia
+  const panelInkMuted   = CONSOLE.sequoia
+  const panelInkSoft    = CONSOLE.barberry
   const panelInk        = PALETTE.platinum
-  const panelDotBg      = PALETTE.ash
-  const panelHealthy    = PALETTE.platinum
-  const panelAmber      = PALETTE.ash
-  const panelCritical   = PALETTE.platinum
+  const panelDotBg      = '#45302E'
+  const panelHealthy    = CONSOLE.green
+  const panelAmber      = CONSOLE.barberry
+  const panelCritical   = CONSOLE.sequoia
 
   return (
     <section ref={sectionRef} style={{ background: C.bg, padding: 'clamp(64px, 8vw, 140px) 0' }}>
@@ -2243,7 +2252,7 @@ function LiveDiagnosis({ C }) {
           display: inline-block;
           width: 2px;
           height: 1.1em;
-          background: ${C.amber};
+          background: ${CONSOLE.barberry};
           margin-left: 3px;
           vertical-align: text-bottom;
           animation: ldcBlink 0.9s steps(2) infinite;
@@ -2263,13 +2272,13 @@ function LiveDiagnosis({ C }) {
 
       {/* Intro */}
       <div style={{ textAlign: 'center', maxWidth: 560, margin: '0 auto 64px', padding: '0 28px' }}>
-        <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.amber, marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0 }}>
+        <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: CONSOLE.barberry, marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0 }}>
           {C.theme === 'light' && <span style={{ display: 'inline-block', width: 28, height: 1, background: C.border2, verticalAlign: 'middle', marginRight: 14 }} />}
           A live diagnosis
           {C.theme === 'light' && <span style={{ display: 'inline-block', width: 28, height: 1, background: C.border2, verticalAlign: 'middle', marginLeft: 14 }} />}
         </div>
         <h2 style={{ fontFamily: serif, fontSize: 'clamp(32px, 5.5vw, 80px)', fontWeight: 700, letterSpacing: '-0.045em', lineHeight: 1.04, color: C.ink, margin: '0 0 20px' }}>
-          Watch the brain <em style={{ fontStyle: 'italic', color: C.accent }}>think.</em>
+          Watch the brain <em style={{ fontStyle: 'italic', color: CONSOLE.barberry }}>think.</em>
         </h2>
         <p style={{ fontFamily: serif, fontSize: 20, color: C.inkSoft, lineHeight: 1.6, margin: 0 }}>
           Not a chat. A reasoning process. Real signals. Real verdict. Real next move.
@@ -2360,9 +2369,8 @@ function LiveDiagnosis({ C }) {
 function DashboardSection({ C }) {
   const healthRef = useRef(null)
   const goalRef   = useRef(null)
-  const P     = C.theme === 'dark' ? THEMES.light : THEMES.dark
-  const amber = C.accent
-  const green = C.accent
+  const amber = CONSOLE.barberry
+  const green = CONSOLE.green
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -2373,26 +2381,26 @@ function DashboardSection({ C }) {
   }, [])
 
   // Pre-computed rgba from amber (#F5F0E8 → 201,160,64) and red (192,80,80)
-  const amberBg     = P.surface
-  const amberBorder = P.border
-  const redBg       = P.surface2
+  const amberBg     = '#201614'
+  const amberBorder = '#4A312B'
+  const redBg       = '#4A2320'
 
-  const panelBg         = P.bg
-  const panelBorderSoft = P.border
-  const panelInkFaint   = P.inkFaint
-  const panelInkDim     = P.inkMuted
-  const panelInkMuted   = P.inkMuted
-  const panelInkSoft    = P.inkSoft
-  const panelSurface    = P.surface
-  const panelCardBg     = P.surface
-  const panelCardBorder = P.border
-  const panelDotBg      = P.border2
-  const panelPillBg     = P.surface2
-  const panelPillBorder = P.border
-  const panelPillText   = P.inkSoft
-  const panelSidebarBg  = P.surface
-  const panelSidebarDivider = P.border
-  const panelActiveItem = P.ink
+  const panelBg         = CONSOLE.black
+  const panelBorderSoft = '#2B1D1B'
+  const panelInkFaint   = CONSOLE.sequoia
+  const panelInkDim     = CONSOLE.sequoia
+  const panelInkMuted   = CONSOLE.sequoia
+  const panelInkSoft    = CONSOLE.barberry
+  const panelSurface    = '#100B0A'
+  const panelCardBg     = CONSOLE.crimson1
+  const panelCardBorder = '#2B1D1B'
+  const panelDotBg      = '#45302E'
+  const panelPillBg     = '#231917'
+  const panelPillBorder = '#4A312B'
+  const panelPillText   = CONSOLE.barberry
+  const panelSidebarBg  = '#050403'
+  const panelSidebarDivider = '#1A1211'
+  const panelActiveItem = PALETTE.platinum
   const panelActiveItemBg = amberBg
 
   const Sidebar = () => (
@@ -2461,7 +2469,7 @@ function DashboardSection({ C }) {
 
               {/* Header */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 24 }}>
-                <div style={{ fontFamily: serif, fontSize: 24, fontWeight: 600, color: P.ink }}>Your business · this week</div>
+                <div style={{ fontFamily: serif, fontSize: 24, fontWeight: 600, color: PALETTE.platinum }}>Your business · this week</div>
                 <div style={{ fontFamily: mono, fontSize: 10, color: panelInkFaint }}>Last synced 2m ago</div>
               </div>
 
@@ -2483,7 +2491,7 @@ function DashboardSection({ C }) {
                 ].map(stat => (
                   <div key={stat.label} style={{ background: panelCardBg, border: `1px solid ${panelCardBorder}`, borderRadius: 10, padding: 16 }}>
                     <div style={{ fontFamily: mono, fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: panelInkFaint, marginBottom: 8 }}>{stat.label}</div>
-                    <div ref={stat.dynRef} style={{ fontFamily: serif, fontSize: 30, fontWeight: 600, color: P.ink, lineHeight: 1 }}>{stat.val}</div>
+                    <div ref={stat.dynRef} style={{ fontFamily: serif, fontSize: 30, fontWeight: 600, color: PALETTE.platinum, lineHeight: 1 }}>{stat.val}</div>
                     <div style={{ fontFamily: mono, fontSize: 10, color: stat.subColor, marginTop: 6 }}>{stat.sub}</div>
                   </div>
                 ))}
@@ -2492,13 +2500,13 @@ function DashboardSection({ C }) {
               {/* Recommended next move */}
               <div style={{ background: amberBg, border: `1px solid ${amberBorder}`, borderRadius: 12, padding: '20px 22px', marginBottom: 18 }}>
                 <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: amber, marginBottom: 10 }}>Recommended next move</div>
-                <p style={{ fontFamily: serif, fontSize: 17, fontWeight: 500, color: P.ink, lineHeight: 1.55, margin: '0 0 16px' }}>
+                <p style={{ fontFamily: serif, fontSize: 17, fontWeight: 500, color: PALETTE.platinum, lineHeight: 1.55, margin: '0 0 16px' }}>
                   Cancel the agency contract this week. Run a{' '}
                   <em style={{ fontStyle: 'italic', color: amber }}>30-day Clay test</em>
                   {' '}with one rep before scaling outbound.
                 </p>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  <button style={{ background: amber, color: P.bg, border: 'none', borderRadius: 999, padding: '7px 14px', fontFamily: mono, fontSize: 12, fontWeight: 500, cursor: 'pointer' }}>
+                  <button style={{ background: amber, color: CONSOLE.black, border: 'none', borderRadius: 999, padding: '7px 14px', fontFamily: mono, fontSize: 12, fontWeight: 500, cursor: 'pointer' }}>
                     Generate action plan
                   </button>
                   {['Draft cancellation email', 'Create SOP', '+3 more'].map(pill => (
@@ -2512,13 +2520,13 @@ function DashboardSection({ C }) {
               {/* Open issues */}
               <div style={{ fontFamily: mono, fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: panelInkFaint, marginBottom: 8 }}>Open issues</div>
               {[
-                { title: 'Market validation',             meta: 'Critical · flagged May 4',    badge: 'CRITICAL', badgeBg: redBg,       badgeColor: P.ink },
+                { title: 'Market validation',             meta: 'Critical · flagged May 4',    badge: 'CRITICAL', badgeBg: redBg,       badgeColor: '#F0B1A5' },
                 { title: 'Pricing model needs restructure', meta: 'High · 3 audits in a row',   badge: 'HIGH',     badgeBg: amberBg,     badgeColor: amber },
                 { title: 'Sales cycle drift',             meta: 'High · trending worse',       badge: 'HIGH',     badgeBg: amberBg,     badgeColor: amber },
               ].map(issue => (
                 <div key={issue.title} style={{ background: panelCardBg, border: `1px solid ${panelCardBorder}`, borderRadius: 8, padding: '12px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                   <div>
-                    <div style={{ fontFamily: serif, fontSize: 14, color: P.ink, marginBottom: 3 }}>{issue.title}</div>
+                    <div style={{ fontFamily: serif, fontSize: 14, color: PALETTE.platinum, marginBottom: 3 }}>{issue.title}</div>
                     <div style={{ fontFamily: mono, fontSize: 10, color: panelInkFaint }}>{issue.meta}</div>
                   </div>
                   <span style={{ background: issue.badgeBg, color: issue.badgeColor, fontFamily: mono, fontSize: 10, letterSpacing: '0.08em', borderRadius: 4, padding: '3px 8px', flexShrink: 0 }}>
@@ -2538,8 +2546,8 @@ function DashboardSection({ C }) {
 // ── Compounding Section ───────────────────────────────────────────────────────
 
 function CompoundingSection({ C }) {
-  const amber = C.accent
-  const axisFill = C.inkFaint
+  const amber = '#F0AE76'
+  const axisFill = CONSOLE.sequoia
 
   // Chart points [x, y] in a 560×210 viewbox (y=210 = baseline)
   const pts = [
@@ -2580,14 +2588,14 @@ function CompoundingSection({ C }) {
         </div>
 
         {/* ── Right: knowledge card ── */}
-        <div style={{ background: C.card, borderRadius: 14, overflow: 'hidden', border: `1px solid ${C.border}`, boxShadow: 'none' }}>
+        <div style={{ background: CONSOLE.black, borderRadius: 14, overflow: 'hidden', border: '1px solid #2B1D1B', boxShadow: 'none' }}>
 
           {/* Card header */}
           <div style={{ padding: '28px 32px 12px' }}>
-            <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 10 }}>
+            <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: CONSOLE.sequoia, marginBottom: 10 }}>
               Brain knowledge · over time
             </div>
-            <div style={{ fontFamily: serif, fontSize: 22, fontWeight: 600, color: C.ink, lineHeight: 1.25 }}>
+            <div style={{ fontFamily: serif, fontSize: 22, fontWeight: 600, color: PALETTE.platinum, lineHeight: 1.25 }}>
               It stops asking and starts telling.
             </div>
           </div>
@@ -2640,9 +2648,9 @@ function CompoundingSection({ C }) {
               { day: 'DAY 60', body: <>Questions a senior hire <em style={{ fontStyle: 'italic', color: amber }}>before</em> you sign the offer. It was right to.</> },
               { day: 'DAY 90', body: <>Tells you what to do — <em style={{ fontStyle: 'italic', color: amber }}>before</em> you&apos;ve finished asking the question.</> },
             ].map(m => (
-              <div key={m.day} style={{ display: 'grid', gridTemplateColumns: '72px 1fr', gap: 16, alignItems: 'start', padding: '16px 0', borderTop: `1px solid ${C.border}` }}>
+              <div key={m.day} style={{ display: 'grid', gridTemplateColumns: '72px 1fr', gap: 16, alignItems: 'start', padding: '16px 0', borderTop: '1px solid #2B1D1B' }}>
                 <span style={{ fontFamily: mono, fontSize: 11, fontWeight: 700, color: amber, letterSpacing: '0.06em', paddingTop: 2 }}>{m.day}</span>
-                <span style={{ fontFamily: serif, fontSize: 16, color: C.inkSoft, lineHeight: 1.58 }}>{m.body}</span>
+                <span style={{ fontFamily: serif, fontSize: 16, color: CONSOLE.barberry, lineHeight: 1.58 }}>{m.body}</span>
               </div>
             ))}
           </div>
