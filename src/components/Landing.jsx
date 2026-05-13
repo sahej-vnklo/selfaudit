@@ -2532,69 +2532,120 @@ function DashboardSection({ C }) {
     return () => clearInterval(id)
   }, [])
 
-  // Pre-computed rgba from amber (#F5F0E8 → 201,160,64) and red (192,80,80)
-  const amberBg     = C.theme === 'sharp' ? '#2B456B' : C.theme === 'light' ? '#5A4740' : '#241816'
-  const amberBorder = C.theme === 'sharp' ? '#4A6F99' : C.theme === 'light' ? '#796159' : '#4A312B'
-  const redBg       = C.theme === 'sharp' ? '#29486D' : tonedMode ? '#694541' : '#4A2320'
+  const tokens = C.theme === 'light'
+    ? {
+        amberBg: '#6D5A52',
+        amberBorder: '#8B746A',
+        redBg: '#7B5750',
+        panelBg: '#3D312D',
+        panelBorder: '#8B746A',
+        panelBorderSoft: '#6D5A52',
+        panelInkFaint: '#AA9388',
+        panelInkDim: '#B49C91',
+        panelInkMuted: '#B49C91',
+        panelInkSoft: '#E4D4CA',
+        panelSurface: 'linear-gradient(180deg, #433632 0%, #3A2F2B 100%)',
+        panelPillBg: '#5A4943',
+        panelPillBorder: '#78645C',
+        panelPillText: '#D8C5BA',
+        panelSidebarBg: 'linear-gradient(180deg, #372C28 0%, #2F2623 100%)',
+        panelSidebarDivider: '#5B4842',
+        panelActiveItemBg: '#66534C',
+        panelShellBg: 'radial-gradient(circle at 20% 0%, rgba(255,255,255,0.07), transparent 22%), linear-gradient(180deg, #4A3B36 0%, #3B2F2B 100%)',
+        panelShellShadow: '0 44px 120px rgba(86, 63, 56, 0.22), 0 18px 42px rgba(86, 63, 56, 0.14)',
+        panelSheen: 'linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.025) 18%, rgba(255,255,255,0) 40%)',
+        panelBodyBg: '#4A3C37',
+        cardFill: '#5A4943',
+        cardBorder: '#746058',
+        issueRowBg: '#55453F',
+        panelHeadingInk: '#FAF3EE',
+      }
+    : C.theme === 'sharp'
+      ? {
+          amberBg: '#324D73',
+          amberBorder: '#4E719C',
+          redBg: '#2F4668',
+          panelBg: '#0F1D31',
+          panelBorder: '#34557A',
+          panelBorderSoft: '#284666',
+          panelInkFaint: '#7E93AF',
+          panelInkDim: '#93A7C2',
+          panelInkMuted: '#93A7C2',
+          panelInkSoft: '#E3ECF8',
+          panelSurface: 'linear-gradient(180deg, #152841 0%, #122238 100%)',
+          panelPillBg: '#2D4467',
+          panelPillBorder: '#48678F',
+          panelPillText: '#C9D8EC',
+          panelSidebarBg: 'linear-gradient(180deg, #13253C 0%, #102033 100%)',
+          panelSidebarDivider: '#284666',
+          panelActiveItemBg: '#3A547C',
+          panelShellBg: 'radial-gradient(circle at 20% 0%, rgba(141,170,228,0.10), transparent 22%), linear-gradient(180deg, #102033 0%, #0D1A2A 100%)',
+          panelShellShadow: '0 38px 96px rgba(7, 17, 32, 0.34), 0 16px 40px rgba(7, 17, 32, 0.2)',
+          panelSheen: 'linear-gradient(180deg, rgba(150,179,232,0.08) 0%, rgba(150,179,232,0.02) 18%, rgba(150,179,232,0) 38%)',
+          panelBodyBg: '#223754',
+          cardFill: '#304768',
+          cardBorder: '#446489',
+          issueRowBg: '#2B4262',
+          panelHeadingInk: '#F4F8FE',
+        }
+      : {
+          amberBg: '#2A1F1C',
+          amberBorder: '#4F3832',
+          redBg: '#4A2A27',
+          panelBg: '#070404',
+          panelBorder: '#2E221E',
+          panelBorderSoft: '#231916',
+          panelInkFaint: '#7F6660',
+          panelInkDim: '#937973',
+          panelInkMuted: '#937973',
+          panelInkSoft: '#D7C2BB',
+          panelSurface: 'linear-gradient(180deg, #120D0C 0%, #0D0908 100%)',
+          panelPillBg: '#251B19',
+          panelPillBorder: '#43312D',
+          panelPillText: '#C0A69F',
+          panelSidebarBg: 'linear-gradient(180deg, #0A0605 0%, #060403 100%)',
+          panelSidebarDivider: '#1C1311',
+          panelActiveItemBg: '#2B201D',
+          panelShellBg: 'radial-gradient(circle at 18% 0%, rgba(255,255,255,0.035), transparent 22%), linear-gradient(180deg, #0B0706 0%, #050303 100%)',
+          panelShellShadow: '0 44px 120px rgba(0, 0, 0, 0.52), 0 18px 44px rgba(0, 0, 0, 0.28)',
+          panelSheen: 'linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 16%, rgba(255,255,255,0) 34%)',
+          panelBodyBg: '#0F0B0A',
+          cardFill: '#17100F',
+          cardBorder: '#2C201D',
+          issueRowBg: '#140E0D',
+          panelHeadingInk: '#F4EDE7',
+        }
 
-  const panelBg         = tonedMode ? softPalette.consoleBg : CONSOLE.black
-  const panelBorder     = tonedMode ? softPalette.consoleBorder : '#1C1311'
-  const panelBorderSoft = tonedMode ? softPalette.consoleBorderSoft : '#2B1D1B'
-  const panelInkFaint   = tonedMode ? softPalette.consoleFaint : CONSOLE.sequoia
-  const panelInkDim     = tonedMode ? softPalette.consoleMuted : CONSOLE.sequoia
-  const panelInkMuted   = tonedMode ? softPalette.consoleMuted : CONSOLE.sequoia
-  const panelInkSoft    = tonedMode ? softPalette.consoleSoft : CONSOLE.barberry
-  const panelSurface    = C.theme === 'sharp' ? '#13253C' : tonedMode ? softPalette.consoleSurface : '#100B0A'
-  const panelCardBg     = tonedMode ? softPalette.consolePanel : CONSOLE.crimson1
-  const panelCardBorder = tonedMode ? softPalette.consoleBorder : '#2B1D1B'
+  const {
+    amberBg,
+    amberBorder,
+    redBg,
+    panelBg,
+    panelBorder,
+    panelBorderSoft,
+    panelInkFaint,
+    panelInkDim,
+    panelInkMuted,
+    panelInkSoft,
+    panelSurface,
+    panelPillBg,
+    panelPillBorder,
+    panelPillText,
+    panelSidebarBg,
+    panelSidebarDivider,
+    panelActiveItemBg,
+    panelShellBg,
+    panelShellShadow,
+    panelSheen,
+    panelBodyBg,
+    cardFill,
+    cardBorder,
+    issueRowBg,
+    panelHeadingInk,
+  } = tokens
+
   const macDots = ['#FF5F57', '#FFBD2E', '#28C840']
-  const panelPillBg     = tonedMode ? softPalette.consolePanel2 : '#231917'
-  const panelPillBorder = tonedMode ? softPalette.consoleBorderSoft : '#4A312B'
-  const panelPillText   = tonedMode ? softPalette.consoleSoft : CONSOLE.barberry
-  const panelSidebarBg  = C.theme === 'sharp' ? 'linear-gradient(180deg, #13253C 0%, #102033 100%)' : C.theme === 'light' ? 'linear-gradient(180deg, #342A27 0%, #2C2421 100%)' : 'linear-gradient(180deg, #060403 0%, #030202 100%)'
-  const panelSidebarDivider = tonedMode ? softPalette.consoleBorder : '#1A1211'
   const panelActiveItem = tonedMode ? softPalette.consoleInk : PALETTE.platinum
-  const panelActiveItemBg = amberBg
-  const panelShellBg = C.theme === 'light'
-    ? 'radial-gradient(circle at 22% 0%, rgba(255,255,255,0.06), transparent 24%), linear-gradient(180deg, #463833 0%, #382D29 100%)'
-    : C.theme === 'sharp'
-      ? 'linear-gradient(180deg, #0D1A2D 0%, #0A1525 100%)'
-      : 'linear-gradient(180deg, #080505 0%, #040202 100%)'
-  const panelShellShadow = C.theme === 'light'
-    ? '0 36px 96px rgba(87, 65, 57, 0.2), 0 14px 34px rgba(87, 65, 57, 0.12)'
-    : C.theme === 'sharp'
-      ? '0 30px 78px rgba(8, 18, 34, 0.28)'
-      : '0 36px 96px rgba(0, 0, 0, 0.44), 0 0 0 1px rgba(74, 49, 43, 0.14)'
-  const panelSheen = C.theme === 'light'
-    ? 'linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 24%, rgba(255,255,255,0) 44%)'
-    : C.theme === 'sharp'
-      ? 'linear-gradient(180deg, rgba(138,167,226,0.08) 0%, rgba(138,167,226,0) 34%)'
-      : 'linear-gradient(180deg, rgba(255,255,255,0.025) 0%, rgba(255,255,255,0) 28%)'
-  const panelBodyBg = C.theme === 'light'
-    ? '#40332F'
-    : C.theme === 'sharp'
-      ? '#172B44'
-      : '#030202'
-  const cardFill = C.theme === 'light'
-    ? '#4E3F3A'
-    : C.theme === 'sharp'
-      ? '#243955'
-      : '#120B0A'
-  const cardBorder = C.theme === 'light'
-    ? '#68554F'
-    : C.theme === 'sharp'
-      ? '#35547A'
-      : '#2B1D1B'
-  const issueRowBg = C.theme === 'light'
-    ? '#453732'
-    : C.theme === 'sharp'
-      ? '#20344F'
-      : '#120B0A'
-  const panelHeadingInk = C.theme === 'light'
-    ? '#FBF4EF'
-    : C.theme === 'sharp'
-      ? softPalette.consoleInk
-      : PALETTE.platinum
 
   const Sidebar = () => (
     <div className="sa-dash-sidebar" style={{ background: panelSidebarBg, borderRight: `1px solid ${panelSidebarDivider}`, padding: '22px 0', minHeight: 540 }}>
