@@ -1933,12 +1933,12 @@ function FourVerbs({ C }) {
       const vh       = window.innerHeight
 
       cards.forEach((card, i) => {
-        // Each card starts (i+1) viewports below the heading.
-        // Switch to sticky exactly when the card reaches its pinTop in the viewport
-        // (seamless — no jump). Trigger point: scrolled = (i+1)*vh - i*STAGGER.
-        const absTop   = headingH + (i + 1) * vh
-        const pinTop   = headingH + i * CARD_STAGGER
-        const switchAt = (i + 1) * vh - i * CARD_STAGGER
+        // Cards pin near viewport top (covering the heading), staggered 24px each.
+        // absTop = headingH + i*vh so cards appear as soon as heading is pinned.
+        // switchAt = absTop - pinTop guarantees seamless absolute→sticky handoff.
+        const pinTop   = i * CARD_STAGGER
+        const absTop   = headingH + i * vh
+        const switchAt = headingH + i * (vh - CARD_STAGGER)
 
         if (scrolled < switchAt) {
           card.style.position = 'absolute'
