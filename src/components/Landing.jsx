@@ -1916,29 +1916,33 @@ function FourVerbs({ C }) {
     if (!section || !heading || cards.some(c => !c)) return
 
     const CARD_STAGGER = 24
+    const nav = document.querySelector('nav')
+    let vh = window.innerHeight
+    let headingH = heading.offsetHeight
+    let navH = nav ? nav.offsetHeight : 64
+
+    function applyHeight() {
+      vh       = window.innerHeight
+      headingH = heading.offsetHeight
+      navH     = nav ? nav.offsetHeight : 64
+      // heading + 4 card runways + 1 breathing viewport
+      section.style.height = `${headingH + 5 * vh}px`
+    }
 
     function onScroll() {
       const sectionTop = section.getBoundingClientRect().top
       const scrolled   = -sectionTop
 
-      if (scrolled <= 0) {
-        heading.style.position = 'relative'
-        heading.style.top      = '0'
-      } else {
-        heading.style.position = 'sticky'
-        heading.style.top      = '0'
-      }
-
-      const headingH = heading.offsetHeight
-      const vh       = window.innerHeight
+      heading.style.position = scrolled <= 0 ? 'relative' : 'sticky'
+      heading.style.top      = '0px'
 
       cards.forEach((card, i) => {
-        // Cards pin near viewport top (covering the heading), staggered 24px each.
-        // absTop = headingH + i*vh so cards appear as soon as heading is pinned.
-        // switchAt = absTop - pinTop guarantees seamless absolute→sticky handoff.
-        const pinTop   = i * CARD_STAGGER
+        // pinTop starts just below nav so card content isn't clipped.
+        // absTop = headingH + i*vh so each card starts 1 viewport apart.
+        // switchAt = absTop - pinTop keeps transition seamless (no jump).
+        const pinTop   = navH + i * CARD_STAGGER
         const absTop   = headingH + i * vh
-        const switchAt = headingH + i * (vh - CARD_STAGGER)
+        const switchAt = absTop - pinTop
 
         if (scrolled < switchAt) {
           card.style.position = 'absolute'
@@ -1950,9 +1954,14 @@ function FourVerbs({ C }) {
       })
     }
 
+    applyHeight()
     window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', applyHeight)
     onScroll()
-    return () => window.removeEventListener('scroll', onScroll)
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', applyHeight)
+    }
   }, [])
 
   return (
@@ -1963,7 +1972,7 @@ function FourVerbs({ C }) {
         background:  C.bg,
         borderTop:   `1px solid ${C.border}`,
         position:    'relative',
-        height:      '600vh',
+        height:      '500vh',
       }}
     >
       <style>{`
