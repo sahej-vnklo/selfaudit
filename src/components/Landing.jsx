@@ -729,64 +729,6 @@ function ThemeTextToggle({ theme, setTheme, C }) {
   )
 }
 
-function HeroPreviewConsole() {
-  const macDots = ['#FF5F57', '#FFBD2E', '#28C840']
-
-  return (
-    <div style={{ background: CONSOLE.crimson1, border: '1px solid #2B1D1B', borderRadius: 22, overflow: 'hidden', boxShadow: '0 26px 70px rgba(0, 0, 0, 0.42)' }}>
-      <div style={{ background: CONSOLE.crimson2, borderBottom: '1px solid #2B1D1B', padding: '16px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <div style={{ display: 'flex', gap: 8 }}>
-            {macDots.map(color => <div key={color} style={{ width: 11, height: 11, borderRadius: '50%', background: color }} />)}
-          </div>
-          <span style={{ fontFamily: mono, fontSize: 13, color: CONSOLE.sequoia }}>selfaudit · diagnosis console</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 7, height: 7, borderRadius: '50%', background: CONSOLE.green }} />
-          <span style={{ fontFamily: mono, fontSize: 12, letterSpacing: '0.12em', color: CONSOLE.green }}>LIVE</span>
-        </div>
-      </div>
-
-      <div style={{ padding: '30px 32px 28px' }}>
-        <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: CONSOLE.sequoia, marginBottom: 14 }}>Symptom</div>
-        <div style={{ fontFamily: serif, fontSize: 'clamp(26px, 2.5vw, 34px)', fontStyle: 'italic', color: ELITE.ink, lineHeight: 1.36, marginBottom: 28 }}>
-          &ldquo;Revenue is up but margins keep getting worse every month.&rdquo;
-        </div>
-
-        <div style={{ borderTop: '1px solid #2B1D1B', borderBottom: '1px solid #2B1D1B', padding: '20px 0', display: 'flex', flexDirection: 'column', gap: 14 }}>
-          {[
-            ['Reading', 'Stripe · 18 months revenue cohorts'],
-            ['Cross-referencing', 'delivery cost vs. invoice value'],
-            ['Isolating root cause', '3 candidates eliminated'],
-          ].map(([label, body]) => (
-            <div key={label} style={{ display: 'grid', gridTemplateColumns: '18px 130px 1fr', gap: 10, alignItems: 'start' }}>
-              <span style={{ color: CONSOLE.green, fontFamily: mono, fontSize: 14, lineHeight: 1 }}>✓</span>
-              <span style={{ fontFamily: mono, fontSize: 12, color: CONSOLE.sequoia }}>{label}</span>
-              <span style={{ fontFamily: mono, fontSize: 12, color: ELITE.ink }}>{body}</span>
-            </div>
-          ))}
-        </div>
-
-        <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#F0AE76', marginTop: 22, marginBottom: 14 }}>Verdict</div>
-        <div style={{ fontFamily: serif, fontSize: 'clamp(24px, 2.4vw, 32px)', color: ELITE.ink, lineHeight: 1.48, marginBottom: 24 }}>
-          Your revenue is growing because <em style={{ fontStyle: 'italic', color: ELITE.soft }}>discounting hides the leak.</em> Margin won&apos;t recover until your <em style={{ fontStyle: 'italic', color: ELITE.soft }}>delivery model changes</em> — not your pricing.
-        </div>
-
-        <div style={{ borderTop: '1px solid #2B1D1B', paddingTop: 18, display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 16 }}>
-          <div>
-            <div style={{ fontFamily: mono, fontSize: 9, letterSpacing: '0.14em', textTransform: 'uppercase', color: CONSOLE.sequoia, marginBottom: 6 }}>Root cause</div>
-            <div style={{ fontFamily: serif, fontSize: 16, color: ELITE.soft }}>Delivery model leak</div>
-          </div>
-          <div>
-            <div style={{ fontFamily: mono, fontSize: 9, letterSpacing: '0.14em', textTransform: 'uppercase', color: CONSOLE.sequoia, marginBottom: 6 }}>Confidence</div>
-            <div style={{ fontFamily: serif, fontSize: 16, color: CONSOLE.green }}>88% · High</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 function LandingNav({ C, pageOpen, onBack, onPricing, onStories, onConnected, onSignIn, onStartAudit, onLogoClick, storiesOpen, connectedOpen, pricingOpen, theme, setTheme }) {
   return (
     <nav style={{ padding: '20px 0', borderBottom: `1px solid ${C.border}`, background: 'rgba(10, 6, 6, 0.88)', backdropFilter: 'blur(18px)', position: 'sticky', top: 0, zIndex: 20 }}>
@@ -3040,23 +2982,6 @@ export default function Landing({ onStart, onSignUp, session }) {
           .sa-er-stream { height:300px !important; }
         }
 
-        /* Hero */
-        .sa-hero-grid { max-width:1280px; margin:0 auto; padding:0 48px; display:grid; grid-template-columns:minmax(0, 1fr) minmax(440px, 1.08fr); gap:80px; align-items:center; }
-        .sa-hero-shell { position:relative; overflow:hidden; }
-        .sa-hero-shell::before {
-          content:'';
-          position:absolute;
-          inset:0;
-          background: radial-gradient(circle at 20% 18%, rgba(169, 141, 134, 0.08), transparent 34%);
-          pointer-events:none;
-        }
-        @media(max-width:1100px){
-          .sa-hero-grid { grid-template-columns:1fr; gap:48px; padding:0 28px; }
-        }
-        @media(max-width:480px){
-          .sa-hero-grid { padding:0 18px; }
-        }
-
         /* Four Verbs sticky stack */
         .sa-fv-card-grid { display:grid; grid-template-columns:1fr 1fr; gap:clamp(32px,5vw,64px); align-items:start; max-width:1200px; margin:0 auto; }
         @media(max-width:768px){
@@ -3185,112 +3110,108 @@ export default function Landing({ onStart, onSignUp, session }) {
         <>
 
       {/* ── 1. Hero ── */}
-      <section className="sa-hero-shell" style={{ padding: 'clamp(56px, 7vw, 110px) 0 clamp(64px, 7vw, 112px)', background: C.bg }}>
-        <div className="sa-hero-grid">
-          <div>
-            <div style={{ fontFamily: mono, fontSize: 12, letterSpacing: '0.18em', textTransform: 'uppercase', color: C.accentText, fontWeight: 600, marginBottom: 24 }}>
-              Business intelligence layer — now live
-            </div>
-
-            <h1 style={{
-              fontFamily: serif,
-              fontSize: 'clamp(58px, 9vw, 116px)',
-              fontWeight: 700,
-              lineHeight: 0.96,
-              letterSpacing: '-0.05em',
-              margin: '0 0 28px',
-              color: C.redMuted,
-              maxWidth: 660,
-            }}>
-              The brain<br />
-              your business<br />
-              <em style={{ fontStyle: 'italic', color: C.ink }}>has been</em><br />
-              <em style={{ fontStyle: 'italic', color: C.ink }}>missing.</em>
-            </h1>
-
-            <p style={{
-              fontFamily: serif,
-              fontSize: 'clamp(20px, 2.2vw, 26px)',
-              lineHeight: 1.55,
-              margin: '0 0 30px',
-              color: C.inkSoft,
-              maxWidth: 520,
-            }}>
-              Tell it what feels wrong. It reads your live data, finds the cause, and gives you the next move before the room even agrees what the problem is.
-            </p>
-
-            <div style={{ maxWidth: 560 }}>
-              <div className="sa-hero-bar" style={{
-                display: 'flex',
-                alignItems: 'center',
-                background: C.surface3,
-                border: `1px solid ${C.border2}`,
-                borderRadius: 18,
-                padding: '8px',
-                gap: 10,
-                transition: 'border-color 0.2s',
-                boxShadow: '0 0 0 1px rgba(255,255,255,0.02) inset',
-              }}>
-                <input
-                  type="text"
-                  value={inputValue}
-                  onChange={e => setInputValue(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && handleDiagnose()}
-                  placeholder={placeholder}
-                  onFocus={() => { userFocusedRef.current = true; setPlaceholder('') }}
-                  onBlur={() => { userFocusedRef.current = false }}
-                  style={{
-                    flex: 1,
-                    background: 'none',
-                    border: 'none',
-                    outline: 'none',
-                    fontSize: 16,
-                    color: C.ink,
-                    fontFamily: 'inherit',
-                    minWidth: 0,
-                    padding: '14px 16px',
-                  }}
-                />
-                <button
-                  onClick={handleDiagnose}
-                  className="sa-hero-btn"
-                  style={{
-                    background: C.bg,
-                    color: C.ink,
-                    border: `1px solid ${C.border2}`,
-                    borderRadius: 14,
-                    padding: '14px 24px',
-                    fontSize: 16,
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    fontFamily: 'inherit',
-                    whiteSpace: 'nowrap',
-                    transition: 'background 0.18s, border-color 0.18s',
-                    flexShrink: 0,
-                  }}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.background = C.surface2
-                    e.currentTarget.style.borderColor = C.accentDark
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.background = C.bg
-                    e.currentTarget.style.borderColor = C.border2
-                  }}
-                >
-                  Diagnose →
-                </button>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 18, marginTop: 22, maxWidth: 520 }}>
-                {['Free root-cause diagnosis', 'No account needed', '5 minutes. Brutally honest.'].map(item => (
-                  <div key={item} style={{ fontSize: 13, lineHeight: 1.45, color: C.inkFaint }}>
-                    {item}
-                  </div>
-                ))}
-              </div>
-            </div>
+      <section style={{ padding: 'clamp(56px, 7vw, 112px) 0 clamp(48px, 6vw, 100px)', textAlign: 'center', background: 'none' }}>
+        <div style={wrap}>
+          <div style={{ fontSize: 13, letterSpacing: '0.18em', textTransform: 'uppercase', color: C.accentText, fontWeight: 600, marginBottom: 24 }}>
+            Now live — The ultimate business intelligence layer
           </div>
 
-          <HeroPreviewConsole />
+          <h1 style={{
+            fontFamily: serif,
+            fontSize: 'clamp(30px, 5.5vw, 72px)',
+            fontWeight: 700,
+            lineHeight: 1.05,
+            letterSpacing: '-0.04em',
+            textAlign: 'center',
+            margin: '0 auto 16px',
+            color: C.ink,
+          }}>
+            Introducing the next generation business brain
+          </h1>
+
+          <p style={{
+            fontFamily: serif,
+            fontSize: 'clamp(22px, 3vw, 36px)',
+            fontWeight: 400,
+            lineHeight: 1.2,
+            letterSpacing: '-0.02em',
+            textAlign: 'center',
+            margin: '0 auto 14px',
+            color: C.inkSoft,
+            maxWidth: 860,
+          }}>
+            The missing layer that elevates your business to top-tier.
+          </p>
+
+          <p style={{
+            fontSize: 17,
+            color: C.inkMuted,
+            maxWidth: 580,
+            margin: '0 auto 48px',
+            lineHeight: 1.6,
+            textAlign: 'center',
+            fontWeight: 400,
+          }}>
+            Tell it what feels wrong. It reads your live data, finds the cause, and tells you the next move — before you have to ask.
+          </p>
+
+          <div style={{ maxWidth: 680, margin: '0 auto' }}>
+            <div className="sa-hero-bar" style={{
+              display: 'flex',
+              alignItems: 'center',
+              background: C.surface3,
+              border: `1px solid ${C.border2}`,
+              borderRadius: 999,
+              padding: '6px 6px 6px 24px',
+              gap: 10,
+              transition: 'border-color 0.2s',
+            }}>
+              <input
+                type="text"
+                value={inputValue}
+                onChange={e => setInputValue(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleDiagnose()}
+                placeholder={placeholder}
+                onFocus={() => { userFocusedRef.current = true; setPlaceholder('') }}
+                onBlur={() => { userFocusedRef.current = false }}
+                style={{
+                  flex: 1,
+                  background: 'none',
+                  border: 'none',
+                  outline: 'none',
+                  fontSize: 16,
+                  color: C.ink,
+                  fontFamily: 'inherit',
+                  minWidth: 0,
+                }}
+              />
+              <button
+                onClick={handleDiagnose}
+                className="sa-hero-btn"
+                style={{
+                  background: C.accent,
+                  color: C.bg,
+                  border: 'none',
+                  borderRadius: 999,
+                  padding: '12px 22px',
+                  fontSize: 16,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  whiteSpace: 'nowrap',
+                  transition: 'background 0.18s',
+                  flexShrink: 0,
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = C.accentDark}
+                onMouseLeave={e => e.currentTarget.style.background = C.accent}
+              >
+                Let&apos;s go →
+              </button>
+            </div>
+            <div style={{ marginTop: 14, fontSize: 14, color: C.inkMuted }}>
+              Free root-cause diagnosis. No account needed. Takes 5 minutes. Brutally honest.
+            </div>
+          </div>
         </div>
       </section>
 
