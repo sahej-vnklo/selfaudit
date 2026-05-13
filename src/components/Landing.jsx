@@ -62,31 +62,31 @@ const LIGHT = {
 }
 
 const SHARP = {
-  page: '#102744',
-  band: '#173353',
-  panel: '#1F3F66',
-  panel2: '#284A75',
-  line: '#355983',
-  lineStrong: '#5377A6',
-  ink: '#F5F8FF',
-  soft: '#D8E2F3',
-  muted: '#A8BDD9',
-  faint: '#7A95BA',
-  accent: '#3477FF',
-  accentDeep: '#235FDE',
-  consoleBg: '#0F2641',
-  consoleSurface: '#17304E',
-  consolePanel: '#1B3657',
-  consolePanel2: '#23426A',
-  consoleBorder: '#355983',
-  consoleBorderSoft: '#4E709B',
-  consoleInk: '#F6FAFF',
-  consoleSoft: '#DCE6F6',
-  consoleMuted: '#AAC0DC',
-  consoleFaint: '#809CC0',
-  consoleVerdict: '#76ABFF',
-  consoleVerdictBg: '#223B5F',
-  consoleAmber: '#6E9FFF',
+  page: '#122946',
+  band: '#173555',
+  panel: '#1E4165',
+  panel2: '#295077',
+  line: '#32577F',
+  lineStrong: '#4A729C',
+  ink: '#F4F7FC',
+  soft: '#D8E2F1',
+  muted: '#A9BCD5',
+  faint: '#738AA9',
+  accent: '#3A73EA',
+  accentDeep: '#295FD1',
+  consoleBg: '#0D1B30',
+  consoleSurface: '#172A43',
+  consolePanel: '#1A304D',
+  consolePanel2: '#223B5D',
+  consoleBorder: '#315476',
+  consoleBorderSoft: '#446A90',
+  consoleInk: '#F5F8FE',
+  consoleSoft: '#D9E3F1',
+  consoleMuted: '#91A5C1',
+  consoleFaint: '#667D9A',
+  consoleVerdict: '#7E9FE7',
+  consoleVerdictBg: '#203756',
+  consoleAmber: '#8DABEA',
 }
 
 const THEMES = {
@@ -148,10 +148,10 @@ const THEMES = {
     accent: SHARP.accent,
     accentDark: SHARP.accentDeep,
     accentSoft: SHARP.panel2,
-    accentText: SHARP.accentDeep,
-    redMuted: SHARP.accentDeep,
+    accentText: '#89A7E2',
+    redMuted: '#6E8FDE',
     redSoft: SHARP.panel2,
-    amber: SHARP.accent,
+    amber: '#90ABE5',
   },
 }
 
@@ -819,7 +819,7 @@ function LandingNav({ C, pageOpen, onBack, onPricing, onStories, onConnected, on
   const navBg = C.theme === 'dark'
     ? 'rgba(10, 6, 6, 0.88)'
     : C.theme === 'sharp'
-      ? 'rgba(20, 41, 70, 0.88)'
+      ? 'rgba(21, 46, 76, 0.9)'
       : 'rgba(245, 240, 234, 0.86)'
   return (
     <nav style={{ padding: '20px 0', borderBottom: `1px solid ${C.border}`, background: navBg, backdropFilter: 'blur(18px)', position: 'sticky', top: 0, zIndex: 20 }}>
@@ -1746,6 +1746,8 @@ function EngineRoom({ C }) {
   const panelTextColor = tonedMode ? softPalette.consoleInk : PALETTE.platinum
   const panelIngestColor  = tonedMode ? '#7BD8B6' : '#77E8BE'
   const panelSignalColor  = tonedMode ? softPalette.consoleAmber : '#FF6432'
+  const displayAccent = C.theme === 'sharp' ? '#6F8FE0' : C.redMuted
+  const statColor = C.theme === 'sharp' ? panelTextColor : C.redMuted
 
   const typeColor = (type) => {
     if (type === 'INGEST') return panelIngestColor
@@ -1776,7 +1778,7 @@ function EngineRoom({ C }) {
             fontSize: 11,
             letterSpacing: '0.18em',
             textTransform: 'uppercase',
-            color: C.accent,
+            color: C.theme === 'sharp' ? C.accentText : C.accent,
             marginBottom: 24,
           }}>
             Real-time intelligence layer
@@ -1792,7 +1794,7 @@ function EngineRoom({ C }) {
             color: C.ink,
           }}>
             Inside the<br />
-            <em style={{ fontStyle: 'italic', color: C.redMuted }}>engine room.</em>
+            <em style={{ fontStyle: 'italic', color: displayAccent }}>engine room.</em>
           </h2>
 
           <p style={{
@@ -1819,7 +1821,7 @@ function EngineRoom({ C }) {
                   fontSize: 52,
                   fontWeight: 800,
                   fontStyle: 'italic',
-                  color: C.redMuted,
+                  color: statColor,
                   lineHeight: 1,
                 }}>
                   {stat.value}
@@ -1938,12 +1940,12 @@ function FourVerbs({ C }) {
     inkSoft: C.inkSoft,
     inkMuted: C.inkMuted,
     inkFaint: C.inkFaint,
-    accent: CONSOLE.barberry,
-    redMuted: CONSOLE.barberry,
+    accent: C.theme === 'sharp' ? '#8AA6E4' : CONSOLE.barberry,
+    redMuted: C.theme === 'sharp' ? '#8AA6E4' : CONSOLE.barberry,
   }
 
   const cardBg = C.card
-  const cardPanelBg = C.surface
+  const cardPanelBg = C.theme === 'sharp' ? C.surface2 : C.surface
 
   const verbs = [
     {
@@ -2484,7 +2486,7 @@ function DashboardSection({ C }) {
   const goalRef   = useRef(null)
   const softPalette = C.theme === 'sharp' ? SHARP : LIGHT
   const tonedMode = C.theme !== 'dark'
-  const amber = tonedMode ? softPalette.consoleAmber : CONSOLE.barberry
+  const amber = C.theme === 'sharp' ? '#88A5E5' : tonedMode ? softPalette.consoleAmber : CONSOLE.barberry
   const green = CONSOLE.green
 
   useEffect(() => {
@@ -2496,9 +2498,9 @@ function DashboardSection({ C }) {
   }, [])
 
   // Pre-computed rgba from amber (#F5F0E8 → 201,160,64) and red (192,80,80)
-  const amberBg     = C.theme === 'sharp' ? '#31445F' : tonedMode ? '#51403A' : '#201614'
-  const amberBorder = tonedMode ? softPalette.consoleBorderSoft : '#4A312B'
-  const redBg       = C.theme === 'sharp' ? '#40516A' : tonedMode ? '#694541' : '#4A2320'
+  const amberBg     = C.theme === 'sharp' ? '#203A5C' : tonedMode ? '#51403A' : '#201614'
+  const amberBorder = C.theme === 'sharp' ? '#41658E' : tonedMode ? softPalette.consoleBorderSoft : '#4A312B'
+  const redBg       = C.theme === 'sharp' ? '#29486D' : tonedMode ? '#694541' : '#4A2320'
 
   const panelBg         = tonedMode ? softPalette.consoleBg : CONSOLE.black
   const panelBorderSoft = tonedMode ? softPalette.consoleBorderSoft : '#2B1D1B'
@@ -2513,7 +2515,7 @@ function DashboardSection({ C }) {
   const panelPillBg     = tonedMode ? softPalette.consolePanel2 : '#231917'
   const panelPillBorder = tonedMode ? softPalette.consoleBorderSoft : '#4A312B'
   const panelPillText   = tonedMode ? softPalette.consoleSoft : CONSOLE.barberry
-  const panelSidebarBg  = C.theme === 'sharp' ? '#202A39' : tonedMode ? '#322826' : '#050403'
+  const panelSidebarBg  = C.theme === 'sharp' ? '#16283F' : tonedMode ? '#322826' : '#050403'
   const panelSidebarDivider = tonedMode ? softPalette.consoleBorder : '#1A1211'
   const panelActiveItem = tonedMode ? softPalette.consoleInk : PALETTE.platinum
   const panelActiveItemBg = amberBg
@@ -2955,13 +2957,24 @@ export default function Landing({ onStart, onSignUp, session }) {
       document.head.appendChild(el)
     }
 
-    el.textContent = `
-      body {
-        background-image: none;
-        background-attachment: scroll;
-        background-color: ${C.bg};
-      }
-    `
+    el.textContent = theme === 'sharp'
+      ? `
+        body {
+          background-image:
+            radial-gradient(circle at top, rgba(58, 115, 234, 0.16), transparent 38%),
+            radial-gradient(circle at 85% 18%, rgba(137, 167, 226, 0.09), transparent 28%),
+            linear-gradient(180deg, #173454 0%, #122946 38%, #0f2239 100%);
+          background-attachment: scroll;
+          background-color: ${C.bg};
+        }
+      `
+      : `
+        body {
+          background-image: none;
+          background-attachment: scroll;
+          background-color: ${C.bg};
+        }
+      `
 
     return () => {
       if (el) el.textContent = ''
@@ -3384,14 +3397,14 @@ export default function Landing({ onStart, onSignUp, session }) {
                 'Answers based on what you said',
                 'Hedges to stay polite',
               ].map(item => (
-                <div key={item} style={{ fontFamily: serif, fontSize: 19, fontStyle: 'italic', color: C.inkFaint, padding: '22px 0', borderBottom: `1px solid ${C.border}` }}>
+                <div key={item} style={{ fontFamily: serif, fontSize: 19, fontStyle: 'italic', color: C.theme === 'sharp' ? C.inkMuted : C.inkFaint, padding: '22px 0', borderBottom: `1px solid ${C.border}` }}>
                   {item}
                 </div>
               ))}
             </div>
 
             {/* Right — SelfAudit card */}
-            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, overflow: 'hidden' }}>
+            <div style={{ background: C.theme === 'sharp' ? C.surface3 : C.card, border: `1px solid ${C.theme === 'sharp' ? C.border2 : C.border}`, borderRadius: 14, overflow: 'hidden' }}>
               <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.inkFaint, padding: '20px 32px 16px', borderBottom: `1px solid ${C.border}` }}>
                 SelfAudit
               </div>
