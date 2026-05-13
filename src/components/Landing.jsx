@@ -2668,33 +2668,39 @@ function DashboardSection({ C }) {
 function CompoundingSection({ C }) {
   const softPalette = C.theme === 'sharp' ? SHARP : LIGHT
   const tonedMode = C.theme !== 'dark'
-  const amber = tonedMode ? softPalette.consoleAmber : '#F0AE76'
-  const axisFill = tonedMode ? softPalette.consoleFaint : CONSOLE.sequoia
+  const amber = C.theme === 'light'
+    ? '#C7A28E'
+    : tonedMode ? softPalette.consoleAmber : '#F0AE76'
+  const axisFill = C.theme === 'light'
+    ? '#8E746A'
+    : tonedMode ? softPalette.consoleFaint : CONSOLE.sequoia
   const cardBg = C.theme === 'light'
-    ? '#433835'
+    ? 'radial-gradient(circle at 22% 10%, rgba(255,255,255,0.08), transparent 24%), radial-gradient(circle at 78% 0%, rgba(196, 158, 142, 0.08), transparent 28%), linear-gradient(180deg, #533F39 0%, #342724 100%)'
     : tonedMode ? softPalette.consoleBg : '#090505'
   const cardBorder = C.theme === 'light'
-    ? '#6F5C56'
+    ? '#977B71'
     : tonedMode ? softPalette.consoleBorder : '#2F211E'
   const cardInk = C.theme === 'light'
-    ? '#F5EEEA'
+    ? '#FBF4EF'
     : tonedMode ? softPalette.consoleInk : PALETTE.platinum
   const cardSoft = C.theme === 'light'
-    ? '#D7C3BA'
+    ? '#E9D9CF'
     : tonedMode ? softPalette.consoleSoft : CONSOLE.barberry
   const cardFaint = C.theme === 'light'
-    ? '#B79F97'
+    ? '#D1B8AD'
     : tonedMode ? softPalette.consoleFaint : CONSOLE.sequoia
   const cardShadow = C.theme === 'light'
-    ? '0 32px 80px rgba(64, 45, 40, 0.22), 0 10px 28px rgba(64, 45, 40, 0.16)'
+    ? '0 44px 116px rgba(61, 44, 39, 0.3), 0 20px 48px rgba(61, 44, 39, 0.2), 0 0 0 1px rgba(151, 123, 113, 0.16), inset 0 1px 0 rgba(255,255,255,0.06)'
     : C.theme === 'dark'
       ? '0 28px 72px rgba(0, 0, 0, 0.42), 0 0 0 1px rgba(74, 49, 43, 0.2)'
       : '0 24px 60px rgba(8, 18, 34, 0.24)'
   const cardGlow = C.theme === 'dark'
     ? 'radial-gradient(circle at 50% 42%, rgba(90, 63, 58, 0.18), transparent 62%)'
     : C.theme === 'light'
-      ? 'radial-gradient(circle at 50% 38%, rgba(111, 92, 86, 0.14), transparent 64%)'
+      ? 'radial-gradient(circle at 50% 40%, rgba(167, 133, 120, 0.14), transparent 58%), radial-gradient(circle at 50% 42%, rgba(255, 247, 241, 0.3), transparent 76%)'
       : 'none'
+  const chartTopOpacity = C.theme === 'light' ? '0.38' : '0.28'
+  const chartBottomOpacity = C.theme === 'light' ? '0.06' : '0.02'
 
   // Chart points [x, y] in a 560×210 viewbox (y=210 = baseline)
   const pts = [
@@ -2749,9 +2755,21 @@ function CompoundingSection({ C }) {
             />
           )}
           <div style={{ position: 'relative', zIndex: 1, background: cardBg, borderRadius: 14, overflow: 'hidden', border: `1px solid ${cardBorder}`, boxShadow: cardShadow }}>
+          {C.theme === 'light' && (
+            <div
+              aria-hidden="true"
+              style={{
+                position: 'absolute',
+                inset: 0,
+                background: 'linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 24%, rgba(255,255,255,0) 44%), radial-gradient(circle at 50% 32%, rgba(255,255,255,0.05), transparent 58%), radial-gradient(circle at 50% 120%, rgba(18,10,7,0.12), transparent 44%)',
+                pointerEvents: 'none',
+                zIndex: 2,
+              }}
+            />
+          )}
 
           {/* Card header */}
-          <div style={{ padding: '28px 32px 12px' }}>
+          <div style={{ position: 'relative', zIndex: 3, padding: '28px 32px 12px' }}>
             <div style={{ fontFamily: 'inherit', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', color: cardSoft, fontWeight: 600, marginBottom: 10 }}>
               Brain knowledge · over time
             </div>
@@ -2761,12 +2779,12 @@ function CompoundingSection({ C }) {
           </div>
 
           {/* SVG chart */}
-          <div style={{ padding: '8px 32px 4px' }}>
+          <div style={{ position: 'relative', zIndex: 3, padding: '8px 32px 4px' }}>
             <svg viewBox="0 0 560 228" style={{ width: '100%', display: 'block', overflow: 'visible' }}>
               <defs>
                 <linearGradient id="compGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%"   stopColor={amber} stopOpacity="0.28" />
-                  <stop offset="100%" stopColor={amber} stopOpacity="0.02" />
+                  <stop offset="0%"   stopColor={amber} stopOpacity={chartTopOpacity} />
+                  <stop offset="100%" stopColor={amber} stopOpacity={chartBottomOpacity} />
                 </linearGradient>
               </defs>
 
@@ -2802,7 +2820,7 @@ function CompoundingSection({ C }) {
           </div>
 
           {/* Milestone rows */}
-          <div style={{ padding: '0 32px 28px' }}>
+          <div style={{ position: 'relative', zIndex: 3, padding: '0 32px 28px' }}>
             {[
               { day: 'DAY 30', body: <>Catches a margin leak your CFO had written off as <em style={{ fontStyle: 'italic', color: amber }}>seasonality.</em></> },
               { day: 'DAY 60', body: <>Questions a senior hire <em style={{ fontStyle: 'italic', color: amber }}>before</em> you sign the offer. It was right to.</> },
