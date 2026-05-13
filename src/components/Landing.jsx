@@ -1749,6 +1749,21 @@ function EngineRoom({ C }) {
   const panelSignalColor  = tonedMode ? softPalette.consoleAmber : '#FF6432'
   const displayAccent = C.theme === 'sharp' ? '#6F8FE0' : C.redMuted
   const statColor = C.theme === 'sharp' ? panelTextColor : C.redMuted
+  const panelShellBg = C.theme === 'light'
+    ? 'radial-gradient(circle at 18% 0%, rgba(255,255,255,0.06), transparent 26%), linear-gradient(180deg, #483A35 0%, #3C302C 100%)'
+    : C.theme === 'sharp'
+      ? 'linear-gradient(180deg, #0E1C30 0%, #0B1728 100%)'
+      : 'linear-gradient(180deg, #090505 0%, #050303 100%)'
+  const panelShadow = C.theme === 'light'
+    ? '0 34px 88px rgba(87, 65, 57, 0.18), 0 14px 32px rgba(87, 65, 57, 0.12)'
+    : C.theme === 'sharp'
+      ? '0 28px 72px rgba(8, 18, 34, 0.28)'
+      : '0 34px 88px rgba(0, 0, 0, 0.42), 0 0 0 1px rgba(74, 49, 43, 0.16)'
+  const panelSheen = C.theme === 'light'
+    ? 'linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 22%, rgba(255,255,255,0) 40%)'
+    : C.theme === 'sharp'
+      ? 'linear-gradient(180deg, rgba(138,167,226,0.08) 0%, rgba(138,167,226,0) 34%)'
+      : 'linear-gradient(180deg, rgba(255,255,255,0.025) 0%, rgba(255,255,255,0) 30%)'
 
   const typeColor = (type) => {
     if (type === 'INGEST') return panelIngestColor
@@ -1846,14 +1861,15 @@ function EngineRoom({ C }) {
 
         {/* ── Right: stream panel ── */}
         <div className="sa-er-stream" style={{
-          background: panelBg,
+          background: panelShellBg,
           borderRadius: 12,
           height: 600,
           overflow: 'hidden',
           border: `1px solid ${panelBorder}`,
           position: 'relative',
-          boxShadow: 'none',
+          boxShadow: panelShadow,
         }}>
+          <div aria-hidden="true" style={{ position: 'absolute', inset: 0, background: panelSheen, pointerEvents: 'none', zIndex: 1 }} />
           {/* Header bar */}
           <div style={{
             background: panelSurface,
@@ -2357,6 +2373,21 @@ function LiveDiagnosis({ C }) {
   const panelHealthy    = CONSOLE.green
   const panelAmber      = tonedMode ? softPalette.consoleAmber : CONSOLE.barberry
   const panelCritical   = tonedMode ? softPalette.consoleMuted : CONSOLE.sequoia
+  const panelShellBg = C.theme === 'light'
+    ? 'radial-gradient(circle at 22% 0%, rgba(255,255,255,0.06), transparent 24%), linear-gradient(180deg, #473934 0%, #3D312D 100%)'
+    : C.theme === 'sharp'
+      ? 'linear-gradient(180deg, #0C182A 0%, #091321 100%)'
+      : 'linear-gradient(180deg, #090505 0%, #040202 100%)'
+  const panelShadow = C.theme === 'light'
+    ? '0 34px 92px rgba(87, 65, 57, 0.18), 0 14px 34px rgba(87, 65, 57, 0.12)'
+    : C.theme === 'sharp'
+      ? '0 26px 68px rgba(8, 18, 34, 0.26)'
+      : '0 34px 88px rgba(0, 0, 0, 0.42), 0 0 0 1px rgba(74, 49, 43, 0.14)'
+  const panelSheen = C.theme === 'light'
+    ? 'linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 24%, rgba(255,255,255,0) 42%)'
+    : C.theme === 'sharp'
+      ? 'linear-gradient(180deg, rgba(138,167,226,0.08) 0%, rgba(138,167,226,0) 34%)'
+      : 'linear-gradient(180deg, rgba(255,255,255,0.025) 0%, rgba(255,255,255,0) 28%)'
 
   return (
     <section ref={sectionRef} style={{ background: C.bg, padding: 'clamp(64px, 8vw, 140px) 0' }}>
@@ -2405,10 +2436,11 @@ function LiveDiagnosis({ C }) {
 
       {/* Console panel */}
       <div style={{ maxWidth: 920, margin: '0 auto', padding: '0 28px' }}>
-        <div style={{ background: panelBg, border: `1px solid ${panelBorder}`, borderRadius: 16, overflow: 'hidden', boxShadow: 'none' }}>
+        <div style={{ background: panelShellBg, border: `1px solid ${panelBorder}`, borderRadius: 16, overflow: 'hidden', boxShadow: panelShadow, position: 'relative' }}>
+          <div aria-hidden="true" style={{ position: 'absolute', inset: 0, background: panelSheen, pointerEvents: 'none', zIndex: 1 }} />
 
           {/* Top bar */}
-          <div style={{ background: panelSurface, borderBottom: `1px solid ${panelBorderSoft}`, padding: '14px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ position: 'relative', zIndex: 2, background: panelSurface, borderBottom: `1px solid ${panelBorderSoft}`, padding: '14px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{ display: 'flex', gap: 6 }}>
                 {macDots.map(color => <div key={color} style={{ width: 10, height: 10, borderRadius: '50%', background: color }} />)}
@@ -2422,7 +2454,7 @@ function LiveDiagnosis({ C }) {
           </div>
 
           {/* Body */}
-          <div style={{ padding: 36 }}>
+          <div style={{ position: 'relative', zIndex: 2, padding: 36 }}>
 
             {/* Symptom */}
             <div style={{ fontFamily: 'inherit', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', color: panelInkMuted, fontWeight: 600, marginBottom: 12 }}>SYMPTOM</div>
@@ -2501,11 +2533,12 @@ function DashboardSection({ C }) {
   }, [])
 
   // Pre-computed rgba from amber (#F5F0E8 → 201,160,64) and red (192,80,80)
-  const amberBg     = C.theme === 'sharp' ? '#203A5C' : tonedMode ? '#51403A' : '#201614'
-  const amberBorder = C.theme === 'sharp' ? '#41658E' : tonedMode ? softPalette.consoleBorderSoft : '#4A312B'
+  const amberBg     = C.theme === 'sharp' ? '#2B456B' : C.theme === 'light' ? '#5A4740' : '#241816'
+  const amberBorder = C.theme === 'sharp' ? '#4A6F99' : C.theme === 'light' ? '#796159' : '#4A312B'
   const redBg       = C.theme === 'sharp' ? '#29486D' : tonedMode ? '#694541' : '#4A2320'
 
   const panelBg         = tonedMode ? softPalette.consoleBg : CONSOLE.black
+  const panelBorder     = tonedMode ? softPalette.consoleBorder : '#1C1311'
   const panelBorderSoft = tonedMode ? softPalette.consoleBorderSoft : '#2B1D1B'
   const panelInkFaint   = tonedMode ? softPalette.consoleFaint : CONSOLE.sequoia
   const panelInkDim     = tonedMode ? softPalette.consoleMuted : CONSOLE.sequoia
@@ -2518,10 +2551,50 @@ function DashboardSection({ C }) {
   const panelPillBg     = tonedMode ? softPalette.consolePanel2 : '#231917'
   const panelPillBorder = tonedMode ? softPalette.consoleBorderSoft : '#4A312B'
   const panelPillText   = tonedMode ? softPalette.consoleSoft : CONSOLE.barberry
-  const panelSidebarBg  = C.theme === 'sharp' ? '#16283F' : tonedMode ? '#322826' : '#050403'
+  const panelSidebarBg  = C.theme === 'sharp' ? 'linear-gradient(180deg, #182B43 0%, #14253A 100%)' : C.theme === 'light' ? 'linear-gradient(180deg, #342A27 0%, #2C2421 100%)' : 'linear-gradient(180deg, #060403 0%, #030202 100%)'
   const panelSidebarDivider = tonedMode ? softPalette.consoleBorder : '#1A1211'
   const panelActiveItem = tonedMode ? softPalette.consoleInk : PALETTE.platinum
   const panelActiveItemBg = amberBg
+  const panelShellBg = C.theme === 'light'
+    ? 'radial-gradient(circle at 22% 0%, rgba(255,255,255,0.06), transparent 24%), linear-gradient(180deg, #463833 0%, #382D29 100%)'
+    : C.theme === 'sharp'
+      ? 'linear-gradient(180deg, #0D1A2D 0%, #0A1525 100%)'
+      : 'linear-gradient(180deg, #080505 0%, #040202 100%)'
+  const panelShellShadow = C.theme === 'light'
+    ? '0 36px 96px rgba(87, 65, 57, 0.2), 0 14px 34px rgba(87, 65, 57, 0.12)'
+    : C.theme === 'sharp'
+      ? '0 30px 78px rgba(8, 18, 34, 0.28)'
+      : '0 36px 96px rgba(0, 0, 0, 0.44), 0 0 0 1px rgba(74, 49, 43, 0.14)'
+  const panelSheen = C.theme === 'light'
+    ? 'linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 24%, rgba(255,255,255,0) 44%)'
+    : C.theme === 'sharp'
+      ? 'linear-gradient(180deg, rgba(138,167,226,0.08) 0%, rgba(138,167,226,0) 34%)'
+      : 'linear-gradient(180deg, rgba(255,255,255,0.025) 0%, rgba(255,255,255,0) 28%)'
+  const panelBodyBg = C.theme === 'light'
+    ? '#40332F'
+    : C.theme === 'sharp'
+      ? '#0D182A'
+      : '#030202'
+  const cardFill = C.theme === 'light'
+    ? '#4E3F3A'
+    : C.theme === 'sharp'
+      ? '#243955'
+      : '#120B0A'
+  const cardBorder = C.theme === 'light'
+    ? '#68554F'
+    : C.theme === 'sharp'
+      ? '#35547A'
+      : '#2B1D1B'
+  const issueRowBg = C.theme === 'light'
+    ? '#453732'
+    : C.theme === 'sharp'
+      ? '#20344F'
+      : '#120B0A'
+  const panelHeadingInk = C.theme === 'light'
+    ? '#FBF4EF'
+    : C.theme === 'sharp'
+      ? softPalette.consoleInk
+      : PALETTE.platinum
 
   const Sidebar = () => (
     <div className="sa-dash-sidebar" style={{ background: panelSidebarBg, borderRight: `1px solid ${panelSidebarDivider}`, padding: '22px 0', minHeight: 540 }}>
@@ -2564,10 +2637,11 @@ function DashboardSection({ C }) {
 
       {/* Dashboard frame */}
       <div style={{ maxWidth: 1180, margin: '0 auto', padding: '0 28px' }}>
-        <div style={{ background: panelBg, borderRadius: 16, overflow: 'hidden', boxShadow: 'none' }}>
+        <div style={{ background: panelShellBg, border: `1px solid ${panelBorder}`, borderRadius: 16, overflow: 'hidden', boxShadow: panelShellShadow, position: 'relative' }}>
+          <div aria-hidden="true" style={{ position: 'absolute', inset: 0, background: panelSheen, pointerEvents: 'none', zIndex: 1 }} />
 
           {/* Top bar */}
-          <div style={{ background: panelSurface, borderBottom: `1px solid ${panelBorderSoft}`, padding: '14px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ position: 'relative', zIndex: 2, background: panelSurface, borderBottom: `1px solid ${panelBorderSoft}`, padding: '14px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{ display: 'flex', gap: 6 }}>
                 {macDots.map(color => <div key={color} style={{ width: 10, height: 10, borderRadius: '50%', background: color }} />)}
@@ -2581,7 +2655,7 @@ function DashboardSection({ C }) {
           </div>
 
           {/* Body grid */}
-          <div className="sa-dash-body">
+          <div className="sa-dash-body" style={{ position: 'relative', zIndex: 2, background: panelBodyBg }}>
             <Sidebar />
 
             {/* Main panel */}
@@ -2589,7 +2663,7 @@ function DashboardSection({ C }) {
 
               {/* Header */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 24 }}>
-                <div style={{ fontFamily: serif, fontSize: 24, fontWeight: 600, color: PALETTE.platinum }}>Your business · this week</div>
+                <div style={{ fontFamily: serif, fontSize: 24, fontWeight: 600, color: panelHeadingInk }}>Your business · this week</div>
                 <div style={{ fontFamily: 'inherit', fontSize: 10, color: panelInkMuted, fontWeight: 500 }}>Last synced 2m ago</div>
               </div>
 
@@ -2609,18 +2683,18 @@ function DashboardSection({ C }) {
                   { label: 'AUDITS RUN',    dynRef: null,      val: '4',   sub: 'Latest: today',        subColor: panelInkMuted },
                   { label: 'GOAL PROGRESS', dynRef: goalRef,   val: '42%', sub: 'On pace · Q3',         subColor: green },
                 ].map(stat => (
-                  <div key={stat.label} style={{ background: panelCardBg, border: `1px solid ${panelCardBorder}`, borderRadius: 10, padding: 16 }}>
+                  <div key={stat.label} style={{ background: cardFill, border: `1px solid ${cardBorder}`, borderRadius: 10, padding: 16, boxShadow: C.theme === 'light' ? 'inset 0 1px 0 rgba(255,255,255,0.04)' : 'none' }}>
                     <div style={{ fontFamily: 'inherit', fontSize: 9, letterSpacing: '0.08em', textTransform: 'uppercase', color: panelInkMuted, fontWeight: 600, marginBottom: 8 }}>{stat.label}</div>
-                    <div ref={stat.dynRef} style={{ fontFamily: serif, fontSize: 30, fontWeight: 600, color: PALETTE.platinum, lineHeight: 1 }}>{stat.val}</div>
+                    <div ref={stat.dynRef} style={{ fontFamily: serif, fontSize: 30, fontWeight: 600, color: panelHeadingInk, lineHeight: 1 }}>{stat.val}</div>
                     <div style={{ fontFamily: 'inherit', fontSize: 10, color: stat.subColor, fontWeight: 500, marginTop: 6 }}>{stat.sub}</div>
                   </div>
                 ))}
               </div>
 
               {/* Recommended next move */}
-              <div style={{ background: amberBg, border: `1px solid ${amberBorder}`, borderRadius: 12, padding: '20px 22px', marginBottom: 18 }}>
+              <div style={{ background: amberBg, border: `1px solid ${amberBorder}`, borderRadius: 12, padding: '20px 22px', marginBottom: 18, boxShadow: C.theme === 'light' ? 'inset 0 1px 0 rgba(255,255,255,0.04)' : 'none' }}>
                 <div style={{ fontFamily: 'inherit', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', color: panelInkSoft, fontWeight: 600, marginBottom: 10 }}>Recommended next move</div>
-                <p style={{ fontFamily: serif, fontSize: 17, fontWeight: 500, color: PALETTE.platinum, lineHeight: 1.55, margin: '0 0 16px' }}>
+                <p style={{ fontFamily: serif, fontSize: 17, fontWeight: 500, color: panelHeadingInk, lineHeight: 1.55, margin: '0 0 16px' }}>
                   Cancel the agency contract this week. Run a{' '}
                   <em style={{ fontStyle: 'italic', color: amber }}>30-day Clay test</em>
                   {' '}with one rep before scaling outbound.
@@ -2644,9 +2718,9 @@ function DashboardSection({ C }) {
                 { title: 'Pricing model needs restructure', meta: 'High · 3 audits in a row',   badge: 'HIGH',     badgeBg: amberBg,     badgeColor: amber },
                 { title: 'Sales cycle drift',             meta: 'High · trending worse',       badge: 'HIGH',     badgeBg: amberBg,     badgeColor: amber },
               ].map(issue => (
-                <div key={issue.title} style={{ background: panelCardBg, border: `1px solid ${panelCardBorder}`, borderRadius: 8, padding: '12px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                <div key={issue.title} style={{ background: issueRowBg, border: `1px solid ${cardBorder}`, borderRadius: 8, padding: '12px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                   <div>
-                    <div style={{ fontFamily: serif, fontSize: 14, color: PALETTE.platinum, marginBottom: 3 }}>{issue.title}</div>
+                    <div style={{ fontFamily: serif, fontSize: 14, color: panelHeadingInk, marginBottom: 3 }}>{issue.title}</div>
                     <div style={{ fontFamily: 'inherit', fontSize: 10, color: panelInkMuted, fontWeight: 500 }}>{issue.meta}</div>
                   </div>
                   <span style={{ background: issue.badgeBg, color: issue.badgeColor, fontFamily: 'inherit', fontSize: 10, letterSpacing: '0.08em', fontWeight: 700, borderRadius: 4, padding: '3px 8px', flexShrink: 0 }}>
