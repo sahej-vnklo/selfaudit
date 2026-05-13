@@ -2835,7 +2835,7 @@ function FinalCTA({ onStart, C }) {
       `}</style>
 
       {/* Eyebrow */}
-      <div style={{ textAlign: 'center', fontFamily: mono, fontSize: 12, letterSpacing: '0.22em', textTransform: 'uppercase', color: red, marginBottom: 48 }}>
+      <div style={{ textAlign: 'center', fontFamily: 'inherit', fontSize: 12, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.accentText, fontWeight: 600, marginBottom: 48 }}>
         — THE BUSINESS BRAIN · READY
       </div>
 
