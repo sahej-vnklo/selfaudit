@@ -1,48 +1,56 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { usePostHog } from '@posthog/react'
 
+const PALETTE = {
+  onyx: '#222526',
+  graphite: '#353A3E',
+  platinum: '#E0E0E0',
+  jet: '#1A1A1A',
+  ash: '#BFBFBF',
+}
+
 const THEMES = {
   dark: {
     theme: 'dark',
-    bg: '#0E0C0A',
-    surface: '#161310',
-    surface2: '#1A1714',
-    surface3: '#1F1B16',
-    card: '#161310',
-    border: '#1F1B16',
-    border2: '#2A2620',
-    ink: '#F5F1E8',
-    inkSoft: '#D4CEC0',
-    inkMuted: '#B5AC9D',
-    inkFaint: '#8A8378',
-    accent: '#E07A6A',
-    accentDark: '#C56858',
-    accentSoft: '#2A1A15',
-    accentText: '#E07A6A',
-    redMuted: '#E07A6A',
-    redSoft: '#2A1A15',
-    amber: '#D9B05C',
+    bg: PALETTE.jet,
+    surface: PALETTE.onyx,
+    surface2: PALETTE.graphite,
+    surface3: PALETTE.onyx,
+    card: PALETTE.onyx,
+    border: PALETTE.graphite,
+    border2: PALETTE.ash,
+    ink: PALETTE.platinum,
+    inkSoft: PALETTE.ash,
+    inkMuted: PALETTE.ash,
+    inkFaint: PALETTE.graphite,
+    accent: PALETTE.platinum,
+    accentDark: PALETTE.ash,
+    accentSoft: PALETTE.graphite,
+    accentText: PALETTE.platinum,
+    redMuted: PALETTE.platinum,
+    redSoft: PALETTE.graphite,
+    amber: PALETTE.ash,
   },
   light: {
     theme: 'light',
-    bg: '#ECE7DF',
-    surface: '#E7E1D7',
-    surface2: '#DED7CC',
-    surface3: '#D4CCC0',
-    card: '#F2EEE7',
-    border: '#D7D0C5',
-    border2: '#C9C0B4',
-    ink: '#252D50',
-    inkSoft: '#4B526E',
-    inkMuted: '#686E83',
-    inkFaint: '#7F8497',
-    accent: '#6E2A1E',
-    accentDark: '#5A2218',
-    accentSoft: '#E8D8D2',
-    accentText: '#6E2A1E',
-    redMuted: '#6E2A1E',
-    redSoft: '#E8D8D2',
-    amber: '#7B673C',
+    bg: PALETTE.platinum,
+    surface: PALETTE.ash,
+    surface2: PALETTE.platinum,
+    surface3: PALETTE.ash,
+    card: PALETTE.platinum,
+    border: PALETTE.ash,
+    border2: PALETTE.graphite,
+    ink: PALETTE.jet,
+    inkSoft: PALETTE.onyx,
+    inkMuted: PALETTE.graphite,
+    inkFaint: PALETTE.graphite,
+    accent: PALETTE.onyx,
+    accentDark: PALETTE.jet,
+    accentSoft: PALETTE.ash,
+    accentText: PALETTE.onyx,
+    redMuted: PALETTE.onyx,
+    redSoft: PALETTE.ash,
+    amber: PALETTE.graphite,
   },
 }
 
@@ -304,7 +312,7 @@ function PrimaryButton({ label, onClick, small = false, C }) {
         justifyContent: 'center',
         gap: 10,
         background: hovered ? C.accentDark : C.accent,
-        color: '#fff',
+        color: C.theme === 'dark' ? PALETTE.jet : PALETTE.platinum,
         padding: small ? '10px 18px' : '16px 28px',
         borderRadius: 999,
         fontSize: small ? 15 : 17,
@@ -436,7 +444,7 @@ function DiagnosticLoop({ C }) {
         borderRadius: 18,
         overflow: 'hidden',
         transition: 'border-color 0.25s ease',
-        boxShadow: expanded ? `0 0 40px rgba(107,92,231,0.15)` : 'none',
+        boxShadow: expanded ? `0 0 0 1px ${C.border2}` : 'none',
       }}>
         {/* Header bar */}
         <div style={{
@@ -448,7 +456,7 @@ function DiagnosticLoop({ C }) {
           background: C.surface2,
         }}>
           <div style={{ display: 'flex', gap: 6 }}>
-            {['#FF5F57','#FFBD2E','#28CA41'].map(c => (
+            {[PALETTE.ash, PALETTE.graphite, PALETTE.platinum].map(c => (
               <div key={c} style={{ width: 10, height: 10, borderRadius: '50%', background: c }} />
             ))}
           </div>
@@ -457,7 +465,7 @@ function DiagnosticLoop({ C }) {
           </div>
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}>
             {!expanded && !isPaused && (
-              <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#28CA41', animation: 'pulse 1.5s infinite' }} />
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: C.accent, animation: 'pulse 1.5s infinite' }} />
             )}
             <span style={{ fontSize: 12, color: C.inkFaint }}>{isPaused ? 'PAUSED' : 'LIVE'}</span>
           </div>
@@ -502,7 +510,7 @@ function DiagnosticLoop({ C }) {
           <div style={{ fontSize: 14, color: C.inkMuted, marginBottom: 6 }}>Intelligence verdict</div>
           <div style={{
             fontSize: 16,
-            color: thread.a.startsWith('CRITICAL') ? (C.theme === 'light' ? '#6E2A1E' : '#E07A6A') : C.amber,
+            color: thread.a.startsWith('CRITICAL') ? C.accentText : C.amber,
             fontWeight: 600,
             lineHeight: 1.5,
           }}>
@@ -562,8 +570,8 @@ function GrowthOSCard({ onSignUp, C }) {
   return (
     <div style={{
       background: C.card,
-      border: `1px solid rgba(107,92,231,0.6)`,
-      boxShadow: '0 18px 50px rgba(107,92,231,0.14)',
+      border: `1px solid ${C.border2}`,
+      boxShadow: 'none',
       borderRadius: 18,
       padding: 32,
       display: 'flex',
@@ -700,7 +708,7 @@ function ThemeTextToggle({ theme, setTheme, C }) {
 
 function LandingNav({ C, pageOpen, onBack, onPricing, onStories, onConnected, onSignIn, onStartAudit, onLogoClick, storiesOpen, connectedOpen, pricingOpen, theme, setTheme }) {
   return (
-    <nav style={{ padding: '20px 0', borderBottom: `1px solid ${C.border}`, background: C.theme === 'light' ? C.surface : '#1A1410', position: 'sticky', top: 0, zIndex: 20 }}>
+    <nav style={{ padding: '20px 0', borderBottom: `1px solid ${C.border}`, background: C.surface, position: 'sticky', top: 0, zIndex: 20 }}>
       <div className="sa-nav-grid">
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0 }}>
           {pageOpen && (
@@ -743,37 +751,23 @@ function LandingNav({ C, pageOpen, onBack, onPricing, onStories, onConnected, on
 }
 
 function ConnectorLogo({ tool, src, brandColor, fallbackText }) {
-  const [failed, setFailed] = useState(!src)
-
-  if (failed) {
-    return (
-      <div style={{
-        width: 20,
-        height: 20,
-        borderRadius: '50%',
-        background: brandColor,
-        color: '#fff',
-        fontSize: 9,
-        fontWeight: 700,
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexShrink: 0,
-      }}>
-        {fallbackText || tool.slice(0, 2)}
-      </div>
-    )
-  }
-
   return (
-    <img
-      src={src}
-      alt={tool}
-      width="20"
-      height="20"
-      onError={() => setFailed(true)}
-      style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0 }}
-    />
+    <div style={{
+      width: 20,
+      height: 20,
+      borderRadius: '50%',
+      background: PALETTE.graphite,
+      border: `1px solid ${PALETTE.ash}`,
+      color: PALETTE.platinum,
+      fontSize: 9,
+      fontWeight: 700,
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexShrink: 0,
+    }}>
+      {fallbackText || tool.slice(0, 2)}
+    </div>
   )
 }
 
@@ -893,8 +887,8 @@ function StoriesPage({ C, onStartAudit }) {
 
 function ConnectedPage({ C, theme, onStartAudit }) {
   const liveBadge = theme === 'dark'
-    ? { background: '#0A1A10', color: '#4A9E6B' }
-    : { background: '#E8F5EE', color: '#1A6B3A' }
+    ? { background: PALETTE.graphite, color: PALETTE.platinum }
+    : { background: PALETTE.ash, color: PALETTE.jet }
   const connectorColumns = [
     {
       heading: 'CRM & PIPELINE',
@@ -1379,7 +1373,7 @@ function VisionWidget({ C, serif, visionOpen, setVisionOpen, visionGoal, setVisi
           borderRadius: 16,
           padding: 24,
           zIndex: 100,
-          boxShadow: '0 20px 60px rgba(0,0,0,0.15)',
+          boxShadow: 'none',
         }}>
           <div style={{ fontSize: 12, letterSpacing: '0.12em', textTransform: 'uppercase', color: C.inkMuted, marginBottom: 16 }}>
             What's yours?
@@ -1439,7 +1433,7 @@ function VisionWidget({ C, serif, visionOpen, setVisionOpen, visionGoal, setVisi
                 style={{
                   width: '100%',
                   background: C.accent,
-                  color: C.theme === 'dark' ? '#E8E2D8' : '#F5F0E8',
+                  color: C.theme === 'dark' ? PALETTE.jet : PALETTE.platinum,
                   border: 'none',
                   borderRadius: 999,
                   padding: '12px 20px',
@@ -1623,18 +1617,18 @@ function EngineRoom({ C }) {
     return () => clearInterval(id)
   }, [])
 
-  const panelBg        = C.theme === 'dark' ? '#FBFAF6' : '#0E0C0A'
-  const panelSurface   = C.theme === 'dark' ? 'rgba(242,237,226,0.9)' : 'rgba(15,11,8,0.8)'
-  const panelBorder    = C.theme === 'dark' ? '#E4DDD0' : 'rgba(250,247,242,0.08)'
-  const panelBorderSoft = C.theme === 'dark' ? '#EDE5D4' : 'rgba(250,247,242,0.06)'
-  const panelInkFaint  = C.theme === 'dark' ? '#8A8378' : 'rgba(250,247,242,0.40)'
-  const panelInkDim    = C.theme === 'dark' ? '#B8A682' : 'rgba(250,247,242,0.28)'
-  const panelInkSoft   = C.theme === 'dark' ? '#3A352D' : 'rgba(250,247,242,0.85)'
-  const panelRowBorder = C.theme === 'dark' ? 'rgba(26,20,16,0.08)' : 'rgba(250,247,242,0.06)'
-  const panelVerdictBg = C.theme === 'dark' ? 'rgba(110,42,30,0.06)' : 'rgba(224,122,106,0.06)'
-  const panelVerdictColor = C.theme === 'dark' ? '#6E2A1E' : '#E07A6A'
-  const panelIngestColor  = C.theme === 'dark' ? '#2F6B47' : '#7BAE89'
-  const panelSignalColor  = C.theme === 'dark' ? '#8A6F1A' : '#E07A6A'
+  const panelBg        = C.theme === 'dark' ? PALETTE.onyx : PALETTE.jet
+  const panelSurface   = PALETTE.graphite
+  const panelBorder    = PALETTE.graphite
+  const panelBorderSoft = PALETTE.graphite
+  const panelInkFaint  = PALETTE.ash
+  const panelInkDim    = PALETTE.ash
+  const panelInkSoft   = PALETTE.platinum
+  const panelRowBorder = PALETTE.graphite
+  const panelVerdictBg = PALETTE.jet
+  const panelVerdictColor = PALETTE.platinum
+  const panelIngestColor  = PALETTE.ash
+  const panelSignalColor  = PALETTE.platinum
 
   const typeColor = (type) => {
     if (type === 'INGEST') return panelIngestColor
@@ -1736,7 +1730,7 @@ function EngineRoom({ C }) {
           overflow: 'hidden',
           border: `1px solid ${panelBorder}`,
           position: 'relative',
-          boxShadow: C.theme === 'light' ? '0 1px 0 #D8CFBC, 0 8px 0 rgba(26,20,16,0.04), 0 32px 80px rgba(26,20,16,0.22), 0 12px 32px rgba(26,20,16,0.14)' : '0 2px 0 #1F1B16, 0 20px 50px rgba(0,0,0,0.45)',
+          boxShadow: 'none',
         }}>
           {/* Header bar */}
           <div style={{
@@ -1819,15 +1813,15 @@ function FourVerbs({ C }) {
   const cardRefs    = useRef([])
 
   const I = {
-    bg: '#252D50',
-    border: 'rgba(236,231,223,0.16)',
-    border2: 'rgba(236,231,223,0.24)',
-    ink: '#F2EEE7',
-    inkSoft: '#DAD8D6',
-    inkMuted: '#B9BBC8',
-    inkFaint: '#9298AD',
-    accent: '#8CCF9C',
-    redMuted: '#43322D',
+    bg: PALETTE.graphite,
+    border: PALETTE.ash,
+    border2: PALETTE.ash,
+    ink: PALETTE.platinum,
+    inkSoft: PALETTE.ash,
+    inkMuted: PALETTE.ash,
+    inkFaint: PALETTE.ash,
+    accent: PALETTE.platinum,
+    redMuted: PALETTE.platinum,
   }
 
   const cardBg = C.card
@@ -2036,7 +2030,7 @@ function FourVerbs({ C }) {
             paddingTop:    'clamp(40px, 6vw, 72px)',
             paddingBottom: 'clamp(48px, 7vw, 80px)',
             zIndex:        10 + i,
-            boxShadow:     i === 0 ? 'none' : '0 -12px 40px rgba(20,26,48,0.35)',
+            boxShadow:     'none',
           }}
         >
           <div className="sa-fv-card-grid">
@@ -2133,7 +2127,7 @@ function LiveDiagnosis({ C }) {
       let j = 0
       while (j < upTo) {
         if (chars[j].italic) {
-          html += `<em style="font-style:italic;color:${C.theme === 'dark' ? '#8A6F1A' : C.amber}">`
+          html += `<em style="font-style:italic;color:${C.accent}">`
           while (j < upTo && chars[j].italic) {
             const c = chars[j].char
             html += c === '<' ? '&lt;' : c === '>' ? '&gt;' : c === '&' ? '&amp;' : c
@@ -2226,18 +2220,18 @@ function LiveDiagnosis({ C }) {
     }
   }, [])
 
-  const panelBg         = C.theme === 'dark' ? '#FBFAF6' : '#0E0C0A'
-  const panelSurface    = C.theme === 'dark' ? 'rgba(242,237,226,0.9)' : 'rgba(15,11,8,0.6)'
-  const panelBorder     = C.theme === 'dark' ? '#E4DDD0' : 'rgba(250,247,242,0.10)'
-  const panelBorderSoft = C.theme === 'dark' ? '#EDE5D4' : 'rgba(250,247,242,0.08)'
-  const panelInkFaint   = C.theme === 'dark' ? '#8A8378' : 'rgba(250,247,242,0.35)'
-  const panelInkMuted   = C.theme === 'dark' ? '#5A5246' : 'rgba(250,247,242,0.50)'
-  const panelInkSoft    = C.theme === 'dark' ? '#3A352D' : 'rgba(250,247,242,0.85)'
-  const panelInk        = C.theme === 'dark' ? '#1A1814' : 'rgba(250,247,242,0.92)'
-  const panelDotBg      = C.theme === 'dark' ? 'rgba(26,20,16,0.10)' : 'rgba(250,247,242,0.18)'
-  const panelHealthy    = C.theme === 'dark' ? '#2F6B47' : '#7BAE89'
-  const panelAmber      = C.theme === 'dark' ? '#8A6F1A' : C.amber
-  const panelCritical   = C.theme === 'dark' ? '#6E2A1E' : '#E07A6A'
+  const panelBg         = C.theme === 'dark' ? PALETTE.onyx : PALETTE.jet
+  const panelSurface    = PALETTE.graphite
+  const panelBorder     = PALETTE.graphite
+  const panelBorderSoft = PALETTE.graphite
+  const panelInkFaint   = PALETTE.ash
+  const panelInkMuted   = PALETTE.ash
+  const panelInkSoft    = PALETTE.platinum
+  const panelInk        = PALETTE.platinum
+  const panelDotBg      = PALETTE.ash
+  const panelHealthy    = PALETTE.platinum
+  const panelAmber      = PALETTE.ash
+  const panelCritical   = PALETTE.platinum
 
   return (
     <section ref={sectionRef} style={{ background: C.bg, padding: 'clamp(64px, 8vw, 140px) 0' }}>
@@ -2286,7 +2280,7 @@ function LiveDiagnosis({ C }) {
 
       {/* Console panel */}
       <div style={{ maxWidth: 920, margin: '0 auto', padding: '0 28px' }}>
-        <div style={{ background: panelBg, border: `1px solid ${panelBorder}`, borderRadius: 16, overflow: 'hidden', boxShadow: C.theme === 'light' ? '0 1px 0 #D8CFBC, 0 8px 0 rgba(26,20,16,0.04), 0 32px 80px rgba(26,20,16,0.22), 0 12px 32px rgba(26,20,16,0.14)' : '0 2px 0 #1F1B16, 0 20px 50px rgba(0,0,0,0.45)' }}>
+        <div style={{ background: panelBg, border: `1px solid ${panelBorder}`, borderRadius: 16, overflow: 'hidden', boxShadow: 'none' }}>
 
           {/* Top bar */}
           <div style={{ background: panelSurface, borderBottom: `1px solid ${panelBorderSoft}`, padding: '14px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -2369,8 +2363,8 @@ function DashboardSection({ C }) {
   const healthRef = useRef(null)
   const goalRef   = useRef(null)
   const P     = C.theme === 'dark' ? THEMES.light : THEMES.dark
-  const amber = C.theme === 'dark' ? '#8A6F1A' : '#D9B05C'
-  const green = C.theme === 'dark' ? '#2F6B47' : '#7BAE89'
+  const amber = C.accent
+  const green = C.accent
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -2381,26 +2375,26 @@ function DashboardSection({ C }) {
   }, [])
 
   // Pre-computed rgba from amber (#F5F0E8 → 201,160,64) and red (192,80,80)
-  const amberBg     = C.theme === 'dark' ? 'rgba(138,111,26,0.10)' : 'rgba(196,149,106,0.08)'
-  const amberBorder = C.theme === 'dark' ? 'rgba(138,111,26,0.30)' : 'rgba(196,149,106,0.25)'
-  const redBg       = C.theme === 'dark' ? 'rgba(110,42,30,0.12)' : 'rgba(196,149,106,0.15)'
+  const amberBg     = P.surface
+  const amberBorder = P.border
+  const redBg       = P.surface2
 
   const panelBg         = P.bg
-  const panelBorderSoft = C.theme === 'dark' ? '#EDE5D4' : 'rgba(250,247,242,0.06)'
-  const panelInkFaint   = C.theme === 'dark' ? '#8A8378' : 'rgba(250,247,242,0.40)'
-  const panelInkDim     = C.theme === 'dark' ? '#6B655B' : 'rgba(250,247,242,0.30)'
-  const panelInkMuted   = C.theme === 'dark' ? '#5A5246' : 'rgba(250,247,242,0.65)'
-  const panelInkSoft    = C.theme === 'dark' ? '#3A352D' : 'rgba(250,247,242,0.85)'
-  const panelSurface    = C.theme === 'dark' ? 'rgba(242,237,226,0.9)' : 'rgba(15,11,8,0.6)'
-  const panelCardBg     = C.theme === 'dark' ? 'rgba(26,20,16,0.04)' : 'rgba(250,247,242,0.02)'
-  const panelCardBorder = C.theme === 'dark' ? '#E4DDD0' : 'rgba(250,247,242,0.06)'
-  const panelDotBg      = C.theme === 'dark' ? 'rgba(26,20,16,0.10)' : 'rgba(250,247,242,0.18)'
-  const panelPillBg     = C.theme === 'dark' ? 'rgba(26,20,16,0.05)' : 'rgba(250,247,242,0.04)'
-  const panelPillBorder = C.theme === 'dark' ? '#D8CFBC' : 'rgba(250,247,242,0.08)'
-  const panelPillText   = C.theme === 'dark' ? '#5A5246' : 'rgba(250,247,242,0.75)'
-  const panelSidebarBg  = C.theme === 'dark' ? 'rgba(242,237,226,0.6)' : 'rgba(15,11,8,0.7)'
-  const panelSidebarDivider = C.theme === 'dark' ? 'rgba(26,20,16,0.08)' : 'rgba(250,247,242,0.04)'
-  const panelActiveItem = C.theme === 'dark' ? '#1A1814' : '#fff'
+  const panelBorderSoft = P.border
+  const panelInkFaint   = P.inkFaint
+  const panelInkDim     = P.inkMuted
+  const panelInkMuted   = P.inkMuted
+  const panelInkSoft    = P.inkSoft
+  const panelSurface    = P.surface
+  const panelCardBg     = P.surface
+  const panelCardBorder = P.border
+  const panelDotBg      = P.border2
+  const panelPillBg     = P.surface2
+  const panelPillBorder = P.border
+  const panelPillText   = P.inkSoft
+  const panelSidebarBg  = P.surface
+  const panelSidebarDivider = P.border
+  const panelActiveItem = P.ink
   const panelActiveItemBg = amberBg
 
   const Sidebar = () => (
@@ -2444,7 +2438,7 @@ function DashboardSection({ C }) {
 
       {/* Dashboard frame */}
       <div style={{ maxWidth: 1180, margin: '0 auto', padding: '0 28px' }}>
-        <div style={{ background: panelBg, borderRadius: 16, overflow: 'hidden', boxShadow: C.theme === 'light' ? '0 1px 0 #D8CFBC, 0 8px 0 rgba(26,20,16,0.04), 0 32px 80px rgba(26,20,16,0.22), 0 12px 32px rgba(26,20,16,0.14)' : '0 2px 0 #1F1B16, 0 20px 50px rgba(0,0,0,0.45)' }}>
+        <div style={{ background: panelBg, borderRadius: 16, overflow: 'hidden', boxShadow: 'none' }}>
 
           {/* Top bar */}
           <div style={{ background: panelSurface, borderBottom: `1px solid ${panelBorderSoft}`, padding: '14px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -2506,7 +2500,7 @@ function DashboardSection({ C }) {
                   {' '}with one rep before scaling outbound.
                 </p>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  <button style={{ background: amber, color: '#1A1410', border: 'none', borderRadius: 999, padding: '7px 14px', fontFamily: mono, fontSize: 12, fontWeight: 500, cursor: 'pointer' }}>
+                  <button style={{ background: amber, color: P.bg, border: 'none', borderRadius: 999, padding: '7px 14px', fontFamily: mono, fontSize: 12, fontWeight: 500, cursor: 'pointer' }}>
                     Generate action plan
                   </button>
                   {['Draft cancellation email', 'Create SOP', '+3 more'].map(pill => (
@@ -2520,7 +2514,7 @@ function DashboardSection({ C }) {
               {/* Open issues */}
               <div style={{ fontFamily: mono, fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: panelInkFaint, marginBottom: 8 }}>Open issues</div>
               {[
-                { title: 'Market validation',             meta: 'Critical · flagged May 4',    badge: 'CRITICAL', badgeBg: redBg,       badgeColor: C.theme === 'dark' ? '#6E2A1E' : P.redMuted },
+                { title: 'Market validation',             meta: 'Critical · flagged May 4',    badge: 'CRITICAL', badgeBg: redBg,       badgeColor: P.ink },
                 { title: 'Pricing model needs restructure', meta: 'High · 3 audits in a row',   badge: 'HIGH',     badgeBg: amberBg,     badgeColor: amber },
                 { title: 'Sales cycle drift',             meta: 'High · trending worse',       badge: 'HIGH',     badgeBg: amberBg,     badgeColor: amber },
               ].map(issue => (
@@ -2546,7 +2540,7 @@ function DashboardSection({ C }) {
 // ── Compounding Section ───────────────────────────────────────────────────────
 
 function CompoundingSection({ C }) {
-  const amber = C.theme === 'dark' ? '#8A6F1A' : C.amber
+  const amber = C.accent
   const axisFill = C.inkFaint
 
   // Chart points [x, y] in a 560×210 viewbox (y=210 = baseline)
@@ -2588,7 +2582,7 @@ function CompoundingSection({ C }) {
         </div>
 
         {/* ── Right: knowledge card ── */}
-        <div style={{ background: C.card, borderRadius: 14, overflow: 'hidden', border: `1px solid ${C.border}`, boxShadow: C.theme === 'light' ? '0 1px 0 #C9C0B4, 0 8px 0 rgba(37,45,80,0.03), 0 28px 70px rgba(37,45,80,0.14), 0 12px 28px rgba(37,45,80,0.10)' : '0 2px 0 #1F1B16, 0 20px 50px rgba(0,0,0,0.45)' }}>
+        <div style={{ background: C.card, borderRadius: 14, overflow: 'hidden', border: `1px solid ${C.border}`, boxShadow: 'none' }}>
 
           {/* Card header */}
           <div style={{ padding: '28px 32px 12px' }}>
@@ -2704,7 +2698,7 @@ function FinalCTA({ onStart, C }) {
   return (
     <section style={{ background: C.bg, padding: 'clamp(64px, 8vw, 130px) 0 clamp(48px, 6vw, 100px)' }}>
       <style>{`
-        .fca-input::placeholder { color: ${C.theme === 'light' ? 'rgba(104,110,131,0.58)' : 'rgba(250,247,242,0.32)'}; }
+        .fca-input::placeholder { color: ${C.inkFaint}; }
       `}</style>
 
       {/* Eyebrow */}
@@ -2784,7 +2778,7 @@ function FinalCTA({ onStart, C }) {
 
 export default function Landing({ onStart, onSignUp, session }) {
   const posthog = usePostHog()
-  const [theme, setTheme] = useState(() => localStorage.getItem('sa-theme') || 'light')
+  const [theme, setTheme] = useState(() => localStorage.getItem('sa-theme') || 'dark')
   const C = THEMES[theme]
   const [storiesOpen, setStoriesOpen] = useState(false)
   const [connectedOpen, setConnectedOpen] = useState(false)
@@ -2833,13 +2827,9 @@ export default function Landing({ onStart, onSignUp, session }) {
     if (theme === 'light') {
       el.textContent = `
       body {
-        background-image:
-          radial-gradient(ellipse 80% 60% at 10% 15%, rgba(204,196,184,0.30) 0%, transparent 70%),
-          radial-gradient(ellipse 70% 55% at 90% 85%, rgba(194,185,173,0.26) 0%, transparent 70%),
-          radial-gradient(ellipse 50% 40% at 75% 20%, rgba(218,211,201,0.18) 0%, transparent 70%),
-          radial-gradient(ellipse 45% 35% at 20% 80%, rgba(204,196,184,0.18) 0%, transparent 70%);
+        background-image: none;
         background-attachment: fixed;
-        background-color: #ECE7DF;
+        background-color: ${PALETTE.platinum};
         background-size: 100% 100%;
       }
     `
@@ -2848,7 +2838,7 @@ export default function Landing({ onStart, onSignUp, session }) {
       body {
         background-image: none;
         background-attachment: scroll;
-        background-color: #0E0C0A;
+        background-color: ${PALETTE.jet};
       }
     `
     }
@@ -3190,7 +3180,7 @@ export default function Landing({ onStart, onSignUp, session }) {
                 className="sa-hero-btn"
                 style={{
                   background: C.theme === 'light' ? C.ink : C.accent,
-                  color: C.theme === 'light' ? C.bg : '#fff',
+                  color: C.theme === 'light' ? C.bg : PALETTE.jet,
                   border: 'none',
                   borderRadius: 999,
                   padding: '12px 22px',
@@ -3287,7 +3277,7 @@ export default function Landing({ onStart, onSignUp, session }) {
             </div>
 
             {/* Right — SelfAudit card */}
-            <div style={{ background: C.theme === 'dark' ? C.card : '#ffffff', border: `1px solid ${C.border}`, borderRadius: 14, overflow: 'hidden' }}>
+            <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, overflow: 'hidden' }}>
               <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.inkFaint, padding: '20px 32px 16px', borderBottom: `1px solid ${C.border}` }}>
                 SelfAudit
               </div>
