@@ -62,28 +62,28 @@ const LIGHT = {
 }
 
 const SHARP = {
-  page: '#122946',
-  band: '#173555',
-  panel: '#1E4165',
-  panel2: '#295077',
-  line: '#32577F',
-  lineStrong: '#4A729C',
+  page: '#0F2239',
+  band: '#132C49',
+  panel: '#193857',
+  panel2: '#224567',
+  line: '#2D4E72',
+  lineStrong: '#44678D',
   ink: '#F4F7FC',
   soft: '#D8E2F1',
   muted: '#A9BCD5',
-  faint: '#738AA9',
+  faint: '#7B93B1',
   accent: '#3A73EA',
   accentDeep: '#295FD1',
-  consoleBg: '#0D1B30',
-  consoleSurface: '#172A43',
-  consolePanel: '#1A304D',
-  consolePanel2: '#223B5D',
-  consoleBorder: '#315476',
-  consoleBorderSoft: '#446A90',
+  consoleBg: '#0A1627',
+  consoleSurface: '#13253C',
+  consolePanel: '#182C46',
+  consolePanel2: '#213853',
+  consoleBorder: '#2D4F72',
+  consoleBorderSoft: '#43688D',
   consoleInk: '#F5F8FE',
   consoleSoft: '#D9E3F1',
-  consoleMuted: '#91A5C1',
-  consoleFaint: '#667D9A',
+  consoleMuted: '#9DB0C9',
+  consoleFaint: '#7087A4',
   consoleVerdict: '#7E9FE7',
   consoleVerdictBg: '#203756',
   consoleAmber: '#8DABEA',
@@ -1774,11 +1774,12 @@ function EngineRoom({ C }) {
         <div className="sa-er-sticky" style={{ position: 'sticky', top: 140 }}>
 
           <div style={{
-            fontFamily: mono,
+            fontFamily: C.theme === 'sharp' ? 'inherit' : mono,
             fontSize: 11,
-            letterSpacing: '0.18em',
+            letterSpacing: C.theme === 'sharp' ? '0.12em' : '0.18em',
             textTransform: 'uppercase',
             color: C.theme === 'sharp' ? C.accentText : C.accent,
+            fontWeight: C.theme === 'sharp' ? 600 : 500,
             marginBottom: 24,
           }}>
             Real-time intelligence layer
@@ -1827,11 +1828,12 @@ function EngineRoom({ C }) {
                   {stat.value}
                 </div>
                 <div style={{
-                  fontFamily: mono,
-                  fontSize: 10,
-                  letterSpacing: '0.14em',
+                  fontFamily: C.theme === 'sharp' ? 'inherit' : mono,
+                  fontSize: C.theme === 'sharp' ? 11 : 10,
+                  letterSpacing: C.theme === 'sharp' ? '0.08em' : '0.14em',
                   textTransform: 'uppercase',
-                  color: C.inkFaint,
+                  color: C.theme === 'sharp' ? C.inkMuted : C.inkFaint,
+                  fontWeight: C.theme === 'sharp' ? 600 : 500,
                   marginTop: 8,
                 }}>
                   {stat.label}
@@ -1860,12 +1862,12 @@ function EngineRoom({ C }) {
             justifyContent: 'space-between',
             borderBottom: `1px solid ${panelBorder}`,
           }}>
-            <div style={{ fontFamily: mono, fontSize: 13, color: panelInkFaint }}>
+            <div style={{ fontFamily: C.theme === 'sharp' ? 'inherit' : mono, fontSize: 13, color: C.theme === 'sharp' ? panelInkSoft : panelInkFaint, fontWeight: C.theme === 'sharp' ? 600 : 500, letterSpacing: C.theme === 'sharp' ? '0.04em' : 0 }}>
               stream / <span style={{ color: panelVerdictColor, fontWeight: 700 }}>live</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{ width: 6, height: 6, borderRadius: '50%', background: panelIngestColor, animation: 'erPulse 1.5s infinite' }} />
-              <span style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.14em', color: panelIngestColor }}>RECEIVING</span>
+              <span style={{ fontFamily: C.theme === 'sharp' ? 'inherit' : mono, fontSize: 11, letterSpacing: C.theme === 'sharp' ? '0.08em' : '0.14em', color: panelIngestColor, fontWeight: 700 }}>RECEIVING</span>
             </div>
           </div>
 
@@ -2121,7 +2123,7 @@ function FourVerbs({ C }) {
         }}
       >
         <div style={{ maxWidth: 780 }}>
-          <div style={{ fontFamily: mono, fontSize: 12, letterSpacing: '0.14em', textTransform: 'uppercase', color: I.inkFaint, marginBottom: 20 }}>
+          <div style={{ fontFamily: C.theme === 'sharp' ? 'inherit' : mono, fontSize: 12, letterSpacing: C.theme === 'sharp' ? '0.1em' : '0.14em', textTransform: 'uppercase', color: C.theme === 'sharp' ? I.inkMuted : I.inkFaint, fontWeight: C.theme === 'sharp' ? 600 : 500, marginBottom: 20 }}>
             What an operating brain actually does
           </div>
           <h2 style={{ fontFamily: serif, fontSize: 'clamp(36px, 5vw, 64px)', fontWeight: 700, lineHeight: 1.05, letterSpacing: '-0.04em', color: I.ink, margin: '0 0 20px' }}>
@@ -2155,7 +2157,7 @@ function FourVerbs({ C }) {
         >
           <div className="sa-fv-card-grid">
             <div>
-              <div style={{ fontFamily: mono, fontSize: 12, letterSpacing: '0.06em', textTransform: 'uppercase', color: I.accent, marginBottom: 16 }}>
+              <div style={{ fontFamily: C.theme === 'sharp' ? 'inherit' : mono, fontSize: 12, letterSpacing: C.theme === 'sharp' ? '0.08em' : '0.06em', textTransform: 'uppercase', color: I.accent, fontWeight: 700, marginBottom: 16 }}>
                 {v.num} / FOUR
               </div>
               <h3 style={{ fontFamily: serif, fontSize: 'clamp(32px, 6vw, 88px)', fontWeight: 700, lineHeight: 0.98, letterSpacing: '-0.045em', margin: '0 0 24px' }}>
@@ -2387,7 +2389,7 @@ function LiveDiagnosis({ C }) {
 
       {/* Intro */}
       <div style={{ textAlign: 'center', maxWidth: 560, margin: '0 auto 64px', padding: '0 28px' }}>
-        <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: panelAmber, marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0 }}>
+        <div style={{ fontFamily: C.theme === 'sharp' ? 'inherit' : mono, fontSize: 11, letterSpacing: C.theme === 'sharp' ? '0.1em' : '0.16em', textTransform: 'uppercase', color: C.theme === 'sharp' ? panelInkSoft : panelAmber, fontWeight: C.theme === 'sharp' ? 600 : 500, marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0 }}>
           {C.theme === 'light' && <span style={{ display: 'inline-block', width: 28, height: 1, background: C.border2, verticalAlign: 'middle', marginRight: 14 }} />}
           A live diagnosis
           {C.theme === 'light' && <span style={{ display: 'inline-block', width: 28, height: 1, background: C.border2, verticalAlign: 'middle', marginLeft: 14 }} />}
@@ -2410,11 +2412,11 @@ function LiveDiagnosis({ C }) {
               <div style={{ display: 'flex', gap: 6 }}>
                 {macDots.map(color => <div key={color} style={{ width: 10, height: 10, borderRadius: '50%', background: color }} />)}
               </div>
-              <span style={{ fontFamily: mono, fontSize: 12, color: panelInkMuted }}>selfaudit · diagnosis console</span>
+              <span style={{ fontFamily: C.theme === 'sharp' ? 'inherit' : mono, fontSize: 12, color: C.theme === 'sharp' ? panelInkSoft : panelInkMuted, fontWeight: C.theme === 'sharp' ? 600 : 500, letterSpacing: C.theme === 'sharp' ? '0.04em' : 0 }}>selfaudit · diagnosis console</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{ width: 6, height: 6, borderRadius: '50%', background: panelHealthy, animation: 'erPulse 1.5s infinite' }} />
-              <span style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.14em', color: panelHealthy }}>● LIVE</span>
+              <span style={{ fontFamily: C.theme === 'sharp' ? 'inherit' : mono, fontSize: 11, letterSpacing: C.theme === 'sharp' ? '0.08em' : '0.14em', color: panelHealthy, fontWeight: 700 }}>● LIVE</span>
             </div>
           </div>
 
@@ -2422,7 +2424,7 @@ function LiveDiagnosis({ C }) {
           <div style={{ padding: 36 }}>
 
             {/* Symptom */}
-            <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: panelInkFaint, marginBottom: 12 }}>SYMPTOM</div>
+            <div style={{ fontFamily: C.theme === 'sharp' ? 'inherit' : mono, fontSize: 10, letterSpacing: C.theme === 'sharp' ? '0.1em' : '0.16em', textTransform: 'uppercase', color: C.theme === 'sharp' ? panelInkMuted : panelInkFaint, fontWeight: C.theme === 'sharp' ? 600 : 500, marginBottom: 12 }}>SYMPTOM</div>
             <div
               ref={symptomRef}
               className="ldc-symptom"
@@ -2447,7 +2449,7 @@ function LiveDiagnosis({ C }) {
             </div>
 
             {/* Verdict label */}
-            <div ref={vlabelRef} className="ldc-vlabel" style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', color: panelAmber, marginBottom: 14 }}>
+            <div ref={vlabelRef} className="ldc-vlabel" style={{ fontFamily: C.theme === 'sharp' ? 'inherit' : mono, fontSize: 10, letterSpacing: C.theme === 'sharp' ? '0.1em' : '0.18em', textTransform: 'uppercase', color: C.theme === 'sharp' ? panelInkSoft : panelAmber, fontWeight: C.theme === 'sharp' ? 600 : 500, marginBottom: 14 }}>
               VERDICT
             </div>
 
@@ -2466,7 +2468,7 @@ function LiveDiagnosis({ C }) {
                 { label: 'NEXT MOVE',      ref: m4Ref, color: panelInkSoft },
               ].map(item => (
                 <div key={item.label}>
-                  <div style={{ fontFamily: mono, fontSize: 9, letterSpacing: '0.14em', textTransform: 'uppercase', color: panelInkFaint, marginBottom: 6 }}>{item.label}</div>
+                  <div style={{ fontFamily: C.theme === 'sharp' ? 'inherit' : mono, fontSize: 9, letterSpacing: C.theme === 'sharp' ? '0.08em' : '0.14em', textTransform: 'uppercase', color: C.theme === 'sharp' ? panelInkMuted : panelInkFaint, fontWeight: C.theme === 'sharp' ? 600 : 500, marginBottom: 6 }}>{item.label}</div>
                   <div ref={item.ref} style={{ fontFamily: serif, fontSize: 15, color: item.color, fontWeight: 500, lineHeight: 1.45 }} />
                 </div>
               ))}
@@ -2546,7 +2548,7 @@ function DashboardSection({ C }) {
 
       {/* Intro */}
       <div style={{ textAlign: 'center', maxWidth: 620, margin: '0 auto 64px', padding: '0 28px' }}>
-        <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0 }}>
+        <div style={{ fontFamily: C.theme === 'sharp' ? 'inherit' : mono, fontSize: 11, letterSpacing: C.theme === 'sharp' ? '0.1em' : '0.16em', textTransform: 'uppercase', color: C.theme === 'sharp' ? C.inkMuted : C.inkFaint, fontWeight: C.theme === 'sharp' ? 600 : 500, marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0 }}>
           {C.theme === 'light' && <span style={{ display: 'inline-block', width: 28, height: 1, background: C.border2, verticalAlign: 'middle', marginRight: 14 }} />}
           The brain, on day 47
           {C.theme === 'light' && <span style={{ display: 'inline-block', width: 28, height: 1, background: C.border2, verticalAlign: 'middle', marginLeft: 14 }} />}
@@ -2569,11 +2571,11 @@ function DashboardSection({ C }) {
               <div style={{ display: 'flex', gap: 6 }}>
                 {macDots.map(color => <div key={color} style={{ width: 10, height: 10, borderRadius: '50%', background: color }} />)}
               </div>
-              <span style={{ fontFamily: mono, fontSize: 12, color: panelInkMuted }}>selfaudit · command centre</span>
+              <span style={{ fontFamily: C.theme === 'sharp' ? 'inherit' : mono, fontSize: 12, color: C.theme === 'sharp' ? panelInkSoft : panelInkMuted, fontWeight: C.theme === 'sharp' ? 600 : 500, letterSpacing: C.theme === 'sharp' ? '0.04em' : 0 }}>selfaudit · command centre</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{ width: 6, height: 6, borderRadius: '50%', background: green, animation: 'erPulse 1.5s infinite' }} />
-              <span style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.14em', color: green }}>LIVE</span>
+              <span style={{ fontFamily: C.theme === 'sharp' ? 'inherit' : mono, fontSize: 11, letterSpacing: C.theme === 'sharp' ? '0.08em' : '0.14em', color: green, fontWeight: 700 }}>LIVE</span>
             </div>
           </div>
 
@@ -2607,16 +2609,16 @@ function DashboardSection({ C }) {
                   { label: 'GOAL PROGRESS', dynRef: goalRef,   val: '42%', sub: 'On pace · Q3',         subColor: green },
                 ].map(stat => (
                   <div key={stat.label} style={{ background: panelCardBg, border: `1px solid ${panelCardBorder}`, borderRadius: 10, padding: 16 }}>
-                    <div style={{ fontFamily: mono, fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: panelInkFaint, marginBottom: 8 }}>{stat.label}</div>
+                    <div style={{ fontFamily: C.theme === 'sharp' ? 'inherit' : mono, fontSize: 9, letterSpacing: C.theme === 'sharp' ? '0.08em' : '0.12em', textTransform: 'uppercase', color: C.theme === 'sharp' ? panelInkMuted : panelInkFaint, fontWeight: C.theme === 'sharp' ? 600 : 500, marginBottom: 8 }}>{stat.label}</div>
                     <div ref={stat.dynRef} style={{ fontFamily: serif, fontSize: 30, fontWeight: 600, color: PALETTE.platinum, lineHeight: 1 }}>{stat.val}</div>
-                    <div style={{ fontFamily: mono, fontSize: 10, color: stat.subColor, marginTop: 6 }}>{stat.sub}</div>
+                    <div style={{ fontFamily: C.theme === 'sharp' ? 'inherit' : mono, fontSize: 10, color: stat.subColor, fontWeight: C.theme === 'sharp' ? 500 : 400, marginTop: 6 }}>{stat.sub}</div>
                   </div>
                 ))}
               </div>
 
               {/* Recommended next move */}
               <div style={{ background: amberBg, border: `1px solid ${amberBorder}`, borderRadius: 12, padding: '20px 22px', marginBottom: 18 }}>
-                <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: amber, marginBottom: 10 }}>Recommended next move</div>
+                <div style={{ fontFamily: C.theme === 'sharp' ? 'inherit' : mono, fontSize: 10, letterSpacing: C.theme === 'sharp' ? '0.08em' : '0.12em', textTransform: 'uppercase', color: C.theme === 'sharp' ? panelInkSoft : amber, fontWeight: C.theme === 'sharp' ? 600 : 500, marginBottom: 10 }}>Recommended next move</div>
                 <p style={{ fontFamily: serif, fontSize: 17, fontWeight: 500, color: PALETTE.platinum, lineHeight: 1.55, margin: '0 0 16px' }}>
                   Cancel the agency contract this week. Run a{' '}
                   <em style={{ fontStyle: 'italic', color: amber }}>30-day Clay test</em>
@@ -2635,7 +2637,7 @@ function DashboardSection({ C }) {
               </div>
 
               {/* Open issues */}
-              <div style={{ fontFamily: mono, fontSize: 9, letterSpacing: '0.12em', textTransform: 'uppercase', color: panelInkFaint, marginBottom: 8 }}>Open issues</div>
+              <div style={{ fontFamily: C.theme === 'sharp' ? 'inherit' : mono, fontSize: 9, letterSpacing: C.theme === 'sharp' ? '0.08em' : '0.12em', textTransform: 'uppercase', color: C.theme === 'sharp' ? panelInkMuted : panelInkFaint, fontWeight: C.theme === 'sharp' ? 600 : 500, marginBottom: 8 }}>Open issues</div>
               {[
                 { title: 'Market validation',             meta: 'Critical · flagged May 4',    badge: 'CRITICAL', badgeBg: redBg,       badgeColor: '#F0B1A5' },
                 { title: 'Pricing model needs restructure', meta: 'High · 3 audits in a row',   badge: 'HIGH',     badgeBg: amberBg,     badgeColor: amber },
@@ -2691,7 +2693,7 @@ function CompoundingSection({ C }) {
 
         {/* ── Left: copy ── */}
         <div>
-          <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 28 }}>
+          <div style={{ fontFamily: C.theme === 'sharp' ? 'inherit' : mono, fontSize: 11, letterSpacing: C.theme === 'sharp' ? '0.1em' : '0.16em', textTransform: 'uppercase', color: C.theme === 'sharp' ? C.inkMuted : C.inkFaint, fontWeight: C.theme === 'sharp' ? 600 : 500, marginBottom: 28 }}>
             The compounding advantage
           </div>
 
@@ -2716,7 +2718,7 @@ function CompoundingSection({ C }) {
 
           {/* Card header */}
           <div style={{ padding: '28px 32px 12px' }}>
-            <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: cardFaint, marginBottom: 10 }}>
+            <div style={{ fontFamily: C.theme === 'sharp' ? 'inherit' : mono, fontSize: 10, letterSpacing: C.theme === 'sharp' ? '0.08em' : '0.14em', textTransform: 'uppercase', color: C.theme === 'sharp' ? cardSoft : cardFaint, fontWeight: C.theme === 'sharp' ? 600 : 500, marginBottom: 10 }}>
               Brain knowledge · over time
             </div>
             <div style={{ fontFamily: serif, fontSize: 22, fontWeight: 600, color: cardInk, lineHeight: 1.25 }}>
@@ -2838,8 +2840,8 @@ function FinalCTA({ onStart, C }) {
 
       {/* Begin. */}
       <div style={{ textAlign: 'center', lineHeight: 0.9, marginBottom: 40 }}>
-        <span style={{ fontFamily: serif, fontSize: 'clamp(52px, 14vw, 188px)', fontWeight: 700, fontStyle: 'italic', letterSpacing: '-0.04em', color: C.ink }}>Begin</span>
-        <span style={{ fontFamily: serif, fontSize: 'clamp(52px, 14vw, 188px)', fontWeight: 700, fontStyle: 'italic', letterSpacing: '-0.04em', color: red }}>.</span>
+        <span style={{ fontFamily: serif, fontSize: 'clamp(44px, 10vw, 132px)', fontWeight: 600, fontStyle: 'italic', letterSpacing: '-0.035em', color: C.ink }}>Begin</span>
+        <span style={{ fontFamily: serif, fontSize: 'clamp(44px, 10vw, 132px)', fontWeight: 600, fontStyle: 'italic', letterSpacing: '-0.035em', color: red }}>.</span>
       </div>
 
       {/* Subtitle */}
@@ -2961,9 +2963,9 @@ export default function Landing({ onStart, onSignUp, session }) {
       ? `
         body {
           background-image:
-            radial-gradient(circle at top, rgba(58, 115, 234, 0.16), transparent 38%),
-            radial-gradient(circle at 85% 18%, rgba(137, 167, 226, 0.09), transparent 28%),
-            linear-gradient(180deg, #173454 0%, #122946 38%, #0f2239 100%);
+            radial-gradient(circle at top, rgba(58, 115, 234, 0.12), transparent 36%),
+            radial-gradient(circle at 85% 18%, rgba(137, 167, 226, 0.07), transparent 24%),
+            linear-gradient(180deg, #122A47 0%, #0F2239 34%, #0a1627 100%);
           background-attachment: scroll;
           background-color: ${C.bg};
         }
@@ -3369,7 +3371,7 @@ export default function Landing({ onStart, onSignUp, session }) {
 
           {/* Intro */}
           <div style={{ textAlign: 'center', maxWidth: 720, margin: '0 auto clamp(40px, 5vw, 88px)' }}>
-            <div style={{ fontFamily: mono, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.inkFaint, marginBottom: 20 }}>
+            <div style={{ fontFamily: C.theme === 'sharp' ? 'inherit' : mono, fontSize: 11, letterSpacing: C.theme === 'sharp' ? '0.1em' : '0.16em', textTransform: 'uppercase', color: C.theme === 'sharp' ? C.inkMuted : C.inkFaint, fontWeight: C.theme === 'sharp' ? 600 : 500, marginBottom: 20 }}>
               The moat, named
             </div>
             <h2 style={{ fontFamily: serif, fontSize: 'clamp(28px, 5vw, 72px)', fontWeight: 700, lineHeight: 1.05, letterSpacing: '-0.04em', color: C.ink, margin: '0 0 24px' }}>
@@ -3386,7 +3388,7 @@ export default function Landing({ onStart, onSignUp, session }) {
 
             {/* Left — other tools */}
             <div>
-              <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.inkFaint, paddingBottom: 16, borderBottom: `1px solid ${C.border}` }}>
+              <div style={{ fontFamily: C.theme === 'sharp' ? 'inherit' : mono, fontSize: 10, letterSpacing: C.theme === 'sharp' ? '0.08em' : '0.14em', textTransform: 'uppercase', color: C.theme === 'sharp' ? C.inkMuted : C.inkFaint, fontWeight: C.theme === 'sharp' ? 600 : 500, paddingBottom: 16, borderBottom: `1px solid ${C.border}` }}>
                 Other AI tools
               </div>
               {[
@@ -3405,7 +3407,7 @@ export default function Landing({ onStart, onSignUp, session }) {
 
             {/* Right — SelfAudit card */}
             <div style={{ background: C.theme === 'sharp' ? C.surface3 : C.card, border: `1px solid ${C.theme === 'sharp' ? C.border2 : C.border}`, borderRadius: 14, overflow: 'hidden' }}>
-              <div style={{ fontFamily: mono, fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase', color: C.inkFaint, padding: '20px 32px 16px', borderBottom: `1px solid ${C.border}` }}>
+              <div style={{ fontFamily: C.theme === 'sharp' ? 'inherit' : mono, fontSize: 10, letterSpacing: C.theme === 'sharp' ? '0.08em' : '0.14em', textTransform: 'uppercase', color: C.theme === 'sharp' ? C.inkMuted : C.inkFaint, fontWeight: C.theme === 'sharp' ? 600 : 500, padding: '20px 32px 16px', borderBottom: `1px solid ${C.border}` }}>
                 SelfAudit
               </div>
               {[
