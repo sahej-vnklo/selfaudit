@@ -62,31 +62,31 @@ const LIGHT = {
 }
 
 const SHARP = {
-  page: '#DCE8FA',
-  band: '#D2E0F4',
-  panel: '#E7F0FC',
-  panel2: '#C0D4EE',
-  line: '#AFC6E3',
-  lineStrong: '#7E9FC7',
-  ink: '#14233A',
-  soft: '#3C5577',
-  muted: '#56749B',
-  faint: '#738CB0',
-  accent: '#2B63C9',
-  accentDeep: '#1C4FAE',
-  consoleBg: '#233247',
-  consoleSurface: '#2A3C55',
-  consolePanel: '#30445F',
-  consolePanel2: '#37506F',
-  consoleBorder: '#4B6586',
-  consoleBorderSoft: '#6480A3',
-  consoleInk: '#F5F9FF',
-  consoleSoft: '#D9E5F4',
-  consoleMuted: '#A8BDD7',
-  consoleFaint: '#7E97B7',
-  consoleVerdict: '#74A8FF',
-  consoleVerdictBg: '#3B5680',
-  consoleAmber: '#6A95E4',
+  page: '#102744',
+  band: '#173353',
+  panel: '#1F3F66',
+  panel2: '#284A75',
+  line: '#355983',
+  lineStrong: '#5377A6',
+  ink: '#F5F8FF',
+  soft: '#D8E2F3',
+  muted: '#A8BDD9',
+  faint: '#7A95BA',
+  accent: '#3477FF',
+  accentDeep: '#235FDE',
+  consoleBg: '#183254',
+  consoleSurface: '#213B5E',
+  consolePanel: '#254267',
+  consolePanel2: '#2E4E78',
+  consoleBorder: '#40618E',
+  consoleBorderSoft: '#5D7CAA',
+  consoleInk: '#F6FAFF',
+  consoleSoft: '#DCE6F6',
+  consoleMuted: '#AAC0DC',
+  consoleFaint: '#809CC0',
+  consoleVerdict: '#76ABFF',
+  consoleVerdictBg: '#2C4970',
+  consoleAmber: '#6E9FFF',
 }
 
 const THEMES = {
@@ -819,7 +819,7 @@ function LandingNav({ C, pageOpen, onBack, onPricing, onStories, onConnected, on
   const navBg = C.theme === 'dark'
     ? 'rgba(10, 6, 6, 0.88)'
     : C.theme === 'sharp'
-      ? 'rgba(242, 244, 246, 0.88)'
+      ? 'rgba(20, 41, 70, 0.88)'
       : 'rgba(245, 240, 234, 0.86)'
   return (
     <nav style={{ padding: '20px 0', borderBottom: `1px solid ${C.border}`, background: navBg, backdropFilter: 'blur(18px)', position: 'sticky', top: 0, zIndex: 20 }}>
