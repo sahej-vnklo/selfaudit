@@ -681,11 +681,9 @@ function TextNavLink({ label, onClick, C, muted = false, active = false }) {
 }
 
 function ThemeTextToggle({ theme, setTheme, C }) {
-  const nextTheme = theme === 'dark' ? 'light' : 'dark'
-
   return (
     <button
-      onClick={() => setTheme(nextTheme)}
+      onClick={() => setTheme('dark')}
       style={{
         background: 'none',
         border: `1px solid ${C.border2}`,
@@ -701,7 +699,7 @@ function ThemeTextToggle({ theme, setTheme, C }) {
         gap: 6,
       }}
     >
-      {theme === 'dark' ? '☀ Light' : '☾ Dark'}
+      ☾ Dark
     </button>
   )
 }
@@ -2778,7 +2776,7 @@ function FinalCTA({ onStart, C }) {
 
 export default function Landing({ onStart, onSignUp, session }) {
   const posthog = usePostHog()
-  const [theme, setTheme] = useState(() => localStorage.getItem('sa-theme') || 'dark')
+  const [theme, setTheme] = useState('dark')
   const C = THEMES[theme]
   const [storiesOpen, setStoriesOpen] = useState(false)
   const [connectedOpen, setConnectedOpen] = useState(false)
@@ -2824,24 +2822,13 @@ export default function Landing({ onStart, onSignUp, session }) {
       document.head.appendChild(el)
     }
 
-    if (theme === 'light') {
-      el.textContent = `
-      body {
-        background-image: none;
-        background-attachment: fixed;
-        background-color: ${PALETTE.platinum};
-        background-size: 100% 100%;
-      }
-    `
-    } else {
-      el.textContent = `
+    el.textContent = `
       body {
         background-image: none;
         background-attachment: scroll;
         background-color: ${PALETTE.jet};
       }
     `
-    }
 
     return () => {
       if (el) el.textContent = ''
