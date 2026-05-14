@@ -11,9 +11,6 @@ const FIRST_MESSAGE = (userInfo) => {
     const timeline = userInfo.goalTimeline ? ` by ${userInfo.goalTimeline}` : ''
     return `So you want to ${userInfo.goal}${timeline} — let's map where you actually are. Walk me through the current state: what's your revenue today, and what's driving it?`
   }
-  if (userInfo?.context?.trim()) {
-    return `You said "${userInfo.context}" — where is this hitting the business hardest right now: revenue, delivery, demand, or the team?`
-  }
   return `What's going on in your business right now?`
 }
 
