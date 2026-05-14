@@ -3,6 +3,8 @@ import { initSupabase } from '../lib/supabase.js'
 import IntelligenceBrief from './IntelligenceBrief.jsx'
 import ExecutionPanel from './ExecutionPanel.jsx'
 
+const THEME_ORDER = ['dark', 'light', 'sharp']
+
 const THEMES = {
   dark: {
     bg: '#0F1520',
@@ -67,6 +69,38 @@ const THEMES = {
     white: '#FFFFFF',
     overlay: 'rgba(0,0,0,0.12)',
     overlaySoft: 'rgba(0,0,0,0.06)',
+  },
+  sharp: {
+    bg: '#0F2239',
+    surface: '#132C49',
+    surface2: '#193857',
+    surface3: '#224567',
+    panel: '#132C49',
+    panelAlt: '#193857',
+    border: '#2D4E72',
+    border2: '#44678D',
+    text: '#F4F7FC',
+    textSecondary: '#D8E2F1',
+    textMuted: '#A9BCD5',
+    textFaint: '#7B93B1',
+    accent: '#3A73EA',
+    accentLight: '#193857',
+    accentText: '#89A7E2',
+    red: '#C07878',
+    redBg: '#1A1A32',
+    redText: '#C07878',
+    amber: '#8A9E6A',
+    amberBg: '#1A2520',
+    amberText: '#A8C080',
+    green: '#4A9E8B',
+    greenBg: '#0A1A20',
+    greenText: '#6BC0A8',
+    blue: '#3A73EA',
+    violet: '#6A7AEA',
+    sand: '#8AABDE',
+    white: '#F4F7FC',
+    overlay: 'rgba(5,15,30,0.6)',
+    overlaySoft: 'rgba(0,0,0,0.35)',
   },
 }
 
@@ -693,7 +727,10 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
   }
 
   const toggleTheme = () => {
-    setTheme((prev) => prev === 'dark' ? 'light' : 'dark')
+    setTheme((prev) => {
+      const idx = THEME_ORDER.indexOf(prev)
+      return THEME_ORDER[(idx + 1) % THEME_ORDER.length]
+    })
   }
 
   return (
@@ -763,9 +800,9 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
           </div>
 
           <div style={styles.topbarActions}>
-            <button type="button" style={styles.themeToggleButton} onClick={toggleTheme} aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}>
-              <span style={styles.themeToggleIcon}>{theme === 'dark' ? '☀' : '☾'}</span>
-              <span>{theme === 'dark' ? 'light mode' : 'dark mode'}</span>
+            <button type="button" style={styles.themeToggleButton} onClick={toggleTheme} aria-label="Cycle theme">
+              <span style={styles.themeToggleIcon}>◐</span>
+              <span>Theme</span>
             </button>
             <button type="button" style={styles.ghostButton} onClick={startAudit}>
               diagnose a problem

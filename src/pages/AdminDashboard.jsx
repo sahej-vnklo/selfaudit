@@ -1,29 +1,135 @@
 import React, { useEffect, useMemo, useState } from 'react'
 
 const ADMIN_EMAIL = 'sahej@vnklo.com'
+
+const THEME_ORDER = ['dark', 'light', 'sharp']
+
+const ADMIN_THEMES = {
+  dark: {
+    bg: '#0F1520',
+    surface: '#141D2B',
+    surface2: '#111827',
+    surface3: '#1A2535',
+    border: '#1E2D42',
+    border2: '#243247',
+    text: '#E8E2D8',
+    textMuted: '#7A8FA8',
+    textFaint: '#4A6080',
+    accent: '#4A7FA8',
+    accentLight: '#1A2535',
+    accentText: '#8FBAD8',
+    red: '#C05050',
+    redBg: '#1A0A0A',
+    redText: '#C07070',
+    amber: '#8C6A30',
+    amberBg: '#1A1508',
+    amberText: '#C9A040',
+    green: '#4A9E6B',
+    greenBg: '#0A1A10',
+    greenText: '#4A9E6B',
+    blue: '#5B7FA6',
+  },
+  light: {
+    bg: '#F5F0E8',
+    surface: '#EDE6DC',
+    surface2: '#E8DFD3',
+    surface3: '#E2D8CC',
+    border: '#C4B4A4',
+    border2: '#BAA898',
+    text: '#1A1410',
+    textMuted: '#6B5040',
+    textFaint: '#8A6A58',
+    accent: '#8C4A42',
+    accentLight: '#F0E4E0',
+    accentText: '#7A3C36',
+    red: '#B85C5C',
+    redBg: '#F5E8E8',
+    redText: '#8C2A2A',
+    amber: '#8A6A1A',
+    amberBg: '#F5F0E0',
+    amberText: '#7A5A10',
+    green: '#2D6B45',
+    greenBg: '#E8F5EE',
+    greenText: '#1A6B3A',
+    blue: '#5B7FA6',
+  },
+  sharp: {
+    bg: '#0F2239',
+    surface: '#132C49',
+    surface2: '#193857',
+    surface3: '#224567',
+    border: '#2D4E72',
+    border2: '#44678D',
+    text: '#F4F7FC',
+    textMuted: '#A9BCD5',
+    textFaint: '#7B93B1',
+    accent: '#3A73EA',
+    accentLight: '#193857',
+    accentText: '#89A7E2',
+    red: '#C07878',
+    redBg: '#1A1A32',
+    redText: '#C07878',
+    amber: '#8A9E6A',
+    amberBg: '#1A2520',
+    amberText: '#A8C080',
+    green: '#4A9E8B',
+    greenBg: '#0A1A20',
+    greenText: '#6BC0A8',
+    blue: '#3A73EA',
+  },
+}
+
+function getAdminThemeVars(theme) {
+  const C = ADMIN_THEMES[theme] || ADMIN_THEMES.light
+  return {
+    '--bg': C.bg,
+    '--surface': C.surface,
+    '--surface2': C.surface2,
+    '--surface3': C.surface3,
+    '--border': C.border,
+    '--border2': C.border2,
+    '--text': C.text,
+    '--text-muted': C.textMuted,
+    '--text-faint': C.textFaint,
+    '--accent': C.accent,
+    '--accent-light': C.accentLight,
+    '--accent-text': C.accentText,
+    '--red': C.red,
+    '--red-bg': C.redBg,
+    '--red-text': C.redText,
+    '--amber': C.amber,
+    '--amber-bg': C.amberBg,
+    '--amber-text': C.amberText,
+    '--green': C.green,
+    '--green-bg': C.greenBg,
+    '--green-text': C.greenText,
+    '--blue': C.blue,
+  }
+}
+
 const G = {
-  bg: '#F5F0E8',
-  surface: '#EDE6DC',
-  surface2: '#E8DFD3',
-  surface3: '#E2D8CC',
-  border: '#C4B4A4',
-  border2: '#BAA898',
-  text: '#1A1410',
-  textMuted: '#6B5040',
-  textFaint: '#8A6A58',
-  accent: '#8C4A42',
-  accentLight: '#F0E4E0',
-  accentText: '#7A3C36',
-  red: '#B85C5C',
-  redBg: '#F5E8E8',
-  redText: '#8C2A2A',
-  amber: '#8A6A1A',
-  amberBg: '#F5F0E0',
-  amberText: '#7A5A10',
-  green: '#2D6B45',
-  greenBg: '#E8F5EE',
-  greenText: '#1A6B3A',
-  blue: '#5B7FA6',
+  bg: 'var(--bg)',
+  surface: 'var(--surface)',
+  surface2: 'var(--surface2)',
+  surface3: 'var(--surface3)',
+  border: 'var(--border)',
+  border2: 'var(--border2)',
+  text: 'var(--text)',
+  textMuted: 'var(--text-muted)',
+  textFaint: 'var(--text-faint)',
+  accent: 'var(--accent)',
+  accentLight: 'var(--accent-light)',
+  accentText: 'var(--accent-text)',
+  red: 'var(--red)',
+  redBg: 'var(--red-bg)',
+  redText: 'var(--red-text)',
+  amber: 'var(--amber)',
+  amberBg: 'var(--amber-bg)',
+  amberText: 'var(--amber-text)',
+  green: 'var(--green)',
+  greenBg: 'var(--green-bg)',
+  greenText: 'var(--green-text)',
+  blue: 'var(--blue)',
 }
 
 const MONO = '"DM Mono", ui-monospace, monospace'
@@ -799,7 +905,7 @@ function AdminSidebar({ session, navSection, onNav, userCount }) {
   )
 }
 
-function AdminTopbar({ section }) {
+function AdminTopbar({ section, onCycleTheme }) {
   const today = new Date().toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
@@ -820,7 +926,29 @@ function AdminTopbar({ section }) {
       <div style={{ color: G.text, fontSize: 13 }}>
         selfaudit <span style={{ color: G.textFaint }}>/</span> <span style={{ color: G.accentText }}>{section}</span>
       </div>
-      <div style={{ color: G.textMuted, fontSize: 12, ...monoStyle() }}>{today}</div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+        <button
+          type="button"
+          onClick={onCycleTheme}
+          aria-label="Cycle theme"
+          style={{
+            border: `0.5px solid ${G.border2}`,
+            background: G.surface2,
+            color: G.textMuted,
+            borderRadius: 6,
+            padding: '4px 11px',
+            fontSize: 12,
+            cursor: 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            fontFamily: SANS,
+          }}
+        >
+          ◐ Theme
+        </button>
+        <div style={{ color: G.textMuted, fontSize: 12, ...monoStyle() }}>{today}</div>
+      </div>
     </div>
   )
 }
@@ -1524,6 +1652,7 @@ function UserDetailView({ user, detail, onBack, onTierChange, tierSaving }) {
 }
 
 export default function AdminDashboard({ session, onUnauthorized }) {
+  const [theme, setTheme] = useState(() => localStorage.getItem('sa-theme') || 'light')
   const [navSection, setNavSection] = useState('dashboard')
   const [selectedUser, setSelectedUser] = useState(null)
   const [stats, setStats] = useState(null)
@@ -1538,6 +1667,17 @@ export default function AdminDashboard({ session, onUnauthorized }) {
       onUnauthorized?.()
     }
   }, [session, onUnauthorized])
+
+  useEffect(() => {
+    localStorage.setItem('sa-theme', theme)
+  }, [theme])
+
+  const cycleTheme = () => {
+    setTheme((prev) => {
+      const idx = THEME_ORDER.indexOf(prev)
+      return THEME_ORDER[(idx + 1) % THEME_ORDER.length]
+    })
+  }
 
   useEffect(() => {
     if (!session || session.user?.email !== ADMIN_EMAIL) return
@@ -1676,6 +1816,7 @@ export default function AdminDashboard({ session, onUnauthorized }) {
 
   return (
     <div style={{
+      ...getAdminThemeVars(theme),
       minHeight: '100vh',
       background: G.bg,
       color: G.text,
@@ -1698,7 +1839,7 @@ export default function AdminDashboard({ session, onUnauthorized }) {
       />
 
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-        <AdminTopbar section={sectionName} />
+        <AdminTopbar section={sectionName} onCycleTheme={cycleTheme} />
 
         <div style={{ flex: 1, overflowY: 'auto' }}>
           <div style={{ padding: 20 }}>

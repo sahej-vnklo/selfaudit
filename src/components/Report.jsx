@@ -54,6 +54,28 @@ const THEMES = {
     dangerBg: '#F5E8E8',
     dangerText: '#8C2A2A',
   },
+  sharp: {
+    bg: '#0F2239',
+    surface: '#132C49',
+    surface2: '#193857',
+    border: '#2D4E72',
+    text: '#F4F7FC',
+    textSoft: '#D8E2F1',
+    textMuted: '#A9BCD5',
+    accent: '#3A73EA',
+    accentSoft: '#193857',
+    accentText: '#89A7E2',
+    buttonText: '#F4F7FC',
+    success: '#4A9E8B',
+    successBg: '#0A1A20',
+    successText: '#6BC0A8',
+    warning: '#8A9E6A',
+    warningBg: '#1A2520',
+    warningText: '#A8C080',
+    danger: '#C07878',
+    dangerBg: '#1A1A32',
+    dangerText: '#D8A0A0',
+  },
 }
 
 function getThemeTokens(theme) {

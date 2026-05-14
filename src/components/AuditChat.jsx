@@ -509,6 +509,25 @@ const CHAT_THEMES = {
     errorBorder: '#D1A3A3',
     errorText: '#7A2C2C',
   },
+  sharp: {
+    bg: '#0F2239',
+    nav: '#132C49',
+    surface: '#193857',
+    surface2: '#224567',
+    border: '#2D4E72',
+    borderSoft: '#44678D',
+    text: '#F4F7FC',
+    textSoft: '#D8E2F1',
+    textMuted: '#A9BCD5',
+    accent: '#3A73EA',
+    accentDark: '#295FD1',
+    accentSoft: '#193857',
+    accentText: '#89A7E2',
+    userText: '#F4F7FC',
+    errorBg: '#1A1A32',
+    errorBorder: '#6A6AAA',
+    errorText: '#D8A0A0',
+  },
 }
 
 function getTheme(theme) {

@@ -38,6 +38,24 @@ const THEMES = {
     red: '#8C2A2A',
     redText: '#8C2A2A',
   },
+  sharp: {
+    bg: '#0F2239',
+    surface: '#132C49',
+    surface2: '#193857',
+    surface3: '#224567',
+    border: '#2D4E72',
+    border2: '#44678D',
+    text: '#F4F7FC',
+    textSecondary: '#D8E2F1',
+    textMuted: '#A9BCD5',
+    textFaint: '#7B93B1',
+    accent: '#3A73EA',
+    accentLight: '#193857',
+    accentText: '#89A7E2',
+    buttonText: '#F4F7FC',
+    red: '#C07878',
+    redText: '#C07878',
+  },
 }
 
 const COLORS = {
