@@ -256,7 +256,7 @@ const s = {
   wrap: { display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '3rem 1.5rem' },
   headline: { textAlign: 'center', marginBottom: '2rem' },
   headlineText: { fontFamily: 'var(--serif)', fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 400, lineHeight: 1.2, color: 'var(--text)', margin: 0 },
-  createAccountPill: { marginTop: '1.25rem', padding: '10px 28px', borderRadius: 100, border: '0.5px solid var(--border)', background: 'transparent', color: 'var(--text-soft)', fontSize: 14, fontWeight: 500, cursor: 'pointer', transition: 'border-color 0.15s, color 0.15s' },
+  createAccountPill: { marginTop: '1.25rem', width: '100%', maxWidth: 420, padding: '13px', borderRadius: 100, border: 'none', background: 'var(--accent)', color: 'var(--button-text)', fontSize: 15, fontWeight: 500, cursor: 'pointer' },
   card: { background: 'var(--surface)', borderRadius: 'var(--radius)', border: '0.5px solid var(--border)', padding: '2.5rem', width: '100%', maxWidth: 420, animation: 'fadeUp 0.4s ease' },
   header: { marginBottom: '2rem' },
   eyebrow: { fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--accent)', marginBottom: 8 },
