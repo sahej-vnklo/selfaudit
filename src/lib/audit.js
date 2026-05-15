@@ -1,7 +1,7 @@
-export async function sendMessage(messages, { industry, domain, userId, goalMode, goal, goalTimeline, goalBaseline, memoryContext } = {}) {
+export async function sendMessage(messages, { industry, domain, userId, goalMode, goal, goalTimeline, goalBaseline, memoryContext, token } = {}) {
   const response = await fetch('/api/audit', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
     body: JSON.stringify({ type: 'chat', messages, industry, domain, userId, goalMode, goal, goalTimeline, goalBaseline, memoryContext }),
   })
 
@@ -14,10 +14,10 @@ export async function sendMessage(messages, { industry, domain, userId, goalMode
   return data.text
 }
 
-export async function generateReport(messages, { industry, domain, userId, goalMode, goal, goalTimeline, goalBaseline } = {}) {
+export async function generateReport(messages, { industry, domain, userId, goalMode, goal, goalTimeline, goalBaseline, token } = {}) {
   const response = await fetch('/api/audit', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
     body: JSON.stringify({ type: 'report', messages, industry, domain, userId, goalMode, goal, goalTimeline, goalBaseline }),
   })
 

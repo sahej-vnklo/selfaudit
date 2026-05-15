@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { validateUserToken } from './lib/auth.js'
 import { synthesizeUserIntelligence } from './lib/intelligence/synthesize.js'
 
 const CLAUDE_API = 'https://api.anthropic.com/v1/messages'
@@ -50,6 +51,7 @@ export default async function handler(req, res) {
   try {
     const { userId, path, name } = req.body || {}
     if (!userId || !path || !name) return res.status(400).json({ error: 'userId, path, and name are required' })
+    if (!await validateUserToken(req, res, userId)) return
 
     const sb = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } })
     const { data: file, error: downloadError } = await sb.storage.from('intelligence-docs').download(path)

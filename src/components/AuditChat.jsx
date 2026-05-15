@@ -268,6 +268,13 @@ export default function AuditChat({ theme = 'dark', userInfo, onReportReady, con
     try {
       const apiMessages = toApiMessages(newHistory)
 
+      let auditToken = ''
+      if (resolvedUserInfo?.userId) {
+        const sb = await initSupabase()
+        const { data: { session: _s } } = await sb.auth.getSession()
+        auditToken = _s?.access_token || ''
+      }
+
       const response = await sendMessage(apiMessages, {
         industry:      tierData?.industry     ?? resolvedUserInfo?.industry,
         domain:        tierData?.domain       ?? resolvedUserInfo?.domain,
@@ -277,6 +284,7 @@ export default function AuditChat({ theme = 'dark', userInfo, onReportReady, con
         goalTimeline:  resolvedUserInfo?.goalTimeline ?? '',
         goalBaseline:  resolvedUserInfo?.goalBaseline ?? '',
         memoryContext,
+        token:         auditToken || undefined,
       })
       const isReady      = response.includes('[READY_FOR_REPORT]')
       const cleanResponse = response

@@ -154,6 +154,14 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
         const apiMessages = conversationHistory
           .filter(m => m.role !== 'system')
           .map(m => ({ role: m.role, content: m.content }))
+
+        let reportToken = ''
+        if (userInfo?.userId) {
+          const sb = await initSupabase()
+          const { data: { session: _s } } = await sb.auth.getSession()
+          reportToken = _s?.access_token || ''
+        }
+
         const r = await generateReport(apiMessages, {
           industry:     userInfo?.industry,
           domain:       userInfo?.domain,
@@ -162,6 +170,7 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
           goal:         userInfo?.goal         ?? '',
           goalTimeline: userInfo?.goalTimeline ?? '',
           goalBaseline: userInfo?.goalBaseline ?? '',
+          token:        reportToken || undefined,
         })
         setReport(r)
 

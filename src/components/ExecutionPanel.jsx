@@ -237,9 +237,15 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
     setGenerating(true)
     setError(null)
     try {
+      let artifactToken = ''
+      if (scopedUserInfo?.userId) {
+        const sb = await initSupabase()
+        const { data: { session: _s } } = await sb.auth.getSession()
+        artifactToken = _s?.access_token || ''
+      }
       const res = await fetch('/api/generate-artifact', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(artifactToken ? { Authorization: `Bearer ${artifactToken}` } : {}) },
         body: JSON.stringify({
           artifactType: selectedType,
           report: parsedReport,

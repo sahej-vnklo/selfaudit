@@ -1,11 +1,12 @@
 import { createClient } from '@supabase/supabase-js'
+import { validateUserToken } from './lib/auth.js'
 
 const CLAUDE_API = 'https://api.anthropic.com/v1/messages'
 
 const ARTIFACT_TYPES = ['ACTION_PLAN', 'SOP', 'PROCESS_CHANGE', 'PRICING_MODEL', 'HIRING_BRIEF', 'EMAIL']
 
 const supabase = createClient(
-  process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
+  process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY,
   { auth: { persistSession: false } }
 )
@@ -185,6 +186,9 @@ export default async function handler(req, res) {
   if (!report) {
     return res.status(400).json({ error: 'Missing report' })
   }
+
+  // userId is optional (anonymous report viewers). If present, validate ownership.
+  if (userId && !await validateUserToken(req, res, userId)) return
 
   const recommendations = recommend(report)
 

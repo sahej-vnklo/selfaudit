@@ -10,6 +10,7 @@
 // - Store feedback on user acceptance/rejection for future improvement
 
 import { createClient } from '@supabase/supabase-js'
+import { validateUserToken } from './lib/auth.js'
 import { fetchHubspotBusinessState } from './lib/connectors/hubspot.js'
 import { normalizeHubspotData, formatNormalizedForPrompt } from './lib/connectors/normalize.js'
 import { getCompanyBrain, formatBrainForPrompt } from './lib/intelligence/company-brain.js'
@@ -586,6 +587,10 @@ export default async function handler(req, res) {
   if (!type || !messages) {
     return res.status(400).json({ error: 'Missing type or messages' })
   }
+
+  // Anonymous audits (no userId) are allowed. If userId is present, the caller
+  // must prove ownership — otherwise any user's private context could be stolen.
+  if (userId && !await validateUserToken(req, res, userId)) return
 
   const apiKey = process.env.CLAUDE_API_KEY
   if (!apiKey) {
