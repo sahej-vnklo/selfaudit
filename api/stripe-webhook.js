@@ -28,6 +28,33 @@ function tierFromPriceId(priceId) {
   return null
 }
 
+async function handleSubscriptionDeleted(event, supabase) {
+  const subscription = event.data.object
+  const customerId   = subscription.customer
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('stripe_customer_id', customerId)
+    .single()
+
+  if (!profile?.id) {
+    console.warn('[stripe-webhook] could not find profile for deleted subscription:', customerId)
+    return
+  }
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({ tier: 'foundation', stripe_subscription_id: null })
+    .eq('id', profile.id)
+
+  if (error) {
+    console.error('[stripe-webhook] subscription deleted — profile update failed:', error.message)
+  } else {
+    console.log('[stripe-webhook] subscription cancelled, tier reset to foundation for user', profile.id)
+  }
+}
+
 async function handleSubscriptionCreatedOrUpdated(event, supabase) {
   const subscription = event.data.object
   const customerId   = subscription.customer
@@ -133,6 +160,10 @@ export default async function handler(req, res) {
     event.type === 'customer.subscription.updated'
   ) {
     await handleSubscriptionCreatedOrUpdated(event, supabase)
+  }
+
+  if (event.type === 'customer.subscription.deleted') {
+    await handleSubscriptionDeleted(event, supabase)
   }
 
   return res.status(200).json({ received: true })

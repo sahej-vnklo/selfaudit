@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { validateUserToken } from './lib/auth.js'
 import { getCompanyBrain, upsertCompanyBrain } from './lib/intelligence/company-brain.js'
 import { isConversational, getAvailableDataSources, planWithClaude } from './lib/agent/planner.js'
 import { gatherAgentContext } from './lib/agent/gather-context.js'
@@ -45,15 +46,11 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const authHeader = req.headers.authorization
-  if (!authHeader?.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Missing authorization' })
-  }
-
   const { query, userId, conversationHistory } = req.body || {}
   if (!query || !userId) {
     return res.status(400).json({ error: 'Missing query or userId' })
   }
+  if (!await validateUserToken(req, res, userId)) return
 
   const apiKey = process.env.CLAUDE_API_KEY || process.env.VITE_CLAUDE_API_KEY
   if (!apiKey) return res.status(500).json({ error: 'CLAUDE_API_KEY not configured' })

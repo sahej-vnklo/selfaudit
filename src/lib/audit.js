@@ -30,10 +30,10 @@ export async function generateReport(messages, { industry, domain, userId, goalM
   return data.report
 }
 
-export async function sendReportEmail({ userInfo, report }) {
+export async function sendReportEmail({ userInfo, report, token }) {
   const response = await fetch('/api/send-report', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
     body: JSON.stringify({ userInfo, report }),
   })
 

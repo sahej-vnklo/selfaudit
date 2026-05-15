@@ -1,3 +1,5 @@
+import { validateUserToken } from './lib/auth.js'
+
 function esc(s) {
   return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 }
@@ -190,6 +192,9 @@ export default async function handler(req, res) {
   if (!userInfo || !report) {
     return res.status(400).json({ error: 'Missing data' })
   }
+
+  // Anonymous post-audit shares have no userId. Authenticated users must prove ownership.
+  if (userInfo?.userId && !await validateUserToken(req, res, userInfo.userId)) return
 
   const RESEND_API_KEY  = process.env.RESEND_API_KEY
   const HUBSPOT_API_KEY = process.env.HUBSPOT_API_KEY

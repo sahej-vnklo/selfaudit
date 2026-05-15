@@ -1,12 +1,12 @@
 import Stripe from 'stripe'
 
 const PRICE_IDS = {
-  foundation:   process.env.STRIPE_PRICE_FOUNDATION   || process.env.STRIPE_PRICE_ESSENTIAL || null,
-  intelligence: process.env.STRIPE_PRICE_INTELLIGENCE || process.env.STRIPE_PRICE_BUSINESS  || 'price_1TRDcRJxpOyRd0sIrivReTDB',
+  foundation:   process.env.STRIPE_PRICE_FOUNDATION   || process.env.STRIPE_PRICE_ESSENTIAL  || null,
+  intelligence: process.env.STRIPE_PRICE_INTELLIGENCE || process.env.STRIPE_PRICE_BUSINESS   || null,
   // legacy aliases
-  essential:    process.env.STRIPE_PRICE_FOUNDATION   || process.env.STRIPE_PRICE_ESSENTIAL || null,
-  business:     process.env.STRIPE_PRICE_INTELLIGENCE || process.env.STRIPE_PRICE_BUSINESS  || 'price_1TRDcRJxpOyRd0sIrivReTDB',
-  portfolio:    process.env.STRIPE_PRICE_PORTFOLIO    || 'price_1TRDcjJxpOyRd0sIaryd6fga',
+  essential:    process.env.STRIPE_PRICE_FOUNDATION   || process.env.STRIPE_PRICE_ESSENTIAL  || null,
+  business:     process.env.STRIPE_PRICE_INTELLIGENCE || process.env.STRIPE_PRICE_BUSINESS   || null,
+  portfolio:    process.env.STRIPE_PRICE_PORTFOLIO    || null,
 }
 
 export default async function handler(req, res) {

@@ -1332,9 +1332,13 @@ function AiOpportunitiesCard({ user, userInfo, reports, items, tier, initialShar
         topItem?.title ? `Top opportunity: ${topItem.title}` : '',
       ].filter(Boolean).join(' · ')
 
+      const _shareSb = await initSupabase()
+      const { data: { session: _shareSess } } = await _shareSb.auth.getSession()
+      const _shareToken = _shareSess?.access_token || ''
+
       const response = await fetch('/api/send-report', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(_shareToken ? { Authorization: `Bearer ${_shareToken}` } : {}) },
         body: JSON.stringify({
           userInfo: {
             ...userInfo,

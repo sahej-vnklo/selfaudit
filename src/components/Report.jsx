@@ -276,7 +276,13 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
     setShareState('sending')
     posthog?.capture('report_shared', { email: userInfo?.email })
     try {
-      await sendReportEmail({ userInfo, report })
+      let shareToken = ''
+      if (userInfo?.userId) {
+        const sb = await initSupabase()
+        const { data: { session: _s } } = await sb.auth.getSession()
+        shareToken = _s?.access_token || ''
+      }
+      await sendReportEmail({ userInfo, report, token: shareToken || undefined })
       setShareState('sent')
     } catch (e) {
       Sentry.captureException(e)
