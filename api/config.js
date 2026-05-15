@@ -5,8 +5,6 @@ export default function handler(req, res) {
 
   console.log('[config] SUPABASE_URL:', supabaseUrl || '(not set)')
   console.log('[config] SUPABASE_ANON_KEY length:', supabaseAnonKey?.length ?? 0)
-  console.log('[config] SUPABASE_ANON_KEY prefix:', supabaseAnonKey ? supabaseAnonKey.slice(0, 20) + '...' : '(not set)')
-  console.log('[config] SUPABASE_ANON_KEY suffix:', supabaseAnonKey ? '...' + supabaseAnonKey.slice(-10) : '(not set)')
   console.log('[config] STRIPE_PUBLISHABLE_KEY:', stripePublishableKey ? stripePublishableKey.slice(0, 8) + '...' : '(not set)')
 
   if (!supabaseUrl || !supabaseAnonKey) {

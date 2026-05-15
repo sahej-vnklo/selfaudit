@@ -2,7 +2,6 @@ import { synthesizeEligibleUsers, synthesizeUserIntelligence } from './lib/intel
 
 function isAuthorized(req) {
   const secret = process.env.CRON_SECRET || process.env.INTELLIGENCE_CRON_SECRET
-  if (req.headers['x-vercel-cron'] && !secret) return true
   if (!secret) return false
   const provided = req.headers.authorization?.replace(/^Bearer\s+/i, '') || req.query?.secret || req.body?.secret
   return provided === secret

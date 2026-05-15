@@ -371,8 +371,9 @@ export default async function handler(req, res) {
     }
 
     // Fire-and-forget: create HubSpot contact + deal (non-blocking)
+    // Only runs when HUBSPOT_API_KEY block above didn't already fire, to avoid duplicate CRM records.
     const HUBSPOT_TOKEN = process.env.HUBSPOT_ACCESS_TOKEN
-    if (HUBSPOT_TOKEN) {
+    if (HUBSPOT_TOKEN && !HUBSPOT_API_KEY) {
       ;(async () => {
         try {
           // Upsert contact

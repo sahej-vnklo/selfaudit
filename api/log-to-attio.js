@@ -4,7 +4,6 @@ const LIST_ID = '0a9bbc2b-9724-44b0-bc5a-4f2d1ec02a3a'
 async function attioRequest(method, path, body) {
   const url = `${BASE}${path}`
   console.log(`[attio] → ${method} ${url}`)
-  if (body !== undefined) console.log(`[attio]   body:`, JSON.stringify(body, null, 2))
 
   const res = await fetch(url, {
     method,
@@ -17,7 +16,6 @@ async function attioRequest(method, path, body) {
 
   const text = await res.text()
   console.log(`[attio] ← ${res.status} ${method} ${path}`)
-  console.log(`[attio]   response:`, text)
 
   if (!res.ok) throw new Error(`Attio ${method} ${path} → ${res.status}: ${text}`)
   return JSON.parse(text)
