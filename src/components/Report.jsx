@@ -166,22 +166,26 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
         setReport(r)
 
         if (userInfo?.userId) {
-          fetch('/api/save-report', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              userId:       userInfo.userId,
-              sessionId,
-              report:       r,
-              industry:     userInfo.industry,
-              domain:       userInfo.domain,
-              goalMode:     userInfo.goalMode     ?? false,
-              goalTimeline: userInfo.goalTimeline ?? '',
-              goalBaseline: userInfo.goalBaseline ?? '',
-              userEmail:    userInfo.email        || '',
-              userName:     userInfo.name         || '',
-            }),
-          }).catch(e => console.warn('[save-report] failed:', e?.message))
+          initSupabase().then(async sb => {
+            const { data: { session } } = await sb.auth.getSession()
+            const token = session?.access_token || ''
+            fetch('/api/save-report', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+              body: JSON.stringify({
+                userId:       userInfo.userId,
+                sessionId,
+                report:       r,
+                industry:     userInfo.industry,
+                domain:       userInfo.domain,
+                goalMode:     userInfo.goalMode     ?? false,
+                goalTimeline: userInfo.goalTimeline ?? '',
+                goalBaseline: userInfo.goalBaseline ?? '',
+                userEmail:    userInfo.email        || '',
+                userName:     userInfo.name         || '',
+              }),
+            }).catch(e => console.warn('[save-report] failed:', e?.message))
+          }).catch(e => console.warn('[save-report] auth failed:', e?.message))
 
           // Save to user_memory for Layer 4 compounding intelligence
           if (r.conversation_mode === 'DIAGNOSTIC') {

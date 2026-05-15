@@ -1,4 +1,5 @@
 import { getOpenAlerts } from './lib/monitoring/risk-alerts.js'
+import { validateUserToken } from './lib/auth.js'
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -9,6 +10,7 @@ export default async function handler(req, res) {
   if (!userId) {
     return res.status(400).json({ error: 'Missing userId' })
   }
+  if (!await validateUserToken(req, res, userId)) return
 
   try {
     const alerts = await getOpenAlerts(userId)

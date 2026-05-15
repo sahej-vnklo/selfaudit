@@ -18,6 +18,7 @@ import { createClient } from '@supabase/supabase-js'
 import { runBusinessHealthCheck } from './lib/monitoring/health-check.js'
 import { createRiskAlertsFromHealthCheck } from './lib/monitoring/risk-alerts.js'
 import { upsertCompanyBrain } from './lib/intelligence/company-brain.js'
+import { validateUserToken } from './lib/auth.js'
 
 const supabase = createClient(
   process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
@@ -34,6 +35,7 @@ export default async function handler(req, res) {
   if (!userId) {
     return res.status(400).json({ error: 'Missing userId' })
   }
+  if (!await validateUserToken(req, res, userId)) return
 
   try {
     // 1. Run the health check

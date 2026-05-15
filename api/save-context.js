@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { validateUserToken } from './lib/auth.js'
 
 function getSupabase() {
   return createClient(
@@ -21,6 +22,7 @@ export default async function handler(req, res) {
   if (!userId || (!context && !industry && !domain)) {
     return res.status(400).json({ error: 'userId and at least one of context/industry/domain are required' })
   }
+  if (!await validateUserToken(req, res, userId)) return
 
   const supabase = getSupabase()
 

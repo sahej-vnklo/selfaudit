@@ -375,9 +375,13 @@ export default function AccountOnboarding({ user, onComplete, onBack }) {
       const context = ctxText.trim()
       const selectedDomain = domains[0] ?? null
       console.log('[onboarding] posting to save-context with:', { userId, context, industry: category, domain: selectedDomain })
+      const { initSupabase: _initSb } = await import('../lib/supabase.js')
+      const _sb = await _initSb()
+      const { data: { session: _sess } } = await _sb.auth.getSession()
+      const _token = _sess?.access_token || ''
       const res = await fetch('/api/save-context', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(_token ? { Authorization: `Bearer ${_token}` } : {}) },
         body: JSON.stringify({ userId, context, industry: category, domain: selectedDomain }),
       })
       const result = await res.json().catch(() => ({}))

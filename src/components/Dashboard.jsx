@@ -644,10 +644,15 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
         setBusinessState(data || null)
 
         // Non-blocking: enrich health panel with cross-session intelligence
-        fetch(`/api/business-health?userId=${user.id}`)
-          .then(r => r.ok ? r.json() : null)
-          .then(d => { if (!cancelled && d) setHealthIntel(d) })
-          .catch(() => {})
+        sb.auth.getSession().then(({ data: { session: _s } }) => {
+          const _tok = _s?.access_token || ''
+          fetch(`/api/business-health?userId=${user.id}`, {
+            headers: _tok ? { Authorization: `Bearer ${_tok}` } : {},
+          })
+            .then(r => r.ok ? r.json() : null)
+            .then(d => { if (!cancelled && d) setHealthIntel(d) })
+            .catch(() => {})
+        }).catch(() => {})
       } catch (error) {
         if (!cancelled) {
           console.error('[dashboard] business_state fetch threw:', error?.message ?? error)

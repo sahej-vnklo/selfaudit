@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { validateUserToken } from './lib/auth.js'
 import { synthesizeUserIntelligence } from './lib/intelligence/synthesize.js'
 import { upsertCompanyBrain } from './lib/intelligence/company-brain.js'
 import { sendUserReportEmail } from './lib/notifications/user-report-email.js'
@@ -63,6 +64,7 @@ export default async function handler(req, res) {
   if (!userId || !r) {
     return res.status(400).json({ error: 'Missing userId or report' })
   }
+  if (!await validateUserToken(req, res, userId)) return
 
   try {
     const { error: insertError } = await supabase.from('reports').insert({

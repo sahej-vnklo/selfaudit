@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { getCompanyBrain } from './lib/intelligence/company-brain.js'
+import { validateUserToken } from './lib/auth.js'
 
 const supabase = createClient(
   process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
@@ -42,6 +43,7 @@ export default async function handler(req, res) {
 
   const userId = req.method === 'GET' ? req.query.userId : req.body?.userId
   if (!userId) return res.status(400).json({ error: 'Missing userId' })
+  if (!await validateUserToken(req, res, userId)) return
 
   try {
     const [brain, reportRes] = await Promise.allSettled([
