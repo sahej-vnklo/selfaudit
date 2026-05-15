@@ -880,6 +880,15 @@ export default function IntelligenceBrief({ user, profile, onProfileChange }) {
   )
 }
 
+function ProgressBar({ value }) {
+  const pct = Math.max(0, Math.min(100, Math.round(value || 0)))
+  return (
+    <div style={{ width: '100%', height: 6, background: COLORS.surface, borderRadius: 999, overflow: 'hidden' }}>
+      <div style={{ width: `${pct}%`, height: '100%', background: COLORS.accent, borderRadius: 999, transition: 'width 0.3s ease' }} />
+    </div>
+  )
+}
+
 function SectionCard({ title, isOpen, onToggle, children, onSave, saving }) {
   return (
     <div style={card}>
