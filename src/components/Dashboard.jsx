@@ -237,10 +237,7 @@ const TIER_ORDER = { foundation: 0, intelligence: 1, essential: 0, business: 1, 
 const SECTIONS = ['home', 'reports', 'intelligence', 'connectors', 'agent', 'billing', 'account']
 
 function normalizeTier(raw) {
-  if (raw === 'intelligence' || raw === 'foundation') return raw
-  if (raw === 'business' || raw === 'paid') return 'intelligence'
-  if (raw === 'portfolio') return 'intelligence'
-  if (raw === 'essential' || raw === 'free') return 'foundation'
+  if (raw === 'intelligence') return 'intelligence'
   return 'foundation'
 }
 
@@ -417,7 +414,7 @@ function buildAiOpportunityItems(reports, tier) {
 
   if (parsedReports.length === 0) return []
 
-  if (tier !== 'intelligence' && tier !== 'business' && tier !== 'portfolio') {
+  if (tier !== 'intelligence') {
     const source = parsedReports.find(({ parsed }) => Array.isArray(parsed.ai_opportunities) && parsed.ai_opportunities.length > 0)
     if (!source) return []
 
@@ -873,7 +870,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
                   </span>
                 </div>
               )}
-              {(tier === 'intelligence' || tier === 'business' || tier === 'portfolio') && (
+              {tier === 'intelligence' && (
                 <LiveBillingCard
                   billing={billing}
                   billingLoading={billingLoading}
@@ -884,7 +881,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
               )}
               <div style={styles.tierGrid}>
                 {TIERS.map((item) => (
-                  <TierCard key={item.key} tier={item} currentTier={tier === 'portfolio' || tier === 'business' ? 'intelligence' : tier} userId={user?.id} email={user?.email} />
+                  <TierCard key={item.key} tier={item} currentTier={tier} userId={user?.id} email={user?.email} />
                 ))}
               </div>
             </PageShell>
@@ -941,7 +938,7 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
     ? `tsa_alert_dismissed_${latestDiagnosticReport.id}_${alertDomain.name}`
     : null
   const [alertDismissed, setAlertDismissed] = useState(false)
-  const opportunityItems = buildAiOpportunityItems(reports, profile?.tier || 'essential')
+  const opportunityItems = buildAiOpportunityItems(reports, profile?.tier || 'foundation')
   const shareUserInfo = {
     name: profile?.name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'User',
     email: user?.email || '',
@@ -1036,7 +1033,7 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
             userInfo={shareUserInfo}
             reports={reports}
             items={opportunityItems}
-            tier={profile?.tier || 'essential'}
+            tier={profile?.tier || 'foundation'}
             initialShared={!!profile?.shared_with_vnklo}
           />
         </div>
@@ -1226,8 +1223,7 @@ function WeeklyDigestPanel({ profile }) {
     ? new Date(sentAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
     : null
 
-  const INTEL_TIERS = new Set(['business', 'portfolio'])
-  if (!INTEL_TIERS.has(profile?.tier)) return null
+  if (profile?.tier !== 'intelligence') return null
 
   const scoreColor = digest?.health_score == null ? G.textFaint
     : digest.health_score >= 70 ? G.greenText
@@ -1310,7 +1306,7 @@ function AiOpportunitiesCard({ user, userInfo, reports, items, tier, initialShar
   const topItem = items[0] || null
   const sourceReport = topItem ? reports.find((report) => report.id === topItem.reportId) : null
   const sourcePayload = sourceReport ? parseReportContent(sourceReport) : null
-  const isIntelligence = tier === 'intelligence' || tier === 'business' || tier === 'portfolio'
+  const isIntelligence = tier === 'intelligence'
   const subtitle = items.length === 0
     ? 'No opportunities extracted yet'
     : isIntelligence

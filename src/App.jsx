@@ -72,7 +72,7 @@ export default function App() {
       intent = null
     }
 
-    if (!intent?.plan || !['essential', 'business', 'foundation', 'intelligence'].includes(intent.plan)) {
+    if (!intent?.plan || !['foundation', 'intelligence'].includes(intent.plan)) {
       try { localStorage.removeItem(PENDING_AUTH_INTENT_KEY) } catch (_) {}
       return false
     }
@@ -303,17 +303,8 @@ export default function App() {
   }
 
   if (screen === SCREENS.SIGNUP) {
-    // Don't redirect if signup is in progress — let the flow finish writing tier before navigating
-    if (session && !localStorage.getItem('sa-signup-in-progress')) { navigate(SCREENS.DASHBOARD); return null }
-    return <Signup
-      onSuccess={(session) => {
-        if (session) {
-          setSession(session)
-          navigate(SCREENS.DASHBOARD)
-        }
-      }}
-      onLogin={() => navigate(SCREENS.LOGIN)}
-    />
+    if (session) { navigate(SCREENS.DASHBOARD); return null }
+    return <Signup onLogin={() => navigate(SCREENS.LOGIN)} />
   }
 
   if (screen === SCREENS.ACCOUNT_ONBOARDING) {

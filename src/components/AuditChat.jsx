@@ -188,8 +188,6 @@ export default function AuditChat({ theme = 'dark', userInfo, onReportReady, con
     const industry = tierData?.industry ?? userInfo?.industry
     const domain   = tierData?.domain   ?? userInfo?.domain
 
-    if (tier === 'portfolio') return 'Portfolio'
-    if (tier === 'business')  return industry || ''
     if (industry && domain)   return `${industry} — ${domain}`
     if (industry)             return industry
     return ''

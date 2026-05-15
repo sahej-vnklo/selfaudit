@@ -211,14 +211,27 @@ function buildServer() {
 
 // ── Vercel handler ─────────────────────────────────────────────────────────────
 
+const ADMIN_EMAIL = 'sahej@vnklo.com'
+
 export default async function handler(req: any, res: any): Promise<void> {
-  // Auth — accept key from query param or header
-  const url = new URL(req.url, 'https://tryselfaudit.com')
-  const keyFromQuery = url.searchParams.get('key')
+  // Auth — accept server-side admin key (header only) or a Supabase session JWT
   const keyFromHeader = (req.headers?.['x-tsa-admin-key'] as string) || ''
-  const providedKey = keyFromQuery || keyFromHeader
-  if (!process.env.TSA_ADMIN_KEY || providedKey !== process.env.TSA_ADMIN_KEY) {
-    res.status(401).json({ error: "Unauthorized: missing or invalid key" });
+  const authHeader = (req.headers?.['authorization'] as string) || ''
+
+  let isAuthorized = false
+
+  if (process.env.TSA_ADMIN_KEY && keyFromHeader === process.env.TSA_ADMIN_KEY) {
+    isAuthorized = true
+  } else if (authHeader.startsWith('Bearer ')) {
+    const token = authHeader.slice(7)
+    const { data, error } = await getSupabase().auth.getUser(token)
+    if (!error && data?.user?.email === ADMIN_EMAIL) {
+      isAuthorized = true
+    }
+  }
+
+  if (!isAuthorized) {
+    res.status(401).json({ error: "Unauthorized" });
     return;
   }
 

@@ -122,13 +122,9 @@ const DOMAIN_MAP = {
 function buildContext(tier, industry, domain) {
   const article = /^[aeiou]/i.test(industry) ? 'an' : 'a'
 
-  if (tier === 'business') {
+  if (tier === 'intelligence') {
     return `You run ${article} ${industry} business and want a comprehensive audit across your entire operation. This audit will examine every function of your business to surface the highest-impact opportunities for growth. Be as specific as possible below — the more context you give, the sharper the questions.`
   }
-  if (tier === 'portfolio') {
-    return `You manage multiple businesses across different industries. This audit will evaluate your portfolio for operational efficiency, cross-business leverage, and where AI can create the most compounded value across your holdings. Be as specific as possible below — the more context you give, the sharper the questions.`
-  }
-  // essential (default)
   return `You run ${article} ${industry} business and want a deep audit of your ${domain}. This audit will focus on identifying structural gaps, missed opportunities, and the single most important lever for growth. Be as specific as possible below — the more context you give, the sharper the questions.`
 }
 
@@ -188,7 +184,7 @@ function Step2({ onSelect, loadingTier }) {
 // ─── Step 3 — domains ─────────────────────────────────────────────────────────
 
 function isPaidTier(tier) {
-  return tier === 'paid' || tier === 'business' || tier === 'portfolio'
+  return tier === 'intelligence'
 }
 
 function Step3({ tier, selected, onToggle, onNext, onBack, domainLabels }) {
@@ -196,9 +192,7 @@ function Step3({ tier, selected, onToggle, onNext, onBack, domainLabels }) {
   const canNext = isFree ? selected.length >= 1 : true
   const hint    = isFree
     ? `Choose 1 domain to focus your audit. (${selected.length}/1 selected)`
-    : tier === 'portfolio'
-    ? 'Your Portfolio plan covers every domain across all industries. Deselect anything that doesn\'t apply.'
-    : 'Your Business plan covers all domains for your industry — the audit runs across everything.'
+    : 'Your Intelligence plan covers all domains for your industry — the audit runs across everything.'
 
   return (
     <div>
@@ -335,13 +329,12 @@ export default function AccountOnboarding({ user, onComplete, onBack }) {
   // Portfolio cascades ALL domain labels; business/paid uses the industry-filtered set.
   useEffect(() => {
     if (step !== 3 || !isPaidTier(tier)) return
-    const source = tier === 'portfolio' ? ALL_DOMAIN_LABELS : availableDomains
     let i = 0
     const interval = setInterval(() => {
       i++
-      setDomains(source.slice(0, i))
-      if (i >= source.length) clearInterval(interval)
-    }, tier === 'portfolio' ? 80 : 150)
+      setDomains(availableDomains.slice(0, i))
+      if (i >= availableDomains.length) clearInterval(interval)
+    }, 150)
     return () => clearInterval(interval)
   }, [step, tier, availableDomains])
 

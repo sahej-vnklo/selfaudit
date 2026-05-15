@@ -9,13 +9,13 @@
 import { createClient } from '@supabase/supabase-js'
 import { runBusinessHealthCheck } from '../lib/monitoring/health-check.js'
 
-const INTELLIGENCE_TIERS = new Set(['business', 'portfolio'])
+const INTELLIGENCE_TIERS = new Set(['intelligence'])
 const BATCH_LIMIT = 50
 
 function getSupabase() {
   return createClient(
     process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_SERVICE_ROLE_KEY,
+    process.env.SUPABASE_SERVICE_ROLE_KEY,
     { auth: { persistSession: false } }
   )
 }
@@ -23,14 +23,18 @@ function getSupabase() {
 function isAuthorised(req) {
   const secret = process.env.CRON_SECRET
   if (!secret) {
-    console.warn('[cron/weekly-digest] CRON_SECRET not set — endpoint is unprotected')
-    return true
+    console.warn('[cron/weekly-digest] CRON_SECRET not set — rejecting request')
+    return false
   }
   const authHeader = String(req.headers.authorization || '')
   if (authHeader === `Bearer ${secret}`) return true
   const qSecret = req.query?.secret || new URL(req.url || '', 'http://x').searchParams.get('secret')
   if (qSecret === secret) return true
   return false
+}
+
+function esc(s) {
+  return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 }
 
 function severityColor(severity) {
@@ -59,7 +63,7 @@ function buildDigestEmail({ userName, healthResult, openAlerts, weekDate }) {
 
   const scoreColor = score === null ? '#6B6860' : score >= 70 ? '#1D9E75' : score >= 40 ? '#BA7517' : '#A32D2D'
 
-  const greeting = userName ? `Hi ${userName.split(' ')[0]},` : 'Hi,'
+  const greeting = userName ? `Hi ${esc(userName.split(' ')[0])},` : 'Hi,'
 
   const html = `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><style>
@@ -91,7 +95,7 @@ function buildDigestEmail({ userName, healthResult, openAlerts, weekDate }) {
   <div class="header">
     <div class="logo">SelfAudit — Weekly Digest</div>
     <h1>Your weekly business health brief</h1>
-    <div style="font-size:13px;color:#6B6860;margin-top:4px">Week of ${weekDate}</div>
+    <div style="font-size:13px;color:#6B6860;margin-top:4px">Week of ${esc(weekDate)}</div>
   </div>
 
   <p style="font-size:15px;color:#2C2B28">${greeting} Here's where your business stands this week.</p>
@@ -103,8 +107,8 @@ function buildDigestEmail({ userName, healthResult, openAlerts, weekDate }) {
       <div class="score-num">${score}</div>
       <div class="score-label">out of 100<br><span style="color:${scoreColor}">${score >= 70 ? 'Stable' : score >= 40 ? 'Needs attention' : 'Critical'}</span></div>
     </div>
-    ${connectorUsed ? `<div style="margin-top:8px"><span class="connector-badge">Data from: ${connectorUsed}</span></div>` : ''}
-    ${summary ? `<p class="summary" style="margin-top:12px">${summary}</p>` : ''}
+    ${connectorUsed ? `<div style="margin-top:8px"><span class="connector-badge">Data from: ${esc(connectorUsed)}</span></div>` : ''}
+    ${summary ? `<p class="summary" style="margin-top:12px">${esc(summary)}</p>` : ''}
   </div>` : ''}
 
   ${criticalRisks.length > 0 ? `
@@ -112,9 +116,9 @@ function buildDigestEmail({ userName, healthResult, openAlerts, weekDate }) {
     <h2>Critical — Act Now</h2>
     ${criticalRisks.map(r => `
     <div class="risk" style="background:#FCEBEB;border-left-color:#A32D2D">
-      <div class="risk-title">${r.title}<span class="badge" style="background:#A32D2D;color:white">Critical</span></div>
-      <div class="risk-desc">${r.description}</div>
-      <div class="risk-action">→ ${r.recommended_action}</div>
+      <div class="risk-title">${esc(r.title)}<span class="badge" style="background:#A32D2D;color:white">Critical</span></div>
+      <div class="risk-desc">${esc(r.description)}</div>
+      <div class="risk-action">→ ${esc(r.recommended_action)}</div>
     </div>`).join('')}
   </div>` : ''}
 
@@ -123,9 +127,9 @@ function buildDigestEmail({ userName, healthResult, openAlerts, weekDate }) {
     <h2>High Priority</h2>
     ${highRisks.map(r => `
     <div class="risk" style="background:#FAEEDA;border-left-color:#BA7517">
-      <div class="risk-title">${r.title}<span class="badge" style="background:#FAEEDA;color:#BA7517">High</span></div>
-      <div class="risk-desc">${r.description}</div>
-      <div class="risk-action">→ ${r.recommended_action}</div>
+      <div class="risk-title">${esc(r.title)}<span class="badge" style="background:#FAEEDA;color:#BA7517">High</span></div>
+      <div class="risk-desc">${esc(r.description)}</div>
+      <div class="risk-action">→ ${esc(r.recommended_action)}</div>
     </div>`).join('')}
   </div>` : ''}
 
@@ -134,8 +138,8 @@ function buildDigestEmail({ userName, healthResult, openAlerts, weekDate }) {
     <h2>Also Flagged</h2>
     ${otherRisks.map(r => `
     <div class="risk" style="background:${severityBg(r.severity)};border-left-color:${severityColor(r.severity)}">
-      <div class="risk-title">${r.title}<span class="badge" style="background:${severityBg(r.severity)};color:${severityColor(r.severity)}">${severityLabel(r.severity)}</span></div>
-      <div class="risk-desc">${r.description}</div>
+      <div class="risk-title">${esc(r.title)}<span class="badge" style="background:${severityBg(r.severity)};color:${severityColor(r.severity)}">${esc(severityLabel(r.severity))}</span></div>
+      <div class="risk-desc">${esc(r.description)}</div>
     </div>`).join('')}
   </div>` : ''}
 
@@ -144,8 +148,8 @@ function buildDigestEmail({ userName, healthResult, openAlerts, weekDate }) {
     <h2>Open Alerts (${openAlerts.length})</h2>
     ${openAlerts.slice(0, 5).map(a => `
     <div class="risk" style="background:${severityBg(a.severity)};border-left-color:${severityColor(a.severity)}">
-      <div class="risk-title">${a.title}<span class="badge" style="background:${severityBg(a.severity)};color:${severityColor(a.severity)}">${severityLabel(a.severity)}</span></div>
-      ${a.description ? `<div class="risk-desc">${a.description}</div>` : ''}
+      <div class="risk-title">${esc(a.title)}<span class="badge" style="background:${severityBg(a.severity)};color:${severityColor(a.severity)}">${esc(severityLabel(a.severity))}</span></div>
+      ${a.description ? `<div class="risk-desc">${esc(a.description)}</div>` : ''}
     </div>`).join('')}
     ${openAlerts.length > 5 ? `<p style="font-size:13px;color:#6B6860">+ ${openAlerts.length - 5} more open alerts</p>` : ''}
   </div>` : ''}
@@ -156,7 +160,7 @@ function buildDigestEmail({ userName, healthResult, openAlerts, weekDate }) {
     ${recommendedActions.slice(0, 5).map((a, i) => `
     <div class="action-item">
       <span class="action-num">${i + 1}</span>
-      <span style="font-size:14px">${a}</span>
+      <span style="font-size:14px">${esc(a)}</span>
     </div>`).join('')}
   </div>` : ''}
 
@@ -165,8 +169,8 @@ function buildDigestEmail({ userName, healthResult, openAlerts, weekDate }) {
     <h2>Opportunities</h2>
     ${opportunities.slice(0, 3).map(o => `
     <div class="opp">
-      <div class="opp-title">${o.title}</div>
-      ${o.description ? `<div class="opp-desc">${o.description}</div>` : ''}
+      <div class="opp-title">${esc(o.title)}</div>
+      ${o.description ? `<div class="opp-desc">${esc(o.description)}</div>` : ''}
     </div>`).join('')}
   </div>` : ''}
 

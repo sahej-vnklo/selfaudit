@@ -5,7 +5,7 @@ import { sendUserReportEmail } from './lib/notifications/user-report-email.js'
 
 const supabase = createClient(
   process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_SERVICE_ROLE_KEY,
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
   { auth: { persistSession: false } }
 )
 
@@ -65,7 +65,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    await supabase.from('reports').insert({
+    const { error: insertError } = await supabase.from('reports').insert({
       user_id:           userId,
       session_id:        sessionId ?? null,
       title:             r.headline,
@@ -77,6 +77,7 @@ export default async function handler(req, res) {
       conversation_mode: r.conversation_mode,
       headline:          r.headline,
     })
+    if (insertError) throw insertError
 
     if (sessionId) {
       await supabase

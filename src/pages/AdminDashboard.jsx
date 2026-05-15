@@ -147,8 +147,7 @@ const TIER_STYLES = {
 }
 
 function normTier(tier) {
-  if (tier === 'foundation' || tier === 'free' || tier === 'essential') return 'foundation'
-  if (tier === 'intelligence' || tier === 'paid' || tier === 'business' || tier === 'portfolio') return 'intelligence'
+  if (tier === 'intelligence') return 'intelligence'
   return 'foundation'
 }
 
@@ -241,15 +240,15 @@ function getSsePayload(raw) {
   throw new Error('Unable to parse MCP event stream response.')
 }
 
-async function callAdminTool(tool, input = {}) {
-  const key = import.meta.env.VITE_TSA_ADMIN_KEY
-  if (!key) throw new Error('VITE_TSA_ADMIN_KEY is not configured.')
+async function callAdminTool(tool, input = {}, token) {
+  if (!token) throw new Error('No session token available.')
 
-  const response = await fetch(`/api/mcp?key=${encodeURIComponent(key)}`, {
+  const response = await fetch('/api/mcp', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json, text/event-stream',
+      Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({
       jsonrpc: '2.0',
@@ -1267,7 +1266,7 @@ function TierEditor({ email, tier, onChange, saving }) {
   )
 }
 
-function UserDetailView({ user, detail, onBack, onTierChange, tierSaving }) {
+function UserDetailView({ user, detail, onBack, onTierChange, tierSaving, session }) {
   const [expandedReports, setExpandedReports] = useState(new Set())
   const [showAllReports, setShowAllReports] = useState(false)
   const [expandedSessions, setExpandedSessions] = useState(new Set())
@@ -1326,7 +1325,7 @@ function UserDetailView({ user, detail, onBack, onTierChange, tierSaving }) {
 
     if (!reportDetails[report.id]) {
       try {
-        const fullReport = await callAdminTool('tsa_get_report', { report_id: report.id })
+        const fullReport = await callAdminTool('tsa_get_report', { report_id: report.id }, session?.access_token)
         setReportDetails(prev => ({ ...prev, [report.id]: fullReport }))
       } catch (error) {
         setReportError(error.message || 'Unable to load report detail.')
@@ -1689,8 +1688,8 @@ export default function AdminDashboard({ session, onUnauthorized }) {
       setError('')
       try {
         const [statsData, usersData] = await Promise.all([
-          callAdminTool('tsa_get_stats', {}),
-          callAdminTool('tsa_list_users', {}),
+          callAdminTool('tsa_get_stats', {}, session.access_token),
+          callAdminTool('tsa_list_users', {}, session.access_token),
         ])
         if (cancelled) return
         setStats(statsData)
@@ -1716,7 +1715,7 @@ export default function AdminDashboard({ session, onUnauthorized }) {
       for (const user of users) {
         if (!user.email || detailCache[user.email]) continue
         try {
-          const detail = await callAdminTool('tsa_get_user', { email: user.email })
+          const detail = await callAdminTool('tsa_get_user', { email: user.email }, session.access_token)
           if (cancelled) return
           setDetailCache(prev => prev[user.email] ? prev : { ...prev, [user.email]: detail })
         } catch {
@@ -1785,7 +1784,7 @@ export default function AdminDashboard({ session, onUnauthorized }) {
     setSelectedUser(user)
     if (!detailCache[user.email]) {
       try {
-        const detail = await callAdminTool('tsa_get_user', { email: user.email })
+        const detail = await callAdminTool('tsa_get_user', { email: user.email }, session.access_token)
         setDetailCache(prev => ({ ...prev, [user.email]: detail }))
       } catch (detailError) {
         setError(detailError.message || 'Unable to load user detail.')
@@ -1798,7 +1797,7 @@ export default function AdminDashboard({ session, onUnauthorized }) {
     setTierSaving(true)
     setError('')
     try {
-      await callAdminTool('tsa_update_user_tier', { email, tier })
+      await callAdminTool('tsa_update_user_tier', { email, tier }, session.access_token)
       setUsers(prev => prev.map(user => user.email === email ? { ...user, tier } : user))
       setDetailCache(prev => ({
         ...prev,
@@ -1859,6 +1858,7 @@ export default function AdminDashboard({ session, onUnauthorized }) {
                 }}
                 onTierChange={handleTierChange}
                 tierSaving={tierSaving}
+                session={session}
               />
             ) : navSection === 'dashboard' ? (
               <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>

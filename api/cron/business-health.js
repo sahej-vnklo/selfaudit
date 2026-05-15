@@ -12,20 +12,19 @@
 //
 //   alter table profiles add column if not exists monitoring_enabled boolean not null default true;
 //
-// Until then, all Intelligence-tier users (tier = 'business' | 'portfolio')
-// are treated as monitoring-enabled.
+// Until then, all Intelligence-tier users are treated as monitoring-enabled.
 
 import { createClient } from '@supabase/supabase-js'
 import { runBusinessHealthCheck } from '../lib/monitoring/health-check.js'
 import { createRiskAlertsFromHealthCheck } from '../lib/monitoring/risk-alerts.js'
 
-const INTELLIGENCE_TIERS = new Set(['business', 'portfolio'])
+const INTELLIGENCE_TIERS = new Set(['intelligence'])
 const BATCH_LIMIT = 50   // max users processed per cron invocation
 
 function getSupabase() {
   return createClient(
     process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_SERVICE_ROLE_KEY,
+    process.env.SUPABASE_SERVICE_ROLE_KEY,
     { auth: { persistSession: false } }
   )
 }
@@ -33,8 +32,8 @@ function getSupabase() {
 function isAuthorised(req) {
   const secret = process.env.CRON_SECRET
   if (!secret) {
-    console.warn('[cron/business-health] CRON_SECRET not set — endpoint is unprotected')
-    return true   // allow in dev; block in prod by ensuring the var is set
+    console.warn('[cron/business-health] CRON_SECRET not set — rejecting request')
+    return false
   }
 
   // Vercel cron header

@@ -1,3 +1,7 @@
+function esc(s) {
+  return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+}
+
 function buildGoalSections(report) {
   const gap = report.goal_gap_analysis || {}
   const caps = report.missing_capabilities || []
@@ -9,33 +13,33 @@ function buildGoalSections(report) {
   return `
   <div class="section">
     <h2>Goal</h2>
-    <p class="verdict">${gap.goal || ''}</p>
+    <p class="verdict">${esc(gap.goal)}</p>
   </div>
 
   <div class="section">
     <h2>Where You Are Now</h2>
-    <p class="verdict">${gap.current_position || ''}</p>
+    <p class="verdict">${esc(gap.current_position)}</p>
   </div>
 
   <div class="section">
     <h2>The Gap</h2>
-    <p class="verdict">${gap.gap || ''}</p>
+    <p class="verdict">${esc(gap.gap)}</p>
   </div>
 
   <div class="section">
     <h2>Fastest Path</h2>
-    <p class="verdict">${gap.fastest_path || ''}</p>
+    <p class="verdict">${esc(gap.fastest_path)}</p>
   </div>
 
   ${caps.length > 0 ? `
   <div class="section">
     <h2>Missing Capabilities</h2>
-    ${caps.map(c => `<div class="fix"><div class="fix-issue">${c}</div></div>`).join('')}
+    ${caps.map(c => `<div class="fix"><div class="fix-issue">${esc(c)}</div></div>`).join('')}
   </div>` : ''}
 
   <div class="section">
     <h2>Timeline</h2>
-    <p class="verdict" style="color:${feasColor};font-weight:500">${feasText}</p>
+    <p class="verdict" style="color:${feasColor};font-weight:500">${esc(feasText)}</p>
   </div>
 
   <div class="section">
@@ -43,14 +47,14 @@ function buildGoalSections(report) {
     ${actions.map((a, i) => `
       <div class="priority">
         <span class="priority-num">${i + 1}</span>
-        <span style="font-size:14px">${a}</span>
+        <span style="font-size:14px">${esc(a)}</span>
       </div>
     `).join('')}
   </div>
 
   <div class="section">
     <h2>The Honest Truth</h2>
-    <div class="truth">${report.honest_truth || ''}</div>
+    <div class="truth">${esc(report.honest_truth)}</div>
   </div>`
 }
 
@@ -58,7 +62,7 @@ function buildDiagnosticSections(report, statusColor, statusBg, statusLabel) {
   return `
   <div class="section">
     <h2>Overall Assessment</h2>
-    <p class="verdict">${report.overall_verdict || ''}</p>
+    <p class="verdict">${esc(report.overall_verdict)}</p>
   </div>
 
   <div class="section">
@@ -66,11 +70,11 @@ function buildDiagnosticSections(report, statusColor, statusBg, statusLabel) {
     ${(report.domains || []).map(d => `
       <div class="domain" style="border-left-color: ${statusColor[d.status] || '#888'}">
         <div class="domain-name">
-          ${d.name}
-          <span class="badge" style="background:${statusBg[d.status] || '#eee'};color:${statusColor[d.status] || '#888'}">${statusLabel[d.status] || d.status}</span>
+          ${esc(d.name)}
+          <span class="badge" style="background:${statusBg[d.status] || '#eee'};color:${statusColor[d.status] || '#888'}">${esc(statusLabel[d.status] || d.status)}</span>
         </div>
-        <div class="domain-text">${d.finding}</div>
-        <div class="domain-action">\u2192 ${d.action}</div>
+        <div class="domain-text">${esc(d.finding)}</div>
+        <div class="domain-action">\u2192 ${esc(d.action)}</div>
       </div>
     `).join('')}
   </div>
@@ -80,8 +84,8 @@ function buildDiagnosticSections(report, statusColor, statusBg, statusLabel) {
     <h2>Fix These First \u2014 No AI Needed</h2>
     ${report.non_ai_fixes.map(f => `
       <div class="fix">
-        <div class="fix-issue">${f.issue}</div>
-        <div class="fix-solution">${f.fix}</div>
+        <div class="fix-issue">${esc(f.issue)}</div>
+        <div class="fix-solution">${esc(f.fix)}</div>
       </div>
     `).join('')}
   </div>` : ''}
@@ -91,8 +95,8 @@ function buildDiagnosticSections(report, statusColor, statusBg, statusLabel) {
     <h2>Where AI Actually Applies</h2>
     ${report.ai_opportunities.map(a => `
       <div class="ai-item">
-        <div class="ai-area">${a.area}</div>
-        <div class="ai-why">${a.why}</div>
+        <div class="ai-area">${esc(a.area)}</div>
+        <div class="ai-why">${esc(a.why)}</div>
       </div>
     `).join('')}
   </div>` : ''}
@@ -102,14 +106,14 @@ function buildDiagnosticSections(report, statusColor, statusBg, statusLabel) {
     ${(report.priority_actions || []).map((a, i) => `
       <div class="priority">
         <span class="priority-num">${i + 1}</span>
-        <span style="font-size:14px">${a}</span>
+        <span style="font-size:14px">${esc(a)}</span>
       </div>
     `).join('')}
   </div>
 
   <div class="section">
     <h2>The Honest Truth</h2>
-    <div class="truth">${report.honest_truth}</div>
+    <div class="truth">${esc(report.honest_truth)}</div>
   </div>`
 }
 
@@ -117,7 +121,7 @@ function buildExecutionSections(report) {
   return `
   <div class="section">
     <h2>Execution Context</h2>
-    <p class="verdict">${report.execution_context || ''}</p>
+    <p class="verdict">${esc(report.execution_context)}</p>
   </div>
 
   ${(report.delivery_plan || []).length > 0 ? `
@@ -125,25 +129,25 @@ function buildExecutionSections(report) {
     <h2>Delivery Plan</h2>
     ${report.delivery_plan.map(item => `
       <div class="fix">
-        <div class="fix-issue">${item.step ? `${item.step}. ` : ''}${item.action || ''}</div>
-        <div class="fix-solution">${item.why || ''}</div>
+        <div class="fix-issue">${item.step ? `${esc(item.step)}. ` : ''}${esc(item.action)}</div>
+        <div class="fix-solution">${esc(item.why)}</div>
       </div>
     `).join('')}
   </div>` : ''}
 
   <div class="section">
     <h2>What to Expect</h2>
-    <p class="verdict">${report.what_to_expect || ''}</p>
+    <p class="verdict">${esc(report.what_to_expect)}</p>
   </div>
 
   <div class="section">
     <h2>Key Message</h2>
-    <p class="verdict">${report.key_message || ''}</p>
+    <p class="verdict">${esc(report.key_message)}</p>
   </div>
 
   <div class="section">
     <h2>The Honest Truth</h2>
-    <div class="truth">${report.honest_truth}</div>
+    <div class="truth">${esc(report.honest_truth)}</div>
   </div>`
 }
 
@@ -151,28 +155,28 @@ function buildHumanSections(report) {
   return `
   <div class="section">
     <h2>Acknowledgment</h2>
-    <p class="verdict">${report.acknowledgment || ''}</p>
+    <p class="verdict">${esc(report.acknowledgment)}</p>
   </div>
 
   <div class="section">
     <h2>What This Actually Is</h2>
-    <p class="verdict">${report.what_this_actually_is || ''}</p>
+    <p class="verdict">${esc(report.what_this_actually_is)}</p>
   </div>
 
   ${report.delivery_script ? `
   <div class="section">
     <h2>What to Say</h2>
-    <div class="truth" style="background:#F4F3EF;color:#0D0D0D">${report.delivery_script}</div>
+    <div class="truth" style="background:#F4F3EF;color:#0D0D0D">${esc(report.delivery_script)}</div>
   </div>` : ''}
 
   <div class="section">
     <h2>What to Expect</h2>
-    <p class="verdict">${report.what_to_expect || ''}</p>
+    <p class="verdict">${esc(report.what_to_expect)}</p>
   </div>
 
   <div class="section">
     <h2>The Honest Truth</h2>
-    <div class="truth">${report.honest_truth}</div>
+    <div class="truth">${esc(report.honest_truth)}</div>
   </div>`
 }
 
@@ -238,14 +242,14 @@ export default async function handler(req, res) {
 <body>
   <div class="header">
     <div class="logo">SelfAudit by Vnklo</div>
-    <h1>${report.headline}</h1>
+    <h1>${esc(report.headline)}</h1>
   </div>
 
   <div class="user-card">
-    <p><strong>Name:</strong> ${userInfo.name}</p>
-    <p><strong>Email:</strong> ${userInfo.email}</p>
-    ${userInfo.phone ? `<p><strong>Phone:</strong> ${userInfo.phone}</p>` : ''}
-    ${userInfo.context ? `<p><strong>Auditing:</strong> ${userInfo.context}</p>` : ''}
+    <p><strong>Name:</strong> ${esc(userInfo.name)}</p>
+    <p><strong>Email:</strong> ${esc(userInfo.email)}</p>
+    ${userInfo.phone ? `<p><strong>Phone:</strong> ${esc(userInfo.phone)}</p>` : ''}
+    ${userInfo.context ? `<p><strong>Auditing:</strong> ${esc(userInfo.context)}</p>` : ''}
   </div>
 
   ${bodySections}

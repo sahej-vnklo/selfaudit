@@ -1,4 +1,14 @@
+import { createHmac, randomBytes } from 'crypto'
 import { PROVIDER_CONFIGS } from '../../lib/connectors/providers.js'
+
+function buildState(userId) {
+  const secret = process.env.OAUTH_STATE_SECRET
+  if (!secret) throw new Error('OAUTH_STATE_SECRET is not configured')
+  const payload = { userId, provider: 'hubspot', nonce: randomBytes(16).toString('hex'), ts: Date.now() }
+  const raw = Buffer.from(JSON.stringify(payload)).toString('base64url')
+  const sig = createHmac('sha256', secret).update(raw).digest('hex')
+  return `${raw}.${sig}`
+}
 
 export default async function handler(req, res) {
   const userId = req.query?.state
@@ -6,8 +16,9 @@ export default async function handler(req, res) {
 
   if (!config) return res.status(400).json({ error: 'Provider not found' })
   if (!userId) return res.status(400).json({ error: 'Missing state' })
+  if (!process.env.OAUTH_STATE_SECRET) return res.status(500).json({ error: 'Server misconfiguration' })
 
-  const state = Buffer.from(JSON.stringify({ userId, provider: 'hubspot' })).toString('base64')
+  const state = buildState(userId)
   const url = new URL(config.authUrl)
   url.searchParams.set('client_id', config.clientId || '')
   url.searchParams.set('redirect_uri', config.redirectUri)

@@ -117,7 +117,7 @@ const DEFAULT_NOTIFICATION_PREFS = {
 }
 
 function normalizeTier(raw) {
-  if (raw === 'business' || raw === 'portfolio' || raw === 'paid' || raw === 'intelligence') return 'intelligence'
+  if (raw === 'intelligence') return 'intelligence'
   return 'foundation'
 }
 
