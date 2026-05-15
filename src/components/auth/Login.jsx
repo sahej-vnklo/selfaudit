@@ -216,12 +216,13 @@ export default function Login({ onSuccess, onSignup }) {
             <button style={{ ...s.btn, opacity: loading ? 0.7 : 1 }} onClick={handleMagicLinkLogin} disabled={loading}>
               {loading ? 'Sending…' : 'Send sign-in link'}
             </button>
+
+            <p style={s.switch}>
+              Don't have an account?{' '}
+              <button style={s.link} onClick={onSignup}>Sign up</button>
+            </p>
           </div>
         </div>
-
-        <button style={s.createAccountPill} onClick={onSignup}>
-          Create account
-        </button>
       </div>
     </div>
   )
