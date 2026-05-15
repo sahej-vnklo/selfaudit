@@ -1,4 +1,5 @@
 import Stripe from 'stripe'
+import { validateUserToken } from './lib/auth.js'
 
 const PRICE_IDS = {
   foundation:   process.env.STRIPE_PRICE_FOUNDATION   || process.env.STRIPE_PRICE_ESSENTIAL  || null,
@@ -18,6 +19,7 @@ export default async function handler(req, res) {
   if (!tier || !userId || !email) {
     return res.status(400).json({ error: 'Missing tier, userId, or email' })
   }
+  if (!await validateUserToken(req, res, userId)) return
 
   const priceId = PRICE_IDS[tier]
   if (!priceId) {
