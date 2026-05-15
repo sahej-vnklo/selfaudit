@@ -29,7 +29,7 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Stripe secret key not configured' })
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const appUrl = process.env.APP_URL || 'http://localhost:3000'
 
   try {
     const stripe = new Stripe(secretKey, { apiVersion: '2023-10-16' })

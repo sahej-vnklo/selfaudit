@@ -143,10 +143,10 @@ export default function App() {
     initSupabase()
       .then(async (sb) => {
         // ── Step 1: resolve session fully before any auth-gated UI renders ──
-        // getSession() awaits any pending token refresh so auth.uid() is valid
-        // when Dashboard mounts and runs its RLS-gated profile query.
-        // Dashboard must never render until this resolves.
-        const { data } = await sb.auth.refreshSession()
+        // getSession() reads from storage first; only hits network if token
+        // is expired. refreshSession() would consume the refresh token on
+        // every page load, causing multi-tab logout races.
+        const { data } = await sb.auth.getSession()
         clearTimeout(authTimeout)
         setSession(data?.session ?? null)
         if (data?.session) {
