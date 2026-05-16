@@ -45,6 +45,20 @@ const THEMES = {
     inputBg: '#193857',
     buttonText: '#F4F7FC',
   },
+  elite: {
+    bg: '#090506',
+    surface: '#130D0D',
+    surface2: '#241818',
+    border: '#3A2A29',
+    text: '#F5E7E1',
+    textSoft: '#DBC4BE',
+    textMuted: '#AA918B',
+    accent: '#D4B8B2',
+    accentSoft: '#241818',
+    accentText: '#E8CEC8',
+    inputBg: '#241818',
+    buttonText: '#140C0C',
+  },
 }
 
 function getThemeVars(theme) {

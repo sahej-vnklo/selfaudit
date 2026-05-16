@@ -51,6 +51,22 @@ const THEMES = {
     buttonText: '#F4F7FC',
     focusRing: 'rgba(58,115,234,0.18)',
   },
+  elite: {
+    bg: '#090506',
+    surface: '#130D0D',
+    surface2: '#241818',
+    border: '#3A2A29',
+    text: '#F5E7E1',
+    textSoft: '#DBC4BE',
+    textMuted: '#AA918B',
+    accent: '#D4B8B2',
+    accentSoft: '#241818',
+    accentText: '#E8CEC8',
+    inputBg: '#241818',
+    error: '#C77D86',
+    buttonText: '#140C0C',
+    focusRing: 'rgba(212,184,178,0.18)',
+  },
 }
 
 function getThemeVars(theme) {

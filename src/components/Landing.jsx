@@ -89,6 +89,34 @@ const SHARP = {
   consoleAmber: '#8DABEA',
 }
 
+const EMBER = {
+  page: '#090506',
+  band: '#130D0D',
+  panel: '#191111',
+  panel2: '#241818',
+  line: '#3A2A29',
+  lineStrong: '#5B4340',
+  ink: '#F5E7E1',
+  soft: '#DBC4BE',
+  muted: '#AA918B',
+  faint: '#7F6661',
+  accent: '#D4B8B2',
+  accentDeep: '#B8948D',
+  consoleBg: '#100909',
+  consoleSurface: '#181010',
+  consolePanel: '#1D1313',
+  consolePanel2: '#261A1A',
+  consoleBorder: '#3A2A29',
+  consoleBorderSoft: '#59413E',
+  consoleInk: '#F5E7E1',
+  consoleSoft: '#D8C0BA',
+  consoleMuted: '#A78D87',
+  consoleFaint: '#765F5A',
+  consoleVerdict: '#D7B0A7',
+  consoleVerdictBg: '#2A1A19',
+  consoleAmber: '#C77D86',
+}
+
 const THEMES = {
   dark: {
     theme: 'dark',
@@ -153,9 +181,30 @@ const THEMES = {
     redSoft: SHARP.panel2,
     amber: '#90ABE5',
   },
+  elite: {
+    theme: 'elite',
+    bg: EMBER.page,
+    surface: EMBER.band,
+    surface2: EMBER.panel2,
+    surface3: EMBER.panel,
+    card: EMBER.panel,
+    border: EMBER.line,
+    border2: EMBER.lineStrong,
+    ink: EMBER.ink,
+    inkSoft: EMBER.soft,
+    inkMuted: EMBER.muted,
+    inkFaint: EMBER.faint,
+    accent: EMBER.accent,
+    accentDark: EMBER.accentDeep,
+    accentSoft: EMBER.panel2,
+    accentText: '#E8CEC8',
+    redMuted: '#C77D86',
+    redSoft: EMBER.panel2,
+    amber: '#CBA8A1',
+  },
 }
 
-const THEME_ORDER = ['dark', 'light', 'sharp']
+const THEME_ORDER = ['dark', 'light', 'sharp', 'elite']
 
 const serif = "'Playfair Display', Georgia, serif"
 const wrap = { maxWidth: 1140, margin: '0 auto', padding: '0 28px' }
@@ -404,7 +453,7 @@ const typewriterStatements = [
 
 function PrimaryButton({ label, onClick, small = false, C }) {
   const [hovered, setHovered] = useState(false)
-  const darkTheme = C.theme === 'dark'
+  const darkTheme = C.theme === 'dark' || C.theme === 'elite'
   return (
     <button
       onClick={onClick}
@@ -1732,7 +1781,7 @@ function EngineRoom({ C }) {
     return () => clearInterval(id)
   }, [])
 
-  const softPalette = C.theme === 'sharp' ? SHARP : LIGHT
+  const softPalette = C.theme === 'elite' ? EMBER : C.theme === 'sharp' ? SHARP : LIGHT
   const tonedMode = C.theme !== 'dark'
   const panelBg        = tonedMode ? softPalette.consoleBg : CONSOLE.crimson1
   const panelSurface   = tonedMode ? softPalette.consoleSurface : CONSOLE.crimson2
@@ -1747,22 +1796,28 @@ function EngineRoom({ C }) {
   const panelTextColor = tonedMode ? softPalette.consoleInk : PALETTE.platinum
   const panelIngestColor  = tonedMode ? '#7BD8B6' : '#77E8BE'
   const panelSignalColor  = tonedMode ? softPalette.consoleAmber : '#FF6432'
-  const displayAccent = C.theme === 'sharp' ? '#6F8FE0' : C.redMuted
-  const statColor = C.theme === 'sharp' ? panelTextColor : C.redMuted
+  const displayAccent = C.theme === 'sharp' ? '#6F8FE0' : C.theme === 'elite' ? '#D7B0A7' : C.redMuted
+  const statColor = C.theme === 'sharp' ? panelTextColor : C.theme === 'elite' ? '#E5CBC4' : C.redMuted
   const panelShellBg = C.theme === 'light'
     ? 'radial-gradient(circle at 18% 0%, rgba(255,255,255,0.06), transparent 26%), linear-gradient(180deg, #2E3E18 0%, #1C290D 100%)'
     : C.theme === 'sharp'
       ? 'linear-gradient(180deg, #0E1C30 0%, #0B1728 100%)'
+      : C.theme === 'elite'
+        ? 'radial-gradient(circle at 16% 0%, rgba(212,184,178,0.08), transparent 22%), linear-gradient(180deg, #140C0C 0%, #0B0606 100%)'
       : 'linear-gradient(180deg, #090505 0%, #050303 100%)'
   const panelShadow = C.theme === 'light'
     ? '0 34px 88px rgba(31, 54, 35, 0.18), 0 14px 32px rgba(31, 54, 35, 0.12)'
     : C.theme === 'sharp'
       ? '0 28px 72px rgba(8, 18, 34, 0.28)'
+      : C.theme === 'elite'
+        ? '0 34px 88px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(91, 67, 64, 0.22)'
       : '0 34px 88px rgba(0, 0, 0, 0.42), 0 0 0 1px rgba(74, 49, 43, 0.16)'
   const panelSheen = C.theme === 'light'
     ? 'linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 22%, rgba(255,255,255,0) 40%)'
     : C.theme === 'sharp'
       ? 'linear-gradient(180deg, rgba(138,167,226,0.08) 0%, rgba(138,167,226,0) 34%)'
+      : C.theme === 'elite'
+        ? 'linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(199,125,134,0.02) 20%, rgba(255,255,255,0) 36%)'
       : 'linear-gradient(180deg, rgba(255,255,255,0.025) 0%, rgba(255,255,255,0) 30%)'
 
   const typeColor = (type) => {
@@ -1959,12 +2014,12 @@ function FourVerbs({ C }) {
     inkSoft: C.inkSoft,
     inkMuted: C.inkMuted,
     inkFaint: C.inkFaint,
-    accent: C.theme === 'sharp' ? '#8AA6E4' : C.theme === 'light' ? '#5C7248' : CONSOLE.barberry,
-    redMuted: C.theme === 'sharp' ? '#8AA6E4' : C.theme === 'light' ? '#5C7248' : CONSOLE.barberry,
+    accent: C.theme === 'sharp' ? '#8AA6E4' : C.theme === 'elite' ? '#D7B0A7' : C.theme === 'light' ? '#5C7248' : CONSOLE.barberry,
+    redMuted: C.theme === 'sharp' ? '#8AA6E4' : C.theme === 'elite' ? '#D7B0A7' : C.theme === 'light' ? '#5C7248' : CONSOLE.barberry,
   }
 
   const cardBg = C.card
-  const cardPanelBg = C.theme === 'sharp' ? C.surface2 : C.surface
+  const cardPanelBg = C.theme === 'sharp' || C.theme === 'elite' ? C.surface2 : C.surface
 
   const verbs = [
     {
@@ -2359,7 +2414,7 @@ function LiveDiagnosis({ C }) {
     }
   }, [])
 
-  const softPalette = C.theme === 'sharp' ? SHARP : LIGHT
+  const softPalette = C.theme === 'elite' ? EMBER : C.theme === 'sharp' ? SHARP : LIGHT
   const tonedMode = C.theme !== 'dark'
   const panelBg         = tonedMode ? softPalette.consoleBg : CONSOLE.crimson1
   const panelSurface    = tonedMode ? softPalette.consoleSurface : CONSOLE.crimson2
@@ -2377,16 +2432,22 @@ function LiveDiagnosis({ C }) {
     ? 'radial-gradient(circle at 22% 0%, rgba(255,255,255,0.06), transparent 24%), linear-gradient(180deg, #2E3E18 0%, #1C290D 100%)'
     : C.theme === 'sharp'
       ? 'linear-gradient(180deg, #0C182A 0%, #091321 100%)'
+      : C.theme === 'elite'
+        ? 'radial-gradient(circle at 18% 0%, rgba(212,184,178,0.08), transparent 20%), linear-gradient(180deg, #140C0C 0%, #080505 100%)'
       : 'linear-gradient(180deg, #090505 0%, #040202 100%)'
   const panelShadow = C.theme === 'light'
     ? '0 34px 92px rgba(31, 54, 35, 0.18), 0 14px 34px rgba(31, 54, 35, 0.12)'
     : C.theme === 'sharp'
       ? '0 26px 68px rgba(8, 18, 34, 0.26)'
+      : C.theme === 'elite'
+        ? '0 34px 88px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(91, 67, 64, 0.22)'
       : '0 34px 88px rgba(0, 0, 0, 0.42), 0 0 0 1px rgba(74, 49, 43, 0.14)'
   const panelSheen = C.theme === 'light'
     ? 'linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 24%, rgba(255,255,255,0) 42%)'
     : C.theme === 'sharp'
       ? 'linear-gradient(180deg, rgba(138,167,226,0.08) 0%, rgba(138,167,226,0) 34%)'
+      : C.theme === 'elite'
+        ? 'linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(199,125,134,0.02) 24%, rgba(255,255,255,0) 40%)'
       : 'linear-gradient(180deg, rgba(255,255,255,0.025) 0%, rgba(255,255,255,0) 28%)'
 
   return (
@@ -2519,7 +2580,7 @@ function LiveDiagnosis({ C }) {
 function DashboardSection({ C }) {
   const healthRef = useRef(null)
   const goalRef   = useRef(null)
-  const softPalette = C.theme === 'sharp' ? SHARP : LIGHT
+  const softPalette = C.theme === 'elite' ? EMBER : C.theme === 'sharp' ? SHARP : LIGHT
   const tonedMode = C.theme !== 'dark'
   const amber = C.theme === 'sharp' ? '#88A5E5' : tonedMode ? softPalette.consoleAmber : CONSOLE.barberry
   const green = CONSOLE.green
@@ -2588,6 +2649,34 @@ function DashboardSection({ C }) {
           issueRowBg: '#2B4262',
           panelHeadingInk: '#F4F8FE',
         }
+      : C.theme === 'elite'
+        ? {
+            amberBg: '#29191A',
+            amberBorder: '#5A3E40',
+            redBg: '#301417',
+            panelBg: '#120A0A',
+            panelBorder: '#3A2A29',
+            panelBorderSoft: '#2A1C1C',
+            panelInkFaint: '#7E6661',
+            panelInkDim: '#9A817C',
+            panelInkMuted: '#B29994',
+            panelInkSoft: '#E1CBC5',
+            panelSurface: 'linear-gradient(180deg, #181010 0%, #120A0A 100%)',
+            panelPillBg: '#241818',
+            panelPillBorder: '#4A3432',
+            panelPillText: '#D8BEB8',
+            panelSidebarBg: 'linear-gradient(180deg, #130D0D 0%, #0A0606 100%)',
+            panelSidebarDivider: '#241818',
+            panelActiveItemBg: '#211515',
+            panelShellBg: 'radial-gradient(circle at 20% 0%, rgba(212,184,178,0.08), transparent 22%), linear-gradient(180deg, #140C0C 0%, #090506 100%)',
+            panelShellShadow: '0 44px 120px rgba(0, 0, 0, 0.36), 0 18px 42px rgba(0, 0, 0, 0.24)',
+            panelSheen: 'linear-gradient(180deg, rgba(255,255,255,0.035) 0%, rgba(199,125,134,0.02) 18%, rgba(255,255,255,0) 40%)',
+            panelBodyBg: '#191111',
+            cardFill: '#241818',
+            cardBorder: '#3F2E2D',
+            issueRowBg: '#1A1111',
+            panelHeadingInk: '#F4E6E0',
+          }
       : {
           amberBg: '#2A1F1C',
           amberBorder: '#4F3832',
@@ -2791,7 +2880,7 @@ function DashboardSection({ C }) {
 // ── Compounding Section ───────────────────────────────────────────────────────
 
 function CompoundingSection({ C }) {
-  const softPalette = C.theme === 'sharp' ? SHARP : LIGHT
+  const softPalette = C.theme === 'elite' ? EMBER : C.theme === 'sharp' ? SHARP : LIGHT
   const tonedMode = C.theme !== 'dark'
   const amber = C.theme === 'light'
     ? '#A8C890'
@@ -2818,11 +2907,15 @@ function CompoundingSection({ C }) {
     ? '0 44px 116px rgba(31, 54, 35, 0.3), 0 20px 48px rgba(31, 54, 35, 0.2), 0 0 0 1px rgba(74, 102, 40, 0.16), inset 0 1px 0 rgba(255,255,255,0.06)'
     : C.theme === 'dark'
       ? '0 28px 72px rgba(0, 0, 0, 0.42), 0 0 0 1px rgba(74, 49, 43, 0.2)'
+      : C.theme === 'elite'
+        ? '0 28px 72px rgba(0, 0, 0, 0.46), 0 0 0 1px rgba(91, 67, 64, 0.22)'
       : '0 24px 60px rgba(8, 18, 34, 0.24)'
   const cardGlow = C.theme === 'dark'
     ? 'radial-gradient(circle at 50% 42%, rgba(90, 63, 58, 0.18), transparent 62%)'
     : C.theme === 'light'
       ? 'radial-gradient(circle at 50% 40%, rgba(79, 102, 66, 0.16), transparent 58%), radial-gradient(circle at 50% 42%, rgba(200, 220, 180, 0.22), transparent 76%)'
+      : C.theme === 'elite'
+        ? 'radial-gradient(circle at 50% 42%, rgba(199, 125, 134, 0.12), transparent 60%)'
       : 'none'
   const chartTopOpacity = C.theme === 'light' ? '0.38' : '0.28'
   const chartBottomOpacity = C.theme === 'light' ? '0.06' : '0.02'
@@ -3148,6 +3241,17 @@ export default function Landing({ onStart, onSignUp, session }) {
           background-color: ${C.bg};
         }
       `
+      : theme === 'elite'
+        ? `
+          body {
+            background-image:
+              radial-gradient(circle at 14% 0%, rgba(212, 184, 178, 0.07), transparent 24%),
+              radial-gradient(circle at 82% 12%, rgba(199, 125, 134, 0.12), transparent 22%),
+              linear-gradient(180deg, #120B0B 0%, #090506 42%, #050303 100%);
+            background-attachment: scroll;
+            background-color: ${C.bg};
+          }
+        `
       : `
         body {
           background-image: none;

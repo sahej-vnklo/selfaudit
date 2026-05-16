@@ -47,6 +47,21 @@ const THEMES = {
     buttonTextSoft: '#D8E2F1',
     buttonBorder: '#3A73EA',
   },
+  elite: {
+    bg: '#090506',
+    surface: '#130D0D',
+    border: '#3A2A29',
+    text: '#F5E7E1',
+    textSoft: '#DBC4BE',
+    textMuted: '#AA918B',
+    accent: '#D4B8B2',
+    accentSoft: '#241818',
+    inputBg: '#241818',
+    error: '#C77D86',
+    buttonText: '#140C0C',
+    buttonTextSoft: '#F5E7E1',
+    buttonBorder: '#D4B8B2',
+  },
 }
 
 function getThemeVars(theme) {
