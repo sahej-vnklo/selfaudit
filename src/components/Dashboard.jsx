@@ -39,7 +39,7 @@ const THEMES = {
     overlaySoft: 'rgba(0,0,0,0.4)',
   },
   light: {
-    bg: '#FEFAE0',
+    bg: '#F3F1EA',
     surface: '#D4E2C0',
     surface2: '#EAF2DC',
     surface3: '#FFFFFF',

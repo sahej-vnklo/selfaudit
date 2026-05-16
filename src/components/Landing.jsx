@@ -34,7 +34,7 @@ const ELITE = {
 }
 
 const LIGHT = {
-  page: '#FEFAE0',
+  page: '#F3F1EA',
   band: '#D4E2C0',
   panel: '#FFFFFF',
   panel2: '#EAF2DC',
