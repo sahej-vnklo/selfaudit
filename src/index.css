@@ -98,6 +98,27 @@ a { text-decoration: none; color: inherit; }
 .animate-fadeup { animation: fadeUp 0.5s ease forwards; }
 .animate-fadein { animation: fadeIn 0.4s ease forwards; }
 
+/* ─── LIGHT THEME DEPTH ──────────────────────────────────────────────────────
+ * Dark/sharp get depth from luminosity — darker surfaces recede.
+ * Light mode needs explicit shadows because all surfaces are close in
+ * brightness. Targets semantic HTML elements set by Dashboard layout.
+ * ─────────────────────────────────────────────────────────────────────────── */
+
+/* Topbar — separates nav from page */
+[data-theme="light"] header {
+  box-shadow: 0 1px 0 rgba(0,0,0,0.08), 0 2px 10px rgba(0,0,0,0.05);
+}
+
+/* Sidebar — lifts it off the page surface */
+[data-theme="light"] aside {
+  box-shadow: 2px 0 10px rgba(0,0,0,0.07), 1px 0 0 rgba(0,0,0,0.04);
+}
+
+/* Stronger button hover shadow in light mode — dark shadows read better on light */
+[data-theme="light"] button:hover:not(:disabled) {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.16), 0 1px 4px rgba(0,0,0,0.10) !important;
+}
+
 /* ─── GLOBAL INTERACTIVE HOVER SYSTEM ───────────────────────────────────────
  * Depth + highlight on every interactive element, across all 3 themes.
  * Uses transform + box-shadow — no color knowledge needed, so it adapts to
