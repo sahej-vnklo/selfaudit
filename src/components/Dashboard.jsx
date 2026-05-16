@@ -494,9 +494,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
   const [portalLoading, setPortalLoading] = useState(false)
   const [section, setSection] = useState(() => getSectionFromHash())
   const [requiresPayment, setRequiresPayment] = useState(false)
-  const [sidebarPinned,   setSidebarPinned]   = useState(false)
-  const [sidebarHovered,  setSidebarHovered]  = useState(false)
-  const sidebarExpanded = sidebarPinned || sidebarHovered
+  const [sidebarExpanded, setSidebarExpanded] = useState(false)
   const [goalModal, setGoalModal] = useState(false)
   const [scopeSetupOpen, setScopeSetupOpen] = useState(false)
   const pendingAuditRef = useRef(null)
@@ -763,13 +761,11 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
 
       <aside
         style={{ ...styles.sidebar, ...(sidebarExpanded ? styles.sidebarExpanded : {}) }}
-        onMouseEnter={() => setSidebarHovered(true)}
-        onMouseLeave={() => setSidebarHovered(false)}
       >
         <button
           type="button"
-          onClick={() => setSidebarPinned(p => !p)}
-          title={sidebarPinned ? 'Collapse sidebar' : 'Expand sidebar'}
+          onClick={() => setSidebarExpanded(p => !p)}
+          title={sidebarExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
           style={{
             width: 34, height: 34,
             borderRadius: 8, border: 'none',
@@ -3305,36 +3301,41 @@ const styles = {
     border: `0.5px solid ${G.border2}`,
     background: G.surface2,
     color: G.textSecondary,
-    borderRadius: 7,
-    padding: '7px 14px',
-    fontSize: 13,
+    borderRadius: 8,
+    padding: '9px 16px',
+    fontSize: 14,
     cursor: 'pointer',
     display: 'inline-flex',
     alignItems: 'center',
     gap: 8,
     whiteSpace: 'nowrap',
+    fontWeight: 500,
   },
   themeToggleIcon: {
-    fontSize: 14,
+    fontSize: 15,
     lineHeight: 1,
   },
   ghostButton: {
-    border: `0.5px solid ${G.border2}`,
+    border: `1px solid ${G.border2}`,
     background: 'none',
-    color: G.textSecondary,
-    borderRadius: 7,
-    padding: '7px 18px',
-    fontSize: 13,
+    color: G.text,
+    borderRadius: 8,
+    padding: '9px 22px',
+    fontSize: 14,
+    fontWeight: 500,
     cursor: 'pointer',
+    whiteSpace: 'nowrap',
   },
   primaryButton: {
     background: G.accent,
     color: G.white,
-    borderRadius: 7,
-    padding: '7px 18px',
-    fontSize: 13,
+    borderRadius: 8,
+    padding: '9px 22px',
+    fontSize: 14,
+    fontWeight: 600,
     border: 'none',
     cursor: 'pointer',
+    whiteSpace: 'nowrap',
   },
   main: {
     background: G.black,
