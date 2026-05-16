@@ -36,9 +36,9 @@ const ELITE = {
 const LIGHT = {
   page: '#F3F1EA',
   band: '#E8E5DC',
-  panel: '#FFFFFF',
+  panel: '#FAFAF4',
   panel2: '#ECEAE2',
-  line: '#C4C0B4',
+  line: '#B0AB9E',
   lineStrong: '#A8A49A',
   ink: '#1F3623',
   soft: '#3E5530',
@@ -925,7 +925,7 @@ function StoriesPage({ C, onStartAudit }) {
         </div>
       </section>
 
-      <section style={{ padding: '0 0 96px', background: C.bg }}>
+      <section style={{ padding: '0 0 96px', background: C.theme === 'light' ? C.surface : C.bg }}>
         <div style={wrap}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 24 }}>
             {storyCards.map((story) => {
@@ -942,6 +942,7 @@ function StoriesPage({ C, onStartAudit }) {
                     display: 'flex',
                     flexDirection: 'column',
                     gap: 18,
+                    boxShadow: C.theme === 'light' ? '0 2px 12px rgba(31,54,35,0.08), 0 1px 3px rgba(31,54,35,0.04)' : 'none',
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'flex-start' }}>
@@ -2426,7 +2427,7 @@ function LiveDiagnosis({ C }) {
           {C.theme === 'light' && <span style={{ display: 'inline-block', width: 28, height: 1, background: C.border2, verticalAlign: 'middle', marginLeft: 14 }} />}
         </div>
         <h2 style={{ fontFamily: serif, fontSize: 'clamp(32px, 5.5vw, 80px)', fontWeight: 700, letterSpacing: '-0.045em', lineHeight: 1.04, color: C.ink, margin: '0 0 20px' }}>
-          Watch the brain <em style={{ fontStyle: 'italic', color: panelAmber }}>think.</em>
+          Watch the brain <em style={{ fontStyle: 'italic', color: C.theme === 'light' ? C.accent : panelAmber }}>think.</em>
         </h2>
         <p style={{ fontFamily: serif, fontSize: 20, color: C.inkSoft, lineHeight: 1.6, margin: 0 }}>
           Not a chat. A reasoning process. Real signals. Real verdict. Real next move.
@@ -3054,7 +3055,7 @@ function FinalCTA({ onStart, C }) {
             onClick={go}
             style={{
               background: red,
-              color: C.ink,
+              color: C.theme === 'light' ? '#FFFFFF' : C.ink,
               border: 'none',
               padding: '0 36px',
               fontFamily: mono,
