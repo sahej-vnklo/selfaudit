@@ -951,6 +951,7 @@ function PageShell({ title, sub, actions, children }) {
 
 function HomeSection({ user, profile, businessState, businessStateLoading, reports, reportsLoading, onStartAudit, onStartGoalAudit, healthIntel }) {
   const issuesRef = useRef(null)
+  const [businessHealthExpanded, setBusinessHealthExpanded] = useState(false)
   const latestReport = reports[0] || null
   const latestDiagnosticReport = getLatestDiagnosticReport(reports)
   const latestContent = latestDiagnosticReport ? parseReportContent(latestDiagnosticReport) : null
@@ -1017,10 +1018,13 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
 
       <div style={styles.kpiGrid}>
         <KpiCard
-          label="Health score"
+          label="Business health"
           value={reportsLoading ? '…' : healthScore ?? '—'}
           delta={healthScore === null ? 'No recent diagnostic report' : healthScore >= 70 ? 'Stable' : healthScore >= 45 ? 'Watch closely' : 'Needs attention'}
           tone={healthScore === null ? 'neutral' : healthScore >= 70 ? 'up' : healthScore >= 45 ? 'warn' : 'down'}
+          hint={businessHealthExpanded ? 'Click to hide details' : 'Click for more'}
+          onClick={() => setBusinessHealthExpanded((prev) => !prev)}
+          active={businessHealthExpanded}
         />
         <KpiCard
           label="Open issues"
@@ -1042,6 +1046,25 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
         />
       </div>
 
+      {businessHealthExpanded && (
+        <div style={styles.inlineBusinessHealthWrap}>
+          <BusinessHealthPanel
+            latestDomains={latestDomains}
+            healthIntel={healthIntel}
+            right={(
+              <button
+                type="button"
+                style={styles.inlineCloseBtn}
+                onClick={() => setBusinessHealthExpanded(false)}
+                aria-label="Close business health details"
+              >
+                Close
+              </button>
+            )}
+          />
+        </div>
+      )}
+
       <div style={styles.homeColumns}>
         <div style={styles.leftColumn}>
           <ExecutionPanel
@@ -1057,7 +1080,6 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
         </div>
 
         <div style={styles.rightColumn}>
-          <BusinessHealthPanel latestDomains={latestDomains} healthIntel={healthIntel} />
           <WeeklyDigestPanel profile={profile} />
           <AiOpportunitiesCard
             user={user}
@@ -1073,13 +1095,29 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
   )
 }
 
-function KpiCard({ label, value, delta, tone }) {
+function KpiCard({ label, value, delta, tone, hint, onClick, active = false }) {
   const toneColor = tone === 'up' ? G.greenText : tone === 'warn' ? G.amberText : tone === 'down' ? G.redText : G.textFaint
+  const cardStyle = active
+    ? { ...styles.kpiCard, ...styles.kpiCardActive }
+    : styles.kpiCard
+
+  if (onClick) {
+    return (
+      <button type="button" style={{ ...cardStyle, ...styles.kpiCardButton }} onClick={onClick}>
+        <div style={styles.kpiLabel}>{label}</div>
+        <div style={styles.kpiValue}>{value}</div>
+        <div style={{ ...styles.kpiDelta, color: toneColor }}>{delta}</div>
+        {hint ? <div style={styles.kpiHint}>{hint}</div> : null}
+      </button>
+    )
+  }
+
   return (
-    <div style={styles.kpiCard}>
+    <div style={cardStyle}>
       <div style={styles.kpiLabel}>{label}</div>
       <div style={styles.kpiValue}>{value}</div>
       <div style={{ ...styles.kpiDelta, color: toneColor }}>{delta}</div>
+      {hint ? <div style={styles.kpiHint}>{hint}</div> : null}
     </div>
   )
 }
@@ -1141,7 +1179,7 @@ function AuditHistoryPanel({ reports, reportsLoading }) {
   )
 }
 
-function BusinessHealthPanel({ latestDomains, healthIntel }) {
+function BusinessHealthPanel({ latestDomains, healthIntel, right = null }) {
   const score = latestDomains.length ? computeHealthScore(latestDomains) : 0
   const radius = 28
   const circumference = 2 * Math.PI * radius
@@ -1151,7 +1189,7 @@ function BusinessHealthPanel({ latestDomains, healthIntel }) {
   const unresolvedActions = healthIntel?.unresolved_actions?.slice(0, 3) ?? []
 
   return (
-    <PanelCard title="business health">
+    <PanelCard title="business health" right={right}>
       {latestDomains.length === 0 ? (
         <EmptyPanel message="Health bars appear after your first diagnostic report." />
       ) : (
@@ -3449,6 +3487,16 @@ const styles = {
     padding: 14,
     minWidth: 0,
   },
+  kpiCardButton: {
+    width: '100%',
+    textAlign: 'left',
+    cursor: 'pointer',
+    appearance: 'none',
+  },
+  kpiCardActive: {
+    borderColor: G.accent,
+    boxShadow: `0 0 0 1px ${G.accentLight}`,
+  },
   kpiLabel: {
     fontSize: 10,
     color: G.textFaint,
@@ -3464,6 +3512,16 @@ const styles = {
   kpiDelta: {
     marginTop: 8,
     fontSize: 11,
+  },
+  kpiHint: {
+    marginTop: 12,
+    fontSize: 10,
+    color: G.textFaint,
+    textTransform: 'uppercase',
+    letterSpacing: '0.06em',
+  },
+  inlineBusinessHealthWrap: {
+    marginBottom: 12,
   },
   homeColumns: {
     display: 'grid',
@@ -3507,6 +3565,15 @@ const styles = {
   panelMeta: {
     fontSize: 11,
     color: G.textFaint,
+  },
+  inlineCloseBtn: {
+    border: `0.5px solid ${G.border2}`,
+    background: G.surface,
+    color: G.textSecondary,
+    borderRadius: 999,
+    padding: '6px 12px',
+    fontSize: 11,
+    cursor: 'pointer',
   },
   panelToggle: {
     width: '100%',
