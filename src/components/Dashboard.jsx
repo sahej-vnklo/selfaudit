@@ -234,7 +234,7 @@ const TIERS = [
 ]
 
 const TIER_ORDER = { foundation: 0, intelligence: 1, essential: 0, business: 1, portfolio: 2, free: 0, paid: 1 }
-const SECTIONS = ['home', 'reports', 'intelligence', 'connectors', 'agent', 'billing', 'account']
+const SECTIONS = ['home', 'reports', 'intelligence', 'business-state', 'connectors', 'agent', 'billing', 'account']
 
 function normalizeTier(raw) {
   if (raw === 'intelligence') return 'intelligence'
@@ -723,7 +723,9 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
     home: '/ command centre',
     reports: '/ reports',
     intelligence: '/ intelligence brief',
+    'business-state': '/ what we know',
     connectors: '/ connectors',
+    agent: '/ ask tsa',
     billing: '/ billing',
     account: '/ account',
   }
@@ -786,13 +788,9 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
         <SidebarButton icon={<IconHome />} active={section === 'home'} onClick={() => navigateSection('home')} label="Home" expanded={sidebarExpanded} />
         <SidebarButton icon={<IconReports />} active={section === 'reports'} onClick={() => navigateSection('reports')} label="Reports" expanded={sidebarExpanded} />
         <SidebarButton icon={<IconIntelligence />} active={section === 'intelligence'} onClick={() => navigateSection('intelligence')} label="Intelligence brief" expanded={sidebarExpanded} />
+        <SidebarButton icon={<IconBrain />} active={section === 'business-state'} onClick={() => navigateSection('business-state')} label="What we know" expanded={sidebarExpanded} />
         <SidebarButton icon={<IconConnectors />} active={section === 'connectors'} onClick={() => navigateSection('connectors')} label="Connectors" expanded={sidebarExpanded} />
         <SidebarButton icon={<IconAgent />} active={section === 'agent'} onClick={() => navigateSection('agent')} label="Ask TSA" expanded={sidebarExpanded} />
-        {sidebarExpanded && (
-          <div style={styles.sidebarBusinessStateWrap}>
-            <BusinessStateCard user={user} businessState={businessState} loading={businessStateLoading} />
-          </div>
-        )}
         <div style={{ flex: 1 }} />
         <SidebarButton icon={<IconGear />} active={section === 'billing'} onClick={() => navigateSection('billing')} label="Billing" expanded={sidebarExpanded} />
         <button
@@ -870,6 +868,15 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
                 profile={profile}
                 onProfileChange={(updated) => setProfile((prev) => ({ ...prev, ...updated }))}
               />
+            </PageShell>
+          )}
+
+          {section === 'business-state' && (
+            <PageShell
+              title="What we know"
+              sub="Your current operating picture, compiled from saved audit context and editable when something changes."
+            >
+              <BusinessStateCard user={user} businessState={businessState} loading={businessStateLoading} />
             </PageShell>
           )}
 
@@ -3126,6 +3133,15 @@ function IconIntelligence() {
   )
 }
 
+function IconBrain() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <path d="M6.4 2.1C4.8 2.1 3.5 3.4 3.5 5c0 .4.1.7.2 1A2.9 2.9 0 0 0 2.5 8.5c0 1.3.8 2.4 2 2.8v.2c0 1.3 1 2.3 2.3 2.3.8 0 1.5-.4 1.9-1 .4.6 1.1 1 1.9 1 1.3 0 2.3-1 2.3-2.3v-.2a3 3 0 0 0 .6-5.3c.1-.3.2-.6.2-1 0-1.6-1.3-2.9-2.9-2.9-.8 0-1.6.3-2.1.9-.6-.6-1.3-.9-2.1-.9Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/>
+      <path d="M8 4.2v7.2M8 7.1c-.6 0-1 .4-1 1M8 6.4c.6 0 1 .4 1 1" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+    </svg>
+  )
+}
+
 function IconConnectors() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -3180,10 +3196,6 @@ const styles = {
     width: 272,
     alignItems: 'stretch',
     padding: '16px 8px',
-  },
-  sidebarBusinessStateWrap: {
-    marginTop: 10,
-    padding: '0 4px',
   },
   sidebarButton: {
     width: 34,
