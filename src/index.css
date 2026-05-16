@@ -121,7 +121,7 @@ a,
 
 /* Buttons — lift + layered shadow (depth without color) */
 button:hover:not(:disabled) {
-  transform:  translateY(-1px) scale(1.04);
+  transform:  translateY(-1px) scale(1.06);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22), 0 1px 4px rgba(0, 0, 0, 0.10);
   filter:     brightness(1.06);
 }
@@ -166,7 +166,7 @@ a:hover {
 
 [role="button"]:hover,
 .interactive:hover {
-  transform:  translateY(-1px) scale(1.04);
+  transform:  translateY(-1px) scale(1.06);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18), 0 1px 3px rgba(0, 0, 0, 0.09);
   filter:     brightness(1.05);
 }

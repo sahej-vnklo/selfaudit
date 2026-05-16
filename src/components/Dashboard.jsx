@@ -494,7 +494,9 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
   const [portalLoading, setPortalLoading] = useState(false)
   const [section, setSection] = useState(() => getSectionFromHash())
   const [requiresPayment, setRequiresPayment] = useState(false)
-  const [sidebarExpanded, setSidebarExpanded] = useState(false)
+  const [sidebarPinned,   setSidebarPinned]   = useState(false)
+  const [sidebarHovered,  setSidebarHovered]  = useState(false)
+  const sidebarExpanded = sidebarPinned || sidebarHovered
   const [goalModal, setGoalModal] = useState(false)
   const [scopeSetupOpen, setScopeSetupOpen] = useState(false)
   const pendingAuditRef = useRef(null)
@@ -761,9 +763,30 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
 
       <aside
         style={{ ...styles.sidebar, ...(sidebarExpanded ? styles.sidebarExpanded : {}) }}
-        onMouseEnter={() => setSidebarExpanded(true)}
-        onMouseLeave={() => setSidebarExpanded(false)}
+        onMouseEnter={() => setSidebarHovered(true)}
+        onMouseLeave={() => setSidebarHovered(false)}
       >
+        <button
+          type="button"
+          onClick={() => setSidebarPinned(p => !p)}
+          title={sidebarPinned ? 'Collapse sidebar' : 'Expand sidebar'}
+          style={{
+            width: 34, height: 34,
+            borderRadius: 8, border: 'none',
+            background: 'transparent',
+            color: G.textMuted,
+            cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            flexShrink: 0,
+            marginBottom: 6,
+            alignSelf: sidebarExpanded ? 'flex-end' : 'center',
+          }}
+        >
+          {sidebarExpanded
+            ? <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7L9 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            : <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 2L10 7L5 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          }
+        </button>
         <SidebarButton icon={<IconHome />} active={section === 'home'} onClick={() => navigateSection('home')} label="Home" expanded={sidebarExpanded} />
         <SidebarButton icon={<IconReports />} active={section === 'reports'} onClick={() => navigateSection('reports')} label="Reports" expanded={sidebarExpanded} />
         <SidebarButton icon={<IconIntelligence />} active={section === 'intelligence'} onClick={() => navigateSection('intelligence')} label="Intelligence brief" expanded={sidebarExpanded} />
@@ -3244,7 +3267,7 @@ const styles = {
     minWidth: 0,
   },
   topbar: {
-    height: 48,
+    height: 54,
     background: G.surface,
     borderBottom: `0.5px solid ${G.border}`,
     display: 'flex',
@@ -3282,9 +3305,9 @@ const styles = {
     border: `0.5px solid ${G.border2}`,
     background: G.surface2,
     color: G.textSecondary,
-    borderRadius: 6,
-    padding: '5px 12px',
-    fontSize: 12,
+    borderRadius: 7,
+    padding: '7px 14px',
+    fontSize: 13,
     cursor: 'pointer',
     display: 'inline-flex',
     alignItems: 'center',
@@ -3292,24 +3315,24 @@ const styles = {
     whiteSpace: 'nowrap',
   },
   themeToggleIcon: {
-    fontSize: 13,
+    fontSize: 14,
     lineHeight: 1,
   },
   ghostButton: {
     border: `0.5px solid ${G.border2}`,
     background: 'none',
     color: G.textSecondary,
-    borderRadius: 6,
-    padding: '5px 14px',
-    fontSize: 12,
+    borderRadius: 7,
+    padding: '7px 18px',
+    fontSize: 13,
     cursor: 'pointer',
   },
   primaryButton: {
     background: G.accent,
     color: G.white,
-    borderRadius: 6,
-    padding: '5px 14px',
-    fontSize: 12,
+    borderRadius: 7,
+    padding: '7px 18px',
+    fontSize: 13,
     border: 'none',
     cursor: 'pointer',
   },
