@@ -36,7 +36,7 @@ const ELITE = {
 const LIGHT = {
   page: '#F3F1EA',
   band: '#E8E5DC',
-  panel: '#FAFAF4',
+  panel: '#FFFFFF',
   panel2: '#ECEAE2',
   line: '#B0AB9E',
   lineStrong: '#A8A49A',
@@ -934,7 +934,7 @@ function StoriesPage({ C, onStartAudit }) {
                 <div
                   key={story.domain + story.meta}
                   style={{
-                    background: C.theme === 'light' ? '#FFFFFF' : C.card,
+                    background: C.card,
                     border: `1px solid ${C.theme === 'light' ? '#C8C3B8' : C.border}`,
                     borderLeft: `3px solid ${critical ? C.redMuted : C.amber}`,
                     borderRadius: 16,
