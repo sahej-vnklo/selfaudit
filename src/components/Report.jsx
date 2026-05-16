@@ -76,28 +76,6 @@ const THEMES = {
     dangerBg: '#1A1A32',
     dangerText: '#D8A0A0',
   },
-  elite: {
-    bg: '#090506',
-    surface: '#130D0D',
-    surface2: '#241818',
-    border: '#3A2A29',
-    text: '#F5E7E1',
-    textSoft: '#DBC4BE',
-    textMuted: '#AA918B',
-    accent: '#D4B8B2',
-    accentSoft: '#241818',
-    accentText: '#E8CEC8',
-    buttonText: '#140C0C',
-    success: '#7FAF93',
-    successBg: '#122019',
-    successText: '#A2D0B2',
-    warning: '#CBA8A1',
-    warningBg: '#211516',
-    warningText: '#E0C1BA',
-    danger: '#C77D86',
-    dangerBg: '#2A1317',
-    dangerText: '#E4B3B9',
-  },
 }
 
 function getThemeTokens(theme) {

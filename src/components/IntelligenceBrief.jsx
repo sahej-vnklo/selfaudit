@@ -56,24 +56,6 @@ const THEMES = {
     red: '#C07878',
     redText: '#C07878',
   },
-  elite: {
-    bg: '#090506',
-    surface: '#130D0D',
-    surface2: '#241818',
-    surface3: '#191111',
-    border: '#3A2A29',
-    border2: '#5B4340',
-    text: '#F5E7E1',
-    textSecondary: '#DBC4BE',
-    textMuted: '#AA918B',
-    textFaint: '#7F6661',
-    accent: '#D4B8B2',
-    accentLight: '#241818',
-    accentText: '#E8CEC8',
-    buttonText: '#140C0C',
-    red: '#C77D86',
-    redText: '#E4B3B9',
-  },
 }
 
 const COLORS = {

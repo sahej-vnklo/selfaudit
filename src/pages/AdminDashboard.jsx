@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 
 const ADMIN_EMAIL = 'sahej@vnklo.com'
 
-const THEME_ORDER = ['dark', 'light', 'sharp', 'elite']
+const THEME_ORDER = ['dark', 'light', 'sharp']
 
 const ADMIN_THEMES = {
   dark: {
@@ -76,30 +76,6 @@ const ADMIN_THEMES = {
     greenBg: '#0A1A20',
     greenText: '#6BC0A8',
     blue: '#3A73EA',
-  },
-  elite: {
-    bg: '#090506',
-    surface: '#130D0D',
-    surface2: '#241818',
-    surface3: '#191111',
-    border: '#3A2A29',
-    border2: '#5B4340',
-    text: '#F5E7E1',
-    textMuted: '#AA918B',
-    textFaint: '#7F6661',
-    accent: '#D4B8B2',
-    accentLight: '#241818',
-    accentText: '#E8CEC8',
-    red: '#C77D86',
-    redBg: '#2A1317',
-    redText: '#E4B3B9',
-    amber: '#CBA8A1',
-    amberBg: '#211516',
-    amberText: '#E0C1BA',
-    green: '#7FAF93',
-    greenBg: '#122019',
-    greenText: '#A2D0B2',
-    blue: '#B46F7C',
   },
 }
 

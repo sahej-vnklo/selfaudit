@@ -3,7 +3,7 @@ import { initSupabase } from '../lib/supabase.js'
 import IntelligenceBrief from './IntelligenceBrief.jsx'
 import ExecutionPanel from './ExecutionPanel.jsx'
 
-const THEME_ORDER = ['dark', 'light', 'sharp', 'elite']
+const THEME_ORDER = ['dark', 'light', 'sharp']
 
 const THEMES = {
   dark: {
@@ -101,38 +101,6 @@ const THEMES = {
     white: '#F4F7FC',
     overlay: 'rgba(5,15,30,0.6)',
     overlaySoft: 'rgba(0,0,0,0.35)',
-  },
-  elite: {
-    bg: '#090506',
-    surface: '#130D0D',
-    surface2: '#241818',
-    surface3: '#191111',
-    panel: '#191111',
-    panelAlt: '#241818',
-    border: '#3A2A29',
-    border2: '#5B4340',
-    text: '#F5E7E1',
-    textSecondary: '#DBC4BE',
-    textMuted: '#AA918B',
-    textFaint: '#7F6661',
-    accent: '#D4B8B2',
-    accentLight: '#241818',
-    accentText: '#E8CEC8',
-    red: '#C77D86',
-    redBg: '#2A1317',
-    redText: '#E4B3B9',
-    amber: '#CBA8A1',
-    amberBg: '#211516',
-    amberText: '#E0C1BA',
-    green: '#7FAF93',
-    greenBg: '#122019',
-    greenText: '#A2D0B2',
-    blue: '#B46F7C',
-    violet: '#9F728D',
-    sand: '#D4B8B2',
-    white: '#F5E7E1',
-    overlay: 'rgba(0,0,0,0.68)',
-    overlaySoft: 'rgba(0,0,0,0.38)',
   },
 }
 
