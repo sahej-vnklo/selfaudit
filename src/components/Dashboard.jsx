@@ -995,6 +995,15 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
     setAlertDismissed(true)
   }
 
+  useEffect(() => {
+    if (!businessHealthExpanded) return undefined
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setBusinessHealthExpanded(false)
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [businessHealthExpanded])
+
   return (
     <div style={styles.pageShell}>
       {staleReport && alertDomain && !alertDismissed && (
@@ -1046,25 +1055,6 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
         />
       </div>
 
-      {businessHealthExpanded && (
-        <div style={styles.inlineBusinessHealthWrap}>
-          <BusinessHealthPanel
-            latestDomains={latestDomains}
-            healthIntel={healthIntel}
-            right={(
-              <button
-                type="button"
-                style={styles.inlineCloseBtn}
-                onClick={() => setBusinessHealthExpanded(false)}
-                aria-label="Close business health details"
-              >
-                Close
-              </button>
-            )}
-          />
-        </div>
-      )}
-
       <div style={styles.homeColumns}>
         <div style={styles.leftColumn}>
           <ExecutionPanel
@@ -1091,6 +1081,32 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
           />
         </div>
       </div>
+
+      {businessHealthExpanded && (
+        <div
+          style={styles.businessHealthOverlay}
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setBusinessHealthExpanded(false)
+          }}
+        >
+          <div style={styles.businessHealthModal}>
+            <BusinessHealthPanel
+              latestDomains={latestDomains}
+              healthIntel={healthIntel}
+              right={(
+                <button
+                  type="button"
+                  style={styles.businessHealthCloseBtn}
+                  onClick={() => setBusinessHealthExpanded(false)}
+                  aria-label="Close business health details"
+                >
+                  Close
+                </button>
+              )}
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -3520,9 +3536,6 @@ const styles = {
     textTransform: 'uppercase',
     letterSpacing: '0.06em',
   },
-  inlineBusinessHealthWrap: {
-    marginBottom: 12,
-  },
   homeColumns: {
     display: 'grid',
     gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
@@ -3566,7 +3579,22 @@ const styles = {
     fontSize: 11,
     color: G.textFaint,
   },
-  inlineCloseBtn: {
+  businessHealthOverlay: {
+    position: 'fixed',
+    inset: 0,
+    zIndex: 320,
+    background: G.overlay,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '24px',
+  },
+  businessHealthModal: {
+    width: 'min(900px, 100%)',
+    maxHeight: '88vh',
+    overflowY: 'auto',
+  },
+  businessHealthCloseBtn: {
     border: `0.5px solid ${G.border2}`,
     background: G.surface,
     color: G.textSecondary,
