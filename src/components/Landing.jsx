@@ -903,7 +903,7 @@ function LandingFooter({ C, theme, setTheme }) {
 function StoriesPage({ C, onStartAudit }) {
   return (
     <>
-      <section style={{ padding: '96px 0 72px', background: C.theme === 'light' ? '#E2DCCF' : C.bg }}>
+      <section style={{ padding: '96px 0 72px', background: C.theme === 'light' ? '#C8C0B0' : C.bg }}>
         <div style={wrap}>
           <div style={sectionLabel(C)}>REAL DIAGNOSES. REAL OUTCOMES.</div>
           <h1 style={{
@@ -925,7 +925,7 @@ function StoriesPage({ C, onStartAudit }) {
         </div>
       </section>
 
-      <section style={{ padding: '0 0 96px', background: C.theme === 'light' ? '#E2DCCF' : C.bg }}>
+      <section style={{ padding: '0 0 96px', background: C.theme === 'light' ? '#C8C0B0' : C.bg }}>
         <div style={wrap}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 24 }}>
             {storyCards.map((story) => {
@@ -935,14 +935,14 @@ function StoriesPage({ C, onStartAudit }) {
                   key={story.domain + story.meta}
                   style={{
                     background: C.card,
-                    border: `1px solid ${C.theme === 'light' ? '#C8C3B8' : C.border}`,
+                    border: `1px solid ${C.theme === 'light' ? '#A8A09A' : C.border}`,
                     borderLeft: `3px solid ${critical ? C.redMuted : C.amber}`,
                     borderRadius: 16,
                     padding: 28,
                     display: 'flex',
                     flexDirection: 'column',
                     gap: 18,
-                    boxShadow: C.theme === 'light' ? '0 4px 20px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06)' : 'none',
+                    boxShadow: C.theme === 'light' ? '0 8px 40px rgba(0,0,0,0.22), 0 2px 8px rgba(0,0,0,0.14)' : 'none',
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'flex-start' }}>
