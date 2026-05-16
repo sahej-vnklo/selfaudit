@@ -40,7 +40,7 @@ const THEMES = {
   },
   light: {
     bg: '#F3F1EA',
-    surface: '#D4E2C0',
+    surface: '#8A9E78',
     surface2: '#EAF2DC',
     surface3: '#FFFFFF',
     panel: '#FFFFFF',

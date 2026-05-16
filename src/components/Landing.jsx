@@ -35,11 +35,11 @@ const ELITE = {
 
 const LIGHT = {
   page: '#F3F1EA',
-  band: '#D4E2C0',
+  band: '#E8E5DC',
   panel: '#FFFFFF',
-  panel2: '#EAF2DC',
-  line: '#B8CCA8',
-  lineStrong: '#96AA80',
+  panel2: '#ECEAE2',
+  line: '#C4C0B4',
+  lineStrong: '#A8A49A',
   ink: '#1F3623',
   soft: '#3E5530',
   muted: '#5C7248',
@@ -416,7 +416,7 @@ function PrimaryButton({ label, onClick, small = false, C }) {
         justifyContent: 'center',
         gap: 10,
         background: hovered ? C.accentDark : C.accent,
-        color: darkTheme ? C.bg : C.ink,
+        color: darkTheme ? C.bg : (C.theme === 'light' ? '#FFFFFF' : C.ink),
         padding: small ? '10px 18px' : '16px 28px',
         borderRadius: 999,
         fontSize: small ? 15 : 17,
@@ -1547,7 +1547,7 @@ function VisionWidget({ C, serif, visionOpen, setVisionOpen, visionGoal, setVisi
                 style={{
                   width: '100%',
                   background: C.accent,
-                  color: C.ink,
+                  color: C.theme === 'light' ? '#FFFFFF' : C.ink,
                   border: 'none',
                   borderRadius: 999,
                   padding: '12px 20px',
@@ -3489,7 +3489,7 @@ export default function Landing({ onStart, onSignUp, session }) {
                 className="sa-hero-btn"
                 style={{
                   background: C.accent,
-                  color: C.ink,
+                  color: C.theme === 'light' ? '#FFFFFF' : C.ink,
                   border: 'none',
                   borderRadius: 999,
                   padding: '12px 22px',
@@ -3834,7 +3834,7 @@ export default function Landing({ onStart, onSignUp, session }) {
                   onClick={() => handleSignUpWithPlan(p.plan)}
                   style={{
                     background: C.accent,
-                    color: C.ink,
+                    color: C.theme === 'light' ? '#FFFFFF' : C.ink,
                     border: 'none',
                     borderRadius: 999,
                     padding: '15px 24px',
