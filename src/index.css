@@ -97,3 +97,82 @@ a { text-decoration: none; color: inherit; }
 
 .animate-fadeup { animation: fadeUp 0.5s ease forwards; }
 .animate-fadein { animation: fadeIn 0.4s ease forwards; }
+
+/* ─── GLOBAL INTERACTIVE HOVER SYSTEM ───────────────────────────────────────
+ * Depth + highlight on every interactive element, across all 3 themes.
+ * Uses transform + box-shadow — no color knowledge needed, so it adapts to
+ * any theme automatically. Add class="interactive" to any future clickable
+ * div/span to get identical treatment for free.
+ * ─────────────────────────────────────────────────────────────────────────── */
+
+button,
+input,
+textarea,
+select,
+a,
+[role="button"],
+.interactive {
+  transition:
+    transform   160ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    box-shadow  160ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    filter      160ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    opacity     160ms ease;
+}
+
+/* Buttons — lift + layered shadow (depth without color) */
+button:hover:not(:disabled) {
+  transform:  translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22), 0 1px 4px rgba(0, 0, 0, 0.10);
+  filter:     brightness(1.06);
+}
+
+button:active:not(:disabled) {
+  transform:           translateY(0);
+  box-shadow:          0 1px 4px rgba(0, 0, 0, 0.14);
+  filter:              brightness(0.96);
+  transition-duration: 55ms;
+}
+
+button:disabled {
+  cursor:  not-allowed;
+  opacity: 0.45;
+}
+
+/* Inputs / textareas / selects — border lift on hover, ring on focus */
+input:hover:not(:disabled):not(:focus),
+textarea:hover:not(:disabled):not(:focus),
+select:hover:not(:disabled) {
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.09), inset 0 1px 3px rgba(0, 0, 0, 0.10);
+  filter:     brightness(1.04);
+}
+
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline:    none;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.07), inset 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* Links — recede slightly rather than glow */
+a:hover {
+  opacity: 0.76;
+}
+
+/* Clickable divs / future elements — same spatial lift as buttons */
+[role="button"],
+.interactive {
+  cursor: pointer;
+}
+
+[role="button"]:hover,
+.interactive:hover {
+  transform:  translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18), 0 1px 3px rgba(0, 0, 0, 0.09);
+  filter:     brightness(1.05);
+}
+
+[role="button"]:active,
+.interactive:active {
+  transform:           translateY(0);
+  transition-duration: 55ms;
+}

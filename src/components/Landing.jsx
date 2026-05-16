@@ -405,7 +405,6 @@ const typewriterStatements = [
 function PrimaryButton({ label, onClick, small = false, C }) {
   const [hovered, setHovered] = useState(false)
   const darkTheme = C.theme === 'dark'
-  const buttonText = darkTheme ? C.ink : C.ink
   return (
     <button
       onClick={onClick}
@@ -416,15 +415,15 @@ function PrimaryButton({ label, onClick, small = false, C }) {
         alignItems: 'center',
         justifyContent: 'center',
         gap: 10,
-        background: darkTheme ? (hovered ? C.surface2 : C.bg) : (hovered ? C.accentDark : C.accent),
-        color: buttonText,
+        background: hovered ? C.accentDark : C.accent,
+        color: darkTheme ? C.bg : C.ink,
         padding: small ? '10px 18px' : '16px 28px',
         borderRadius: 999,
         fontSize: small ? 15 : 17,
         fontWeight: 600,
-        border: darkTheme ? `1px solid ${C.border2}` : 'none',
+        border: 'none',
         cursor: 'pointer',
-        transition: 'background 0.18s ease, border-color 0.18s ease',
+        transition: 'background 0.18s ease',
         fontFamily: 'inherit',
       }}
     >
@@ -858,7 +857,7 @@ function LandingNav({ C, pageOpen, onBack, onPricing, onStories, onConnected, on
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 14 }}>
           <ThemeTextToggle theme={theme} setTheme={setTheme} C={C} />
-          <PrimaryButton label="Start free audit" onClick={onStartAudit} small C={C} />
+          <PrimaryButton label="Start free" onClick={onStartAudit} small C={C} />
         </div>
       </div>
     </nav>
