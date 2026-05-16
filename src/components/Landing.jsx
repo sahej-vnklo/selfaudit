@@ -925,7 +925,7 @@ function StoriesPage({ C, onStartAudit }) {
         </div>
       </section>
 
-      <section style={{ padding: '0 0 96px', background: C.theme === 'light' ? '#DDD9CE' : C.bg }}>
+      <section style={{ padding: '0 0 96px', background: C.bg }}>
         <div style={wrap}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 24 }}>
             {storyCards.map((story) => {
