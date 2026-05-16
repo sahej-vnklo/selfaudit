@@ -903,7 +903,7 @@ function LandingFooter({ C, theme, setTheme }) {
 function StoriesPage({ C, onStartAudit }) {
   return (
     <>
-      <section style={{ padding: '96px 0 72px', background: C.bg }}>
+      <section style={{ padding: '96px 0 72px', background: C.theme === 'light' ? '#E2DCCF' : C.bg }}>
         <div style={wrap}>
           <div style={sectionLabel(C)}>REAL DIAGNOSES. REAL OUTCOMES.</div>
           <h1 style={{
@@ -925,7 +925,7 @@ function StoriesPage({ C, onStartAudit }) {
         </div>
       </section>
 
-      <section style={{ padding: '0 0 96px', background: C.bg }}>
+      <section style={{ padding: '0 0 96px', background: C.theme === 'light' ? '#E2DCCF' : C.bg }}>
         <div style={wrap}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 24 }}>
             {storyCards.map((story) => {
