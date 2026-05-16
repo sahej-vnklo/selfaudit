@@ -3711,16 +3711,18 @@ export default function Landing({ onStart, onSignUp, session }) {
                 quote: '“You don’t have a sales problem. You have a positioning problem dressed up as one.”',
                 result: <><strong>Pricing page rewritten.</strong> Inbound conversion up 41% in 19 days. VP of Sales hire cancelled.</>,
               },
-            ].map(card => (
+            ].map(card => {
+              const isLightCard = C.theme === 'light'
+              return (
               <div key={card.domain} style={{
-                background: C.theme === 'light' ? 'transparent' : C.card,
-                border: C.theme === 'light' ? 'none' : `1px solid ${C.border}`,
-                borderTop: `1px solid ${C.border}`,
-                borderRadius: C.theme === 'light' ? 0 : 12,
+                background: C.card,
+                border: `1px solid ${isLightCard ? '#CFC7BA' : C.border}`,
+                borderRadius: isLightCard ? 18 : 12,
                 padding: '28px 28px 32px',
                 display: 'flex',
                 flexDirection: 'column',
                 position: 'relative',
+                boxShadow: isLightCard ? '0 20px 48px rgba(31, 54, 35, 0.08)' : 'none',
               }}>
                 {/* Arrow icon */}
                 <div style={{ position: 'absolute', top: 20, right: 20, opacity: 0.22 }}>
@@ -3752,7 +3754,7 @@ export default function Landing({ onStart, onSignUp, session }) {
                   {card.result}
                 </p>
               </div>
-            ))}
+            )})}
           </div>
 
         </div>
