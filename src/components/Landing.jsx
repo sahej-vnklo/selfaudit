@@ -925,24 +925,24 @@ function StoriesPage({ C, onStartAudit }) {
         </div>
       </section>
 
-      <section style={{ padding: '0 0 96px', background: C.theme === 'light' ? C.surface : C.bg }}>
+      <section style={{ padding: '0 0 96px', background: C.theme === 'light' ? '#DDD9CE' : C.bg }}>
         <div style={wrap}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 24 }}>
             {storyCards.map((story) => {
               const critical = story.severity === 'CRITICAL'
               return (
                 <div
-                  key={`${story.severity}-${story.domain}-${story.meta}`}
+                  key={story.domain + story.meta}
                   style={{
-                    background: C.card,
-                    border: `1px solid ${C.border}`,
+                    background: C.theme === 'light' ? '#FFFFFF' : C.card,
+                    border: `1px solid ${C.theme === 'light' ? '#C8C3B8' : C.border}`,
                     borderLeft: `3px solid ${critical ? C.redMuted : C.amber}`,
                     borderRadius: 16,
                     padding: 28,
                     display: 'flex',
                     flexDirection: 'column',
                     gap: 18,
-                    boxShadow: C.theme === 'light' ? '0 2px 12px rgba(31,54,35,0.08), 0 1px 3px rgba(31,54,35,0.04)' : 'none',
+                    boxShadow: C.theme === 'light' ? '0 4px 20px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06)' : 'none',
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, alignItems: 'flex-start' }}>
