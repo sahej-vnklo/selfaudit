@@ -247,6 +247,7 @@ const DEFAULT_NOTIFICATION_PREFS = {
   channels: ['in_app'],
   areas: NOTIFICATION_AREAS.map((area) => area.key),
 }
+const FOUNDER_CHECKIN_SNOOZE_MS = 24 * 60 * 60 * 1000
 const LEGACY_NOTIFICATION_AREA_MAP = {
   revenue: 'pipeline_revenue',
   connectors: 'pipeline_revenue',
@@ -280,6 +281,22 @@ function notificationFrequencyLabel(value) {
 function notificationChannelLabel(value) {
   if (value === 'email') return 'Email'
   return 'Dashboard'
+}
+
+function founderCheckInSnoozeKey(reportId) {
+  return reportId ? `tsa_founder_checkin_snooze_${reportId}` : ''
+}
+
+function isFounderCheckInSnoozed(reportId) {
+  if (!reportId || typeof window === 'undefined') return false
+  const raw = localStorage.getItem(founderCheckInSnoozeKey(reportId))
+  const until = Number(raw)
+  if (!Number.isFinite(until)) return false
+  if (until <= Date.now()) {
+    localStorage.removeItem(founderCheckInSnoozeKey(reportId))
+    return false
+  }
+  return true
 }
 
 function parseReportContent(input) {
@@ -1004,6 +1021,7 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
   const [checkInLoading, setCheckInLoading] = useState(true)
   const [checkInSaving, setCheckInSaving] = useState(false)
   const [checkInSaved, setCheckInSaved] = useState(false)
+  const [checkInSnoozed, setCheckInSnoozed] = useState(false)
   const [checkInError, setCheckInError] = useState('')
   const [checkInDraft, setCheckInDraft] = useState({
     sinceLast: '',
@@ -1104,6 +1122,7 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
   useEffect(() => {
     let cancelled = false
     if (!user?.id || !latestDiagnosticReport?.id) {
+      setCheckInSnoozed(false)
       setCheckInLoading(false)
       return undefined
     }
@@ -1111,6 +1130,7 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
     ;(async () => {
       setCheckInLoading(true)
       try {
+        const snoozed = isFounderCheckInSnoozed(latestDiagnosticReport.id)
         const sb = await initSupabase()
         const { data } = await sb
           .from('user_memory')
@@ -1123,10 +1143,15 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
         if (cancelled) return
         const existing = Array.isArray(data) ? data.find((row) => row?.business_state?.checkin_type === 'dashboard_followup') : null
         setCheckInSaved(!!existing)
-        setCheckInOpen(!existing && staleReport)
+        setCheckInSnoozed(snoozed)
+        setCheckInOpen(!existing && staleReport && !snoozed)
       } catch (error) {
         console.warn('[dashboard] check-in lookup failed:', error?.message || error)
-        if (!cancelled) setCheckInOpen(staleReport)
+        if (!cancelled) {
+          const snoozed = isFounderCheckInSnoozed(latestDiagnosticReport.id)
+          setCheckInSnoozed(snoozed)
+          setCheckInOpen(staleReport && !snoozed)
+        }
       } finally {
         if (!cancelled) setCheckInLoading(false)
       }
@@ -1136,6 +1161,17 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
       cancelled = true
     }
   }, [latestDiagnosticReport?.id, staleReport, user?.id])
+
+  const snoozeFounderCheckIn = () => {
+    if (latestDiagnosticReport?.id && typeof window !== 'undefined') {
+      localStorage.setItem(
+        founderCheckInSnoozeKey(latestDiagnosticReport.id),
+        String(Date.now() + FOUNDER_CHECKIN_SNOOZE_MS)
+      )
+    }
+    setCheckInOpen(false)
+    setCheckInSnoozed(true)
+  }
 
   useEffect(() => {
     if (!businessHealthExpanded && !openIssuesExpanded && !auditHistoryExpanded && !aiOpportunitiesExpanded && !weeklyDigestExpanded) return undefined
@@ -1225,6 +1261,10 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
       const data = await response.json().catch(() => ({}))
       if (!response.ok) throw new Error(data?.error || 'Could not save update right now.')
       setCheckInSaved(true)
+      setCheckInSnoozed(false)
+      if (latestDiagnosticReport?.id && typeof window !== 'undefined') {
+        localStorage.removeItem(founderCheckInSnoozeKey(latestDiagnosticReport.id))
+      }
       setCheckInOpen(false)
       setPrefsToast('Founder update saved')
     } catch (error) {
@@ -1328,7 +1368,7 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
         />
       </div>
 
-      {staleReport && !checkInSaved && !checkInLoading && (
+      {staleReport && !checkInSaved && !checkInLoading && !checkInSnoozed && (
         <div style={styles.checkInCard}>
           <div>
             <div style={styles.panelTitle}>founder follow-up</div>
@@ -1338,7 +1378,7 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
             </div>
           </div>
           <div style={styles.checkInActions}>
-            <button type="button" style={styles.checkInGhostBtn} onClick={() => setCheckInOpen(false)}>
+            <button type="button" style={styles.checkInGhostBtn} onClick={snoozeFounderCheckIn}>
               Later
             </button>
             <button type="button" style={styles.checkInPrimaryBtn} onClick={() => setCheckInOpen(true)}>
