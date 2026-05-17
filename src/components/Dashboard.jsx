@@ -40,20 +40,20 @@ const THEMES = {
   },
   light: {
     bg: '#F3F1EA',
-    surface: '#8A9E78',
-    surface2: '#EAF2DC',
+    surface: '#A8B694',
+    surface2: '#F6F4EE',
     surface3: '#FFFFFF',
     panel: '#FFFFFF',
-    panelAlt: '#EAF2DC',
-    border: '#B8CCA8',
-    border2: '#96AA80',
-    text: '#1F3623',
-    textSecondary: '#3E5530',
-    textMuted: '#5C7248',
-    textFaint: '#8EA87C',
-    accent: '#4F6642',
-    accentLight: '#C0D8A8',
-    accentText: '#1F3623',
+    panelAlt: '#EEF1E6',
+    border: '#CCD4C3',
+    border2: '#B0BAA4',
+    text: '#263022',
+    textSecondary: '#4C5D43',
+    textMuted: '#67765D',
+    textFaint: '#95A08A',
+    accent: '#546947',
+    accentLight: '#E5EBDD',
+    accentText: '#263022',
     red: '#8C2A2A',
     redBg: '#FAE4E0',
     redText: '#8C2A2A',
@@ -1781,17 +1781,34 @@ function WeeklyDigestAlertsCard({ profile, notificationPrefs, prefsLoading, onCl
   const channelLabel = prefsLoading
     ? 'Loading preferences…'
     : notificationPrefs.enabled
-      ? `Alerts on · ${notificationChannelLabel(notificationPrefs.channels?.[0] || 'in_app')}`
+      ? notificationChannelLabel(notificationPrefs.channels?.[0] || 'in_app')
       : 'Alerts off'
+  const cadenceLabel = prefsLoading
+    ? 'Loading cadence…'
+    : notificationPrefs.enabled
+      ? notificationFrequencyLabel(notificationPrefs.frequency)
+      : 'Paused'
   const digestLabel = sentDate
     ? `Latest digest ${sentDate}`
-    : 'Digest sends every Monday at 9am UTC'
+    : 'Every Monday · 9am UTC'
 
   return (
     <button type="button" style={{ ...styles.panelCard, ...styles.weeklyDigestCardButton }} onClick={onClick}>
       <div style={styles.panelTitle}>weekly digest & alerts</div>
-      <div style={styles.weeklyDigestCardMeta}>{digestLabel}</div>
-      <div style={styles.weeklyDigestCardSub}>{channelLabel}</div>
+      <div style={styles.weeklyDigestRail}>
+        <div style={styles.weeklyDigestRailRow}>
+          <span style={styles.weeklyDigestRailLabel}>Digest</span>
+          <span style={styles.weeklyDigestRailValue}>{digestLabel}</span>
+        </div>
+        <div style={styles.weeklyDigestRailRow}>
+          <span style={styles.weeklyDigestRailLabel}>Alerts</span>
+          <span style={styles.weeklyDigestRailValue}>{channelLabel}</span>
+        </div>
+        <div style={styles.weeklyDigestRailRow}>
+          <span style={styles.weeklyDigestRailLabel}>Cadence</span>
+          <span style={styles.weeklyDigestRailValueMuted}>{cadenceLabel}</span>
+        </div>
+      </div>
       <div style={styles.kpiHint}>Click for more</div>
     </button>
   )
@@ -3868,7 +3885,7 @@ const styles = {
   },
   sidebar: {
     width: 52,
-    background: G.surface,
+    background: G.black,
     borderRight: `0.5px solid ${G.border}`,
     display: 'flex',
     flexDirection: 'column',
@@ -3905,8 +3922,8 @@ const styles = {
     gap: 10,
   },
   sidebarButtonActive: {
-    background: G.accentLight,
-    color: G.accentText,
+    background: G.panel,
+    color: G.text,
   },
   sidebarIcon: {
     width: 16,
@@ -3941,8 +3958,8 @@ const styles = {
     gap: 12,
   },
   avatarButtonActive: {
-    background: G.accentLight,
-    color: G.accentText,
+    background: G.panel,
+    color: G.text,
   },
   avatarChip: {
     width: 26,
@@ -3954,7 +3971,7 @@ const styles = {
     flexShrink: 0,
   },
   avatarChipActive: {
-    background: G.surface,
+    background: G.surface2,
   },
   appFrame: {
     flex: 1,
@@ -4127,15 +4144,18 @@ const styles = {
   kpiGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
-    gap: 10,
-    marginBottom: 12,
+    gap: 8,
+    marginBottom: 10,
   },
   kpiCard: {
     background: G.panel,
     border: `0.5px solid ${G.border}`,
-    borderRadius: 8,
-    padding: 14,
+    borderRadius: 10,
+    padding: 12,
     minWidth: 0,
+    minHeight: 112,
+    display: 'flex',
+    flexDirection: 'column',
   },
   kpiCardButton: {
     width: '100%',
@@ -4151,24 +4171,26 @@ const styles = {
     fontSize: 10,
     color: G.textFaint,
     textTransform: 'uppercase',
-    letterSpacing: '0.08em',
+    letterSpacing: '0.1em',
   },
   kpiValue: {
-    marginTop: 8,
-    fontSize: 22,
+    marginTop: 10,
+    fontSize: 20,
     fontWeight: 500,
     color: G.text,
   },
   kpiDelta: {
-    marginTop: 8,
-    fontSize: 11,
+    marginTop: 6,
+    fontSize: 10.5,
+    lineHeight: 1.5,
   },
   kpiHint: {
-    marginTop: 12,
-    fontSize: 10,
+    marginTop: 'auto',
+    paddingTop: 10,
+    fontSize: 9.5,
     color: G.textFaint,
     textTransform: 'uppercase',
-    letterSpacing: '0.06em',
+    letterSpacing: '0.09em',
   },
   checkInCard: {
     background: G.surface2,
@@ -4220,28 +4242,26 @@ const styles = {
   },
   homeColumns: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+    gridTemplateColumns: 'minmax(0, 1.95fr) minmax(260px, 0.62fr)',
     gap: 12,
     alignItems: 'start',
   },
   leftColumn: {
-    gridColumn: 'span 3',
     display: 'flex',
     flexDirection: 'column',
     gap: 12,
     minWidth: 0,
   },
   rightColumn: {
-    gridColumn: 'span 1',
     display: 'flex',
     flexDirection: 'column',
     gap: 12,
     minWidth: 0,
   },
   panelCard: {
-    background: G.surface2,
+    background: G.panelAlt,
     border: `0.5px solid ${G.border}`,
-    borderRadius: 8,
+    borderRadius: 10,
     padding: 14,
   },
   weeklyDigestCardButton: {
@@ -4261,6 +4281,35 @@ const styles = {
     fontSize: 13,
     color: G.greenText,
     lineHeight: 1.6,
+  },
+  weeklyDigestRail: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 10,
+    marginTop: 12,
+  },
+  weeklyDigestRailRow: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 4,
+    paddingBottom: 10,
+    borderBottom: `0.5px solid ${G.border}`,
+  },
+  weeklyDigestRailLabel: {
+    fontSize: 10,
+    color: G.textFaint,
+    textTransform: 'uppercase',
+    letterSpacing: '0.09em',
+  },
+  weeklyDigestRailValue: {
+    fontSize: 13,
+    color: G.textSecondary,
+    lineHeight: 1.55,
+  },
+  weeklyDigestRailValueMuted: {
+    fontSize: 12,
+    color: G.textMuted,
+    lineHeight: 1.5,
   },
   panelHeader: {
     display: 'flex',

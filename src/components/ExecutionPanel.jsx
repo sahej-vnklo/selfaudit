@@ -431,7 +431,7 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
     <div style={{ ...themeVars, ...(variant === 'dashboard' ? ep.cardWrapper : ep.wrapper) }} data-pdf-hide>
       <div style={ep.header}>
         <h2 style={ep.sectionTitle}>Turn This Into Action</h2>
-        <p style={ep.subtitle}>Generate ready-to-use outputs from your audit findings.</p>
+        <p style={ep.subtitle}>SelfAudit&apos;s strongest next move from your audit findings.</p>
       </div>
 
       <div style={ep.recommendedCard}>
@@ -496,7 +496,7 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
             Execute Action Plan →
           </button>
           <div style={ep.recommendedMeta}>
-            {recommendationContent.modeLabel}
+            {`Built from ${recommendationContent.modeLabel.toLowerCase()}`}
           </div>
         </div>
       </div>
@@ -650,12 +650,12 @@ const ep = {
     marginBottom: '2.5rem',
   },
   cardWrapper: {
-    background: 'var(--surface)',
-    border: '0.5px solid var(--border)',
-    borderRadius: 8,
-    padding: 14,
+    background: 'transparent',
+    border: 'none',
+    borderRadius: 0,
+    padding: 0,
   },
-  header: { marginBottom: '1.25rem' },
+  header: { marginBottom: '0.9rem' },
   sectionTitle: {
     fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.8px',
     color: 'var(--text-muted)', marginBottom: '0.375rem', fontWeight: 500,
@@ -668,15 +668,15 @@ const ep = {
     background: 'linear-gradient(180deg, rgba(31,48,79,0.96) 0%, rgba(15,32,57,0.98) 100%)',
     boxShadow: '0 0 0 1px rgba(88, 133, 255, 0.14) inset, 0 18px 40px rgba(0,0,0,0.28)',
     borderRadius: 14,
-    padding: '20px 24px',
-    marginBottom: '1rem',
+    padding: '18px 22px',
+    marginBottom: '0.85rem',
   },
   recommendedTopRow: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     gap: 14,
-    marginBottom: 16,
+    marginBottom: 12,
     flexWrap: 'wrap',
   },
   recommendedEyebrow: {
@@ -722,26 +722,26 @@ const ep = {
     fontSize: 12,
   },
   recommendedTitle: {
-    fontSize: 36,
-    lineHeight: 1.08,
+    fontSize: 32,
+    lineHeight: 1.04,
     color: 'var(--button-text)',
     fontWeight: 600,
-    maxWidth: 900,
-    marginBottom: 12,
+    maxWidth: 840,
+    marginBottom: 10,
     fontFamily: 'Georgia, Times New Roman, serif',
   },
   recommendedBody: {
-    fontSize: 15,
+    fontSize: 14,
     color: 'var(--text-soft)',
-    lineHeight: 1.8,
-    maxWidth: 760,
-    marginBottom: 18,
+    lineHeight: 1.7,
+    maxWidth: 720,
+    marginBottom: 14,
   },
   recommendedStats: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-    gap: 16,
-    marginBottom: 22,
+    gap: 14,
+    marginBottom: 16,
   },
   recommendedStat: {
     display: 'flex',
@@ -769,25 +769,26 @@ const ep = {
     marginBottom: 4,
   },
   recommendedStatValue: {
-    fontSize: 13,
+    fontSize: 12.5,
     color: 'var(--text-soft)',
-    lineHeight: 1.55,
+    lineHeight: 1.45,
   },
   recommendedActions: {
     display: 'flex',
     alignItems: 'center',
-    gap: 18,
+    gap: 14,
     flexWrap: 'wrap',
   },
   recommendedMeta: {
-    fontSize: 13,
+    fontSize: 12,
     color: 'var(--text-muted)',
+    letterSpacing: '0.02em',
   },
   formatsPanel: {
     border: '0.5px solid var(--border)',
     borderRadius: 'var(--radius)',
-    background: 'rgba(18, 34, 57, 0.92)',
-    padding: '18px 16px 16px',
+    background: 'var(--surface)',
+    padding: '16px 14px 14px',
     marginBottom: '1rem',
   },
   formatsHeader: {
