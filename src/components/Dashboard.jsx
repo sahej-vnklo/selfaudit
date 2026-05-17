@@ -3881,7 +3881,7 @@ const styles = {
     overflowY: 'auto',
   },
   sidebarExpanded: {
-    width: 272,
+    width: 232,
     alignItems: 'stretch',
     padding: '16px 8px',
   },
@@ -3898,11 +3898,11 @@ const styles = {
   },
   sidebarButtonExpanded: {
     width: '100%',
-    padding: '0 12px',
+    padding: '0 10px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    gap: 12,
+    gap: 10,
   },
   sidebarButtonActive: {
     background: G.accentLight,

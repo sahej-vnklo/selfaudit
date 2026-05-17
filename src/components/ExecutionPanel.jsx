@@ -806,22 +806,24 @@ const ep = {
     lineHeight: 1.6,
   },
   outputCardGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))',
+    display: 'flex',
+    flexWrap: 'wrap',
     gap: 12,
     marginBottom: '1rem',
   },
   outputCard: {
-    display: 'flex',
-    alignItems: 'flex-start',
+    display: 'inline-flex',
+    alignItems: 'center',
     gap: 12,
     textAlign: 'left',
-    padding: '14px 14px',
-    borderRadius: 10,
+    padding: '12px 18px',
+    borderRadius: 999,
     border: '1px solid var(--border)',
     background: 'var(--surface)',
     color: 'var(--text-soft)',
     cursor: 'pointer',
+    minWidth: 220,
+    flex: '0 1 auto',
   },
   outputCardSelected: {
     border: '1px solid var(--accent)',
@@ -835,7 +837,7 @@ const ep = {
   outputCardIcon: {
     width: 34,
     height: 34,
-    borderRadius: 8,
+    borderRadius: 999,
     border: '1px solid var(--border)',
     display: 'flex',
     alignItems: 'center',
@@ -846,7 +848,7 @@ const ep = {
   },
   outputCardBody: {
     minWidth: 0,
-    flex: 1,
+    flex: '0 1 auto',
   },
   outputCardTitleRow: {
     display: 'flex',

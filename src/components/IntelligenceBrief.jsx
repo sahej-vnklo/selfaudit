@@ -716,7 +716,7 @@ export default function IntelligenceBrief({ user, profile, onProfileChange }) {
             >
               <div style={{ fontSize: 14, color: COLORS.text }}>Drop files here or click to upload</div>
               <div style={{ fontSize: 12, color: COLORS.textSecondary, marginTop: 6 }}>
-                P&amp;L, balance sheet, pitch deck, contracts — Claude will extract key numbers automatically
+                P&amp;L, balance sheet, pitch deck, contracts — SelfAudit will extract key numbers automatically
               </div>
               <div style={{ fontSize: 11, color: COLORS.textFaint, marginTop: 10 }}>
                 Accepted: .pdf, .xlsx, .csv, .docx
