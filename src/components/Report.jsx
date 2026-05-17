@@ -1,8 +1,10 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { initSupabase } from '../lib/supabase.js'
 import * as Sentry from '@sentry/react'
 import { generateReport } from '../lib/audit.js'
 import { usePostHog } from '@posthog/react'
+import html2canvas from 'html2canvas'
+import { jsPDF } from 'jspdf'
 import ExecutionPanel from './ExecutionPanel.jsx'
 import DiagnosticReport from './reports/DiagnosticReport.jsx'
 import ExecutionReport from './reports/ExecutionReport.jsx'
@@ -205,6 +207,7 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
   const [error, setError] = useState(null)
   const [downloadState, setDownloadState] = useState('idle') // idle | downloading
   const posthog = usePostHog()
+  const contentRef = useRef(null)
 
   React.useEffect(() => {
     async function build() {
@@ -310,23 +313,84 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
   const handleDownload = () => {
     if (downloadState !== 'idle') return
     setDownloadState('downloading')
-    try {
-      const html = buildReportHtml(report, userInfo, theme)
-      const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      const slug = (report.headline || 'report').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '').slice(0, 60)
-      a.href = url
-      a.download = `selfaudit-report-${slug}.html`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
-    } catch (e) {
-      console.warn('[download] failed:', e.message)
-    } finally {
-      setDownloadState('idle')
+    const run = async () => {
+      try {
+        if (!contentRef.current) throw new Error('Report content not ready')
+
+        const source = contentRef.current
+        const clone = source.cloneNode(true)
+        clone.querySelectorAll('[data-pdf-hide]').forEach(node => node.remove())
+        clone.style.width = `${source.offsetWidth}px`
+        clone.style.maxWidth = 'none'
+        clone.style.position = 'fixed'
+        clone.style.left = '-100000px'
+        clone.style.top = '0'
+        clone.style.zIndex = '-1'
+        clone.style.background = 'var(--bg)'
+        clone.style.paddingBottom = '0'
+        document.body.appendChild(clone)
+
+        const canvas = await html2canvas(clone, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: null,
+        })
+        document.body.removeChild(clone)
+
+        const pdf = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' })
+        const pageWidth = pdf.internal.pageSize.getWidth()
+        const pageHeight = pdf.internal.pageSize.getHeight()
+        const margin = 24
+        const renderWidth = pageWidth - (margin * 2)
+        const scaleRatio = renderWidth / canvas.width
+        const sliceHeightPx = Math.floor((pageHeight - (margin * 2)) / scaleRatio)
+
+        let offsetY = 0
+        let pageIndex = 0
+
+        while (offsetY < canvas.height) {
+          const currentSliceHeight = Math.min(sliceHeightPx, canvas.height - offsetY)
+          const sliceCanvas = document.createElement('canvas')
+          sliceCanvas.width = canvas.width
+          sliceCanvas.height = currentSliceHeight
+          const sliceContext = sliceCanvas.getContext('2d')
+          if (!sliceContext) throw new Error('Failed to prepare PDF page')
+
+          sliceContext.drawImage(
+            canvas,
+            0, offsetY, canvas.width, currentSliceHeight,
+            0, 0, canvas.width, currentSliceHeight
+          )
+
+          if (pageIndex > 0) pdf.addPage()
+          pdf.addImage(
+            sliceCanvas.toDataURL('image/png'),
+            'PNG',
+            margin,
+            margin,
+            renderWidth,
+            currentSliceHeight * scaleRatio
+          )
+
+          offsetY += currentSliceHeight
+          pageIndex += 1
+        }
+
+        const slug = (report.headline || 'report')
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/(^-|-$)/g, '')
+          .slice(0, 60)
+
+        pdf.save(`selfaudit-report-${slug}.pdf`)
+      } catch (e) {
+        console.warn('[download] failed:', e.message)
+      } finally {
+        setDownloadState('idle')
+      }
     }
+
+    run()
   }
 
   if (loading) return <LoadingScreen theme={theme} />
@@ -403,7 +467,7 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
         </div>
       </nav>
 
-      <div style={styles.content}>
+      <div ref={contentRef} style={styles.content}>
 
         {/* Header — shared across all modes */}
         <div style={styles.reportHeader}>
