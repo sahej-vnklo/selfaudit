@@ -137,6 +137,14 @@ const G = {
   overlaySoft: 'var(--overlay-soft)',
 }
 
+const SHARP_HERO_SURFACE = 'linear-gradient(180deg, rgba(31,48,79,0.96) 0%, rgba(15,32,57,0.98) 100%)'
+const SHARP_HERO_BORDER = '1px solid rgba(107,140,255,0.38)'
+const SHARP_HERO_INSET = '0 0 0 1px rgba(107,140,255,0.14) inset'
+const SHARP_HERO_SHADOW = '0 18px 40px rgba(0,0,0,0.28)'
+const SHARP_PANEL_SURFACE = 'linear-gradient(180deg, rgba(34,54,88,0.96) 0%, rgba(18,36,62,0.985) 100%)'
+const SHARP_PANEL_BORDER = '1px solid rgba(107,140,255,0.3)'
+const SHARP_PANEL_SHADOW = 'inset 0 1px 0 rgba(255,255,255,0.04), 0 14px 30px rgba(5,15,30,0.18)'
+
 function getThemeVars(theme) {
   const C = THEMES[theme] || THEMES.dark
   return {
@@ -3923,8 +3931,8 @@ const styles = {
     overflowY: 'auto',
   },
   sidebarSharp: {
-    background: 'linear-gradient(180deg, rgba(31,48,79,0.97) 0%, rgba(20,38,66,0.985) 58%, rgba(15,32,57,1) 100%)',
-    boxShadow: 'inset -1px 0 0 rgba(107,140,255,0.2), inset 0 1px 0 rgba(255,255,255,0.035)',
+    background: SHARP_HERO_SURFACE,
+    boxShadow: `${SHARP_HERO_INSET}, inset -1px 0 0 rgba(107,140,255,0.22)`,
   },
   sidebarExpanded: {
     width: 232,
@@ -3959,9 +3967,9 @@ const styles = {
     boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.02)',
   },
   sidebarButtonActiveSharp: {
-    background: 'linear-gradient(180deg, rgba(49,72,112,0.94) 0%, rgba(29,50,83,0.98) 100%)',
-    border: '1px solid rgba(107,140,255,0.28)',
-    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05), 0 10px 20px rgba(5,15,30,0.24)',
+    background: SHARP_PANEL_SURFACE,
+    border: SHARP_PANEL_BORDER,
+    boxShadow: SHARP_PANEL_SHADOW,
   },
   sidebarIcon: {
     width: 16,
@@ -4003,9 +4011,9 @@ const styles = {
     boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.02)',
   },
   avatarButtonActiveSharp: {
-    background: 'linear-gradient(180deg, rgba(49,72,112,0.94) 0%, rgba(29,50,83,0.98) 100%)',
-    border: '1px solid rgba(107,140,255,0.24)',
-    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05), 0 10px 20px rgba(5,15,30,0.24)',
+    background: SHARP_PANEL_SURFACE,
+    border: SHARP_PANEL_BORDER,
+    boxShadow: SHARP_PANEL_SHADOW,
   },
   avatarChip: {
     width: 26,
@@ -4037,8 +4045,8 @@ const styles = {
     flexShrink: 0,
   },
   topbarSharp: {
-    background: 'linear-gradient(180deg, rgba(31,48,79,0.98) 0%, rgba(20,38,66,0.99) 100%)',
-    boxShadow: 'inset 0 -1px 0 rgba(107,140,255,0.24), inset 0 1px 0 rgba(255,255,255,0.035)',
+    background: SHARP_HERO_SURFACE,
+    boxShadow: `${SHARP_HERO_INSET}, inset 0 -1px 0 rgba(107,140,255,0.24)`,
   },
   topbarLeft: {
     display: 'flex',
@@ -4079,9 +4087,9 @@ const styles = {
     fontWeight: 500,
   },
   themeToggleButtonSharp: {
-    background: 'linear-gradient(180deg, rgba(39,63,102,0.9) 0%, rgba(23,43,71,0.98) 100%)',
-    border: '1px solid rgba(107,140,255,0.3)',
-    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05), 0 8px 20px rgba(5,15,30,0.16)',
+    background: SHARP_PANEL_SURFACE,
+    border: SHARP_PANEL_BORDER,
+    boxShadow: SHARP_PANEL_SHADOW,
   },
   themeToggleIcon: {
     fontSize: 15,
@@ -4099,9 +4107,9 @@ const styles = {
     whiteSpace: 'nowrap',
   },
   ghostButtonSharp: {
-    background: 'linear-gradient(180deg, rgba(39,63,102,0.9) 0%, rgba(23,43,71,0.98) 100%)',
-    border: '1px solid rgba(107,140,255,0.26)',
-    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04), 0 8px 20px rgba(5,15,30,0.14)',
+    background: SHARP_PANEL_SURFACE,
+    border: SHARP_PANEL_BORDER,
+    boxShadow: SHARP_PANEL_SHADOW,
   },
   primaryButton: {
     background: G.accent,
@@ -4221,9 +4229,9 @@ const styles = {
     flexDirection: 'column',
   },
   kpiCardSharp: {
-    background: 'linear-gradient(180deg, rgba(39,63,102,0.94) 0%, rgba(23,43,71,0.985) 100%)',
-    border: '1px solid rgba(107,140,255,0.24)',
-    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.045), 0 12px 26px rgba(5,15,30,0.16)',
+    background: SHARP_PANEL_SURFACE,
+    border: SHARP_PANEL_BORDER,
+    boxShadow: SHARP_PANEL_SHADOW,
   },
   kpiCardButton: {
     width: '100%',
@@ -4333,9 +4341,9 @@ const styles = {
     padding: 14,
   },
   panelCardSharp: {
-    background: 'linear-gradient(180deg, rgba(39,63,102,0.94) 0%, rgba(23,43,71,0.985) 100%)',
-    border: '1px solid rgba(107,140,255,0.22)',
-    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.045), 0 12px 28px rgba(5,15,30,0.16)',
+    background: SHARP_HERO_SURFACE,
+    border: SHARP_HERO_BORDER,
+    boxShadow: `${SHARP_HERO_INSET}, ${SHARP_HERO_SHADOW}`,
   },
   weeklyDigestCardButton: {
     width: '100%',

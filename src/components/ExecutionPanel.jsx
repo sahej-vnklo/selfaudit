@@ -97,6 +97,14 @@ const ARTIFACT_ICONS = {
   EMAIL: '✉',
 }
 
+const SHARP_HERO_SURFACE = 'linear-gradient(180deg, rgba(31,48,79,0.96) 0%, rgba(15,32,57,0.98) 100%)'
+const SHARP_HERO_BORDER = '1px solid rgba(107, 140, 255, 0.38)'
+const SHARP_HERO_INSET = '0 0 0 1px rgba(107, 140, 255, 0.14) inset'
+const SHARP_HERO_SHADOW = '0 18px 40px rgba(0,0,0,0.28)'
+const SHARP_PANEL_SURFACE = 'linear-gradient(180deg, rgba(34,54,88,0.96) 0%, rgba(18,36,62,0.985) 100%)'
+const SHARP_PANEL_BORDER = '1px solid rgba(107, 140, 255, 0.3)'
+const SHARP_PANEL_SHADOW = 'inset 0 1px 0 rgba(255,255,255,0.04), 0 14px 30px rgba(5,15,30,0.18)'
+
 function parseReportPayload(report) {
   if (!report) return null
   if (report.report_data && typeof report.report_data === 'object') return report.report_data
@@ -667,9 +675,9 @@ const ep = {
     fontSize: 14, color: 'var(--text-soft)', lineHeight: 1.6, margin: 0,
   },
   recommendedCard: {
-    border: '1px solid rgba(107, 140, 255, 0.5)',
-    background: 'linear-gradient(180deg, rgba(31,48,79,0.96) 0%, rgba(15,32,57,0.98) 100%)',
-    boxShadow: '0 0 0 1px rgba(107, 140, 255, 0.14) inset, 0 18px 40px rgba(0,0,0,0.28)',
+    border: SHARP_HERO_BORDER,
+    background: SHARP_HERO_SURFACE,
+    boxShadow: `${SHARP_HERO_INSET}, ${SHARP_HERO_SHADOW}`,
     borderRadius: 14,
     padding: '18px 22px',
     marginBottom: '0.85rem',
@@ -795,9 +803,9 @@ const ep = {
     marginBottom: '1rem',
   },
   formatsPanelSharp: {
-    border: '1px solid rgba(107, 140, 255, 0.28)',
-    background: 'linear-gradient(180deg, rgba(39,63,102,0.94) 0%, rgba(23,43,71,0.985) 100%)',
-    boxShadow: '0 0 0 1px rgba(107,140,255,0.1) inset, 0 16px 30px rgba(5,15,30,0.16)',
+    border: SHARP_HERO_BORDER,
+    background: SHARP_HERO_SURFACE,
+    boxShadow: `${SHARP_HERO_INSET}, ${SHARP_HERO_SHADOW}`,
   },
   formatsHeader: {
     marginBottom: 14,
@@ -835,9 +843,9 @@ const ep = {
     flex: '0 1 auto',
   },
   outputCardSharp: {
-    background: 'linear-gradient(180deg, rgba(39,63,102,0.9) 0%, rgba(23,43,71,0.98) 100%)',
-    border: '1px solid rgba(107,140,255,0.2)',
-    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.035), 0 10px 20px rgba(5,15,30,0.12)',
+    background: SHARP_PANEL_SURFACE,
+    border: SHARP_PANEL_BORDER,
+    boxShadow: SHARP_PANEL_SHADOW,
   },
   outputCardSelected: {
     border: '1px solid var(--accent)',
@@ -846,7 +854,7 @@ const ep = {
   },
   outputCardSelectedSharp: {
     border: '1px solid rgba(107,140,255,0.62)',
-    background: 'linear-gradient(180deg, rgba(72,109,187,0.3) 0%, rgba(39,63,102,0.98) 100%)',
+    background: 'linear-gradient(180deg, rgba(74,108,176,0.42) 0%, rgba(34,54,88,0.98) 100%)',
     boxShadow: '0 0 0 1px rgba(107,140,255,0.18) inset, 0 14px 28px rgba(0,0,0,0.2)',
   },
   outputCardDisabled: {
