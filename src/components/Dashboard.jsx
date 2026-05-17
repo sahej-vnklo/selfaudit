@@ -236,11 +236,9 @@ const TIERS = [
 const TIER_ORDER = { foundation: 0, intelligence: 1, essential: 0, business: 1, portfolio: 2, free: 0, paid: 1 }
 const NOTIFICATION_AREAS = [
   { key: 'goal_progress', label: 'Goal progress' },
-  { key: 'revenue', label: 'Revenue' },
-  { key: 'operations', label: 'Operations' },
-  { key: 'customer_experience', label: 'Customer experience' },
-  { key: 'people', label: 'People' },
-  { key: 'connectors', label: 'Connectors' },
+  { key: 'pipeline_revenue', label: 'Pipeline & revenue' },
+  { key: 'execution', label: 'Execution' },
+  { key: 'customer_health', label: 'Customer health' },
   { key: 'critical_risks', label: 'Critical risks' },
 ]
 const DEFAULT_NOTIFICATION_PREFS = {
@@ -249,11 +247,39 @@ const DEFAULT_NOTIFICATION_PREFS = {
   channels: ['in_app'],
   areas: NOTIFICATION_AREAS.map((area) => area.key),
 }
+const LEGACY_NOTIFICATION_AREA_MAP = {
+  revenue: 'pipeline_revenue',
+  connectors: 'pipeline_revenue',
+  operations: 'execution',
+  people: 'execution',
+  customer_experience: 'customer_health',
+}
 const SECTIONS = ['home', 'reports', 'intelligence', 'business-state', 'connectors', 'agent', 'billing', 'account']
 
 function normalizeTier(raw) {
   if (raw === 'intelligence') return 'intelligence'
   return 'foundation'
+}
+
+function normalizeNotificationAreas(input) {
+  const allowed = new Set(NOTIFICATION_AREAS.map((area) => area.key))
+  const next = []
+  for (const area of Array.isArray(input) ? input : []) {
+    const mapped = LEGACY_NOTIFICATION_AREA_MAP[area] || area
+    if (allowed.has(mapped) && !next.includes(mapped)) next.push(mapped)
+  }
+  return next.length > 0 ? next : DEFAULT_NOTIFICATION_PREFS.areas
+}
+
+function notificationFrequencyLabel(value) {
+  if (value === 'every_3_days') return 'Every 3 days'
+  if (value === 'weekly') return 'Weekly'
+  return 'Daily'
+}
+
+function notificationChannelLabel(value) {
+  if (value === 'email') return 'Email'
+  return 'Dashboard'
 }
 
 function parseReportContent(input) {
@@ -974,6 +1000,18 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
   const [prefsLoading, setPrefsLoading] = useState(true)
   const [savingPrefs, setSavingPrefs] = useState(false)
   const [prefsToast, setPrefsToast] = useState('')
+  const [checkInOpen, setCheckInOpen] = useState(false)
+  const [checkInLoading, setCheckInLoading] = useState(true)
+  const [checkInSaving, setCheckInSaving] = useState(false)
+  const [checkInSaved, setCheckInSaved] = useState(false)
+  const [checkInError, setCheckInError] = useState('')
+  const [checkInDraft, setCheckInDraft] = useState({
+    sinceLast: '',
+    improved: '',
+    blocked: '',
+    actionStatus: 'partial',
+    changedAreas: ['goal_progress'],
+  })
   const latestReport = reports[0] || null
   const latestDiagnosticReport = getLatestDiagnosticReport(reports)
   const latestContent = latestDiagnosticReport ? parseReportContent(latestDiagnosticReport) : null
@@ -1048,7 +1086,7 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
           ...DEFAULT_NOTIFICATION_PREFS,
           ...(prefsData || {}),
           channels: Array.isArray(prefsData?.channels) && prefsData.channels.length > 0 ? prefsData.channels : DEFAULT_NOTIFICATION_PREFS.channels,
-          areas: Array.isArray(prefsData?.areas) && prefsData.areas.length > 0 ? prefsData.areas : DEFAULT_NOTIFICATION_PREFS.areas,
+          areas: normalizeNotificationAreas(prefsData?.areas),
         })
       } catch (err) {
         console.warn('[dashboard] notification prefs load failed:', err?.message || err)
@@ -1062,6 +1100,42 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
       cancelled = true
     }
   }, [intelligenceUnlocked, user?.id])
+
+  useEffect(() => {
+    let cancelled = false
+    if (!user?.id || !latestDiagnosticReport?.id) {
+      setCheckInLoading(false)
+      return undefined
+    }
+
+    ;(async () => {
+      setCheckInLoading(true)
+      try {
+        const sb = await initSupabase()
+        const { data } = await sb
+          .from('user_memory')
+          .select('id, business_state, created_at')
+          .eq('user_id', user.id)
+          .eq('report_id', latestDiagnosticReport.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+
+        if (cancelled) return
+        const existing = Array.isArray(data) ? data.find((row) => row?.business_state?.checkin_type === 'dashboard_followup') : null
+        setCheckInSaved(!!existing)
+        setCheckInOpen(!existing && staleReport)
+      } catch (error) {
+        console.warn('[dashboard] check-in lookup failed:', error?.message || error)
+        if (!cancelled) setCheckInOpen(staleReport)
+      } finally {
+        if (!cancelled) setCheckInLoading(false)
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [latestDiagnosticReport?.id, staleReport, user?.id])
 
   useEffect(() => {
     if (!businessHealthExpanded && !openIssuesExpanded && !auditHistoryExpanded && !aiOpportunitiesExpanded && !weeklyDigestExpanded) return undefined
@@ -1088,6 +1162,16 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
     })
   }
 
+  const toggleCheckInArea = (areaKey) => {
+    setCheckInDraft((prev) => {
+      const hasArea = prev.changedAreas.includes(areaKey)
+      const nextAreas = hasArea
+        ? prev.changedAreas.filter((item) => item !== areaKey)
+        : [...prev.changedAreas, areaKey]
+      return { ...prev, changedAreas: nextAreas.length > 0 ? nextAreas : [areaKey] }
+    })
+  }
+
   const saveNotificationPrefs = async () => {
     if (!user?.id || !intelligenceUnlocked) return
     setSavingPrefs(true)
@@ -1111,6 +1195,42 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
       setPrefsToast('Save failed')
     } finally {
       setSavingPrefs(false)
+    }
+  }
+
+  const saveDashboardCheckIn = async () => {
+    if (!user?.id || !latestDiagnosticReport?.id) return
+    setCheckInSaving(true)
+    setCheckInError('')
+    try {
+      const sb = await initSupabase()
+      const { data: { session } } = await sb.auth.getSession()
+      const response = await fetch('/api/save-dashboard-checkin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          reportId: latestDiagnosticReport.id,
+          reportTitle: latestDiagnosticReport.title || latestDiagnosticReport.headline || '',
+          sinceLast: checkInDraft.sinceLast,
+          improved: checkInDraft.improved,
+          blocked: checkInDraft.blocked,
+          actionStatus: checkInDraft.actionStatus,
+          changedAreas: checkInDraft.changedAreas,
+        }),
+      })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(data?.error || 'Could not save update right now.')
+      setCheckInSaved(true)
+      setCheckInOpen(false)
+      setPrefsToast('Founder update saved')
+    } catch (error) {
+      setCheckInError(error?.message || 'Could not save update right now.')
+    } finally {
+      setCheckInSaving(false)
     }
   }
 
@@ -1207,6 +1327,26 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
           active={aiOpportunitiesExpanded}
         />
       </div>
+
+      {staleReport && !checkInSaved && !checkInLoading && (
+        <div style={styles.checkInCard}>
+          <div>
+            <div style={styles.panelTitle}>founder follow-up</div>
+            <div style={styles.checkInTitle}>What changed since your {lastReportDate} audit?</div>
+            <div style={styles.checkInText}>
+              Tell SelfAudit what actually moved, what improved, and what is still stuck so the next digest and alerts use founder-confirmed facts.
+            </div>
+          </div>
+          <div style={styles.checkInActions}>
+            <button type="button" style={styles.checkInGhostBtn} onClick={() => setCheckInOpen(false)}>
+              Later
+            </button>
+            <button type="button" style={styles.checkInPrimaryBtn} onClick={() => setCheckInOpen(true)}>
+              Add update
+            </button>
+          </div>
+        </div>
+      )}
 
       <div style={styles.homeColumns}>
         <div style={styles.leftColumn}>
@@ -1367,6 +1507,37 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
                   style={styles.businessHealthCloseBtn}
                   onClick={() => setWeeklyDigestExpanded(false)}
                   aria-label="Close weekly digest and alerts"
+                >
+                  Close
+                </button>
+              )}
+            />
+          </div>
+        </div>
+      )}
+
+      {checkInOpen && (
+        <div
+          style={styles.businessHealthOverlay}
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setCheckInOpen(false)
+          }}
+        >
+          <div style={styles.businessHealthModal}>
+            <FounderCheckInPanel
+              draft={checkInDraft}
+              setDraft={setCheckInDraft}
+              saving={checkInSaving}
+              error={checkInError}
+              reportDate={lastReportDate}
+              onToggleArea={toggleCheckInArea}
+              onSave={saveDashboardCheckIn}
+              right={(
+                <button
+                  type="button"
+                  style={styles.businessHealthCloseBtn}
+                  onClick={() => setCheckInOpen(false)}
+                  aria-label="Close founder update"
                 >
                   Close
                 </button>
@@ -1571,11 +1742,11 @@ function WeeklyDigestAlertsCard({ profile, notificationPrefs, prefsLoading, onCl
   const channelLabel = prefsLoading
     ? 'Loading preferences…'
     : notificationPrefs.enabled
-      ? `Alerts on · ${(notificationPrefs.channels?.[0] || 'in_app').replace('_', ' ')}`
+      ? `Alerts on · ${notificationChannelLabel(notificationPrefs.channels?.[0] || 'in_app')}`
       : 'Alerts off'
   const digestLabel = sentDate
     ? `Latest digest ${sentDate}`
-    : 'No digest sent yet'
+    : 'Digest sends every Monday at 9am UTC'
 
   return (
     <button type="button" style={{ ...styles.panelCard, ...styles.weeklyDigestCardButton }} onClick={onClick}>
@@ -1613,7 +1784,7 @@ function WeeklyDigestAlertsPanel({
     <PanelCard title="weekly digest & alerts" right={right}>
       <div style={styles.businessHealthSectionTitle}>weekly digest</div>
       {!sentDate ? (
-        <div style={styles.weeklyDigestEmpty}>No digest sent yet. Your first will arrive next Monday at 9am UTC.</div>
+        <div style={styles.weeklyDigestEmpty}>Weekly digest is currently a Monday 9am UTC business recap. It does not change when alert cadence changes.</div>
       ) : (
         <>
           {digest?.health_score != null && (
@@ -1661,7 +1832,7 @@ function WeeklyDigestAlertsPanel({
           <div style={styles.weeklyDigestEmpty}>Loading alert preferences…</div>
         ) : (
           <>
-            <div style={styles.weeklyDigestPrefsIntro}>Choose the parts of the business you want this system to watch once proactive alerts go live.</div>
+            <div style={styles.weeklyDigestPrefsIntro}>Choose what the system should watch between digests. These settings control alert routing and cadence, not the weekly digest send time.</div>
 
             <label style={styles.weeklyDigestToggleRow}>
               <input
@@ -1674,7 +1845,7 @@ function WeeklyDigestAlertsPanel({
 
             <div style={styles.weeklyDigestPrefsGrid}>
               <label style={styles.weeklyDigestFieldShell}>
-                <span style={styles.businessHealthSectionTitle}>frequency</span>
+                <span style={styles.businessHealthSectionTitle}>alert cadence</span>
                 <select
                   value={notificationPrefs.frequency}
                   onChange={(event) => setNotificationPrefs((prev) => ({ ...prev, frequency: event.target.value }))}
@@ -1688,14 +1859,14 @@ function WeeklyDigestAlertsPanel({
               </label>
 
               <label style={styles.weeklyDigestFieldShell}>
-                <span style={styles.businessHealthSectionTitle}>preferred channel</span>
+                <span style={styles.businessHealthSectionTitle}>preferred delivery</span>
                 <select
                   value={notificationPrefs.channels?.[0] || 'in_app'}
                   onChange={(event) => setNotificationPrefs((prev) => ({ ...prev, channels: [event.target.value] }))}
                   style={styles.weeklyDigestSelect}
                   disabled={!notificationPrefs.enabled}
                 >
-                  <option value="in_app">In-app</option>
+                  <option value="in_app">Dashboard</option>
                   <option value="email">Email</option>
                 </select>
               </label>
@@ -1726,6 +1897,91 @@ function WeeklyDigestAlertsPanel({
             </div>
           </>
         )}
+      </div>
+    </PanelCard>
+  )
+}
+
+function FounderCheckInPanel({ draft, setDraft, saving, error, reportDate, onToggleArea, onSave, right = null }) {
+  return (
+    <PanelCard title="founder follow-up" right={right}>
+      <div style={styles.weeklyDigestPrefsIntro}>
+        Give SelfAudit the cleanest signal it can get: what actually changed since your {reportDate} audit. This becomes grounded context for future digests, alerts, and rankings.
+      </div>
+
+      <div style={styles.weeklyDigestFieldShell}>
+        <span style={styles.businessHealthSectionTitle}>what happened since the last audit?</span>
+        <textarea
+          value={draft.sinceLast}
+          onChange={(event) => setDraft((prev) => ({ ...prev, sinceLast: event.target.value }))}
+          style={styles.checkInTextarea}
+          placeholder="Short version: what actually moved in the business?"
+        />
+      </div>
+
+      <div style={styles.weeklyDigestPrefsGrid}>
+        <label style={styles.weeklyDigestFieldShell}>
+          <span style={styles.businessHealthSectionTitle}>what improved?</span>
+          <textarea
+            value={draft.improved}
+            onChange={(event) => setDraft((prev) => ({ ...prev, improved: event.target.value }))}
+            style={styles.checkInTextarea}
+            placeholder="What got better, even slightly?"
+          />
+        </label>
+
+        <label style={styles.weeklyDigestFieldShell}>
+          <span style={styles.businessHealthSectionTitle}>what is still blocked?</span>
+          <textarea
+            value={draft.blocked}
+            onChange={(event) => setDraft((prev) => ({ ...prev, blocked: event.target.value }))}
+            style={styles.checkInTextarea}
+            placeholder="What is still not moving?"
+          />
+        </label>
+      </div>
+
+      <div style={styles.weeklyDigestPrefsGrid}>
+        <label style={styles.weeklyDigestFieldShell}>
+          <span style={styles.businessHealthSectionTitle}>action follow-through</span>
+          <select
+            value={draft.actionStatus}
+            onChange={(event) => setDraft((prev) => ({ ...prev, actionStatus: event.target.value }))}
+            style={styles.weeklyDigestSelect}
+          >
+            <option value="done">We executed the key action</option>
+            <option value="partial">We made partial progress</option>
+            <option value="not_started">We have not acted on it yet</option>
+          </select>
+        </label>
+      </div>
+
+      <div style={styles.businessHealthSection}>
+        <div style={styles.businessHealthSectionTitle}>what changed most?</div>
+        <div style={styles.weeklyDigestAreaGrid}>
+          {NOTIFICATION_AREAS.map((area) => (
+            <label key={area.key} style={styles.weeklyDigestAreaPill}>
+              <input
+                type="checkbox"
+                checked={draft.changedAreas.includes(area.key)}
+                onChange={() => onToggleArea(area.key)}
+              />
+              <span style={styles.weeklyDigestAreaLabel}>{area.label}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      <div style={styles.weeklyDigestSaveRow}>
+        {error ? <div style={styles.checkInError}>{error}</div> : <div />}
+        <button
+          type="button"
+          onClick={onSave}
+          disabled={saving || !draft.sinceLast.trim()}
+          style={styles.weeklyDigestSaveBtn}
+        >
+          {saving ? 'Saving…' : 'Save founder update'}
+        </button>
       </div>
     </PanelCard>
   )
@@ -3873,6 +4129,54 @@ const styles = {
     textTransform: 'uppercase',
     letterSpacing: '0.06em',
   },
+  checkInCard: {
+    background: G.surface2,
+    border: `0.5px solid ${G.border}`,
+    borderRadius: 8,
+    padding: 14,
+    marginBottom: 12,
+    display: 'flex',
+    justifyContent: 'space-between',
+    gap: 20,
+    alignItems: 'flex-end',
+  },
+  checkInTitle: {
+    marginTop: 8,
+    fontSize: 18,
+    color: G.text,
+    lineHeight: 1.25,
+  },
+  checkInText: {
+    marginTop: 8,
+    fontSize: 13,
+    color: G.textSecondary,
+    lineHeight: 1.7,
+    maxWidth: 720,
+  },
+  checkInActions: {
+    display: 'flex',
+    gap: 10,
+    alignItems: 'center',
+    flexShrink: 0,
+  },
+  checkInGhostBtn: {
+    border: `0.5px solid ${G.border2}`,
+    background: 'transparent',
+    color: G.textSecondary,
+    borderRadius: 8,
+    padding: '10px 14px',
+    fontSize: 12,
+    cursor: 'pointer',
+  },
+  checkInPrimaryBtn: {
+    background: G.accent,
+    color: G.white,
+    border: 'none',
+    borderRadius: 8,
+    padding: '10px 14px',
+    fontSize: 12,
+    cursor: 'pointer',
+  },
   homeColumns: {
     display: 'grid',
     gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
@@ -4079,6 +4383,20 @@ const styles = {
     flexDirection: 'column',
     gap: 8,
   },
+  checkInTextarea: {
+    width: '100%',
+    minHeight: 96,
+    resize: 'vertical',
+    background: G.black,
+    color: G.text,
+    border: `0.5px solid ${G.border2}`,
+    borderRadius: 12,
+    padding: '12px 14px',
+    fontSize: 13,
+    lineHeight: 1.6,
+    fontFamily: 'inherit',
+    boxSizing: 'border-box',
+  },
   weeklyDigestSelect: {
     background: G.black,
     color: G.text,
@@ -4115,6 +4433,10 @@ const styles = {
   weeklyDigestToast: {
     fontSize: 12,
     color: G.accentText,
+  },
+  checkInError: {
+    fontSize: 12,
+    color: G.redText,
   },
   weeklyDigestSaveBtn: {
     background: G.accent,

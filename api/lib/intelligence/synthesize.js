@@ -236,7 +236,7 @@ function defaultNotificationPreferences(userId) {
     enabled: true,
     frequency: 'daily',
     channels: ['in_app'],
-    areas: ['goal_progress', 'revenue', 'operations', 'customer_experience', 'people', 'connectors', 'critical_risks'],
+    areas: ['goal_progress', 'pipeline_revenue', 'execution', 'customer_health', 'critical_risks'],
     updated_at: new Date().toISOString(),
   }
 }

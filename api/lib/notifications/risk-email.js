@@ -50,7 +50,7 @@ export function buildRiskAlertEmail(user, alerts) {
 
   const name         = user?.name  || user?.email?.split('@')[0] || 'there'
   const email        = user?.email || ''
-  const dashboardUrl = 'https://tryselfaudit.com/#connectors'   // placeholder — update when alert deep-link exists
+  const dashboardUrl = 'https://tryselfaudit.com/#home'
   const groups       = groupBySeverity(alerts)
   const criticalCount = (groups.critical || []).length
   const highCount     = (groups.high     || []).length
