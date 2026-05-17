@@ -72,20 +72,20 @@ const THEMES = {
   },
   sharp: {
     bg: '#101B33',
-    surface: '#172946',
+    surface: '#162743',
     surface2: '#1C3151',
-    surface3: '#243E64',
-    panel: '#1B3152',
+    surface3: '#284268',
+    panel: '#1C3151',
     panelAlt: '#22385D',
-    border: '#355782',
-    border2: '#4C709D',
+    border: '#45679A',
+    border2: '#5D7FB0',
     text: '#F4F7FC',
     textSecondary: '#D8E2F1',
     textMuted: '#AFC2DE',
     textFaint: '#7E97BC',
-    accent: '#5885FF',
-    accentLight: '#243D63',
-    accentText: '#AFC7FF',
+    accent: '#6B8CFF',
+    accentLight: '#2C446B',
+    accentText: '#BED0FF',
     red: '#C07878',
     redBg: '#1A1A32',
     redText: '#C07878',
@@ -3923,8 +3923,8 @@ const styles = {
     overflowY: 'auto',
   },
   sidebarSharp: {
-    background: 'linear-gradient(180deg, rgba(28,51,89,0.99) 0%, rgba(18,34,60,0.99) 58%, rgba(14,27,48,1) 100%)',
-    boxShadow: 'inset -1px 0 0 rgba(88,133,255,0.18), inset 0 1px 0 rgba(255,255,255,0.03)',
+    background: 'linear-gradient(180deg, rgba(31,48,79,0.97) 0%, rgba(20,38,66,0.985) 58%, rgba(15,32,57,1) 100%)',
+    boxShadow: 'inset -1px 0 0 rgba(107,140,255,0.2), inset 0 1px 0 rgba(255,255,255,0.035)',
   },
   sidebarExpanded: {
     width: 232,
@@ -3959,8 +3959,8 @@ const styles = {
     boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.02)',
   },
   sidebarButtonActiveSharp: {
-    background: 'linear-gradient(180deg, rgba(45,69,112,0.94) 0%, rgba(30,52,87,0.98) 100%)',
-    border: '1px solid rgba(88,133,255,0.26)',
+    background: 'linear-gradient(180deg, rgba(49,72,112,0.94) 0%, rgba(29,50,83,0.98) 100%)',
+    border: '1px solid rgba(107,140,255,0.28)',
     boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05), 0 10px 20px rgba(5,15,30,0.24)',
   },
   sidebarIcon: {
@@ -4003,8 +4003,8 @@ const styles = {
     boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.02)',
   },
   avatarButtonActiveSharp: {
-    background: 'linear-gradient(180deg, rgba(45,69,112,0.94) 0%, rgba(30,52,87,0.98) 100%)',
-    border: '1px solid rgba(88,133,255,0.22)',
+    background: 'linear-gradient(180deg, rgba(49,72,112,0.94) 0%, rgba(29,50,83,0.98) 100%)',
+    border: '1px solid rgba(107,140,255,0.24)',
     boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05), 0 10px 20px rgba(5,15,30,0.24)',
   },
   avatarChip: {
@@ -4037,8 +4037,8 @@ const styles = {
     flexShrink: 0,
   },
   topbarSharp: {
-    background: 'linear-gradient(180deg, rgba(31,56,95,0.98) 0%, rgba(22,41,70,0.99) 100%)',
-    boxShadow: 'inset 0 -1px 0 rgba(88,133,255,0.24), inset 0 1px 0 rgba(255,255,255,0.035)',
+    background: 'linear-gradient(180deg, rgba(31,48,79,0.98) 0%, rgba(20,38,66,0.99) 100%)',
+    boxShadow: 'inset 0 -1px 0 rgba(107,140,255,0.24), inset 0 1px 0 rgba(255,255,255,0.035)',
   },
   topbarLeft: {
     display: 'flex',
@@ -4079,8 +4079,8 @@ const styles = {
     fontWeight: 500,
   },
   themeToggleButtonSharp: {
-    background: 'linear-gradient(180deg, rgba(38,64,104,0.86) 0%, rgba(26,47,79,0.96) 100%)',
-    border: '1px solid rgba(88,133,255,0.3)',
+    background: 'linear-gradient(180deg, rgba(39,63,102,0.9) 0%, rgba(23,43,71,0.98) 100%)',
+    border: '1px solid rgba(107,140,255,0.3)',
     boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05), 0 8px 20px rgba(5,15,30,0.16)',
   },
   themeToggleIcon: {
@@ -4099,8 +4099,8 @@ const styles = {
     whiteSpace: 'nowrap',
   },
   ghostButtonSharp: {
-    background: 'linear-gradient(180deg, rgba(34,58,95,0.82) 0%, rgba(22,41,70,0.94) 100%)',
-    border: '1px solid rgba(88,133,255,0.26)',
+    background: 'linear-gradient(180deg, rgba(39,63,102,0.9) 0%, rgba(23,43,71,0.98) 100%)',
+    border: '1px solid rgba(107,140,255,0.26)',
     boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04), 0 8px 20px rgba(5,15,30,0.14)',
   },
   primaryButton: {
@@ -4221,8 +4221,8 @@ const styles = {
     flexDirection: 'column',
   },
   kpiCardSharp: {
-    background: 'linear-gradient(180deg, rgba(39,63,102,0.9) 0%, rgba(23,43,71,0.98) 100%)',
-    border: '1px solid rgba(88,133,255,0.24)',
+    background: 'linear-gradient(180deg, rgba(39,63,102,0.94) 0%, rgba(23,43,71,0.985) 100%)',
+    border: '1px solid rgba(107,140,255,0.24)',
     boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.045), 0 12px 26px rgba(5,15,30,0.16)',
   },
   kpiCardButton: {
@@ -4333,8 +4333,8 @@ const styles = {
     padding: 14,
   },
   panelCardSharp: {
-    background: 'linear-gradient(180deg, rgba(39,63,102,0.86) 0%, rgba(23,43,71,0.96) 100%)',
-    border: '1px solid rgba(88,133,255,0.22)',
+    background: 'linear-gradient(180deg, rgba(39,63,102,0.94) 0%, rgba(23,43,71,0.985) 100%)',
+    border: '1px solid rgba(107,140,255,0.22)',
     boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.045), 0 12px 28px rgba(5,15,30,0.16)',
   },
   weeklyDigestCardButton: {
