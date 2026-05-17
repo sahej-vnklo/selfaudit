@@ -3593,6 +3593,7 @@ const styles = {
     width: 'min(900px, 100%)',
     maxHeight: '88vh',
     overflowY: 'auto',
+    zoom: 1.05,
   },
   businessHealthCloseBtn: {
     border: `0.5px solid ${G.border2}`,
