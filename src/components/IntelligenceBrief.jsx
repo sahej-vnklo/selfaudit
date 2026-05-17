@@ -236,10 +236,11 @@ export default function IntelligenceBrief({ user, profile, onProfileChange }) {
   const [docPaths, setDocPaths] = useState(() => profile?.intelligence_docs || [])
   const [synthProfile, setSynthProfile] = useState(null)
   const [openSections, setOpenSections] = useState({
-    financial: true,
-    operational: true,
-    context: true,
-    documents: true,
+    synthesized: false,
+    financial: false,
+    operational: false,
+    context: false,
+    documents: false,
   })
   const [loading, setLoading] = useState(true)
   const [savingSection, setSavingSection] = useState('')
@@ -558,11 +559,15 @@ export default function IntelligenceBrief({ user, profile, onProfileChange }) {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {intelligenceUnlocked ? (
-            <div style={card}>
-              <div style={cardBodyStandalone}>
-                <div style={panelLabel}>Synthesized intelligence</div>
+            <SectionCard
+              title="Synthesized intelligence"
+              isOpen={openSections.synthesized}
+              onToggle={() => setOpenSections((prev) => ({ ...prev, synthesized: !prev.synthesized }))}
+              showSave={false}
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 16 }}>
                 {synthProfile ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  <>
                     <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
                       <div style={{ flex: 1, minWidth: 260 }}>
                         <div style={{ fontSize: 16, color: COLORS.text, marginBottom: 8 }}>What the system now believes</div>
@@ -611,23 +616,28 @@ export default function IntelligenceBrief({ user, profile, onProfileChange }) {
                     </div>
 
                     <SummaryList title="Watchouts" items={synthProfile.watchouts} empty="No urgent watchouts right now." />
-                  </div>
+                  </>
                 ) : (
                   <div style={{ fontSize: 13, color: COLORS.textSecondary, lineHeight: 1.7 }}>
                     Your intelligence profile will start compounding after audits, reports, brief data, and connector signals accumulate.
                   </div>
                 )}
               </div>
-            </div>
+            </SectionCard>
           ) : (
-            <div style={card}>
-              <div style={cardBodyStandalone}>
+            <SectionCard
+              title="Intelligence layer"
+              isOpen={openSections.synthesized}
+              onToggle={() => setOpenSections((prev) => ({ ...prev, synthesized: !prev.synthesized }))}
+              showSave={false}
+            >
+              <div style={{ marginTop: 16 }}>
                 <div style={panelLabel}>Intelligence layer</div>
                 <div style={{ fontSize: 13, color: COLORS.textSecondary, lineHeight: 1.7 }}>
                   Cross-audit synthesis, compounding business memory, and alert preferences are reserved for Intelligence users. Foundation still gets audits and saved report history.
                 </div>
               </div>
-            </div>
+            </SectionCard>
           )}
 
           <SectionCard
@@ -749,13 +759,13 @@ function ProgressBar({ value }) {
   )
 }
 
-function SectionCard({ title, isOpen, onToggle, children, onSave, saving }) {
+function SectionCard({ title, isOpen, onToggle, children, onSave, saving, showSave = true, label = 'Section' }) {
   return (
     <div style={card}>
       <button type="button" onClick={onToggle} style={cardHeader}>
         <div>
           <div style={{ fontSize: 10, color: COLORS.textFaint, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>
-            Section
+            {label}
           </div>
           <div style={{ fontSize: 16, color: COLORS.text }}>{title}</div>
         </div>
@@ -764,11 +774,13 @@ function SectionCard({ title, isOpen, onToggle, children, onSave, saving }) {
       {isOpen && (
         <div style={cardBody}>
           {children}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 18 }}>
-            <button type="button" onClick={onSave} disabled={saving} style={saveBtn}>
-              {saving ? 'Saving…' : 'Save section'}
-            </button>
-          </div>
+          {showSave && (
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 18 }}>
+              <button type="button" onClick={onSave} disabled={saving} style={saveBtn}>
+                {saving ? 'Saving…' : 'Save section'}
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -909,7 +909,6 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
             <PageShell
               title="Reports"
               sub="Your saved audit reports."
-              actions={<TopButtons onDiagnose={startAudit} onGoal={() => setGoalModal(true)} />}
             >
               {reportsLoading
                 ? <ReportSkeletons />
@@ -2677,7 +2676,7 @@ function AgentSection({ user }) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
-          rows={2}
+          rows={1}
           disabled={loading}
         />
         <button
@@ -2856,15 +2855,17 @@ const agent = {
     padding: '6px 14px', fontSize: 13, color: G.textSecondary, cursor: 'pointer',
     whiteSpace: 'nowrap',
   },
-  inputWrap: { display: 'flex', gap: 8, marginBottom: 16, alignItems: 'flex-end' },
+  inputWrap: { display: 'flex', gap: 8, marginBottom: 16, alignItems: 'stretch' },
   textarea: {
-    flex: 1, background: G.surface, border: `1px solid ${G.border}`, borderRadius: 8,
-    color: G.text, fontSize: 14, padding: '10px 12px', resize: 'none',
+    flex: 1, background: G.surface, border: `1px solid ${G.border}`, borderRadius: 999,
+    color: G.text, fontSize: 14, padding: '18px 20px', resize: 'none',
     fontFamily: 'inherit', lineHeight: 1.5, outline: 'none',
+    minHeight: 62,
+    boxSizing: 'border-box',
   },
   sendBtn: {
-    background: G.text, color: G.black, border: 'none', borderRadius: 8,
-    width: 40, height: 40, fontSize: 18, cursor: 'pointer', flexShrink: 0,
+    background: G.text, color: G.black, border: 'none', borderRadius: 18,
+    width: 62, height: 62, fontSize: 22, cursor: 'pointer', flexShrink: 0,
     display: 'flex', alignItems: 'center', justifyContent: 'center',
   },
   errorBox: {
