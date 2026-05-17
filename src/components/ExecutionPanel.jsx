@@ -1,6 +1,21 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { initSupabase } from '../lib/supabase.js'
 import {
+  DARK_ACCENT,
+  DARK_ACCENT_SOFT,
+  DARK_BORDER,
+  DARK_HERO_BORDER,
+  DARK_HERO_INSET,
+  DARK_HERO_SHADOW,
+  DARK_HERO_SURFACE,
+  DARK_INPUT_BG,
+  DARK_PAGE_BG,
+  DARK_PANEL_BORDER,
+  DARK_PANEL_SHADOW,
+  DARK_PANEL_SURFACE,
+  DARK_TEXT,
+  DARK_TEXT_MUTED,
+  DARK_TEXT_SOFT,
   SHARP_ACCENT,
   SHARP_ACCENT_SOFT,
   SHARP_BORDER,
@@ -20,19 +35,19 @@ import {
 
 const THEMES = {
   dark: {
-    bg: '#060303',
-    surface: '#0F0909',
-    border: '#2E211F',
-    text: '#F3ECE6',
-    textSoft: '#D2BCB5',
-    textMuted: '#A88D85',
-    accent: '#B79A92',
-    accentSoft: '#1D1514',
-    inputBg: '#1D1514',
+    bg: DARK_PAGE_BG,
+    surface: DARK_PANEL_SURFACE,
+    border: DARK_BORDER,
+    text: DARK_TEXT,
+    textSoft: DARK_TEXT_SOFT,
+    textMuted: DARK_TEXT_MUTED,
+    accent: DARK_ACCENT,
+    accentSoft: DARK_ACCENT_SOFT,
+    inputBg: DARK_INPUT_BG,
     error: '#C05050',
-    buttonText: '#F3ECE6',
-    buttonTextSoft: '#D2BCB5',
-    buttonBorder: '#B79A92',
+    buttonText: DARK_TEXT,
+    buttonTextSoft: DARK_TEXT_SOFT,
+    buttonBorder: DARK_ACCENT,
   },
   light: {
     bg: '#F5F0EA',
@@ -68,6 +83,36 @@ const THEMES = {
 
 function getThemeVars(theme) {
   const C = THEMES[theme] || THEMES.dark
+  const rich =
+    theme === 'sharp'
+      ? {
+          heroSurface: SHARP_HERO_SURFACE,
+          panelSurface: SHARP_PANEL_SURFACE,
+          heroBorder: SHARP_HERO_BORDER,
+          panelBorder: SHARP_PANEL_BORDER,
+          heroInset: SHARP_HERO_INSET,
+          heroShadow: SHARP_HERO_SHADOW,
+          panelShadow: SHARP_PANEL_SHADOW,
+        }
+      : theme === 'dark'
+        ? {
+            heroSurface: DARK_HERO_SURFACE,
+            panelSurface: DARK_PANEL_SURFACE,
+            heroBorder: DARK_HERO_BORDER,
+            panelBorder: DARK_PANEL_BORDER,
+            heroInset: DARK_HERO_INSET,
+            heroShadow: DARK_HERO_SHADOW,
+            panelShadow: DARK_PANEL_SHADOW,
+          }
+        : {
+            heroSurface: C.surface,
+            panelSurface: C.surface,
+            heroBorder: `1px solid ${C.border}`,
+            panelBorder: `1px solid ${C.border}`,
+            heroInset: 'none',
+            heroShadow: 'none',
+            panelShadow: 'none',
+          }
   return {
     '--bg': C.bg,
     '--surface': C.surface,
@@ -82,6 +127,13 @@ function getThemeVars(theme) {
     '--button-text': C.buttonText,
     '--button-text-soft': C.buttonTextSoft,
     '--button-border': C.buttonBorder,
+    '--rich-hero-surface': rich.heroSurface,
+    '--rich-panel-surface': rich.panelSurface,
+    '--rich-hero-border': rich.heroBorder,
+    '--rich-panel-border': rich.panelBorder,
+    '--rich-hero-inset': rich.heroInset,
+    '--rich-hero-shadow': rich.heroShadow,
+    '--rich-panel-shadow': rich.panelShadow,
   }
 }
 
@@ -242,6 +294,7 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
   const theme = localStorage.getItem('sa-theme') || 'dark'
   const themeVars = getThemeVars(theme)
   const sharpThemeActive = theme === 'sharp'
+  const darkThemeActive = theme === 'dark'
   const reportOptions = useMemo(() => {
     const fromList = Array.isArray(reports) ? reports.filter(isActionableReport) : []
     if (fromList.length > 0) return fromList
@@ -520,7 +573,7 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
       </div>
 
       {showFormats && (
-        <div style={{ ...ep.formatsPanel, ...(sharpThemeActive ? ep.formatsPanelSharp : {}) }}>
+        <div style={{ ...ep.formatsPanel, ...((sharpThemeActive || darkThemeActive) ? ep.formatsPanelSharp : {}) }}>
           <div style={ep.formatsHeader}>
             <div style={ep.formatsEyebrow}>Build from this audit</div>
             <div style={ep.formatsSub}>
@@ -538,9 +591,10 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
                   type="button"
                   style={{
                     ...ep.outputCard,
-                    ...(sharpThemeActive ? ep.outputCardSharp : {}),
+                    ...((sharpThemeActive || darkThemeActive) ? ep.outputCardSharp : {}),
                     ...(isSelected ? ep.outputCardSelected : {}),
                     ...(isSelected && sharpThemeActive ? ep.outputCardSelectedSharp : {}),
+                    ...(isSelected && darkThemeActive ? ep.outputCardSelectedDark : {}),
                     ...(generating ? ep.outputCardDisabled : {}),
                   }}
                   onClick={() => !generating && setSelectedType(type)}
@@ -684,9 +738,9 @@ const ep = {
     fontSize: 14, color: 'var(--text-soft)', lineHeight: 1.6, margin: 0,
   },
   recommendedCard: {
-    border: SHARP_HERO_BORDER,
-    background: SHARP_HERO_SURFACE,
-    boxShadow: `${SHARP_HERO_INSET}, ${SHARP_HERO_SHADOW}`,
+    border: 'var(--rich-hero-border)',
+    background: 'var(--rich-hero-surface)',
+    boxShadow: 'var(--rich-hero-inset), var(--rich-hero-shadow)',
     borderRadius: 14,
     padding: '18px 22px',
     marginBottom: '0.85rem',
@@ -812,9 +866,9 @@ const ep = {
     marginBottom: '1rem',
   },
   formatsPanelSharp: {
-    border: SHARP_HERO_BORDER,
-    background: SHARP_HERO_SURFACE,
-    boxShadow: `${SHARP_HERO_INSET}, ${SHARP_HERO_SHADOW}`,
+    border: 'var(--rich-hero-border)',
+    background: 'var(--rich-hero-surface)',
+    boxShadow: 'var(--rich-hero-inset), var(--rich-hero-shadow)',
   },
   formatsHeader: {
     marginBottom: 14,
@@ -852,9 +906,9 @@ const ep = {
     flex: '0 1 auto',
   },
   outputCardSharp: {
-    background: SHARP_PANEL_SURFACE,
-    border: SHARP_PANEL_BORDER,
-    boxShadow: SHARP_PANEL_SHADOW,
+    background: 'var(--rich-panel-surface)',
+    border: 'var(--rich-panel-border)',
+    boxShadow: 'var(--rich-panel-shadow)',
   },
   outputCardSelected: {
     border: '1px solid var(--accent)',
@@ -865,6 +919,11 @@ const ep = {
     border: '1px solid rgba(107,140,255,0.62)',
     background: 'linear-gradient(180deg, rgba(74,108,176,0.42) 0%, rgba(34,54,88,0.98) 100%)',
     boxShadow: '0 0 0 1px rgba(107,140,255,0.18) inset, 0 14px 28px rgba(0,0,0,0.2)',
+  },
+  outputCardSelectedDark: {
+    border: '1px solid rgba(183,154,146,0.5)',
+    background: 'linear-gradient(180deg, rgba(58,42,39,0.4) 0%, rgba(35,25,24,0.99) 100%)',
+    boxShadow: '0 0 0 1px rgba(183,154,146,0.12) inset, 0 14px 28px rgba(0,0,0,0.24)',
   },
   outputCardDisabled: {
     cursor: 'not-allowed',

@@ -2,6 +2,17 @@ import React, { useState, useEffect } from 'react'
 import * as Sentry from '@sentry/react'
 import { usePostHog } from '@posthog/react'
 import {
+  DARK_ACCENT,
+  DARK_ACCENT_SOFT,
+  DARK_ACCENT_TEXT,
+  DARK_BORDER,
+  DARK_HERO_SURFACE,
+  DARK_INPUT_BG,
+  DARK_PAGE_BG,
+  DARK_PANEL_SURFACE,
+  DARK_TEXT,
+  DARK_TEXT_MUTED,
+  DARK_TEXT_SOFT,
   SHARP_ACCENT,
   SHARP_ACCENT_SOFT,
   SHARP_ACCENT_TEXT,
@@ -17,18 +28,18 @@ import {
 
 const THEMES = {
   dark: {
-    bg: '#060303',
-    surface: '#0F0909',
-    surface2: '#1D1514',
-    border: '#2E211F',
-    text: '#F3ECE6',
-    textSoft: '#D2BCB5',
-    textMuted: '#A88D85',
-    accent: '#B79A92',
-    accentSoft: '#1D1514',
-    accentText: '#D2BCB5',
-    inputBg: '#1D1514',
-    buttonText: '#F3ECE6',
+    bg: DARK_PAGE_BG,
+    surface: DARK_HERO_SURFACE,
+    surface2: DARK_PANEL_SURFACE,
+    border: DARK_BORDER,
+    text: DARK_TEXT,
+    textSoft: DARK_TEXT_SOFT,
+    textMuted: DARK_TEXT_MUTED,
+    accent: DARK_ACCENT,
+    accentSoft: DARK_ACCENT_SOFT,
+    accentText: DARK_ACCENT_TEXT,
+    inputBg: DARK_INPUT_BG,
+    buttonText: DARK_TEXT,
   },
   light: {
     bg: '#F5F0EA',

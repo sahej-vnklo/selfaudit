@@ -3,6 +3,33 @@ import { initSupabase } from '../lib/supabase.js'
 import IntelligenceBrief from './IntelligenceBrief.jsx'
 import ExecutionPanel from './ExecutionPanel.jsx'
 import {
+  DARK_ACCENT,
+  DARK_ACCENT_SOFT,
+  DARK_ACCENT_TEXT,
+  DARK_AMBER,
+  DARK_AMBER_BG,
+  DARK_AMBER_TEXT,
+  DARK_BORDER,
+  DARK_BORDER_STRONG,
+  DARK_GREEN,
+  DARK_GREEN_BG,
+  DARK_GREEN_TEXT,
+  DARK_HERO_BORDER,
+  DARK_HERO_INSET,
+  DARK_HERO_SHADOW,
+  DARK_HERO_SURFACE,
+  DARK_PAGE_BG,
+  DARK_PANEL_BORDER,
+  DARK_PANEL_SHADOW,
+  DARK_PANEL_SURFACE,
+  DARK_RED,
+  DARK_RED_BG,
+  DARK_RED_TEXT,
+  DARK_SOLID_PANEL_ALT,
+  DARK_TEXT,
+  DARK_TEXT_FAINT,
+  DARK_TEXT_MUTED,
+  DARK_TEXT_SOFT,
   SHARP_ACCENT,
   SHARP_ACCENT_SOFT,
   SHARP_ACCENT_TEXT,
@@ -36,34 +63,34 @@ const THEME_ORDER = ['dark', 'light', 'sharp']
 
 const THEMES = {
   dark: {
-    bg: '#060303',
-    surface: '#0F0909',
-    surface2: '#1D1514',
-    surface3: '#16100F',
-    panel: '#16100F',
-    panelAlt: '#1D1514',
-    border: '#2E211F',
-    border2: '#4A3430',
-    text: '#F3ECE6',
-    textSecondary: '#D2BCB5',
-    textMuted: '#A88D85',
-    textFaint: '#7E6560',
-    accent: '#B79A92',
-    accentLight: '#1D1514',
-    accentText: '#D2BCB5',
-    red: '#C05050',
-    redBg: '#1A0808',
-    redText: '#C07070',
-    amber: '#A88D85',
-    amberBg: '#1D1514',
-    amberText: '#D2BCB5',
-    green: '#4A8B68',
-    greenBg: '#0A120E',
-    greenText: '#6BBD8A',
+    bg: DARK_PAGE_BG,
+    surface: DARK_HERO_SURFACE,
+    surface2: DARK_PANEL_SURFACE,
+    surface3: DARK_SOLID_PANEL_ALT,
+    panel: DARK_PANEL_SURFACE,
+    panelAlt: DARK_HERO_SURFACE,
+    border: DARK_BORDER,
+    border2: DARK_BORDER_STRONG,
+    text: DARK_TEXT,
+    textSecondary: DARK_TEXT_SOFT,
+    textMuted: DARK_TEXT_MUTED,
+    textFaint: DARK_TEXT_FAINT,
+    accent: DARK_ACCENT,
+    accentLight: DARK_ACCENT_SOFT,
+    accentText: DARK_ACCENT_TEXT,
+    red: DARK_RED,
+    redBg: DARK_RED_BG,
+    redText: DARK_RED_TEXT,
+    amber: DARK_AMBER,
+    amberBg: DARK_AMBER_BG,
+    amberText: DARK_AMBER_TEXT,
+    green: DARK_GREEN,
+    greenBg: DARK_GREEN_BG,
+    greenText: DARK_GREEN_TEXT,
     blue: '#7090B0',
     violet: '#9070A0',
     sand: '#B79A92',
-    white: '#F3ECE6',
+    white: DARK_TEXT,
     overlay: 'rgba(3,0,0,0.7)',
     overlaySoft: 'rgba(0,0,0,0.4)',
   },
@@ -168,6 +195,36 @@ const G = {
 
 function getThemeVars(theme) {
   const C = THEMES[theme] || THEMES.dark
+  const rich =
+    theme === 'sharp'
+      ? {
+          heroSurface: SHARP_HERO_SURFACE,
+          panelSurface: SHARP_PANEL_SURFACE,
+          heroBorder: SHARP_HERO_BORDER,
+          panelBorder: SHARP_PANEL_BORDER,
+          heroInset: SHARP_HERO_INSET,
+          heroShadow: SHARP_HERO_SHADOW,
+          panelShadow: SHARP_PANEL_SHADOW,
+        }
+      : theme === 'dark'
+        ? {
+            heroSurface: DARK_HERO_SURFACE,
+            panelSurface: DARK_PANEL_SURFACE,
+            heroBorder: DARK_HERO_BORDER,
+            panelBorder: DARK_PANEL_BORDER,
+            heroInset: DARK_HERO_INSET,
+            heroShadow: DARK_HERO_SHADOW,
+            panelShadow: DARK_PANEL_SHADOW,
+          }
+        : {
+            heroSurface: C.surface,
+            panelSurface: C.surface2,
+            heroBorder: `1px solid ${C.border}`,
+            panelBorder: `1px solid ${C.border}`,
+            heroInset: 'none',
+            heroShadow: 'none',
+            panelShadow: 'none',
+          }
   return {
     '--bg': C.bg,
     '--surface': C.surface,
@@ -199,6 +256,13 @@ function getThemeVars(theme) {
     '--white': C.white,
     '--overlay': C.overlay,
     '--overlay-soft': C.overlaySoft,
+    '--rich-hero-surface': rich.heroSurface,
+    '--rich-panel-surface': rich.panelSurface,
+    '--rich-hero-border': rich.heroBorder,
+    '--rich-panel-border': rich.panelBorder,
+    '--rich-hero-inset': rich.heroInset,
+    '--rich-hero-shadow': rich.heroShadow,
+    '--rich-panel-shadow': rich.panelShadow,
   }
 }
 
@@ -570,6 +634,8 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
   const [theme, setTheme] = useState(() => localStorage.getItem('sa-theme') || 'dark')
   const themeVars = getThemeVars(theme)
   const sharpThemeActive = theme === 'sharp'
+  const darkThemeActive = theme === 'dark'
+  const richThemeActive = sharpThemeActive || darkThemeActive
   const [profile, setProfile] = useState(null)
   const [businessState, setBusinessState] = useState(null)
   const [businessStateLoading, setBusinessStateLoading] = useState(true)
@@ -854,6 +920,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
           ...styles.sidebar,
           ...(sidebarExpanded ? styles.sidebarExpanded : {}),
           ...(sharpThemeActive ? styles.sidebarSharp : {}),
+          ...(darkThemeActive ? styles.sidebarDark : {}),
         }}
       >
         <button
@@ -863,14 +930,14 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
           style={{
             width: 34, height: 34,
             borderRadius: 8, border: 'none',
-            background: sharpThemeActive ? 'rgba(255,255,255,0.03)' : 'transparent',
+            background: richThemeActive ? 'rgba(255,255,255,0.03)' : 'transparent',
             color: G.textMuted,
             cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             flexShrink: 0,
             marginBottom: 6,
             alignSelf: sidebarExpanded ? 'flex-end' : 'center',
-            boxShadow: sharpThemeActive ? 'inset 0 1px 0 rgba(255,255,255,0.03), 0 0 0 1px rgba(88,133,255,0.12)' : 'none',
+            boxShadow: richThemeActive ? 'inset 0 1px 0 rgba(255,255,255,0.03), 0 0 0 1px rgba(255,255,255,0.06)' : 'none',
           }}
         >
           {sidebarExpanded
@@ -878,12 +945,12 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
             : <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 2L10 7L5 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
           }
         </button>
-        <SidebarButton icon={<IconHome />} active={section === 'home'} onClick={() => navigateSection('home')} label="Home" expanded={sidebarExpanded} sharpTheme={sharpThemeActive} />
-        <SidebarButton icon={<IconReports />} active={section === 'reports'} onClick={() => navigateSection('reports')} label="Reports" expanded={sidebarExpanded} sharpTheme={sharpThemeActive} />
-        <SidebarButton icon={<IconIntelligence />} active={section === 'intelligence'} onClick={() => navigateSection('intelligence')} label="Intelligence brief" expanded={sidebarExpanded} sharpTheme={sharpThemeActive} />
-        <SidebarButton icon={<IconBrain />} active={section === 'business-state'} onClick={() => navigateSection('business-state')} label="What we know" expanded={sidebarExpanded} sharpTheme={sharpThemeActive} />
-        <SidebarButton icon={<IconConnectors />} active={section === 'connectors'} onClick={() => navigateSection('connectors')} label="Connectors" expanded={sidebarExpanded} sharpTheme={sharpThemeActive} />
-        <SidebarButton icon={<IconAgent />} active={section === 'agent'} onClick={() => navigateSection('agent')} label="Ask TSA" expanded={sidebarExpanded} sharpTheme={sharpThemeActive} />
+        <SidebarButton icon={<IconHome />} active={section === 'home'} onClick={() => navigateSection('home')} label="Home" expanded={sidebarExpanded} sharpTheme={richThemeActive} />
+        <SidebarButton icon={<IconReports />} active={section === 'reports'} onClick={() => navigateSection('reports')} label="Reports" expanded={sidebarExpanded} sharpTheme={richThemeActive} />
+        <SidebarButton icon={<IconIntelligence />} active={section === 'intelligence'} onClick={() => navigateSection('intelligence')} label="Intelligence brief" expanded={sidebarExpanded} sharpTheme={richThemeActive} />
+        <SidebarButton icon={<IconBrain />} active={section === 'business-state'} onClick={() => navigateSection('business-state')} label="What we know" expanded={sidebarExpanded} sharpTheme={richThemeActive} />
+        <SidebarButton icon={<IconConnectors />} active={section === 'connectors'} onClick={() => navigateSection('connectors')} label="Connectors" expanded={sidebarExpanded} sharpTheme={richThemeActive} />
+        <SidebarButton icon={<IconAgent />} active={section === 'agent'} onClick={() => navigateSection('agent')} label="Ask TSA" expanded={sidebarExpanded} sharpTheme={richThemeActive} />
         <div style={{ flex: 1 }} />
         <SidebarButton icon={<IconGear />} active={section === 'billing'} onClick={() => navigateSection('billing')} label="Billing" expanded={sidebarExpanded} />
         <button
@@ -893,8 +960,8 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
             ...styles.avatarButton,
             ...(sidebarExpanded ? styles.avatarButtonExpanded : {}),
             ...(section === 'account' ? styles.avatarButtonActive : {}),
-            ...(sharpThemeActive ? styles.avatarButtonSharp : {}),
-            ...(sharpThemeActive && section === 'account' ? styles.avatarButtonActiveSharp : {}),
+            ...(richThemeActive ? styles.avatarButtonSharp : {}),
+            ...(richThemeActive && section === 'account' ? styles.avatarButtonActiveSharp : {}),
           }}
           aria-label="Account"
           title="Account"
@@ -905,7 +972,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
       </aside>
 
       <div style={styles.appFrame}>
-        <header style={{ ...styles.topbar, ...(sharpThemeActive ? styles.topbarSharp : {}) }}>
+        <header style={{ ...styles.topbar, ...(sharpThemeActive ? styles.topbarSharp : {}), ...(darkThemeActive ? styles.topbarDark : {}) }}>
           <div style={styles.topbarLeft}>
             <div style={styles.logo} onClick={() => navigateSection('home')}>
               self<span style={{ color: G.accentText }}>audit</span>
@@ -914,11 +981,11 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
           </div>
 
           <div style={styles.topbarActions}>
-            <button type="button" style={{ ...styles.themeToggleButton, ...(sharpThemeActive ? styles.themeToggleButtonSharp : {}) }} onClick={toggleTheme} aria-label="Cycle theme">
+            <button type="button" style={{ ...styles.themeToggleButton, ...(richThemeActive ? styles.themeToggleButtonSharp : {}) }} onClick={toggleTheme} aria-label="Cycle theme">
               <span style={styles.themeToggleIcon}>◐</span>
               <span>Theme</span>
             </button>
-            <button type="button" style={{ ...styles.ghostButton, ...(sharpThemeActive ? styles.ghostButtonSharp : {}) }} onClick={startAudit}>
+            <button type="button" style={{ ...styles.ghostButton, ...(richThemeActive ? styles.ghostButtonSharp : {}) }} onClick={startAudit}>
               diagnose a problem
             </button>
             <button type="button" style={styles.primaryButton} onClick={() => setGoalModal(true)}>
@@ -927,7 +994,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
           </div>
         </header>
 
-        <main style={{ ...styles.main, ...(sharpThemeActive ? styles.mainSharp : {}) }}>
+        <main style={{ ...styles.main, ...(sharpThemeActive ? styles.mainSharp : {}), ...(darkThemeActive ? styles.mainDark : {}) }}>
           {section === 'home' && (
             <HomeSection
               user={user}
@@ -1045,7 +1112,7 @@ function PageShell({ title, sub, actions, children }) {
 }
 
 function HomeSection({ user, profile, businessState, businessStateLoading, reports, reportsLoading, onStartAudit, onStartGoalAudit, healthIntel, theme }) {
-  const sharpThemeActive = theme === 'sharp'
+  const sharpThemeActive = theme === 'sharp' || theme === 'dark'
   const [businessHealthExpanded, setBusinessHealthExpanded] = useState(false)
   const [openIssuesExpanded, setOpenIssuesExpanded] = useState(false)
   const [auditHistoryExpanded, setAuditHistoryExpanded] = useState(false)
@@ -1841,7 +1908,7 @@ function WeeklyDigestAlertsCard({ profile, notificationPrefs, prefsLoading, onCl
       type="button"
       style={{
         ...styles.panelCard,
-        ...(theme === 'sharp' ? styles.panelCardSharp : {}),
+        ...((theme === 'sharp' || theme === 'dark') ? styles.panelCardSharp : {}),
         ...styles.weeklyDigestCardButton,
       }}
       onClick={onClick}
@@ -3955,6 +4022,10 @@ const styles = {
     background: SHARP_HERO_SURFACE,
     boxShadow: `${SHARP_HERO_INSET}, inset -1px 0 0 rgba(107,140,255,0.22)`,
   },
+  sidebarDark: {
+    background: DARK_HERO_SURFACE,
+    boxShadow: `${DARK_HERO_INSET}, inset -1px 0 0 rgba(183,154,146,0.18)`,
+  },
   sidebarExpanded: {
     width: 232,
     alignItems: 'stretch',
@@ -3988,9 +4059,9 @@ const styles = {
     boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.02)',
   },
   sidebarButtonActiveSharp: {
-    background: SHARP_PANEL_SURFACE,
-    border: SHARP_PANEL_BORDER,
-    boxShadow: SHARP_PANEL_SHADOW,
+    background: 'var(--rich-panel-surface)',
+    border: 'var(--rich-panel-border)',
+    boxShadow: 'var(--rich-panel-shadow)',
   },
   sidebarIcon: {
     width: 16,
@@ -4032,9 +4103,9 @@ const styles = {
     boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.02)',
   },
   avatarButtonActiveSharp: {
-    background: SHARP_PANEL_SURFACE,
-    border: SHARP_PANEL_BORDER,
-    boxShadow: SHARP_PANEL_SHADOW,
+    background: 'var(--rich-panel-surface)',
+    border: 'var(--rich-panel-border)',
+    boxShadow: 'var(--rich-panel-shadow)',
   },
   avatarChip: {
     width: 26,
@@ -4068,6 +4139,10 @@ const styles = {
   topbarSharp: {
     background: SHARP_HERO_SURFACE,
     boxShadow: `${SHARP_HERO_INSET}, inset 0 -1px 0 rgba(107,140,255,0.24)`,
+  },
+  topbarDark: {
+    background: DARK_HERO_SURFACE,
+    boxShadow: `${DARK_HERO_INSET}, inset 0 -1px 0 rgba(183,154,146,0.18)`,
   },
   topbarLeft: {
     display: 'flex',
@@ -4108,9 +4183,9 @@ const styles = {
     fontWeight: 500,
   },
   themeToggleButtonSharp: {
-    background: SHARP_PANEL_SURFACE,
-    border: SHARP_PANEL_BORDER,
-    boxShadow: SHARP_PANEL_SHADOW,
+    background: 'var(--rich-panel-surface)',
+    border: 'var(--rich-panel-border)',
+    boxShadow: 'var(--rich-panel-shadow)',
   },
   themeToggleIcon: {
     fontSize: 15,
@@ -4128,9 +4203,9 @@ const styles = {
     whiteSpace: 'nowrap',
   },
   ghostButtonSharp: {
-    background: SHARP_PANEL_SURFACE,
-    border: SHARP_PANEL_BORDER,
-    boxShadow: SHARP_PANEL_SHADOW,
+    background: 'var(--rich-panel-surface)',
+    border: 'var(--rich-panel-border)',
+    boxShadow: 'var(--rich-panel-shadow)',
   },
   primaryButton: {
     background: G.accent,
@@ -4151,6 +4226,9 @@ const styles = {
   },
   mainSharp: {
     background: 'radial-gradient(circle at top left, rgba(66,108,184,0.12) 0%, rgba(16,27,51,0) 24%), linear-gradient(180deg, #12213D 0%, #0D1930 100%)',
+  },
+  mainDark: {
+    background: DARK_PAGE_BG,
   },
   pageShell: {
     maxWidth: 1240,
@@ -4250,9 +4328,9 @@ const styles = {
     flexDirection: 'column',
   },
   kpiCardSharp: {
-    background: SHARP_PANEL_SURFACE,
-    border: SHARP_PANEL_BORDER,
-    boxShadow: SHARP_PANEL_SHADOW,
+    background: 'var(--rich-panel-surface)',
+    border: 'var(--rich-panel-border)',
+    boxShadow: 'var(--rich-panel-shadow)',
   },
   kpiCardButton: {
     width: '100%',
@@ -4362,9 +4440,9 @@ const styles = {
     padding: 14,
   },
   panelCardSharp: {
-    background: SHARP_HERO_SURFACE,
-    border: SHARP_HERO_BORDER,
-    boxShadow: `${SHARP_HERO_INSET}, ${SHARP_HERO_SHADOW}`,
+    background: 'var(--rich-hero-surface)',
+    border: 'var(--rich-hero-border)',
+    boxShadow: 'var(--rich-hero-inset), var(--rich-hero-shadow)',
   },
   weeklyDigestCardButton: {
     width: '100%',

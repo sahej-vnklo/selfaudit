@@ -1,6 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { usePostHog } from '@posthog/react'
 import {
+  DARK_ACCENT,
+  DARK_ACCENT_DEEP,
+  DARK_ACCENT_TEXT,
+  DARK_BORDER,
+  DARK_BORDER_STRONG,
+  DARK_HERO_SURFACE,
+  DARK_PAGE_BG,
+  DARK_PANEL_SURFACE,
+  DARK_PANEL_SURFACE_ALT,
+  DARK_SOLID_PANEL,
+  DARK_TEXT,
+  DARK_TEXT_FAINT,
+  DARK_TEXT_MUTED,
+  DARK_TEXT_SOFT,
   SHARP_ACCENT,
   SHARP_ACCENT_DEEP,
   SHARP_ACCENT_TEXT,
@@ -35,18 +49,18 @@ const CONSOLE = {
 }
 
 const ELITE = {
-  page: '#060303',
-  band: '#0F0909',
-  panel: '#16100F',
-  panel2: '#1D1514',
-  line: '#2E211F',
-  lineStrong: '#4A3430',
-  ink: '#F3ECE6',
-  soft: '#D2BCB5',
-  muted: '#A88D85',
-  faint: '#7E6560',
-  accent: '#B79A92',
-  accentDeep: '#8F7069',
+  page: DARK_PAGE_BG,
+  band: DARK_HERO_SURFACE,
+  panel: DARK_PANEL_SURFACE,
+  panel2: DARK_PANEL_SURFACE_ALT,
+  line: DARK_BORDER,
+  lineStrong: DARK_BORDER_STRONG,
+  ink: DARK_TEXT,
+  soft: DARK_TEXT_SOFT,
+  muted: DARK_TEXT_MUTED,
+  faint: DARK_TEXT_FAINT,
+  accent: DARK_ACCENT,
+  accentDeep: DARK_ACCENT_DEEP,
 }
 
 const LIGHT = {
