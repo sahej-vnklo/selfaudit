@@ -234,6 +234,21 @@ const TIERS = [
 ]
 
 const TIER_ORDER = { foundation: 0, intelligence: 1, essential: 0, business: 1, portfolio: 2, free: 0, paid: 1 }
+const NOTIFICATION_AREAS = [
+  { key: 'goal_progress', label: 'Goal progress' },
+  { key: 'revenue', label: 'Revenue' },
+  { key: 'operations', label: 'Operations' },
+  { key: 'customer_experience', label: 'Customer experience' },
+  { key: 'people', label: 'People' },
+  { key: 'connectors', label: 'Connectors' },
+  { key: 'critical_risks', label: 'Critical risks' },
+]
+const DEFAULT_NOTIFICATION_PREFS = {
+  enabled: true,
+  frequency: 'daily',
+  channels: ['in_app'],
+  areas: NOTIFICATION_AREAS.map((area) => area.key),
+}
 const SECTIONS = ['home', 'reports', 'intelligence', 'business-state', 'connectors', 'agent', 'billing', 'account']
 
 function normalizeTier(raw) {
@@ -954,6 +969,11 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
   const [openIssuesExpanded, setOpenIssuesExpanded] = useState(false)
   const [auditHistoryExpanded, setAuditHistoryExpanded] = useState(false)
   const [aiOpportunitiesExpanded, setAiOpportunitiesExpanded] = useState(false)
+  const [weeklyDigestExpanded, setWeeklyDigestExpanded] = useState(false)
+  const [notificationPrefs, setNotificationPrefs] = useState(DEFAULT_NOTIFICATION_PREFS)
+  const [prefsLoading, setPrefsLoading] = useState(true)
+  const [savingPrefs, setSavingPrefs] = useState(false)
+  const [prefsToast, setPrefsToast] = useState('')
   const latestReport = reports[0] || null
   const latestDiagnosticReport = getLatestDiagnosticReport(reports)
   const latestContent = latestDiagnosticReport ? parseReportContent(latestDiagnosticReport) : null
@@ -965,6 +985,8 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
   const healthScore = latestDomains.length ? computeHealthScore(latestDomains) : null
   const openIssuesCount = flaggedDomains.length
   const goalState = extractGoalState(profile, reports, businessState)
+  const normalizedTier = normalizeTier(profile?.tier)
+  const intelligenceUnlocked = normalizedTier === 'intelligence'
   const lastReportDate = latestDiagnosticReport?.created_at
     ? new Date(latestDiagnosticReport.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     : '—'
@@ -998,18 +1020,99 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
   }
 
   useEffect(() => {
-    if (!businessHealthExpanded && !openIssuesExpanded && !auditHistoryExpanded && !aiOpportunitiesExpanded) return undefined
+    if (!prefsToast) return undefined
+    const timeout = setTimeout(() => setPrefsToast(''), 2200)
+    return () => clearTimeout(timeout)
+  }, [prefsToast])
+
+  useEffect(() => {
+    let cancelled = false
+    if (!user?.id || !intelligenceUnlocked) {
+      setNotificationPrefs(DEFAULT_NOTIFICATION_PREFS)
+      setPrefsLoading(false)
+      return undefined
+    }
+
+    ;(async () => {
+      setPrefsLoading(true)
+      try {
+        const sb = await initSupabase()
+        const { data: prefsData } = await sb
+          .from('intelligence_notification_preferences')
+          .select('enabled, frequency, channels, areas')
+          .eq('user_id', user.id)
+          .maybeSingle()
+
+        if (cancelled) return
+        setNotificationPrefs({
+          ...DEFAULT_NOTIFICATION_PREFS,
+          ...(prefsData || {}),
+          channels: Array.isArray(prefsData?.channels) && prefsData.channels.length > 0 ? prefsData.channels : DEFAULT_NOTIFICATION_PREFS.channels,
+          areas: Array.isArray(prefsData?.areas) && prefsData.areas.length > 0 ? prefsData.areas : DEFAULT_NOTIFICATION_PREFS.areas,
+        })
+      } catch (err) {
+        console.warn('[dashboard] notification prefs load failed:', err?.message || err)
+        if (!cancelled) setNotificationPrefs(DEFAULT_NOTIFICATION_PREFS)
+      } finally {
+        if (!cancelled) setPrefsLoading(false)
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [intelligenceUnlocked, user?.id])
+
+  useEffect(() => {
+    if (!businessHealthExpanded && !openIssuesExpanded && !auditHistoryExpanded && !aiOpportunitiesExpanded && !weeklyDigestExpanded) return undefined
     const handleKeyDown = (event) => {
       if (event.key === 'Escape') {
         setBusinessHealthExpanded(false)
         setOpenIssuesExpanded(false)
         setAuditHistoryExpanded(false)
         setAiOpportunitiesExpanded(false)
+        setWeeklyDigestExpanded(false)
       }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [businessHealthExpanded, openIssuesExpanded, auditHistoryExpanded, aiOpportunitiesExpanded])
+  }, [businessHealthExpanded, openIssuesExpanded, auditHistoryExpanded, aiOpportunitiesExpanded, weeklyDigestExpanded])
+
+  const togglePreferenceArea = (areaKey) => {
+    setNotificationPrefs((prev) => {
+      const hasArea = prev.areas.includes(areaKey)
+      const nextAreas = hasArea
+        ? prev.areas.filter((item) => item !== areaKey)
+        : [...prev.areas, areaKey]
+      return { ...prev, areas: nextAreas }
+    })
+  }
+
+  const saveNotificationPrefs = async () => {
+    if (!user?.id || !intelligenceUnlocked) return
+    setSavingPrefs(true)
+    try {
+      const sb = await initSupabase()
+      const payload = {
+        user_id: user.id,
+        enabled: !!notificationPrefs.enabled,
+        frequency: notificationPrefs.frequency,
+        channels: notificationPrefs.enabled ? notificationPrefs.channels : ['in_app'],
+        areas: notificationPrefs.enabled ? notificationPrefs.areas : [],
+        updated_at: new Date().toISOString(),
+      }
+      const { error } = await sb
+        .from('intelligence_notification_preferences')
+        .upsert(payload, { onConflict: 'user_id' })
+      if (error) throw error
+      setPrefsToast('Alert preferences saved')
+    } catch (err) {
+      console.error('[dashboard] prefs save failed:', err?.message || err)
+      setPrefsToast('Save failed')
+    } finally {
+      setSavingPrefs(false)
+    }
+  }
 
   return (
     <div style={styles.pageShell}>
@@ -1030,6 +1133,7 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
                 setOpenIssuesExpanded(true)
                 setAuditHistoryExpanded(false)
                 setAiOpportunitiesExpanded(false)
+                setWeeklyDigestExpanded(false)
               }}
             >
               update status
@@ -1052,6 +1156,7 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
             setOpenIssuesExpanded(false)
             setAuditHistoryExpanded(false)
             setAiOpportunitiesExpanded(false)
+            setWeeklyDigestExpanded(false)
             setBusinessHealthExpanded((prev) => !prev)
           }}
           active={businessHealthExpanded}
@@ -1066,6 +1171,7 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
             setBusinessHealthExpanded(false)
             setAuditHistoryExpanded(false)
             setAiOpportunitiesExpanded(false)
+            setWeeklyDigestExpanded(false)
             setOpenIssuesExpanded((prev) => !prev)
           }}
           active={openIssuesExpanded}
@@ -1080,6 +1186,7 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
             setBusinessHealthExpanded(false)
             setOpenIssuesExpanded(false)
             setAiOpportunitiesExpanded(false)
+            setWeeklyDigestExpanded(false)
             setAuditHistoryExpanded((prev) => !prev)
           }}
           active={auditHistoryExpanded}
@@ -1094,6 +1201,7 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
             setBusinessHealthExpanded(false)
             setOpenIssuesExpanded(false)
             setAuditHistoryExpanded(false)
+            setWeeklyDigestExpanded(false)
             setAiOpportunitiesExpanded((prev) => !prev)
           }}
           active={aiOpportunitiesExpanded}
@@ -1111,7 +1219,18 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
         </div>
 
         <div style={styles.rightColumn}>
-          <WeeklyDigestPanel profile={profile} />
+          <WeeklyDigestAlertsCard
+            profile={profile}
+            notificationPrefs={notificationPrefs}
+            prefsLoading={prefsLoading}
+            onClick={() => {
+              setBusinessHealthExpanded(false)
+              setOpenIssuesExpanded(false)
+              setAuditHistoryExpanded(false)
+              setAiOpportunitiesExpanded(false)
+              setWeeklyDigestExpanded(true)
+            }}
+          />
         </div>
       </div>
 
@@ -1215,6 +1334,39 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
                   style={styles.businessHealthCloseBtn}
                   onClick={() => setAiOpportunitiesExpanded(false)}
                   aria-label="Close AI opportunities details"
+                >
+                  Close
+                </button>
+              )}
+            />
+          </div>
+        </div>
+      )}
+
+      {weeklyDigestExpanded && (
+        <div
+          style={styles.businessHealthOverlay}
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setWeeklyDigestExpanded(false)
+          }}
+        >
+          <div style={styles.businessHealthModal}>
+            <WeeklyDigestAlertsPanel
+              profile={profile}
+              intelligenceUnlocked={intelligenceUnlocked}
+              notificationPrefs={notificationPrefs}
+              setNotificationPrefs={setNotificationPrefs}
+              prefsLoading={prefsLoading}
+              savingPrefs={savingPrefs}
+              prefsToast={prefsToast}
+              onToggleArea={togglePreferenceArea}
+              onSavePrefs={saveNotificationPrefs}
+              right={(
+                <button
+                  type="button"
+                  style={styles.businessHealthCloseBtn}
+                  onClick={() => setWeeklyDigestExpanded(false)}
+                  aria-label="Close weekly digest and alerts"
                 >
                   Close
                 </button>
@@ -1407,7 +1559,7 @@ function BusinessHealthPanel({ latestDomains, healthIntel, goalState, right = nu
   )
 }
 
-function WeeklyDigestPanel({ profile }) {
+function WeeklyDigestAlertsCard({ profile, notificationPrefs, prefsLoading, onClick }) {
   const digest   = profile?.last_digest_summary ?? null
   const sentAt   = profile?.last_digest_sent_at ?? null
   const sentDate = sentAt
@@ -1416,53 +1568,75 @@ function WeeklyDigestPanel({ profile }) {
 
   if (profile?.tier !== 'intelligence') return null
 
+  const channelLabel = prefsLoading
+    ? 'Loading preferences…'
+    : notificationPrefs.enabled
+      ? `Alerts on · ${(notificationPrefs.channels?.[0] || 'in_app').replace('_', ' ')}`
+      : 'Alerts off'
+  const digestLabel = sentDate
+    ? `Latest digest ${sentDate}`
+    : 'No digest sent yet'
+
+  return (
+    <button type="button" style={{ ...styles.panelCard, ...styles.weeklyDigestCardButton }} onClick={onClick}>
+      <div style={styles.panelTitle}>weekly digest & alerts</div>
+      <div style={styles.weeklyDigestCardMeta}>{digestLabel}</div>
+      <div style={styles.weeklyDigestCardSub}>{channelLabel}</div>
+      <div style={styles.kpiHint}>Click for more</div>
+    </button>
+  )
+}
+
+function WeeklyDigestAlertsPanel({
+  profile,
+  intelligenceUnlocked,
+  notificationPrefs,
+  setNotificationPrefs,
+  prefsLoading,
+  savingPrefs,
+  prefsToast,
+  onToggleArea,
+  onSavePrefs,
+  right = null,
+}) {
+  const digest = profile?.last_digest_summary ?? null
+  const sentAt = profile?.last_digest_sent_at ?? null
+  const sentDate = sentAt
+    ? new Date(sentAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    : null
   const scoreColor = digest?.health_score == null ? G.textFaint
     : digest.health_score >= 70 ? G.greenText
     : digest.health_score >= 40 ? G.amberText
     : G.redText
 
   return (
-    <div style={styles.panelCard}>
-      <div style={styles.panelHeader}>
-        <div style={styles.panelTitle}>weekly digest</div>
-        {sentDate && <div style={styles.panelMeta}>{sentDate}</div>}
-      </div>
-
+    <PanelCard title="weekly digest & alerts" right={right}>
+      <div style={styles.businessHealthSectionTitle}>weekly digest</div>
       {!sentDate ? (
-        <div style={{ fontSize: 13, color: G.textFaint, lineHeight: 1.6 }}>
-          No digest sent yet. Your first will arrive next Monday at 9am UTC.
-        </div>
+        <div style={styles.weeklyDigestEmpty}>No digest sent yet. Your first will arrive next Monday at 9am UTC.</div>
       ) : (
         <>
           {digest?.health_score != null && (
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 10 }}>
-              <span style={{ fontSize: 28, fontWeight: 700, color: scoreColor, lineHeight: 1 }}>
-                {digest.health_score}
-              </span>
-              <span style={{ fontSize: 12, color: G.textFaint }}>health score</span>
+            <div style={styles.weeklyDigestScoreRow}>
+              <span style={{ ...styles.weeklyDigestScore, color: scoreColor }}>{digest.health_score}</span>
+              <span style={styles.weeklyDigestScoreLabel}>health score</span>
               {digest.connector_used && (
-                <span style={{ fontSize: 11, color: G.textFaint, background: G.surface, borderRadius: 4, padding: '2px 6px', marginLeft: 4 }}>
-                  via {digest.connector_used}
-                </span>
+                <span style={styles.weeklyDigestConnectorTag}>via {digest.connector_used}</span>
               )}
             </div>
           )}
 
           {digest?.summary && (
-            <p style={{ fontSize: 13, color: G.textSecondary, lineHeight: 1.6, marginBottom: 10 }}>
-              {digest.summary}
-            </p>
+            <p style={styles.weeklyDigestSummary}>{digest.summary}</p>
           )}
 
           {digest?.top_risks?.length > 0 && (
-            <div style={{ marginBottom: 8 }}>
-              <div style={{ fontSize: 11, color: G.textFaint, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>
-                top risks covered
-              </div>
+            <div style={styles.businessHealthSection}>
+              <div style={styles.businessHealthSectionTitle}>top risks covered</div>
               {digest.top_risks.map((r, i) => {
                 const dot = r.severity === 'critical' ? G.redText : r.severity === 'high' ? G.amberText : G.textFaint
                 return (
-                  <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginBottom: 4, fontSize: 12, color: G.textSecondary }}>
+                  <div key={i} style={styles.weeklyDigestRiskRow}>
                     <span style={{ color: dot, flexShrink: 0, marginTop: 2 }}>●</span>
                     {r.title}
                   </div>
@@ -1471,21 +1645,89 @@ function WeeklyDigestPanel({ profile }) {
             </div>
           )}
 
-          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 4 }}>
-            {digest?.risk_count > 0 && (
-              <span style={{ fontSize: 11, color: G.textFaint }}>
-                {digest.risk_count} risk{digest.risk_count !== 1 ? 's' : ''} flagged
-              </span>
-            )}
-            {digest?.open_alerts > 0 && (
-              <span style={{ fontSize: 11, color: G.textFaint }}>
-                {digest.open_alerts} open alert{digest.open_alerts !== 1 ? 's' : ''}
-              </span>
-            )}
+          <div style={styles.weeklyDigestMetaRow}>
+            <span style={styles.weeklyDigestMetaText}>Last sent {sentDate}</span>
+            {digest?.risk_count > 0 && <span style={styles.weeklyDigestMetaText}>{digest.risk_count} risk{digest.risk_count !== 1 ? 's' : ''} flagged</span>}
+            {digest?.open_alerts > 0 && <span style={styles.weeklyDigestMetaText}>{digest.open_alerts} open alert{digest.open_alerts !== 1 ? 's' : ''}</span>}
           </div>
         </>
       )}
-    </div>
+
+      <div style={styles.businessHealthSection}>
+        <div style={styles.businessHealthSectionTitle}>alert preferences</div>
+        {!intelligenceUnlocked ? (
+          <div style={styles.weeklyDigestEmpty}>Alert preferences are reserved for Intelligence users.</div>
+        ) : prefsLoading ? (
+          <div style={styles.weeklyDigestEmpty}>Loading alert preferences…</div>
+        ) : (
+          <>
+            <div style={styles.weeklyDigestPrefsIntro}>Choose the parts of the business you want this system to watch once proactive alerts go live.</div>
+
+            <label style={styles.weeklyDigestToggleRow}>
+              <input
+                type="checkbox"
+                checked={notificationPrefs.enabled}
+                onChange={(event) => setNotificationPrefs((prev) => ({ ...prev, enabled: event.target.checked }))}
+              />
+              <span style={styles.weeklyDigestToggleLabel}>Enable proactive intelligence alerts</span>
+            </label>
+
+            <div style={styles.weeklyDigestPrefsGrid}>
+              <label style={styles.weeklyDigestFieldShell}>
+                <span style={styles.businessHealthSectionTitle}>frequency</span>
+                <select
+                  value={notificationPrefs.frequency}
+                  onChange={(event) => setNotificationPrefs((prev) => ({ ...prev, frequency: event.target.value }))}
+                  style={styles.weeklyDigestSelect}
+                  disabled={!notificationPrefs.enabled}
+                >
+                  <option value="daily">Daily</option>
+                  <option value="every_3_days">Every 3 days</option>
+                  <option value="weekly">Weekly</option>
+                </select>
+              </label>
+
+              <label style={styles.weeklyDigestFieldShell}>
+                <span style={styles.businessHealthSectionTitle}>preferred channel</span>
+                <select
+                  value={notificationPrefs.channels?.[0] || 'in_app'}
+                  onChange={(event) => setNotificationPrefs((prev) => ({ ...prev, channels: [event.target.value] }))}
+                  style={styles.weeklyDigestSelect}
+                  disabled={!notificationPrefs.enabled}
+                >
+                  <option value="in_app">In-app</option>
+                  <option value="email">Email</option>
+                </select>
+              </label>
+            </div>
+
+            <div style={styles.businessHealthSection}>
+              <div style={styles.businessHealthSectionTitle}>areas to watch</div>
+              <div style={styles.weeklyDigestAreaGrid}>
+                {NOTIFICATION_AREAS.map((area) => (
+                  <label key={area.key} style={styles.weeklyDigestAreaPill}>
+                    <input
+                      type="checkbox"
+                      checked={notificationPrefs.areas.includes(area.key)}
+                      onChange={() => onToggleArea(area.key)}
+                      disabled={!notificationPrefs.enabled}
+                    />
+                    <span style={styles.weeklyDigestAreaLabel}>{area.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div style={styles.weeklyDigestSaveRow}>
+              {prefsToast ? <div style={styles.weeklyDigestToast}>{prefsToast}</div> : <div />}
+              <button type="button" onClick={onSavePrefs} disabled={savingPrefs} style={styles.weeklyDigestSaveBtn}>
+                {savingPrefs ? 'Saving…' : 'Save alert preferences'}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </PanelCard>
   )
 }
 
@@ -3657,6 +3899,24 @@ const styles = {
     borderRadius: 8,
     padding: 14,
   },
+  weeklyDigestCardButton: {
+    width: '100%',
+    textAlign: 'left',
+    cursor: 'pointer',
+    appearance: 'none',
+  },
+  weeklyDigestCardMeta: {
+    marginTop: 10,
+    fontSize: 13,
+    color: G.textSecondary,
+    lineHeight: 1.6,
+  },
+  weeklyDigestCardSub: {
+    marginTop: 10,
+    fontSize: 13,
+    color: G.greenText,
+    lineHeight: 1.6,
+  },
   panelHeader: {
     display: 'flex',
     alignItems: 'center',
@@ -3739,6 +3999,131 @@ const styles = {
     fontSize: 12,
     color: G.textSecondary,
     padding: '8px 0',
+  },
+  weeklyDigestEmpty: {
+    fontSize: 13,
+    color: G.textFaint,
+    lineHeight: 1.6,
+  },
+  weeklyDigestScoreRow: {
+    display: 'flex',
+    alignItems: 'baseline',
+    gap: 6,
+    marginBottom: 10,
+    flexWrap: 'wrap',
+  },
+  weeklyDigestScore: {
+    fontSize: 28,
+    fontWeight: 700,
+    lineHeight: 1,
+  },
+  weeklyDigestScoreLabel: {
+    fontSize: 12,
+    color: G.textFaint,
+  },
+  weeklyDigestConnectorTag: {
+    fontSize: 11,
+    color: G.textFaint,
+    background: G.surface,
+    borderRadius: 4,
+    padding: '2px 6px',
+    marginLeft: 4,
+  },
+  weeklyDigestSummary: {
+    fontSize: 13,
+    color: G.textSecondary,
+    lineHeight: 1.6,
+    marginBottom: 10,
+  },
+  weeklyDigestRiskRow: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: 6,
+    marginBottom: 4,
+    fontSize: 12,
+    color: G.textSecondary,
+  },
+  weeklyDigestMetaRow: {
+    display: 'flex',
+    gap: 12,
+    flexWrap: 'wrap',
+    marginTop: 8,
+  },
+  weeklyDigestMetaText: {
+    fontSize: 11,
+    color: G.textFaint,
+  },
+  weeklyDigestPrefsIntro: {
+    fontSize: 13,
+    color: G.textSecondary,
+    lineHeight: 1.7,
+    marginBottom: 16,
+  },
+  weeklyDigestToggleRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
+  },
+  weeklyDigestToggleLabel: {
+    fontSize: 13,
+    color: G.text,
+  },
+  weeklyDigestPrefsGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+    gap: 14,
+    marginTop: 16,
+  },
+  weeklyDigestFieldShell: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 8,
+  },
+  weeklyDigestSelect: {
+    background: G.black,
+    color: G.text,
+    border: `0.5px solid ${G.border2}`,
+    borderRadius: 12,
+    padding: '12px 14px',
+    fontSize: 13,
+  },
+  weeklyDigestAreaGrid: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  weeklyDigestAreaPill: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 8,
+    background: G.surface,
+    border: `0.5px solid ${G.border}`,
+    borderRadius: 999,
+    padding: '10px 14px',
+  },
+  weeklyDigestAreaLabel: {
+    fontSize: 12,
+    color: G.text,
+  },
+  weeklyDigestSaveRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 16,
+    marginTop: 18,
+  },
+  weeklyDigestToast: {
+    fontSize: 12,
+    color: G.accentText,
+  },
+  weeklyDigestSaveBtn: {
+    background: G.accent,
+    color: G.white,
+    border: 'none',
+    borderRadius: 8,
+    padding: '10px 16px',
+    fontSize: 12,
+    cursor: 'pointer',
   },
   issueRow: {
     display: 'flex',

@@ -100,22 +100,6 @@ function getThemeVars(theme) {
 }
 
 const FUNDING_STAGES = ['Bootstrapped', 'Pre-seed', 'Seed', 'Series A', 'Series B+', 'Public']
-const NOTIFICATION_AREAS = [
-  { key: 'goal_progress', label: 'Goal progress' },
-  { key: 'revenue', label: 'Revenue' },
-  { key: 'operations', label: 'Operations' },
-  { key: 'customer_experience', label: 'Customer experience' },
-  { key: 'people', label: 'People' },
-  { key: 'connectors', label: 'Connectors' },
-  { key: 'critical_risks', label: 'Critical risks' },
-]
-const DEFAULT_NOTIFICATION_PREFS = {
-  enabled: true,
-  frequency: 'daily',
-  channels: ['in_app'],
-  areas: NOTIFICATION_AREAS.map(area => area.key),
-}
-
 function normalizeTier(raw) {
   if (raw === 'intelligence') return 'intelligence'
   return 'foundation'
@@ -251,7 +235,6 @@ export default function IntelligenceBrief({ user, profile, onProfileChange }) {
   const [context, setContext] = useState({})
   const [docPaths, setDocPaths] = useState(() => profile?.intelligence_docs || [])
   const [synthProfile, setSynthProfile] = useState(null)
-  const [notificationPrefs, setNotificationPrefs] = useState(DEFAULT_NOTIFICATION_PREFS)
   const [openSections, setOpenSections] = useState({
     financial: true,
     operational: true,
@@ -260,7 +243,6 @@ export default function IntelligenceBrief({ user, profile, onProfileChange }) {
   })
   const [loading, setLoading] = useState(true)
   const [savingSection, setSavingSection] = useState('')
-  const [savingPrefs, setSavingPrefs] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [toast, setToast] = useState('')
   const inputRef = useRef(null)
@@ -311,30 +293,16 @@ export default function IntelligenceBrief({ user, profile, onProfileChange }) {
               .eq('user_id', user.id)
               .maybeSingle()
 
-            const { data: prefsData } = await sb
-              .from('intelligence_notification_preferences')
-              .select('enabled, frequency, channels, areas')
-              .eq('user_id', user.id)
-              .maybeSingle()
-
             if (cancelled) return
             setSynthProfile(synthData || null)
-            setNotificationPrefs({
-              ...DEFAULT_NOTIFICATION_PREFS,
-              ...(prefsData || {}),
-              channels: Array.isArray(prefsData?.channels) && prefsData.channels.length > 0 ? prefsData.channels : DEFAULT_NOTIFICATION_PREFS.channels,
-              areas: Array.isArray(prefsData?.areas) && prefsData.areas.length > 0 ? prefsData.areas : DEFAULT_NOTIFICATION_PREFS.areas,
-            })
           } catch (intelligenceErr) {
             console.warn('[intelligence-brief] synthesized profile load failed:', intelligenceErr?.message || intelligenceErr)
             if (!cancelled) {
               setSynthProfile(null)
-              setNotificationPrefs(DEFAULT_NOTIFICATION_PREFS)
             }
           }
         } else {
           setSynthProfile(null)
-          setNotificationPrefs(DEFAULT_NOTIFICATION_PREFS)
         }
       } catch (err) {
         console.warn('[intelligence-brief] load failed:', err?.message || err)
@@ -571,42 +539,6 @@ export default function IntelligenceBrief({ user, profile, onProfileChange }) {
 
   const sectionTitle = `${completionPct}% complete`
 
-  const saveNotificationPrefs = async () => {
-    if (!user?.id || !intelligenceUnlocked) return
-    setSavingPrefs(true)
-    try {
-      const sb = await initSupabase()
-      const payload = {
-        user_id: user.id,
-        enabled: !!notificationPrefs.enabled,
-        frequency: notificationPrefs.frequency,
-        channels: notificationPrefs.enabled ? notificationPrefs.channels : ['in_app'],
-        areas: notificationPrefs.enabled ? notificationPrefs.areas : [],
-        updated_at: new Date().toISOString(),
-      }
-      const { error } = await sb
-        .from('intelligence_notification_preferences')
-        .upsert(payload, { onConflict: 'user_id' })
-      if (error) throw error
-      setToast('Alert preferences saved')
-    } catch (err) {
-      console.error('[intelligence-brief] prefs save failed:', err?.message || err)
-      setToast('Save failed')
-    } finally {
-      setSavingPrefs(false)
-    }
-  }
-
-  const toggleArea = (areaKey) => {
-    setNotificationPrefs((prev) => {
-      const hasArea = prev.areas.includes(areaKey)
-      const nextAreas = hasArea
-        ? prev.areas.filter((item) => item !== areaKey)
-        : [...prev.areas, areaKey]
-      return { ...prev, areas: nextAreas }
-    })
-  }
-
   return (
     <div style={{ ...themeVars, maxWidth: 980 }}>
       <div style={pageHeader}>
@@ -702,69 +634,8 @@ export default function IntelligenceBrief({ user, profile, onProfileChange }) {
             <div style={card}>
               <div style={cardBodyStandalone}>
                 <div style={panelLabel}>Alert preferences</div>
-                <div style={{ fontSize: 13, color: COLORS.textSecondary, lineHeight: 1.7, marginBottom: 16 }}>
-                  Choose the parts of the business you want this system to watch once proactive alerts go live.
-                </div>
-
-                <label style={toggleRow}>
-                  <input
-                    type="checkbox"
-                    checked={notificationPrefs.enabled}
-                    onChange={(event) => setNotificationPrefs((prev) => ({ ...prev, enabled: event.target.checked }))}
-                  />
-                  <span style={{ fontSize: 13, color: COLORS.text }}>Enable proactive intelligence alerts</span>
-                </label>
-
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14, marginTop: 16 }}>
-                  <label style={fieldShell}>
-                    <span style={fieldLabel}>Frequency</span>
-                    <select
-                      value={notificationPrefs.frequency}
-                      onChange={(event) => setNotificationPrefs((prev) => ({ ...prev, frequency: event.target.value }))}
-                      style={prefsSelect}
-                      disabled={!notificationPrefs.enabled}
-                    >
-                      <option value="daily">Daily</option>
-                      <option value="every_3_days">Every 3 days</option>
-                      <option value="weekly">Weekly</option>
-                    </select>
-                  </label>
-
-                  <label style={fieldShell}>
-                    <span style={fieldLabel}>Preferred channel</span>
-                    <select
-                      value={notificationPrefs.channels?.[0] || 'in_app'}
-                      onChange={(event) => setNotificationPrefs((prev) => ({ ...prev, channels: [event.target.value] }))}
-                      style={prefsSelect}
-                      disabled={!notificationPrefs.enabled}
-                    >
-                      <option value="in_app">In-app</option>
-                      <option value="email">Email</option>
-                    </select>
-                  </label>
-                </div>
-
-                <div style={{ marginTop: 16 }}>
-                  <div style={fieldLabel}>Areas to watch</div>
-                  <div style={checkboxGrid}>
-                    {NOTIFICATION_AREAS.map((area) => (
-                      <label key={area.key} style={checkboxPill}>
-                        <input
-                          type="checkbox"
-                          checked={notificationPrefs.areas.includes(area.key)}
-                          onChange={() => toggleArea(area.key)}
-                          disabled={!notificationPrefs.enabled}
-                        />
-                        <span style={{ fontSize: 12, color: COLORS.text }}>{area.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 18 }}>
-                  <button type="button" onClick={saveNotificationPrefs} disabled={savingPrefs} style={saveBtn}>
-                    {savingPrefs ? 'Saving…' : 'Save alert preferences'}
-                  </button>
+                <div style={{ fontSize: 13, color: COLORS.textSecondary, lineHeight: 1.7 }}>
+                  Alert preferences now live on the dashboard inside <strong>Weekly digest &amp; alerts</strong>, so your digest settings and proactive alert controls stay together in one place.
                 </div>
               </div>
             </div>
