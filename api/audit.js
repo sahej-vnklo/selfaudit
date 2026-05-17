@@ -147,7 +147,9 @@ async function fetchUserMemory(userId) {
       for (const row of memoryRows) {
         lines.push('')
         const date = row.session_date ? new Date(row.session_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''
-        lines.push(`[Audit — ${date}${row.status === 'done' ? ' — resolved' : ''}]`)
+        const normalizedStatus = typeof row.status === 'string' ? row.status.trim().toLowerCase() : ''
+        const unresolved = normalizedStatus && normalizedStatus !== 'done' && normalizedStatus !== 'resolved'
+        lines.push(`[Audit — ${date}${row.status === 'done' ? ' — resolved' : unresolved ? ' — unresolved' : ''}]`)
         if (row.headline)         lines.push(`Finding: ${row.headline}`)
         if (row.core_problem)     lines.push(`Core problem: ${row.core_problem}`)
         if (row.root_causes?.length)     lines.push(`Root causes: ${row.root_causes.join('; ')}`)
@@ -155,6 +157,7 @@ async function fetchUserMemory(userId) {
         if (row.domains_audited?.length)  lines.push(`Domains audited: ${row.domains_audited.join(', ')}`)
         if (row.business_state?.goal_state) lines.push(`Goal state: ${row.business_state.goal_state}`)
         if (row.business_state?.gap)        lines.push(`Gap identified: ${row.business_state.gap}`)
+        if (unresolved) lines.push('Follow-up status: previous actions still appear unresolved')
         if (row.ranked_path?.length > 0) {
           const top = row.ranked_path[0]
           if (top?.move) lines.push(`Top ranked move: ${top.move} (${top.impact ?? ''} impact, ${top.urgency ?? ''})`)
@@ -218,7 +221,57 @@ async function fetchUserMemory(userId) {
   }
 }
 
-function buildSystemPrompt(industry, domain, intelligenceBrief, userMemory, goalMode, goal, goalTimeline, goalBaseline, memoryContext, businessState, patterns, connectorContext) {
+function clipPromptLine(value, max = 240) {
+  if (typeof value !== 'string') return ''
+  const clean = value.replace(/\s+/g, ' ').trim()
+  if (!clean) return ''
+  return clean.length > max ? `${clean.slice(0, max - 1).trim()}…` : clean
+}
+
+function buildSessionContinuity(messages) {
+  if (!Array.isArray(messages) || messages.length < 2) return ''
+
+  const normalized = messages
+    .filter(msg => msg && (msg.role === 'user' || msg.role === 'assistant'))
+    .map(msg => ({ role: msg.role, content: clipPromptLine(msg.content, msg.role === 'user' ? 260 : 220) }))
+    .filter(msg => msg.content)
+
+  if (normalized.length < 2) return ''
+
+  const userMessages = normalized.filter(msg => msg.role === 'user')
+  const assistantMessages = normalized.filter(msg => msg.role === 'assistant')
+  if (userMessages.length === 0) return ''
+
+  const firstUser = userMessages[0]?.content
+  const latestUser = userMessages[userMessages.length - 1]?.content
+  const previousUserFacts = userMessages
+    .slice(Math.max(0, userMessages.length - 4), Math.max(0, userMessages.length - 1))
+    .map(msg => msg.content)
+    .filter(Boolean)
+  const latestAssistant = assistantMessages[assistantMessages.length - 1]?.content
+
+  const lines = ['CURRENT SESSION CONTINUITY (highest priority context for this reply):']
+
+  if (firstUser) lines.push(`Original issue raised this session: ${firstUser}`)
+
+  if (previousUserFacts.length > 0) {
+    lines.push('User has already said this in the current session:')
+    for (const fact of previousUserFacts) lines.push(`- ${fact}`)
+  }
+
+  if (latestAssistant) lines.push(`Last assistant question or direction: ${latestAssistant}`)
+  if (latestUser && latestUser !== firstUser) lines.push(`Latest user answer: ${latestUser}`)
+
+  lines.push('')
+  lines.push('SESSION RULES:')
+  lines.push('- Continue from this exact point. Do not restart or recap generically.')
+  lines.push('- Do not ask the user to repeat facts already stated in this session.')
+  lines.push('- If you revisit an earlier fact, reference it directly and go one level deeper.')
+
+  return lines.join('\n')
+}
+
+function buildSystemPrompt(industry, domain, intelligenceBrief, userMemory, goalMode, goal, goalTimeline, goalBaseline, businessState, patterns, connectorContext, sessionContinuity) {
   const base = `You are SelfAudit — a brutally honest, senior-level business and life advisor. Your job is to audit any situation a user brings — business, startup, side project, personal goals, career, anything.
 
 CORE RULES:
@@ -336,23 +389,33 @@ If the user raises something from a completely different industry: acknowledge i
 
 [SCOPE_LIMIT] must fire every time you redirect scope. Never add it otherwise.`
 
-  const openingRule = userMemory ? `
+  const persistentContextExists = !!(userMemory || businessState || intelligenceBrief || connectorContext)
+  const openingRule = persistentContextExists ? `
 
 OPENING RULE (memory exists — this overrides all other opening instructions):
-Your very first message MUST reference one specific finding from their past audits in USER MEMORY above.
+Your next message should reference one specific known finding, goal, or constraint from the persistent context above when doing so fits naturally.
 Use this exact format: "[Specific past finding] — is that still the main thing you're working on, or has something shifted?"
 Examples: "Last time we flagged your demo-to-close rate dropping — has that moved?" or "You were working on hitting $100k MRR — are you still on that path, or has the focus changed?"
 Do NOT open with "How can I help", "What are you working on", or any generic question. You already know this business. Act like it.` : ''
 
   const intelligenceBriefBlock = intelligenceBrief ? `\n\n---\n${intelligenceBrief}` : ''
   const memoryBlock = userMemory ? `\n\n---\n${userMemory}` : ''
-  const memoryContextBlock = memoryContext ? `\n\nMEMORY CONTEXT — This is not a first session. You have worked with this person before. Reference these past findings naturally — act like you already know their business:\n\n${memoryContext}\n\nDo not mention that you have memory or that you are referencing past sessions. Just use the context. Ask follow-up questions that build on what was already diagnosed.` : ''
-
   const businessStateBlock = businessState ? `\n\n---\n${businessState}` : ''
   const patternsBlock      = patterns      ? `\n\n---\n${patterns}`       : ''
   const connectorBlock = connectorContext ? `\n\n---\nCONNECTOR DATA\n${connectorContext}` : ''
+  const sessionContinuityBlock = sessionContinuity ? `\n\n---\n${sessionContinuity}` : ''
+  const contextPriorityBlock = `
 
-  return base + goalBlock + scopeBlock + intelligenceBriefBlock + memoryBlock + businessStateBlock + patternsBlock + connectorBlock + memoryContextBlock + openingRule
+CONTEXT PRIORITY:
+1. Current session continuity and the user's latest answer
+2. Verified numbers or live connector data
+3. Company intelligence accumulated across prior audits
+4. Recent user memory from prior sessions
+5. General patterns from similar companies
+
+If two sources conflict, do not ignore it. Name the contradiction and ask one direct clarifying question.`
+
+  return base + goalBlock + scopeBlock + intelligenceBriefBlock + businessStateBlock + memoryBlock + patternsBlock + connectorBlock + sessionContinuityBlock + contextPriorityBlock + openingRule
 }
 
 function buildReportPrompt(goalMode) {
@@ -583,7 +646,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { type, messages, industry, domain, userId, goalMode, goal, goalTimeline, goalBaseline, memoryContext } = req.body
+  const { type, messages, industry, domain, userId, goalMode, goal, goalTimeline, goalBaseline } = req.body
   if (!type || !messages) {
     return res.status(400).json({ error: 'Missing type or messages' })
   }
@@ -615,6 +678,7 @@ export default async function handler(req, res) {
     fetchPatterns(industry, domain),
   ])
   const connectorContext = await fetchConnectorContext(userId, supabase)
+  const sessionContinuity = buildSessionContinuity(messages)
 
   try {
     const response = await fetch(CLAUDE_API, {
@@ -623,7 +687,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: isReport ? (goalMode ? 4000 : 2500) : 1024,
-        system: buildSystemPrompt(industry, domain, intelligenceBrief, userMemory, goalMode, goal, goalTimeline, goalBaseline, memoryContext, businessState, patterns, connectorContext),
+        system: buildSystemPrompt(industry, domain, intelligenceBrief, userMemory, goalMode, goal, goalTimeline, goalBaseline, businessState, patterns, connectorContext, sessionContinuity),
         messages: finalMessages,
       }),
     })
@@ -674,7 +738,7 @@ export default async function handler(req, res) {
               body: JSON.stringify({
                 model: 'claude-sonnet-4-20250514',
                 max_tokens: goalMode ? 4000 : 2500,
-                system: buildSystemPrompt(industry, domain, intelligenceBrief, userMemory, goalMode, goal, goalTimeline, goalBaseline, memoryContext, businessState, patterns, connectorContext),
+                system: buildSystemPrompt(industry, domain, intelligenceBrief, userMemory, goalMode, goal, goalTimeline, goalBaseline, businessState, patterns, connectorContext, sessionContinuity),
                 messages: retryMessages,
               }),
             })

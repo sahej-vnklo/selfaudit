@@ -148,7 +148,6 @@ export default function AuditChat({ theme = 'dark', userInfo, onReportReady, con
   const [loading,       setLoading]       = useState(false)
   const [initialized,   setInitialized]   = useState(false)
   const [tierData,      setTierData]      = useState(null)   // { tier, industry, domain }
-  const [memoryContext, setMemoryContext] = useState(null)
   const [contactInfo, setContactInfo] = useState({
     name: userInfo?.name || '',
     email: userInfo?.email || '',
@@ -177,7 +176,7 @@ export default function AuditChat({ theme = 'dark', userInfo, onReportReady, con
     }
   }, [])
 
-  // Fetch tier/industry/domain + memory context for logged-in users
+  // Fetch tier/industry/domain for logged-in users
   useEffect(() => {
     if (!userInfo?.userId) return
     initSupabase()
@@ -188,25 +187,6 @@ export default function AuditChat({ theme = 'dark', userInfo, onReportReady, con
           .eq('id', userInfo.userId)
         const row = data?.[0]
         if (row) setTierData(row)
-
-        // Fetch last 3 memory entries for compounding context — non-blocking
-        try {
-          const { data: memRows } = await sb
-            .from('user_memory')
-            .select('headline, core_problem, priority_actions, status, session_date')
-            .eq('user_id', userInfo.userId)
-            .order('created_at', { ascending: false })
-            .limit(3)
-
-          if (memRows?.length > 0) {
-            const memCtx = memRows.map((m, i) =>
-              `Session ${i + 1} (${new Date(m.session_date).toLocaleDateString()}): ${m.headline}. Core problem: ${m.core_problem}. Top priorities: ${m.priority_actions?.slice(0, 2).join(', ')}. Status: ${m.status}.`
-            ).join('\n')
-            setMemoryContext(memCtx)
-          }
-        } catch {
-          // non-blocking — audit still works without memory context
-        }
       })
       .catch(() => {})
   }, [userInfo?.userId])
@@ -327,7 +307,6 @@ export default function AuditChat({ theme = 'dark', userInfo, onReportReady, con
         goal:          resolvedUserInfo?.goal ?? '',
         goalTimeline:  resolvedUserInfo?.goalTimeline ?? '',
         goalBaseline:  resolvedUserInfo?.goalBaseline ?? '',
-        memoryContext,
         token:         auditToken || undefined,
       })
       const isReady      = response.includes('[READY_FOR_REPORT]')
