@@ -825,7 +825,7 @@ const ep = {
   recommendedTitle: {
     fontSize: 32,
     lineHeight: 1.04,
-    color: 'var(--button-text)',
+    color: 'var(--text)',
     fontWeight: 600,
     maxWidth: 840,
     marginBottom: 10,
@@ -858,7 +858,7 @@ const ep = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    color: 'var(--button-text)',
+    color: 'var(--text)',
     fontSize: 16,
     flexShrink: 0,
   },

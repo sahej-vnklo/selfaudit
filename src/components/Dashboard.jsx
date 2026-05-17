@@ -4070,7 +4070,7 @@ const styles = {
     boxShadow: `${LIGHT_HERO_INSET}, inset -1px 0 0 rgba(92,114,72,0.12)`,
   },
   sidebarExpanded: {
-    width: 232,
+    width: 220,
     alignItems: 'stretch',
     padding: '16px 8px',
   },
