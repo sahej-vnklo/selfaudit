@@ -834,13 +834,14 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
           style={{
             width: 34, height: 34,
             borderRadius: 8, border: 'none',
-            background: 'transparent',
+            background: sharpThemeActive ? 'rgba(255,255,255,0.03)' : 'transparent',
             color: G.textMuted,
             cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             flexShrink: 0,
             marginBottom: 6,
             alignSelf: sidebarExpanded ? 'flex-end' : 'center',
+            boxShadow: sharpThemeActive ? 'inset 0 1px 0 rgba(255,255,255,0.03), 0 0 0 1px rgba(88,133,255,0.12)' : 'none',
           }}
         >
           {sidebarExpanded
@@ -848,12 +849,12 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
             : <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 2L10 7L5 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
           }
         </button>
-        <SidebarButton icon={<IconHome />} active={section === 'home'} onClick={() => navigateSection('home')} label="Home" expanded={sidebarExpanded} />
-        <SidebarButton icon={<IconReports />} active={section === 'reports'} onClick={() => navigateSection('reports')} label="Reports" expanded={sidebarExpanded} />
-        <SidebarButton icon={<IconIntelligence />} active={section === 'intelligence'} onClick={() => navigateSection('intelligence')} label="Intelligence brief" expanded={sidebarExpanded} />
-        <SidebarButton icon={<IconBrain />} active={section === 'business-state'} onClick={() => navigateSection('business-state')} label="What we know" expanded={sidebarExpanded} />
-        <SidebarButton icon={<IconConnectors />} active={section === 'connectors'} onClick={() => navigateSection('connectors')} label="Connectors" expanded={sidebarExpanded} />
-        <SidebarButton icon={<IconAgent />} active={section === 'agent'} onClick={() => navigateSection('agent')} label="Ask TSA" expanded={sidebarExpanded} />
+        <SidebarButton icon={<IconHome />} active={section === 'home'} onClick={() => navigateSection('home')} label="Home" expanded={sidebarExpanded} sharpTheme={sharpThemeActive} />
+        <SidebarButton icon={<IconReports />} active={section === 'reports'} onClick={() => navigateSection('reports')} label="Reports" expanded={sidebarExpanded} sharpTheme={sharpThemeActive} />
+        <SidebarButton icon={<IconIntelligence />} active={section === 'intelligence'} onClick={() => navigateSection('intelligence')} label="Intelligence brief" expanded={sidebarExpanded} sharpTheme={sharpThemeActive} />
+        <SidebarButton icon={<IconBrain />} active={section === 'business-state'} onClick={() => navigateSection('business-state')} label="What we know" expanded={sidebarExpanded} sharpTheme={sharpThemeActive} />
+        <SidebarButton icon={<IconConnectors />} active={section === 'connectors'} onClick={() => navigateSection('connectors')} label="Connectors" expanded={sidebarExpanded} sharpTheme={sharpThemeActive} />
+        <SidebarButton icon={<IconAgent />} active={section === 'agent'} onClick={() => navigateSection('agent')} label="Ask TSA" expanded={sidebarExpanded} sharpTheme={sharpThemeActive} />
         <div style={{ flex: 1 }} />
         <SidebarButton icon={<IconGear />} active={section === 'billing'} onClick={() => navigateSection('billing')} label="Billing" expanded={sidebarExpanded} />
         <button
@@ -863,6 +864,8 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
             ...styles.avatarButton,
             ...(sidebarExpanded ? styles.avatarButtonExpanded : {}),
             ...(section === 'account' ? styles.avatarButtonActive : {}),
+            ...(sharpThemeActive ? styles.avatarButtonSharp : {}),
+            ...(sharpThemeActive && section === 'account' ? styles.avatarButtonActiveSharp : {}),
           }}
           aria-label="Account"
           title="Account"
@@ -895,7 +898,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
           </div>
         </header>
 
-        <main style={styles.main}>
+        <main style={{ ...styles.main, ...(sharpThemeActive ? styles.mainSharp : {}) }}>
           {section === 'home' && (
             <HomeSection
               user={user}
@@ -3810,7 +3813,7 @@ function TierCard({ tier, currentTier, userId, email }) {
   )
 }
 
-function SidebarButton({ icon, active, onClick, label, expanded }) {
+function SidebarButton({ icon, active, onClick, label, expanded, sharpTheme = false }) {
   return (
     <button
       type="button"
@@ -3819,6 +3822,8 @@ function SidebarButton({ icon, active, onClick, label, expanded }) {
         ...styles.sidebarButton,
         ...(expanded ? styles.sidebarButtonExpanded : {}),
         ...(active ? styles.sidebarButtonActive : {}),
+        ...(sharpTheme ? styles.sidebarButtonSharp : {}),
+        ...(sharpTheme && active ? styles.sidebarButtonActiveSharp : {}),
       }}
       aria-label={label}
       title={label}
@@ -3918,8 +3923,8 @@ const styles = {
     overflowY: 'auto',
   },
   sidebarSharp: {
-    background: 'linear-gradient(180deg, rgba(27,49,82,0.98) 0%, rgba(18,38,66,0.98) 100%)',
-    boxShadow: 'inset -1px 0 0 rgba(88,133,255,0.14)',
+    background: 'linear-gradient(180deg, rgba(28,51,89,0.99) 0%, rgba(18,34,60,0.99) 58%, rgba(14,27,48,1) 100%)',
+    boxShadow: 'inset -1px 0 0 rgba(88,133,255,0.18), inset 0 1px 0 rgba(255,255,255,0.03)',
   },
   sidebarExpanded: {
     width: 232,
@@ -3948,6 +3953,15 @@ const styles = {
   sidebarButtonActive: {
     background: G.panel,
     color: G.text,
+  },
+  sidebarButtonSharp: {
+    border: '1px solid transparent',
+    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.02)',
+  },
+  sidebarButtonActiveSharp: {
+    background: 'linear-gradient(180deg, rgba(45,69,112,0.94) 0%, rgba(30,52,87,0.98) 100%)',
+    border: '1px solid rgba(88,133,255,0.26)',
+    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05), 0 10px 20px rgba(5,15,30,0.24)',
   },
   sidebarIcon: {
     width: 16,
@@ -3985,6 +3999,14 @@ const styles = {
     background: G.panel,
     color: G.text,
   },
+  avatarButtonSharp: {
+    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.02)',
+  },
+  avatarButtonActiveSharp: {
+    background: 'linear-gradient(180deg, rgba(45,69,112,0.94) 0%, rgba(30,52,87,0.98) 100%)',
+    border: '1px solid rgba(88,133,255,0.22)',
+    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05), 0 10px 20px rgba(5,15,30,0.24)',
+  },
   avatarChip: {
     width: 26,
     height: 26,
@@ -4015,8 +4037,8 @@ const styles = {
     flexShrink: 0,
   },
   topbarSharp: {
-    background: 'linear-gradient(180deg, rgba(27,49,82,0.98) 0%, rgba(20,38,64,0.98) 100%)',
-    boxShadow: 'inset 0 -1px 0 rgba(88,133,255,0.18)',
+    background: 'linear-gradient(180deg, rgba(31,56,95,0.98) 0%, rgba(22,41,70,0.99) 100%)',
+    boxShadow: 'inset 0 -1px 0 rgba(88,133,255,0.24), inset 0 1px 0 rgba(255,255,255,0.035)',
   },
   topbarLeft: {
     display: 'flex',
@@ -4057,9 +4079,9 @@ const styles = {
     fontWeight: 500,
   },
   themeToggleButtonSharp: {
-    background: 'rgba(255,255,255,0.03)',
-    border: '1px solid rgba(88,133,255,0.26)',
-    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)',
+    background: 'linear-gradient(180deg, rgba(38,64,104,0.86) 0%, rgba(26,47,79,0.96) 100%)',
+    border: '1px solid rgba(88,133,255,0.3)',
+    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05), 0 8px 20px rgba(5,15,30,0.16)',
   },
   themeToggleIcon: {
     fontSize: 15,
@@ -4077,9 +4099,9 @@ const styles = {
     whiteSpace: 'nowrap',
   },
   ghostButtonSharp: {
-    background: 'rgba(255,255,255,0.02)',
-    border: '1px solid rgba(88,133,255,0.22)',
-    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.025)',
+    background: 'linear-gradient(180deg, rgba(34,58,95,0.82) 0%, rgba(22,41,70,0.94) 100%)',
+    border: '1px solid rgba(88,133,255,0.26)',
+    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04), 0 8px 20px rgba(5,15,30,0.14)',
   },
   primaryButton: {
     background: G.accent,
@@ -4097,6 +4119,9 @@ const styles = {
     flex: 1,
     overflowY: 'auto',
     padding: 20,
+  },
+  mainSharp: {
+    background: 'radial-gradient(circle at top left, rgba(66,108,184,0.12) 0%, rgba(16,27,51,0) 24%), linear-gradient(180deg, #12213D 0%, #0D1930 100%)',
   },
   pageShell: {
     maxWidth: 1240,
@@ -4196,9 +4221,9 @@ const styles = {
     flexDirection: 'column',
   },
   kpiCardSharp: {
-    background: 'linear-gradient(180deg, rgba(31,48,79,0.78) 0%, rgba(23,43,71,0.92) 100%)',
-    border: '1px solid rgba(88,133,255,0.18)',
-    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)',
+    background: 'linear-gradient(180deg, rgba(39,63,102,0.9) 0%, rgba(23,43,71,0.98) 100%)',
+    border: '1px solid rgba(88,133,255,0.24)',
+    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.045), 0 12px 26px rgba(5,15,30,0.16)',
   },
   kpiCardButton: {
     width: '100%',
@@ -4308,9 +4333,9 @@ const styles = {
     padding: 14,
   },
   panelCardSharp: {
-    background: 'linear-gradient(180deg, rgba(31,48,79,0.74) 0%, rgba(23,43,71,0.92) 100%)',
-    border: '1px solid rgba(88,133,255,0.18)',
-    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)',
+    background: 'linear-gradient(180deg, rgba(39,63,102,0.86) 0%, rgba(23,43,71,0.96) 100%)',
+    border: '1px solid rgba(88,133,255,0.22)',
+    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.045), 0 12px 28px rgba(5,15,30,0.16)',
   },
   weeklyDigestCardButton: {
     width: '100%',

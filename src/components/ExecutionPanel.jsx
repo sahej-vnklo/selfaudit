@@ -795,9 +795,9 @@ const ep = {
     marginBottom: '1rem',
   },
   formatsPanelSharp: {
-    border: '1px solid rgba(88, 133, 255, 0.24)',
-    background: 'linear-gradient(180deg, rgba(27,49,82,0.96) 0%, rgba(18,38,66,0.98) 100%)',
-    boxShadow: '0 0 0 1px rgba(88,133,255,0.08) inset',
+    border: '1px solid rgba(88, 133, 255, 0.28)',
+    background: 'linear-gradient(180deg, rgba(39,63,102,0.9) 0%, rgba(22,41,70,0.98) 100%)',
+    boxShadow: '0 0 0 1px rgba(88,133,255,0.1) inset, 0 16px 30px rgba(5,15,30,0.16)',
   },
   formatsHeader: {
     marginBottom: 14,
@@ -835,9 +835,9 @@ const ep = {
     flex: '0 1 auto',
   },
   outputCardSharp: {
-    background: 'rgba(255,255,255,0.03)',
-    border: '1px solid rgba(88,133,255,0.16)',
-    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.025)',
+    background: 'linear-gradient(180deg, rgba(35,58,95,0.84) 0%, rgba(23,43,71,0.98) 100%)',
+    border: '1px solid rgba(88,133,255,0.2)',
+    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.035), 0 10px 20px rgba(5,15,30,0.12)',
   },
   outputCardSelected: {
     border: '1px solid var(--accent)',
@@ -845,9 +845,9 @@ const ep = {
     background: 'rgba(58,115,234,0.10)',
   },
   outputCardSelectedSharp: {
-    border: '1px solid rgba(88,133,255,0.55)',
-    background: 'rgba(88,133,255,0.14)',
-    boxShadow: '0 0 0 1px rgba(88,133,255,0.14) inset, 0 12px 24px rgba(0,0,0,0.18)',
+    border: '1px solid rgba(88,133,255,0.62)',
+    background: 'linear-gradient(180deg, rgba(72,109,187,0.34) 0%, rgba(37,64,108,0.98) 100%)',
+    boxShadow: '0 0 0 1px rgba(88,133,255,0.18) inset, 0 14px 28px rgba(0,0,0,0.2)',
   },
   outputCardDisabled: {
     cursor: 'not-allowed',
