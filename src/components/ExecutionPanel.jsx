@@ -16,6 +16,21 @@ import {
   DARK_TEXT,
   DARK_TEXT_MUTED,
   DARK_TEXT_SOFT,
+  LIGHT_ACCENT,
+  LIGHT_ACCENT_SOFT,
+  LIGHT_BORDER,
+  LIGHT_HERO_BORDER,
+  LIGHT_HERO_INSET,
+  LIGHT_HERO_SHADOW,
+  LIGHT_HERO_SURFACE,
+  LIGHT_INPUT_BG,
+  LIGHT_PAGE_BG,
+  LIGHT_PANEL_BORDER,
+  LIGHT_PANEL_SHADOW,
+  LIGHT_PANEL_SURFACE,
+  LIGHT_TEXT,
+  LIGHT_TEXT_MUTED,
+  LIGHT_TEXT_SOFT,
   SHARP_ACCENT,
   SHARP_ACCENT_SOFT,
   SHARP_BORDER,
@@ -50,15 +65,15 @@ const THEMES = {
     buttonBorder: DARK_ACCENT,
   },
   light: {
-    bg: '#F5F0EA',
-    surface: '#EFE7DF',
-    border: '#D9C9BE',
-    text: '#261B19',
-    textSoft: '#6E5B55',
-    textMuted: '#8A746D',
-    accent: '#A98D86',
-    accentSoft: '#E8DDD3',
-    inputBg: '#E8DDD3',
+    bg: LIGHT_PAGE_BG,
+    surface: LIGHT_PANEL_SURFACE,
+    border: LIGHT_BORDER,
+    text: LIGHT_TEXT,
+    textSoft: LIGHT_TEXT_SOFT,
+    textMuted: LIGHT_TEXT_MUTED,
+    accent: LIGHT_ACCENT,
+    accentSoft: LIGHT_ACCENT_SOFT,
+    inputBg: LIGHT_INPUT_BG,
     error: '#8C2A2A',
     buttonText: '#FBF7F2',
     buttonTextSoft: '#FBF7F2',
@@ -104,6 +119,16 @@ function getThemeVars(theme) {
             heroShadow: DARK_HERO_SHADOW,
             panelShadow: DARK_PANEL_SHADOW,
           }
+        : theme === 'light'
+          ? {
+              heroSurface: LIGHT_HERO_SURFACE,
+              panelSurface: LIGHT_PANEL_SURFACE,
+              heroBorder: LIGHT_HERO_BORDER,
+              panelBorder: LIGHT_PANEL_BORDER,
+              heroInset: LIGHT_HERO_INSET,
+              heroShadow: LIGHT_HERO_SHADOW,
+              panelShadow: LIGHT_PANEL_SHADOW,
+            }
         : {
             heroSurface: C.surface,
             panelSurface: C.surface,
@@ -295,6 +320,7 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
   const themeVars = getThemeVars(theme)
   const sharpThemeActive = theme === 'sharp'
   const darkThemeActive = theme === 'dark'
+  const lightThemeActive = theme === 'light'
   const reportOptions = useMemo(() => {
     const fromList = Array.isArray(reports) ? reports.filter(isActionableReport) : []
     if (fromList.length > 0) return fromList
@@ -573,7 +599,7 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
       </div>
 
       {showFormats && (
-        <div style={{ ...ep.formatsPanel, ...((sharpThemeActive || darkThemeActive) ? ep.formatsPanelSharp : {}) }}>
+        <div style={{ ...ep.formatsPanel, ...((sharpThemeActive || darkThemeActive || lightThemeActive) ? ep.formatsPanelSharp : {}) }}>
           <div style={ep.formatsHeader}>
             <div style={ep.formatsEyebrow}>Build from this audit</div>
             <div style={ep.formatsSub}>
@@ -591,10 +617,11 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
                   type="button"
                   style={{
                     ...ep.outputCard,
-                    ...((sharpThemeActive || darkThemeActive) ? ep.outputCardSharp : {}),
+                    ...((sharpThemeActive || darkThemeActive || lightThemeActive) ? ep.outputCardSharp : {}),
                     ...(isSelected ? ep.outputCardSelected : {}),
                     ...(isSelected && sharpThemeActive ? ep.outputCardSelectedSharp : {}),
                     ...(isSelected && darkThemeActive ? ep.outputCardSelectedDark : {}),
+                    ...(isSelected && lightThemeActive ? ep.outputCardSelectedLight : {}),
                     ...(generating ? ep.outputCardDisabled : {}),
                   }}
                   onClick={() => !generating && setSelectedType(type)}
@@ -924,6 +951,11 @@ const ep = {
     border: '1px solid rgba(183,154,146,0.5)',
     background: 'linear-gradient(180deg, rgba(58,42,39,0.4) 0%, rgba(35,25,24,0.99) 100%)',
     boxShadow: '0 0 0 1px rgba(183,154,146,0.12) inset, 0 14px 28px rgba(0,0,0,0.24)',
+  },
+  outputCardSelectedLight: {
+    border: '1px solid rgba(84,105,71,0.28)',
+    background: 'linear-gradient(180deg, rgba(245,248,239,0.98) 0%, rgba(232,240,224,0.98) 100%)',
+    boxShadow: '0 0 0 1px rgba(84,105,71,0.08) inset, 0 14px 28px rgba(53,58,62,0.06)',
   },
   outputCardDisabled: {
     cursor: 'not-allowed',

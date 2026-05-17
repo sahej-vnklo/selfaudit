@@ -30,6 +30,33 @@ import {
   DARK_TEXT_FAINT,
   DARK_TEXT_MUTED,
   DARK_TEXT_SOFT,
+  LIGHT_ACCENT,
+  LIGHT_ACCENT_SOFT,
+  LIGHT_ACCENT_TEXT,
+  LIGHT_AMBER,
+  LIGHT_AMBER_BG,
+  LIGHT_AMBER_TEXT,
+  LIGHT_BORDER,
+  LIGHT_BORDER_STRONG,
+  LIGHT_GREEN,
+  LIGHT_GREEN_BG,
+  LIGHT_GREEN_TEXT,
+  LIGHT_HERO_BORDER,
+  LIGHT_HERO_INSET,
+  LIGHT_HERO_SHADOW,
+  LIGHT_HERO_SURFACE,
+  LIGHT_PAGE_BG,
+  LIGHT_PANEL_BORDER,
+  LIGHT_PANEL_SHADOW,
+  LIGHT_PANEL_SURFACE,
+  LIGHT_RED,
+  LIGHT_RED_BG,
+  LIGHT_RED_TEXT,
+  LIGHT_SOLID_PANEL_ALT,
+  LIGHT_TEXT,
+  LIGHT_TEXT_FAINT,
+  LIGHT_TEXT_MUTED,
+  LIGHT_TEXT_SOFT,
   SHARP_ACCENT,
   SHARP_ACCENT_SOFT,
   SHARP_ACCENT_TEXT,
@@ -95,30 +122,30 @@ const THEMES = {
     overlaySoft: 'rgba(0,0,0,0.4)',
   },
   light: {
-    bg: '#F3F1EA',
-    surface: '#A8B694',
-    surface2: '#F6F4EE',
-    surface3: '#FFFFFF',
-    panel: '#FFFFFF',
-    panelAlt: '#EEF1E6',
-    border: '#CCD4C3',
-    border2: '#B0BAA4',
-    text: '#263022',
-    textSecondary: '#4C5D43',
-    textMuted: '#67765D',
-    textFaint: '#95A08A',
-    accent: '#546947',
-    accentLight: '#E5EBDD',
-    accentText: '#263022',
-    red: '#8C2A2A',
-    redBg: '#FAE4E0',
-    redText: '#8C2A2A',
-    amber: '#8A6A30',
-    amberBg: '#FAF0DC',
-    amberText: '#7A5A10',
-    green: '#2D6B45',
-    greenBg: '#D8F0E0',
-    greenText: '#1A6B3A',
+    bg: LIGHT_PAGE_BG,
+    surface: LIGHT_HERO_SURFACE,
+    surface2: LIGHT_PANEL_SURFACE,
+    surface3: LIGHT_SOLID_PANEL_ALT,
+    panel: LIGHT_PANEL_SURFACE,
+    panelAlt: LIGHT_HERO_SURFACE,
+    border: LIGHT_BORDER,
+    border2: LIGHT_BORDER_STRONG,
+    text: LIGHT_TEXT,
+    textSecondary: LIGHT_TEXT_SOFT,
+    textMuted: LIGHT_TEXT_MUTED,
+    textFaint: LIGHT_TEXT_FAINT,
+    accent: LIGHT_ACCENT,
+    accentLight: LIGHT_ACCENT_SOFT,
+    accentText: LIGHT_ACCENT_TEXT,
+    red: LIGHT_RED,
+    redBg: LIGHT_RED_BG,
+    redText: LIGHT_RED_TEXT,
+    amber: LIGHT_AMBER,
+    amberBg: LIGHT_AMBER_BG,
+    amberText: LIGHT_AMBER_TEXT,
+    green: LIGHT_GREEN,
+    greenBg: LIGHT_GREEN_BG,
+    greenText: LIGHT_GREEN_TEXT,
     blue: '#4A7A6A',
     violet: '#6A7A5A',
     sand: '#4F6642',
@@ -216,6 +243,16 @@ function getThemeVars(theme) {
             heroShadow: DARK_HERO_SHADOW,
             panelShadow: DARK_PANEL_SHADOW,
           }
+        : theme === 'light'
+          ? {
+              heroSurface: LIGHT_HERO_SURFACE,
+              panelSurface: LIGHT_PANEL_SURFACE,
+              heroBorder: LIGHT_HERO_BORDER,
+              panelBorder: LIGHT_PANEL_BORDER,
+              heroInset: LIGHT_HERO_INSET,
+              heroShadow: LIGHT_HERO_SHADOW,
+              panelShadow: LIGHT_PANEL_SHADOW,
+            }
         : {
             heroSurface: C.surface,
             panelSurface: C.surface2,
@@ -635,7 +672,8 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
   const themeVars = getThemeVars(theme)
   const sharpThemeActive = theme === 'sharp'
   const darkThemeActive = theme === 'dark'
-  const richThemeActive = sharpThemeActive || darkThemeActive
+  const lightThemeActive = theme === 'light'
+  const richThemeActive = sharpThemeActive || darkThemeActive || lightThemeActive
   const [profile, setProfile] = useState(null)
   const [businessState, setBusinessState] = useState(null)
   const [businessStateLoading, setBusinessStateLoading] = useState(true)
@@ -921,6 +959,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
           ...(sidebarExpanded ? styles.sidebarExpanded : {}),
           ...(sharpThemeActive ? styles.sidebarSharp : {}),
           ...(darkThemeActive ? styles.sidebarDark : {}),
+          ...(lightThemeActive ? styles.sidebarLight : {}),
         }}
       >
         <button
@@ -972,7 +1011,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
       </aside>
 
       <div style={styles.appFrame}>
-        <header style={{ ...styles.topbar, ...(sharpThemeActive ? styles.topbarSharp : {}), ...(darkThemeActive ? styles.topbarDark : {}) }}>
+        <header style={{ ...styles.topbar, ...(sharpThemeActive ? styles.topbarSharp : {}), ...(darkThemeActive ? styles.topbarDark : {}), ...(lightThemeActive ? styles.topbarLight : {}) }}>
           <div style={styles.topbarLeft}>
             <div style={styles.logo} onClick={() => navigateSection('home')}>
               self<span style={{ color: G.accentText }}>audit</span>
@@ -994,7 +1033,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
           </div>
         </header>
 
-        <main style={{ ...styles.main, ...(sharpThemeActive ? styles.mainSharp : {}), ...(darkThemeActive ? styles.mainDark : {}) }}>
+        <main style={{ ...styles.main, ...(sharpThemeActive ? styles.mainSharp : {}), ...(darkThemeActive ? styles.mainDark : {}), ...(lightThemeActive ? styles.mainLight : {}) }}>
           {section === 'home' && (
             <HomeSection
               user={user}
@@ -1112,7 +1151,7 @@ function PageShell({ title, sub, actions, children }) {
 }
 
 function HomeSection({ user, profile, businessState, businessStateLoading, reports, reportsLoading, onStartAudit, onStartGoalAudit, healthIntel, theme }) {
-  const sharpThemeActive = theme === 'sharp' || theme === 'dark'
+  const sharpThemeActive = theme === 'sharp' || theme === 'dark' || theme === 'light'
   const [businessHealthExpanded, setBusinessHealthExpanded] = useState(false)
   const [openIssuesExpanded, setOpenIssuesExpanded] = useState(false)
   const [auditHistoryExpanded, setAuditHistoryExpanded] = useState(false)
@@ -1908,7 +1947,7 @@ function WeeklyDigestAlertsCard({ profile, notificationPrefs, prefsLoading, onCl
       type="button"
       style={{
         ...styles.panelCard,
-        ...((theme === 'sharp' || theme === 'dark') ? styles.panelCardSharp : {}),
+        ...((theme === 'sharp' || theme === 'dark' || theme === 'light') ? styles.panelCardSharp : {}),
         ...styles.weeklyDigestCardButton,
       }}
       onClick={onClick}
@@ -4026,6 +4065,10 @@ const styles = {
     background: DARK_HERO_SURFACE,
     boxShadow: `${DARK_HERO_INSET}, inset -1px 0 0 rgba(183,154,146,0.18)`,
   },
+  sidebarLight: {
+    background: LIGHT_HERO_SURFACE,
+    boxShadow: `${LIGHT_HERO_INSET}, inset -1px 0 0 rgba(92,114,72,0.12)`,
+  },
   sidebarExpanded: {
     width: 232,
     alignItems: 'stretch',
@@ -4144,6 +4187,10 @@ const styles = {
     background: DARK_HERO_SURFACE,
     boxShadow: `${DARK_HERO_INSET}, inset 0 -1px 0 rgba(183,154,146,0.18)`,
   },
+  topbarLight: {
+    background: LIGHT_HERO_SURFACE,
+    boxShadow: `${LIGHT_HERO_INSET}, inset 0 -1px 0 rgba(92,114,72,0.12)`,
+  },
   topbarLeft: {
     display: 'flex',
     alignItems: 'center',
@@ -4229,6 +4276,9 @@ const styles = {
   },
   mainDark: {
     background: DARK_PAGE_BG,
+  },
+  mainLight: {
+    background: LIGHT_PAGE_BG,
   },
   pageShell: {
     maxWidth: 1240,
