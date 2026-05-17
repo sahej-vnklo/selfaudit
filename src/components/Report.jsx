@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { initSupabase } from '../lib/supabase.js'
 import * as Sentry from '@sentry/react'
-import { generateReport, sendReportEmail } from '../lib/audit.js'
+import { generateReport } from '../lib/audit.js'
 import { usePostHog } from '@posthog/react'
 import ExecutionPanel from './ExecutionPanel.jsx'
 import DiagnosticReport from './reports/DiagnosticReport.jsx'
@@ -203,7 +203,6 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
   const [report, setReport] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [shareState, setShareState] = useState('idle') // idle | sending | sent | error
   const [downloadState, setDownloadState] = useState('idle') // idle | downloading
   const posthog = usePostHog()
 
@@ -330,26 +329,6 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
     }
   }
 
-  const handleShare = async () => {
-    if (shareState !== 'idle') return
-    setShareState('sending')
-    posthog?.capture('report_shared', { email: userInfo?.email })
-    try {
-      let shareToken = ''
-      if (userInfo?.userId) {
-        const sb = await initSupabase()
-        const { data: { session: _s } } = await sb.auth.getSession()
-        shareToken = _s?.access_token || ''
-      }
-      await sendReportEmail({ userInfo, report, token: shareToken || undefined })
-      setShareState('sent')
-    } catch (e) {
-      Sentry.captureException(e)
-      posthog?.captureException(e)
-      setShareState('error')
-    }
-  }
-
   if (loading) return <LoadingScreen theme={theme} />
   if (error) return <ErrorScreen error={error} theme={theme} />
 
@@ -365,10 +344,6 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
     : mode === 'EXECUTION'
       ? report.execution_context
       : report.acknowledgment
-
-  const shareCopy = mode === 'DIAGNOSTIC'
-    ? 'Vnklo implements AI for businesses like yours. One click sends them your full audit — they\'ll come back with a concrete plan.'
-    : 'Share this report with Vnklo and we\'ll reach out to talk through next steps. One click.'
 
   const reportBody = isGoal
     ? (
@@ -475,47 +450,6 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
             </div>
           </div>
         )}
-
-        {/* Share CTA */}
-        <div data-pdf-hide style={styles.shareCta}>
-          <div style={styles.shareCard}>
-            <div style={styles.shareLeft}>
-              <p style={styles.shareTitle}>Want to act on this?</p>
-              <p style={styles.shareBody}>{shareCopy}</p>
-            </div>
-            <div style={styles.shareRight}>
-              {shareState === 'idle' && (
-                <button style={styles.shareBtn} onClick={handleShare}>
-                  Share with Vnklo
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ marginLeft: 7 }}>
-                    <path d="M2 7h10M7 2l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </button>
-              )}
-              {shareState === 'sending' && (
-                <div style={styles.shareStatus}>
-                  <div style={styles.spinner} />
-                  Sending...
-                </div>
-              )}
-              {shareState === 'sent' && (
-                <div style={{ ...styles.shareStatus, color: 'var(--accent-text)' }}>
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                    <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.2"/>
-                    <path d="M5 8l2.5 2.5L11 5.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                  Sent — Vnklo will be in touch.
-                </div>
-              )}
-              {shareState === 'error' && (
-                <div style={{ ...styles.shareStatus, color: 'var(--danger-text)', flexDirection: 'column', gap: 6 }}>
-                  <span>Failed to send.</span>
-                  <button style={styles.retryBtn} onClick={() => { setShareState('idle') }}>Try again</button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
 
       </div>
     </div>
@@ -1055,31 +989,6 @@ const styles = {
   anonSignIn: {
     fontSize: 12, color: 'var(--gray-400)', textDecoration: 'none',
     cursor: 'pointer',
-  },
-  shareCta: { marginTop: '1rem', marginBottom: '1.5rem' },
-  shareCard: {
-    border: '1.5px solid var(--green)', borderRadius: 'var(--radius)',
-    padding: '1.5rem', display: 'flex', gap: '1.5rem',
-    alignItems: 'center', flexWrap: 'wrap'
-  },
-  shareLeft: { flex: 1, minWidth: 200 },
-  shareTitle: { fontSize: 15, fontWeight: 500, marginBottom: 6, color: 'var(--text)' },
-  shareBody: { fontSize: 13, color: 'var(--gray-600)', lineHeight: 1.6 },
-  shareRight: { flexShrink: 0 },
-  shareBtn: {
-    display: 'inline-flex', alignItems: 'center',
-    background: 'var(--green)', color: 'var(--button-text)',
-    fontSize: 14, fontWeight: 500, padding: '11px 20px',
-    borderRadius: 'var(--radius)', border: 'none', cursor: 'pointer',
-    transition: 'background 0.15s', whiteSpace: 'nowrap'
-  },
-  shareStatus: {
-    display: 'flex', alignItems: 'center', gap: 8,
-    fontSize: 13, color: 'var(--gray-600)'
-  },
-  retryBtn: {
-    fontSize: 12, color: 'var(--green)', background: 'none',
-    border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0
   },
   spinner: {
     width: 18, height: 18, borderRadius: '50%',
