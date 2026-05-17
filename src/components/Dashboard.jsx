@@ -953,6 +953,7 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
   const [businessHealthExpanded, setBusinessHealthExpanded] = useState(false)
   const [openIssuesExpanded, setOpenIssuesExpanded] = useState(false)
   const [auditHistoryExpanded, setAuditHistoryExpanded] = useState(false)
+  const [aiOpportunitiesExpanded, setAiOpportunitiesExpanded] = useState(false)
   const latestReport = reports[0] || null
   const latestDiagnosticReport = getLatestDiagnosticReport(reports)
   const latestContent = latestDiagnosticReport ? parseReportContent(latestDiagnosticReport) : null
@@ -997,17 +998,18 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
   }
 
   useEffect(() => {
-    if (!businessHealthExpanded && !openIssuesExpanded && !auditHistoryExpanded) return undefined
+    if (!businessHealthExpanded && !openIssuesExpanded && !auditHistoryExpanded && !aiOpportunitiesExpanded) return undefined
     const handleKeyDown = (event) => {
       if (event.key === 'Escape') {
         setBusinessHealthExpanded(false)
         setOpenIssuesExpanded(false)
         setAuditHistoryExpanded(false)
+        setAiOpportunitiesExpanded(false)
       }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [businessHealthExpanded, openIssuesExpanded, auditHistoryExpanded])
+  }, [businessHealthExpanded, openIssuesExpanded, auditHistoryExpanded, aiOpportunitiesExpanded])
 
   return (
     <div style={styles.pageShell}>
@@ -1027,6 +1029,7 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
                 setBusinessHealthExpanded(false)
                 setOpenIssuesExpanded(true)
                 setAuditHistoryExpanded(false)
+                setAiOpportunitiesExpanded(false)
               }}
             >
               update status
@@ -1048,6 +1051,7 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
           onClick={() => {
             setOpenIssuesExpanded(false)
             setAuditHistoryExpanded(false)
+            setAiOpportunitiesExpanded(false)
             setBusinessHealthExpanded((prev) => !prev)
           }}
           active={businessHealthExpanded}
@@ -1061,6 +1065,7 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
           onClick={() => {
             setBusinessHealthExpanded(false)
             setAuditHistoryExpanded(false)
+            setAiOpportunitiesExpanded(false)
             setOpenIssuesExpanded((prev) => !prev)
           }}
           active={openIssuesExpanded}
@@ -1074,15 +1079,24 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
           onClick={() => {
             setBusinessHealthExpanded(false)
             setOpenIssuesExpanded(false)
+            setAiOpportunitiesExpanded(false)
             setAuditHistoryExpanded((prev) => !prev)
           }}
           active={auditHistoryExpanded}
         />
         <KpiCard
-          label="Goal progress"
-          value={goalState.goal ? (typeof goalState.progress === 'number' ? `${goalState.progress}%` : '—') : '—'}
-          delta={goalState.goal ? goalState.goal : 'No active goal'}
-          tone={typeof goalState.progress === 'number' ? 'up' : 'neutral'}
+          label="AI opportunities"
+          value={reportsLoading ? '…' : opportunityItems.length}
+          delta={opportunityItems.length === 0 ? 'No opportunities extracted yet' : `${opportunityItems.length} ranked opportunities ready to review`}
+          tone={opportunityItems.length > 0 ? 'up' : 'neutral'}
+          hint={aiOpportunitiesExpanded ? 'Click to hide details' : 'Click for more'}
+          onClick={() => {
+            setBusinessHealthExpanded(false)
+            setOpenIssuesExpanded(false)
+            setAuditHistoryExpanded(false)
+            setAiOpportunitiesExpanded((prev) => !prev)
+          }}
+          active={aiOpportunitiesExpanded}
         />
       </div>
 
@@ -1098,14 +1112,6 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
 
         <div style={styles.rightColumn}>
           <WeeklyDigestPanel profile={profile} />
-          <AiOpportunitiesCard
-            user={user}
-            userInfo={shareUserInfo}
-            reports={reports}
-            items={opportunityItems}
-            tier={profile?.tier || 'foundation'}
-            initialShared={!!profile?.shared_with_vnklo}
-          />
         </div>
       </div>
 
@@ -1120,6 +1126,7 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
             <BusinessHealthPanel
               latestDomains={latestDomains}
               healthIntel={healthIntel}
+              goalState={goalState}
               right={(
                 <button
                   type="button"
@@ -1178,6 +1185,36 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
                   style={styles.businessHealthCloseBtn}
                   onClick={() => setAuditHistoryExpanded(false)}
                   aria-label="Close audit history details"
+                >
+                  Close
+                </button>
+              )}
+            />
+          </div>
+        </div>
+      )}
+
+      {aiOpportunitiesExpanded && (
+        <div
+          style={styles.businessHealthOverlay}
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setAiOpportunitiesExpanded(false)
+          }}
+        >
+          <div style={styles.businessHealthModal}>
+            <AiOpportunitiesDetailPanel
+              user={user}
+              userInfo={shareUserInfo}
+              reports={reports}
+              items={opportunityItems}
+              tier={profile?.tier || 'foundation'}
+              initialShared={!!profile?.shared_with_vnklo}
+              right={(
+                <button
+                  type="button"
+                  style={styles.businessHealthCloseBtn}
+                  onClick={() => setAiOpportunitiesExpanded(false)}
+                  aria-label="Close AI opportunities details"
                 >
                   Close
                 </button>
@@ -1265,11 +1302,12 @@ function AuditHistoryDetailPanel({ reports, reportsLoading, right = null }) {
   )
 }
 
-function BusinessHealthPanel({ latestDomains, healthIntel, right = null }) {
+function BusinessHealthPanel({ latestDomains, healthIntel, goalState, right = null }) {
   const score = latestDomains.length ? computeHealthScore(latestDomains) : 0
   const radius = 28
   const circumference = 2 * Math.PI * radius
   const fill = (score / 100) * circumference
+  const progress = typeof goalState?.progress === 'number' ? Math.max(0, Math.min(100, goalState.progress)) : 0
 
   const activeRisks       = healthIntel?.active_risks?.slice(0, 3)       ?? []
   const unresolvedActions = healthIntel?.unresolved_actions?.slice(0, 3) ?? []
@@ -1322,9 +1360,23 @@ function BusinessHealthPanel({ latestDomains, healthIntel, right = null }) {
             })}
           </div>
 
+          <div style={styles.businessHealthSection}>
+            <div style={styles.businessHealthSectionTitle}>goal progress</div>
+            <div style={styles.businessHealthGoalText}>
+              {goalState?.goal || 'No active goal'}
+            </div>
+            <div style={styles.goalTrack}>
+              <div style={{ ...styles.goalFill, width: `${goalState?.goal ? progress : 0}%` }} />
+            </div>
+            <div style={styles.goalMetaRow}>
+              <div>{goalState?.goal ? (typeof goalState.progress === 'number' ? `${goalState.progress}% of the way there` : 'Progress not quantified yet') : 'No goal progress yet'}</div>
+              <div>{goalState?.timeline || 'Timeline still being assessed'}</div>
+            </div>
+          </div>
+
           {activeRisks.length > 0 && (
-            <div style={{ marginTop: 20 }}>
-              <div style={{ fontSize: 11, color: G.textFaint, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>active risks</div>
+            <div style={styles.businessHealthSection}>
+              <div style={styles.businessHealthSectionTitle}>active risks</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {activeRisks.map((risk, i) => (
                   <div key={i} style={{ fontSize: 12, color: G.textSecondary, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
@@ -1337,8 +1389,8 @@ function BusinessHealthPanel({ latestDomains, healthIntel, right = null }) {
           )}
 
           {unresolvedActions.length > 0 && (
-            <div style={{ marginTop: 16 }}>
-              <div style={{ fontSize: 11, color: G.textFaint, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>unresolved actions</div>
+            <div style={styles.businessHealthSection}>
+              <div style={styles.businessHealthSectionTitle}>unresolved actions</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {unresolvedActions.map((action, i) => (
                   <div key={i} style={{ fontSize: 12, color: G.textSecondary, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
@@ -1351,22 +1403,6 @@ function BusinessHealthPanel({ latestDomains, healthIntel, right = null }) {
           )}
         </>
       )}
-    </PanelCard>
-  )
-}
-
-function GoalPanel({ goalState }) {
-  const progress = typeof goalState.progress === 'number' ? Math.max(0, Math.min(100, goalState.progress)) : 0
-  return (
-    <PanelCard title="active goal">
-      <div style={{ fontSize: 14, color: G.textSecondary, lineHeight: 1.5 }}>{goalState.goal}</div>
-      <div style={styles.goalTrack}>
-        <div style={{ ...styles.goalFill, width: `${progress}%` }} />
-      </div>
-      <div style={styles.goalMetaRow}>
-        <div>{typeof goalState.progress === 'number' ? `${goalState.progress}% of the way there` : 'Progress not quantified yet'}</div>
-        <div>{goalState.timeline || 'Timeline still being assessed'}</div>
-      </div>
     </PanelCard>
   )
 }
@@ -1453,8 +1489,7 @@ function WeeklyDigestPanel({ profile }) {
   )
 }
 
-function AiOpportunitiesCard({ user, userInfo, reports, items, tier, initialShared = false }) {
-  const [expanded, setExpanded] = useState(false)
+function AiOpportunitiesDetailPanel({ user, userInfo, reports, items, tier, initialShared = false, right = null }) {
   const [sharing, setSharing] = useState(false)
   const [shared, setShared] = useState(initialShared)
   const [error, setError] = useState('')
@@ -1524,24 +1559,15 @@ function AiOpportunitiesCard({ user, userInfo, reports, items, tier, initialShar
   }
 
   return (
-    <div style={styles.aiCard}>
-      <button type="button" style={styles.panelToggle} onClick={() => setExpanded((prev) => !prev)}>
-        <div>
-          <div style={styles.panelTitle}>AI opportunities</div>
-          <div style={styles.aiCardSub}>{subtitle}</div>
-        </div>
-        <div style={styles.panelToggleRight}>
-          <span style={styles.panelCountBadge}>{items.length}</span>
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.18s ease', color: G.textFaint }}>
-            <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </div>
-      </button>
+    <PanelCard title="AI opportunities" right={right}>
+      <div style={styles.openIssuesSummaryRow}>
+        <div style={styles.openIssuesSummaryValue}>{items.length}</div>
+        <div style={styles.openIssuesSummaryText}>{subtitle}</div>
+      </div>
 
-      {expanded && (
-        items.length === 0 ? (
-          <EmptyPanel message="Run a diagnostic report to surface concrete AI opportunities." />
-        ) : (
+      {items.length === 0 ? (
+        <EmptyPanel message="Run a diagnostic report to surface concrete AI opportunities." />
+      ) : (
         <>
           <div style={styles.aiList}>
             {items.map((item, index) => (
@@ -1586,9 +1612,8 @@ function AiOpportunitiesCard({ user, userInfo, reports, items, tier, initialShar
             {error && <div style={styles.aiErrorText}>{error}</div>}
           </div>
         </>
-        )
       )}
-    </div>
+    </PanelCard>
   )
 }
 
@@ -3852,6 +3877,21 @@ const styles = {
   openIssuesSummaryText: {
     fontSize: 13,
     color: G.textSecondary,
+  },
+  businessHealthSection: {
+    marginTop: 18,
+  },
+  businessHealthSectionTitle: {
+    fontSize: 11,
+    color: G.textFaint,
+    textTransform: 'uppercase',
+    letterSpacing: '0.06em',
+    marginBottom: 8,
+  },
+  businessHealthGoalText: {
+    fontSize: 14,
+    color: G.textSecondary,
+    lineHeight: 1.5,
   },
   goalTrack: {
     marginTop: 14,
