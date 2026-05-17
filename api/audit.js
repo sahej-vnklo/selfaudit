@@ -544,6 +544,21 @@ Write ai_opportunities as a senior advisor laying out what is now buildable for 
     "honest_take": "One sentence: what's actually achievable and why.",
     "assumptions": ["Assumption 1 that could break this", "Assumption 2"]
   },
+  "forward_trajectory": {
+    "dimension": "financial | operational | sales | people | strategic | personal",
+    "horizon": "6 months",
+    "summary": "One direct sentence on what compounds if nothing changes versus what becomes more likely if the top move is executed.",
+    "if_current_path_continues": "What likely happens if they stay on the current path. Use probability language. Use numbers only if supported by the conversation or Intelligence Brief.",
+    "if_top_recommendation_is_executed": "What likely happens if they execute the top-ranked move. Tie this to the actual move, not generic improvement.",
+    "comparison_points": [
+      {
+        "metric": "The consequence dimension being compared, e.g. LTV:CAC, close rate, error rate, team trust, decision speed, burnout risk",
+        "current_path": "Expected trajectory if nothing changes",
+        "recommended_path": "Expected trajectory if the top move is executed"
+      }
+    ],
+    "confidence_note": "One sentence explaining what evidence supports this trajectory and where uncertainty remains."
+  },
   "honest_truth": "The single hardest thing for this person to hear — the thing they are avoiding or the structural reality they cannot escape. Make it land. If AI opportunities were identified, close with one sentence connecting their identified gap to what is now buildable — make the next step obvious without being salesy."
   ${goalGapField}
 }
@@ -572,7 +587,17 @@ timeline_reality:
 - assessment must be exactly "feasible", "tight", or "unrealistic"
 - honest_take: one direct sentence — do not soften if unrealistic
 
-These 3 fields (business_state, ranked_path, timeline_reality) appear ONLY in DIAGNOSTIC mode.
+forward_trajectory:
+- Always present in DIAGNOSTIC mode
+- Compare exactly two futures: "if current path continues" vs "if top recommendation is executed"
+- Choose the consequence dimension that matters most for this audit: financial, operational, sales, people, strategic, or personal
+- Use numbers only when they are actually supported by the conversation, Intelligence Brief, or connector data
+- If hard metrics are not supported, still populate comparison_points using directional consequences rather than invented numbers
+- Use cautious language: likely, probably, at risk of, more likely to, less likely to
+- Tie the upside path to the top-ranked move, not to generic advice
+- confidence_note must explain the evidence basis and uncertainty directly
+
+These 4 fields (business_state, ranked_path, timeline_reality, forward_trajectory) appear ONLY in DIAGNOSTIC mode.
 EXECUTION and HUMAN_MOMENT reports must NOT include them.
 
 IF EXECUTION — generate this structure. ALL six fields are required. Do not omit any field.
@@ -587,10 +612,31 @@ IF EXECUTION — generate this structure. ALL six fields are required. Do not om
   ],
   "what_to_expect": "What will likely happen when they execute this. Reactions, questions, complications. Prepare them for the real shape of it.",
   "key_message": "The single most important thing they need to communicate. One sentence.",
+  "forward_trajectory": {
+    "dimension": "financial | operational | sales | people | strategic | personal",
+    "horizon": "30-90 days",
+    "summary": "Optional. Only include when there is a meaningful execution consequence to compare, such as timing, rollout quality, customer risk, team impact, or operational drag.",
+    "if_current_path_continues": "Optional. What likely happens if they execute poorly, delay, or keep the current execution approach.",
+    "if_top_recommendation_is_executed": "Optional. What likely happens if they execute the strongest recommendation well.",
+    "comparison_points": [
+      {
+        "metric": "The key consequence being compared",
+        "current_path": "Likely outcome under current execution path",
+        "recommended_path": "Likely outcome under stronger execution path"
+      }
+    ],
+    "confidence_note": "Optional. One sentence on evidence and uncertainty."
+  },
   "honest_truth": "Validation or the one thing they need to hear to do this well."
 }
 
-ALL six fields above are required. delivery_plan must contain at least two concrete steps with real action and why text, not placeholders.
+ALL six core fields above are required. delivery_plan must contain at least two concrete steps with real action and why text, not placeholders.
+
+EXECUTION forward_trajectory rules:
+- Include forward_trajectory only when there is a real consequence worth comparing between execution paths
+- Good examples: delayed customer communication vs immediate communication, sloppy rollout vs disciplined rollout, no handoff plan vs clear handoff plan
+- If included, keep it short, practical, and tied to execution quality or timing
+- If there is no meaningful compare-able consequence, omit forward_trajectory entirely
 
 IF HUMAN_MOMENT or EXECUTION_HUMAN — generate this structure. ALL six fields are required. Do not omit any field.
 
@@ -641,6 +687,41 @@ function validateGoalReport(report) {
   return issues
 }
 
+function validateForwardTrajectory(forwardTrajectory, { required = false } = {}) {
+  if (!forwardTrajectory) return required ? ['forward_trajectory'] : []
+  if (typeof forwardTrajectory !== 'object' || Array.isArray(forwardTrajectory)) return ['forward_trajectory']
+
+  const issues = []
+  const requiredFields = [
+    'dimension',
+    'horizon',
+    'summary',
+    'if_current_path_continues',
+    'if_top_recommendation_is_executed',
+    'confidence_note',
+  ]
+
+  for (const field of requiredFields) {
+    if (typeof forwardTrajectory[field] !== 'string' || !forwardTrajectory[field].trim()) {
+      issues.push(`forward_trajectory.${field}`)
+    }
+  }
+
+  if (!Array.isArray(forwardTrajectory.comparison_points) || forwardTrajectory.comparison_points.length === 0) {
+    issues.push('forward_trajectory.comparison_points')
+  } else {
+    const invalidPoint = forwardTrajectory.comparison_points.some(point =>
+      !point ||
+      typeof point.metric !== 'string' || !point.metric.trim() ||
+      typeof point.current_path !== 'string' || !point.current_path.trim() ||
+      typeof point.recommended_path !== 'string' || !point.recommended_path.trim()
+    )
+    if (invalidPoint) issues.push('forward_trajectory.comparison_points')
+  }
+
+  return issues
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
@@ -686,7 +767,7 @@ export default async function handler(req, res) {
       headers,
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: isReport ? (goalMode ? 4000 : 2500) : 1024,
+        max_tokens: isReport ? (goalMode ? 4000 : 3200) : 1024,
         system: buildSystemPrompt(industry, domain, intelligenceBrief, userMemory, goalMode, goal, goalTimeline, goalBaseline, businessState, patterns, connectorContext, sessionContinuity),
         messages: finalMessages,
       }),
@@ -707,7 +788,7 @@ export default async function handler(req, res) {
 
       const requiredHumanMoment  = ['headline','acknowledgment','what_this_actually_is','delivery_script','what_to_expect','honest_truth']
       const requiredExecution    = ['headline','execution_context','delivery_plan','what_to_expect','key_message','honest_truth']
-      const requiredDiagnostic   = ['business_state','ranked_path','timeline_reality']
+      const requiredDiagnostic   = ['business_state','ranked_path','timeline_reality','forward_trajectory']
 
       const mode = report.conversation_mode
       const required = goalMode                           ? []
@@ -716,9 +797,18 @@ export default async function handler(req, res) {
                      : mode === 'DIAGNOSTIC'               ? requiredDiagnostic
                      : null
       const goalIssues = goalMode ? validateGoalReport(report) : []
+      const trajectoryIssues = goalMode
+        ? []
+        : mode === 'DIAGNOSTIC'
+          ? validateForwardTrajectory(report.forward_trajectory, { required: true })
+          : mode === 'EXECUTION'
+            ? validateForwardTrajectory(report.forward_trajectory, { required: false })
+            : []
 
       if (required || goalMode) {
-        const missing = goalMode ? goalIssues : required.filter(f => !report[f])
+        const missing = goalMode
+          ? goalIssues
+          : [...required.filter(f => !report[f]), ...trajectoryIssues]
         if (missing.length > 0) {
           console.log(`[audit] ${mode} report missing fields: ${missing.join(', ')} — retrying`)
           try {
@@ -729,7 +819,9 @@ export default async function handler(req, res) {
                 role: 'user',
                 content: goalMode
                   ? `Your response failed GOAL report validation for these fields: ${missing.join(', ')}. Regenerate the complete JSON with the goal-mode fields populated correctly. goal_gap_analysis and ranking_logic must be objects, missing_capabilities and priority_actions must be arrays, timeline_feasibility must begin with feasible, tight, or unrealistic, and confidence_level and honest_truth must be non-empty strings.`
-                  : `Your response was missing these required fields: ${missing.join(', ')}. Regenerate the complete JSON with ALL fields populated. Every field must be a non-empty string.`,
+                  : mode === 'DIAGNOSTIC'
+                    ? `Your response failed DIAGNOSTIC report validation for these fields: ${missing.join(', ')}. Regenerate the complete JSON. forward_trajectory is required in DIAGNOSTIC mode, must compare current path vs top recommendation, must include dimension, horizon, summary, if_current_path_continues, if_top_recommendation_is_executed, comparison_points, and confidence_note, and must use numbers only when supported by evidence.`
+                    : `Your response failed EXECUTION report validation for these fields: ${missing.join(', ')}. Regenerate the complete JSON with all core EXECUTION fields populated. If you include forward_trajectory, it must be complete, practical, and tied to execution consequences.`,
               },
             ]
             const retryResponse = await fetch(CLAUDE_API, {
@@ -737,7 +829,7 @@ export default async function handler(req, res) {
               headers,
               body: JSON.stringify({
                 model: 'claude-sonnet-4-20250514',
-                max_tokens: goalMode ? 4000 : 2500,
+                max_tokens: goalMode ? 4000 : 3200,
                 system: buildSystemPrompt(industry, domain, intelligenceBrief, userMemory, goalMode, goal, goalTimeline, goalBaseline, businessState, patterns, connectorContext, sessionContinuity),
                 messages: retryMessages,
               }),

@@ -360,6 +360,7 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
         userInfo={userInfo}
         Section={Section}
         GoalGapPanel={GoalGapPanel}
+        ForwardTrajectorySection={ForwardTrajectorySection}
         ExecutionPanel={ExecutionPanel}
         styles={styles}
         statusColor={statusColor}
@@ -372,6 +373,7 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
         <ExecutionReport
           report={report}
           Section={Section}
+          ForwardTrajectorySection={ForwardTrajectorySection}
           styles={styles}
         />
       )
@@ -588,6 +590,8 @@ function buildReportHtml(report, userInfo, theme) {
       body += sec('Priority Actions', `<div class="actions-list">${report.priority_actions.map((a, i) => `
         <div class="action-row"><div class="action-num">${i + 1}</div><div class="action-text">${e(a)}</div></div>`).join('')}</div>`)
     }
+
+    body += buildForwardTrajectoryHtml(report.forward_trajectory, e)
   }
 
   if (mode === 'EXECUTION') {
@@ -597,6 +601,7 @@ function buildReportHtml(report, userInfo, theme) {
     }
     if (report.what_to_expect) body += sec('What to Expect', `<p class="prose">${e(report.what_to_expect)}</p>`)
     if (report.key_message)    body += sec('Key Message', `<div class="key-msg"><p>${e(report.key_message)}</p></div>`)
+    body += buildForwardTrajectoryHtml(report.forward_trajectory, e)
   }
 
   if (mode === 'HUMAN_MOMENT' || mode === 'EXECUTION_HUMAN') {
@@ -652,6 +657,24 @@ h1{font-size:28px;font-weight:400;line-height:1.2;margin-bottom:14px;color:${C.t
 .key-msg p{font-size:16px;color:${C.text};line-height:1.6}
 .script{background:${C.surface2};border-left:3px solid ${C.accent};border-radius:0 8px 8px 0;padding:20px 24px}
 .script p{font-size:14px;color:${C.text};line-height:1.8;white-space:pre-wrap}
+.traj-wrap{background:${C.surface};border:.5px solid ${C.border};border-radius:8px;padding:18px}
+.traj-header{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.traj-badge{font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;background:${C.accentSoft};color:${C.accentText};padding:4px 8px;border-radius:999px}
+.traj-horizon{font-size:11px;color:${C.textMuted};text-transform:uppercase;letter-spacing:.5px}
+.traj-summary{font-size:14px;color:${C.text};line-height:1.7;margin-bottom:16px}
+.traj-columns{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.traj-column{background:${C.surface2};border-radius:8px;padding:14px}
+.traj-column-label{font-size:11px;font-weight:500;color:${C.textMuted};text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.traj-column-text{font-size:13px;color:${C.text};line-height:1.7}
+.traj-table{display:flex;flex-direction:column;border:.5px solid ${C.border};border-radius:8px;overflow:hidden}
+.traj-row{display:grid;grid-template-columns:1fr 1.2fr 1.2fr}
+.traj-head{background:${C.surface2}}
+.traj-row + .traj-row{border-top:.5px solid ${C.border}}
+.traj-metric,.traj-value{padding:12px 14px;font-size:12px;line-height:1.6}
+.traj-metric{font-weight:500;color:${C.text};border-right:.5px solid ${C.border}}
+.traj-value{color:${C.textSoft};border-right:.5px solid ${C.border}}
+.traj-row .traj-value:last-child{border-right:none}
+.traj-confidence{margin-top:12px;font-size:12px;color:${C.textMuted};line-height:1.6}
 .gg-panel{border:1.5px solid ${C.accent};border-radius:8px;overflow:hidden;margin-bottom:36px}
 .gg-eyebrow{background:${C.accent};color:${C.buttonText};font-size:11px;font-weight:500;letter-spacing:.7px;text-transform:uppercase;padding:8px 18px}
 .gg-goal{background:${C.accentSoft};padding:14px 18px;display:flex;gap:10px;align-items:baseline;border-bottom:.5px solid ${C.border}}
@@ -679,6 +702,7 @@ h1{font-size:28px;font-weight:400;line-height:1.2;margin-bottom:14px;color:${C.t
 .tl-badge{font-size:10px;font-weight:700;color:${C.buttonText};padding:2px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.6px}
 .tl-lbl{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.5px;color:${C.textMuted}}
 footer{font-size:11px;color:${C.textMuted};text-align:center;margin-top:48px}
+@media (max-width: 640px){.traj-columns,.traj-row{grid-template-columns:1fr}.traj-metric,.traj-value{border-right:none}.traj-row .traj-value{border-top:.5px solid ${C.border}}}
 @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 </style>
 </head>
@@ -835,6 +859,121 @@ function Section({ title, children }) {
   )
 }
 
+function normalizeTrajectoryPoints(forwardTrajectory) {
+  return Array.isArray(forwardTrajectory?.comparison_points)
+    ? forwardTrajectory.comparison_points.filter(point =>
+        point &&
+        typeof point.metric === 'string' && point.metric.trim() &&
+        typeof point.current_path === 'string' && point.current_path.trim() &&
+        typeof point.recommended_path === 'string' && point.recommended_path.trim()
+      )
+    : []
+}
+
+function ForwardTrajectorySection({ forwardTrajectory, Section, styles }) {
+  const points = normalizeTrajectoryPoints(forwardTrajectory)
+  if (!forwardTrajectory || points.length === 0) return null
+
+  return (
+    <Section title="Forward Trajectory">
+      <div style={styles.trajectoryWrap}>
+        <div style={styles.trajectoryHeader}>
+          {forwardTrajectory.dimension && (
+            <span style={styles.trajectoryBadge}>{forwardTrajectory.dimension}</span>
+          )}
+          {forwardTrajectory.horizon && (
+            <span style={styles.trajectoryHorizon}>{forwardTrajectory.horizon}</span>
+          )}
+        </div>
+
+        {forwardTrajectory.summary && (
+          <p style={styles.trajectorySummary}>{forwardTrajectory.summary}</p>
+        )}
+
+        <div style={styles.trajectoryColumns}>
+          <div style={styles.trajectoryColumn}>
+            <div style={styles.trajectoryColumnLabel}>If current path continues</div>
+            <p style={styles.trajectoryColumnText}>{forwardTrajectory.if_current_path_continues}</p>
+          </div>
+          <div style={styles.trajectoryColumn}>
+            <div style={styles.trajectoryColumnLabel}>If top recommendation is executed</div>
+            <p style={styles.trajectoryColumnText}>{forwardTrajectory.if_top_recommendation_is_executed}</p>
+          </div>
+        </div>
+
+        <div style={styles.trajectoryTable}>
+          <div style={{ ...styles.trajectoryRow, ...styles.trajectoryTableHead }}>
+            <div style={styles.trajectoryMetricCell}>Dimension</div>
+            <div style={styles.trajectoryValueCell}>Current path</div>
+            <div style={{ ...styles.trajectoryValueCell, borderRight: 'none' }}>Recommended path</div>
+          </div>
+          {points.map((point, index) => (
+            <div
+              key={`${point.metric}-${index}`}
+              style={{
+                ...styles.trajectoryRow,
+                borderTop: index === 0 ? '0.5px solid var(--gray-200)' : '0.5px solid var(--gray-200)',
+              }}
+            >
+              <div style={styles.trajectoryMetricCell}>{point.metric}</div>
+              <div style={styles.trajectoryValueCell}>{point.current_path}</div>
+              <div style={{ ...styles.trajectoryValueCell, borderRight: 'none' }}>{point.recommended_path}</div>
+            </div>
+          ))}
+        </div>
+
+        {forwardTrajectory.confidence_note && (
+          <div style={styles.trajectoryConfidence}>
+            <span style={styles.trajectoryConfidenceLabel}>Confidence note:</span> {forwardTrajectory.confidence_note}
+          </div>
+        )}
+      </div>
+    </Section>
+  )
+}
+
+function buildForwardTrajectoryHtml(forwardTrajectory, e) {
+  const points = normalizeTrajectoryPoints(forwardTrajectory)
+  if (!forwardTrajectory || points.length === 0) return ''
+
+  return `
+    <div class="section">
+      <div class="section-title">Forward Trajectory</div>
+      <div class="traj-wrap">
+        <div class="traj-header">
+          ${forwardTrajectory.dimension ? `<span class="traj-badge">${e(forwardTrajectory.dimension)}</span>` : ''}
+          ${forwardTrajectory.horizon ? `<span class="traj-horizon">${e(forwardTrajectory.horizon)}</span>` : ''}
+        </div>
+        ${forwardTrajectory.summary ? `<p class="traj-summary">${e(forwardTrajectory.summary)}</p>` : ''}
+        <div class="traj-columns">
+          <div class="traj-column">
+            <div class="traj-column-label">If current path continues</div>
+            <p class="traj-column-text">${e(forwardTrajectory.if_current_path_continues)}</p>
+          </div>
+          <div class="traj-column">
+            <div class="traj-column-label">If top recommendation is executed</div>
+            <p class="traj-column-text">${e(forwardTrajectory.if_top_recommendation_is_executed)}</p>
+          </div>
+        </div>
+        <div class="traj-table">
+          <div class="traj-row traj-head">
+            <div class="traj-metric">Dimension</div>
+            <div class="traj-value">Current path</div>
+            <div class="traj-value">Recommended path</div>
+          </div>
+          ${points.map(point => `
+            <div class="traj-row">
+              <div class="traj-metric">${e(point.metric)}</div>
+              <div class="traj-value">${e(point.current_path)}</div>
+              <div class="traj-value">${e(point.recommended_path)}</div>
+            </div>
+          `).join('')}
+        </div>
+        ${forwardTrajectory.confidence_note ? `<div class="traj-confidence"><strong>Confidence note:</strong> ${e(forwardTrajectory.confidence_note)}</div>` : ''}
+      </div>
+    </div>`
+}
+
 function LoadingScreen({ theme }) {
   const themeVars = getThemeVars(theme)
   return (
@@ -946,6 +1085,40 @@ const styles = {
     background: 'var(--surface2)', borderRadius: 'var(--radius)', padding: '1.25rem 1.5rem'
   },
   keyMessageText: { fontSize: 16, color: 'var(--text)', lineHeight: 1.6, margin: 0, fontFamily: 'var(--serif)', fontWeight: 400 },
+  trajectoryWrap: {
+    background: 'var(--surface)', border: '0.5px solid var(--gray-200)',
+    borderRadius: 'var(--radius)', padding: '1.125rem', overflowX: 'auto'
+  },
+  trajectoryHeader: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 12 },
+  trajectoryBadge: {
+    fontSize: 10, fontWeight: 700, letterSpacing: '0.6px', textTransform: 'uppercase',
+    background: 'var(--green-light)', color: 'var(--green-dark)', padding: '4px 8px', borderRadius: '999px'
+  },
+  trajectoryHorizon: { fontSize: 11, color: 'var(--gray-400)', textTransform: 'uppercase', letterSpacing: '0.5px' },
+  trajectorySummary: { fontSize: 14, color: 'var(--text)', lineHeight: 1.7, margin: '0 0 1rem' },
+  trajectoryColumns: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, marginBottom: 16 },
+  trajectoryColumn: { background: 'var(--surface2)', borderRadius: 'var(--radius)', padding: '0.875rem' },
+  trajectoryColumnLabel: {
+    fontSize: 11, fontWeight: 500, color: 'var(--gray-400)', textTransform: 'uppercase',
+    letterSpacing: '0.5px', marginBottom: 6
+  },
+  trajectoryColumnText: { fontSize: 13, color: 'var(--text)', lineHeight: 1.7, margin: 0 },
+  trajectoryTable: {
+    display: 'flex', flexDirection: 'column', border: '0.5px solid var(--gray-200)',
+    borderRadius: 'var(--radius)', overflow: 'hidden', minWidth: 540
+  },
+  trajectoryTableHead: { background: 'var(--surface2)' },
+  trajectoryRow: { display: 'grid', gridTemplateColumns: '1fr 1.2fr 1.2fr' },
+  trajectoryMetricCell: {
+    padding: '0.75rem 0.875rem', fontSize: 12, lineHeight: 1.6, fontWeight: 500,
+    color: 'var(--text)', borderRight: '0.5px solid var(--gray-200)'
+  },
+  trajectoryValueCell: {
+    padding: '0.75rem 0.875rem', fontSize: 12, lineHeight: 1.6, color: 'var(--gray-700)',
+    borderRight: '0.5px solid var(--gray-200)'
+  },
+  trajectoryConfidence: { marginTop: 12, fontSize: 12, color: 'var(--gray-500)', lineHeight: 1.6 },
+  trajectoryConfidenceLabel: { fontWeight: 600, color: 'var(--gray-600)' },
   scriptBlock: {
     background: 'var(--gray-50)', borderLeft: '3px solid var(--green)',
     borderRadius: '0 var(--radius) var(--radius) 0', padding: '1.25rem 1.5rem'

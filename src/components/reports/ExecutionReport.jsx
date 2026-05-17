@@ -1,6 +1,6 @@
 import React from 'react'
 
-export default function ExecutionReport({ report, Section, styles }) {
+export default function ExecutionReport({ report, Section, ForwardTrajectorySection, styles }) {
   return (
     <>
       {report.delivery_plan?.length > 0 && (
@@ -32,6 +32,12 @@ export default function ExecutionReport({ report, Section, styles }) {
           </div>
         </Section>
       )}
+
+      <ForwardTrajectorySection
+        forwardTrajectory={report.forward_trajectory}
+        Section={Section}
+        styles={styles}
+      />
     </>
   )
 }

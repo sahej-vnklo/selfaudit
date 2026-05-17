@@ -5,6 +5,7 @@ export default function DiagnosticReport({
   userInfo,
   Section,
   GoalGapPanel,
+  ForwardTrajectorySection,
   ExecutionPanel,
   styles,
   statusColor,
@@ -78,6 +79,12 @@ export default function DiagnosticReport({
           ))}
         </div>
       </Section>
+
+      <ForwardTrajectorySection
+        forwardTrajectory={report.forward_trajectory}
+        Section={Section}
+        styles={styles}
+      />
 
       <ExecutionPanel report={report} userInfo={userInfo} />
     </>
