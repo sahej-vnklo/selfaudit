@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { initSupabase } from '../lib/supabase.js'
+import html2canvas from 'html2canvas'
+import { jsPDF } from 'jspdf'
 import {
   DARK_ACCENT,
   DARK_ACCENT_SOFT,
@@ -315,6 +317,133 @@ function buildScopedUserInfo(userInfo, report, parsedReport) {
   }
 }
 
+function slugifyArtifactFilename(input) {
+  return String(input || 'artifact')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
+    .slice(0, 60)
+}
+
+async function downloadArtifactPdf(artifact, artifactLabel) {
+  if (!artifact) throw new Error('Artifact not ready')
+
+  const shell = document.createElement('div')
+  shell.style.position = 'fixed'
+  shell.style.left = '-100000px'
+  shell.style.top = '0'
+  shell.style.width = '820px'
+  shell.style.padding = '40px'
+  shell.style.background = '#F7F5EF'
+  shell.style.color = '#1D241B'
+  shell.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+  shell.style.zIndex = '-1'
+
+  const title = document.createElement('h1')
+  title.textContent = artifact.title || artifactLabel || 'SelfAudit Artifact'
+  title.style.fontSize = '30px'
+  title.style.lineHeight = '1.15'
+  title.style.margin = '0 0 12px'
+  title.style.fontFamily = 'Georgia, "Times New Roman", serif'
+  title.style.fontWeight = '600'
+  shell.appendChild(title)
+
+  if (artifact.summary) {
+    const summary = document.createElement('p')
+    summary.textContent = artifact.summary
+    summary.style.fontSize = '15px'
+    summary.style.lineHeight = '1.7'
+    summary.style.color = '#4C5D43'
+    summary.style.margin = '0 0 24px'
+    shell.appendChild(summary)
+  }
+
+  ;(artifact.sections || []).forEach((section) => {
+    const sectionWrap = document.createElement('section')
+    sectionWrap.style.background = '#FFFFFF'
+    sectionWrap.style.border = '1px solid #D8D2C6'
+    sectionWrap.style.borderRadius = '12px'
+    sectionWrap.style.padding = '18px 20px'
+    sectionWrap.style.marginBottom = '14px'
+    sectionWrap.style.boxShadow = '0 10px 24px rgba(35, 41, 29, 0.05)'
+
+    const label = document.createElement('div')
+    label.textContent = section.label || 'Section'
+    label.style.fontSize = '11px'
+    label.style.letterSpacing = '0.08em'
+    label.style.textTransform = 'uppercase'
+    label.style.color = '#67765D'
+    label.style.marginBottom = '10px'
+    label.style.fontWeight = '600'
+    sectionWrap.appendChild(label)
+
+    const content = document.createElement('div')
+    content.textContent = section.content || ''
+    content.style.fontSize = '14px'
+    content.style.lineHeight = '1.8'
+    content.style.whiteSpace = 'pre-wrap'
+    content.style.color = '#263022'
+    sectionWrap.appendChild(content)
+
+    shell.appendChild(sectionWrap)
+  })
+
+  document.body.appendChild(shell)
+
+  try {
+    const canvas = await html2canvas(shell, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#F7F5EF',
+    })
+
+    const pdf = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' })
+    const pageWidth = pdf.internal.pageSize.getWidth()
+    const pageHeight = pdf.internal.pageSize.getHeight()
+    const margin = 24
+    const renderWidth = pageWidth - (margin * 2)
+    const scaleRatio = renderWidth / canvas.width
+    const sliceHeightPx = Math.floor((pageHeight - (margin * 2)) / scaleRatio)
+
+    let offsetY = 0
+    let pageIndex = 0
+
+    while (offsetY < canvas.height) {
+      const currentSliceHeight = Math.min(sliceHeightPx, canvas.height - offsetY)
+      const sliceCanvas = document.createElement('canvas')
+      sliceCanvas.width = canvas.width
+      sliceCanvas.height = currentSliceHeight
+      const sliceContext = sliceCanvas.getContext('2d')
+      if (!sliceContext) throw new Error('Failed to prepare artifact PDF page')
+
+      sliceContext.drawImage(
+        canvas,
+        0, offsetY, canvas.width, currentSliceHeight,
+        0, 0, canvas.width, currentSliceHeight
+      )
+
+      if (pageIndex > 0) pdf.addPage()
+      pdf.addImage(
+        sliceCanvas.toDataURL('image/png'),
+        'PNG',
+        margin,
+        margin,
+        renderWidth,
+        currentSliceHeight * scaleRatio
+      )
+
+      offsetY += currentSliceHeight
+      pageIndex += 1
+    }
+
+    const typeSlug = slugifyArtifactFilename(artifactLabel || artifact.type || 'artifact')
+    const titleSlug = slugifyArtifactFilename(artifact.title || 'selfaudit')
+    pdf.save(`selfaudit-${typeSlug}-${titleSlug}.pdf`)
+  } finally {
+    document.body.removeChild(shell)
+  }
+}
+
 export default function ExecutionPanel({ report, reports = [], userInfo, variant = 'report' }) {
   const theme = localStorage.getItem('sa-theme') || 'dark'
   const themeVars = getThemeVars(theme)
@@ -330,13 +459,8 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
   const [selectedReportId, setSelectedReportId] = useState(() => reportOptions[0]?.id ?? null)
   const [selectedType, setSelectedType]   = useState(null)
   const [generating, setGenerating]       = useState(false)
-  const [loadingSaved, setLoadingSaved]   = useState(false)
-  const [currentArtifact, setCurrentArtifact] = useState(null)
-  const [pastArtifacts, setPastArtifacts] = useState([])
   const [recommendations, setRecommendations] = useState([])
   const [showFormats, setShowFormats] = useState(false)
-  const [expandedPast, setExpandedPast]   = useState({})
-  const [copyState, setCopyState]         = useState({})
   const [error, setError]                 = useState(null)
 
   useEffect(() => {
@@ -375,63 +499,27 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
       if (!parsedReport) {
         setRecommendations([])
         setSelectedType(null)
-        setCurrentArtifact(null)
-        setPastArtifacts([])
         return
       }
 
       setError(null)
-      setLoadingSaved(true)
 
       try {
-        const [recommendationResponse, savedArtifactsResponse] = await Promise.all([
-          fetch('/api/generate-artifact', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ report: parsedReport, userInfo: scopedUserInfo }),
-          }).then(async (response) => response.ok ? response.json() : { recommendations: { recommended: [] } }),
-          scopedUserInfo?.userId && activeReport?.id
-            ? initSupabase().then((sb) => sb
-              .from('artifacts')
-              .select('id, artifact_type, artifact_data, created_at')
-              .eq('user_id', scopedUserInfo.userId)
-              .eq('report_id', activeReport.id)
-              .order('created_at', { ascending: false })
-            )
-            : Promise.resolve({ data: [] }),
-        ])
+        const recommendationResponse = await fetch('/api/generate-artifact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ report: parsedReport, userInfo: scopedUserInfo }),
+        }).then(async (response) => response.ok ? response.json() : { recommendations: { recommended: [] } })
 
         if (cancelled) return
 
         const recommended = recommendationResponse?.recommendations?.recommended ?? []
         setRecommendations(recommended)
         setSelectedType((prev) => (prev && ARTIFACT_TYPES.includes(prev) ? prev : (recommended[0] || null)))
-
-        const rows = savedArtifactsResponse?.data ?? []
-        const hydratedArtifacts = rows
-          .map((row) => {
-            const payload = row.artifact_data && typeof row.artifact_data === 'object' ? row.artifact_data : null
-            if (!payload) return null
-            return {
-              ...payload,
-              type: payload.type || row.artifact_type,
-              _artifactId: row.id,
-              _createdAt: row.created_at,
-            }
-          })
-          .filter(Boolean)
-
-        setCurrentArtifact(hydratedArtifacts[0] || null)
-        setPastArtifacts(hydratedArtifacts.slice(1))
-        setExpandedPast({})
       } catch {
         if (!cancelled) {
           setRecommendations([])
-          setCurrentArtifact(null)
-          setPastArtifacts([])
         }
-      } finally {
-        if (!cancelled) setLoadingSaved(false)
       }
     }
 
@@ -466,43 +554,15 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Generation failed')
-      if (currentArtifact) {
-        setPastArtifacts(prev => [currentArtifact, ...prev])
-        setExpandedPast(prev => {
-          const shifted = {}
-          Object.entries(prev).forEach(([k, v]) => { shifted[parseInt(k) + 1] = v })
-          return shifted
-        })
-      }
-      setCurrentArtifact(data.artifact)
       if (data.recommendations?.recommended?.length) {
         setRecommendations(data.recommendations.recommended)
       }
+      await downloadArtifactPdf(data.artifact, ARTIFACT_LABELS[selectedType])
     } catch (e) {
       setError(e.message)
     } finally {
       setGenerating(false)
     }
-  }
-
-  const handleCopySection = (key, content) => {
-    navigator.clipboard.writeText(content).then(() => {
-      setCopyState(prev => ({ ...prev, [key]: 'copied' }))
-      setTimeout(() => setCopyState(prev => ({ ...prev, [key]: 'idle' })), 2000)
-    }).catch(() => {})
-  }
-
-  const handleCopyAll = (artifact, key) => {
-    const lines = [artifact.title, artifact.summary, '']
-    artifact.sections.forEach(s => {
-      lines.push(`[${s.label.toUpperCase()}]`)
-      lines.push(s.content)
-      lines.push('')
-    })
-    navigator.clipboard.writeText(lines.join('\n').trimEnd()).then(() => {
-      setCopyState(prev => ({ ...prev, [key]: 'copied' }))
-      setTimeout(() => setCopyState(prev => ({ ...prev, [key]: 'idle' })), 2000)
-    }).catch(() => {})
   }
 
   const isGenerateDisabled = !selectedType || generating || !parsedReport
@@ -656,90 +716,8 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
         </div>
       )}
 
-      {loadingSaved && showFormats && <p style={ep.helperText}>Loading saved outputs for this audit…</p>}
       {error && <p style={ep.errorMsg}>{error}</p>}
-
-      {showFormats && currentArtifact && (
-        <div style={ep.artifactPanel}>
-          <ArtifactContent
-            artifact={currentArtifact}
-            copyKey="cur"
-            copyState={copyState}
-            onCopySection={handleCopySection}
-            onCopyAll={handleCopyAll}
-          />
-        </div>
-      )}
-
-      {showFormats && pastArtifacts.length > 0 && (
-        <div style={ep.pastList}>
-          {pastArtifacts.map((a, i) => (
-            <div key={i} style={ep.pastCard}>
-              <div
-                style={ep.pastCardHeader}
-                onClick={() => setExpandedPast(prev => ({ ...prev, [i]: !prev[i] }))}
-              >
-                <div style={ep.pastCardLeft}>
-                  <span style={ep.pastTypeBadge}>{ARTIFACT_LABELS[a.type] ?? a.type}</span>
-                  <span style={ep.pastTitle}>{a.title}</span>
-                </div>
-                <span style={ep.expandIcon}>{expandedPast[i] ? '▲' : '▼'}</span>
-              </div>
-              {expandedPast[i] && (
-                <div style={ep.pastExpanded}>
-                  <ArtifactContent
-                    artifact={a}
-                    copyKey={`past-${i}`}
-                    copyState={copyState}
-                    onCopySection={handleCopySection}
-                    onCopyAll={handleCopyAll}
-                    compact
-                  />
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
     </div>
-  )
-}
-
-function ArtifactContent({ artifact, copyKey, copyState, onCopySection, onCopyAll, compact }) {
-  const copyAllKey = `${copyKey}-all`
-  return (
-    <>
-      <div style={{ ...ep.artifactHeader, ...(compact ? ep.artifactHeaderCompact : {}) }}>
-        <div style={ep.artifactTitleGroup}>
-          <div style={ep.artifactTitle}>{artifact.title}</div>
-          {artifact.summary && <div style={ep.artifactSummary}>{artifact.summary}</div>}
-        </div>
-        <button
-          style={ep.copyAllBtn}
-          onClick={() => onCopyAll(artifact, copyAllKey)}
-        >
-          {copyState[copyAllKey] === 'copied' ? '✓ Copied' : 'Copy All'}
-        </button>
-      </div>
-      {(artifact.sections ?? []).map((s, i) => {
-        const sKey = `${copyKey}-s${i}`
-        const isLast = i === artifact.sections.length - 1
-        return (
-          <div key={i} style={isLast ? ep.sectionCardLast : ep.sectionCard}>
-            <div style={ep.sectionCardHeader}>
-              <span style={ep.sectionLabel}>{s.label}</span>
-              <button
-                style={ep.copySectionBtn}
-                onClick={() => onCopySection(sKey, s.content)}
-              >
-                {copyState[sKey] === 'copied' ? '✓' : 'Copy'}
-              </button>
-            </div>
-            <div style={ep.sectionContent}>{s.content}</div>
-          </div>
-        )
-      })}
-    </>
   )
 }
 
