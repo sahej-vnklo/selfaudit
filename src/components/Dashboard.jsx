@@ -950,8 +950,8 @@ function PageShell({ title, sub, actions, children }) {
 }
 
 function HomeSection({ user, profile, businessState, businessStateLoading, reports, reportsLoading, onStartAudit, onStartGoalAudit, healthIntel }) {
-  const issuesRef = useRef(null)
   const [businessHealthExpanded, setBusinessHealthExpanded] = useState(false)
+  const [openIssuesExpanded, setOpenIssuesExpanded] = useState(false)
   const latestReport = reports[0] || null
   const latestDiagnosticReport = getLatestDiagnosticReport(reports)
   const latestContent = latestDiagnosticReport ? parseReportContent(latestDiagnosticReport) : null
@@ -996,13 +996,16 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
   }
 
   useEffect(() => {
-    if (!businessHealthExpanded) return undefined
+    if (!businessHealthExpanded && !openIssuesExpanded) return undefined
     const handleKeyDown = (event) => {
-      if (event.key === 'Escape') setBusinessHealthExpanded(false)
+      if (event.key === 'Escape') {
+        setBusinessHealthExpanded(false)
+        setOpenIssuesExpanded(false)
+      }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [businessHealthExpanded])
+  }, [businessHealthExpanded, openIssuesExpanded])
 
   return (
     <div style={styles.pageShell}>
@@ -1015,7 +1018,14 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
             </span>
           </div>
           <div style={styles.alertActions}>
-            <button type="button" style={styles.alertButton} onClick={() => issuesRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>
+            <button
+              type="button"
+              style={styles.alertButton}
+              onClick={() => {
+                setBusinessHealthExpanded(false)
+                setOpenIssuesExpanded(true)
+              }}
+            >
               update status
             </button>
             <button type="button" style={styles.alertDismissButton} onClick={dismissAlert} aria-label="Dismiss notification" title="Dismiss notification">
@@ -1032,7 +1042,10 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
           delta={healthScore === null ? 'No recent diagnostic report' : healthScore >= 70 ? 'Stable' : healthScore >= 45 ? 'Watch closely' : 'Needs attention'}
           tone={healthScore === null ? 'neutral' : healthScore >= 70 ? 'up' : healthScore >= 45 ? 'warn' : 'down'}
           hint={businessHealthExpanded ? 'Click to hide details' : 'Click for more'}
-          onClick={() => setBusinessHealthExpanded((prev) => !prev)}
+          onClick={() => {
+            setOpenIssuesExpanded(false)
+            setBusinessHealthExpanded((prev) => !prev)
+          }}
           active={businessHealthExpanded}
         />
         <KpiCard
@@ -1040,6 +1053,12 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
           value={reportsLoading ? '…' : openIssuesCount}
           delta={openIssuesCount === 0 ? 'Nothing flagged' : `${openIssuesCount} domains still open`}
           tone={openIssuesCount === 0 ? 'up' : openIssuesCount > 2 ? 'down' : 'warn'}
+          hint={openIssuesExpanded ? 'Click to hide details' : 'Click for more'}
+          onClick={() => {
+            setBusinessHealthExpanded(false)
+            setOpenIssuesExpanded((prev) => !prev)
+          }}
+          active={openIssuesExpanded}
         />
         <KpiCard
           label="Audits run"
@@ -1063,9 +1082,6 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
             report={latestDiagnosticReport || latestReport}
             userInfo={shareUserInfo}
           />
-          <div ref={issuesRef}>
-            <OpenIssuesPanel report={latestDiagnosticReport} domains={sortedDomains} />
-          </div>
           <AuditHistoryPanel reports={reports} reportsLoading={reportsLoading} />
         </div>
 
@@ -1107,6 +1123,32 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
           </div>
         </div>
       )}
+
+      {openIssuesExpanded && (
+        <div
+          style={styles.businessHealthOverlay}
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setOpenIssuesExpanded(false)
+          }}
+        >
+          <div style={styles.businessHealthModal}>
+            <OpenIssuesDetailPanel
+              report={latestDiagnosticReport}
+              domains={sortedDomains}
+              right={(
+                <button
+                  type="button"
+                  style={styles.businessHealthCloseBtn}
+                  onClick={() => setOpenIssuesExpanded(false)}
+                  aria-label="Close open issues details"
+                >
+                  Close
+                </button>
+              )}
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -1138,29 +1180,25 @@ function KpiCard({ label, value, delta, tone, hint, onClick, active = false }) {
   )
 }
 
-function OpenIssuesPanel({ report, domains }) {
-  const [expanded, setExpanded] = useState(false)
+function OpenIssuesDetailPanel({ report, domains, right = null }) {
   const count = domains.length
 
   return (
-    <div style={styles.panelCard}>
-      <button type="button" style={styles.panelToggle} onClick={() => setExpanded((prev) => !prev)}>
-        <div style={styles.panelTitle}>open issues</div>
-        <div style={styles.panelToggleRight}>
-          <span style={styles.panelCountBadge}>{count}</span>
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.18s ease', color: G.textFaint }}>
-            <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </div>
-      </button>
-      {expanded && (
-        !report || domains.length === 0 ? (
-          <EmptyPanel message="Run an audit to populate issue tracking." />
-        ) : (
-          <OpenIssuesTracker report={report} domains={domains} />
-        )
+    <PanelCard title="open issues" right={right}>
+      {!report || domains.length === 0 ? (
+        <EmptyPanel message="Run an audit to populate issue tracking." />
+      ) : (
+        <>
+          <div style={styles.openIssuesSummaryRow}>
+            <div style={styles.openIssuesSummaryValue}>{count}</div>
+            <div style={styles.openIssuesSummaryText}>
+              {count === 1 ? '1 domain still open' : `${count} domains still open`}
+            </div>
+          </div>
+          <OpenIssuesTracker report={report} domains={domains} limit={null} />
+        </>
       )}
-    </div>
+    </PanelCard>
   )
 }
 
@@ -2671,7 +2709,7 @@ function AuditScopeSetupModal({ user, onClose, onSaved }) {
   )
 }
 
-function OpenIssuesTracker({ report, domains }) {
+function OpenIssuesTracker({ report, domains, limit = 3 }) {
   const getKey = (domainName) => `tsa_issue_${report.id}_${domainName}`
   const [statuses, setStatuses] = useState(() => {
     const initial = {}
@@ -2688,7 +2726,7 @@ function OpenIssuesTracker({ report, domains }) {
     setStatuses((prev) => ({ ...prev, [domainName]: next }))
   }
 
-  const rows = domains.slice(0, 3).map((domain) => ({
+  const rows = (typeof limit === 'number' ? domains.slice(0, limit) : domains).map((domain) => ({
     ...domain,
     issueStatus: statuses[domain.name] || 'open',
   }))
@@ -3766,6 +3804,22 @@ const styles = {
     textAlign: 'right',
     fontSize: 11,
     color: G.textFaint,
+  },
+  openIssuesSummaryRow: {
+    display: 'flex',
+    alignItems: 'baseline',
+    gap: 10,
+    marginBottom: 14,
+  },
+  openIssuesSummaryValue: {
+    fontSize: 28,
+    fontWeight: 600,
+    color: G.text,
+    lineHeight: 1,
+  },
+  openIssuesSummaryText: {
+    fontSize: 13,
+    color: G.textSecondary,
   },
   goalTrack: {
     marginTop: 14,
