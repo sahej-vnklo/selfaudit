@@ -33,19 +33,19 @@ const THEMES = {
     buttonBorder: '#FBF7F2',
   },
   sharp: {
-    bg: '#0F2239',
-    surface: '#132C49',
-    border: '#2D4E72',
+    bg: '#101B33',
+    surface: '#1B3152',
+    border: '#355782',
     text: '#F4F7FC',
     textSoft: '#D8E2F1',
-    textMuted: '#A9BCD5',
-    accent: '#3A73EA',
-    accentSoft: '#193857',
-    inputBg: '#193857',
+    textMuted: '#AFC2DE',
+    accent: '#5885FF',
+    accentSoft: '#243D63',
+    inputBg: '#22385D',
     error: '#C07878',
     buttonText: '#F4F7FC',
     buttonTextSoft: '#D8E2F1',
-    buttonBorder: '#3A73EA',
+    buttonBorder: '#5885FF',
   },
 }
 
@@ -224,6 +224,7 @@ function buildScopedUserInfo(userInfo, report, parsedReport) {
 export default function ExecutionPanel({ report, reports = [], userInfo, variant = 'report' }) {
   const theme = localStorage.getItem('sa-theme') || 'dark'
   const themeVars = getThemeVars(theme)
+  const sharpThemeActive = theme === 'sharp'
   const reportOptions = useMemo(() => {
     const fromList = Array.isArray(reports) ? reports.filter(isActionableReport) : []
     if (fromList.length > 0) return fromList
@@ -502,7 +503,7 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
       </div>
 
       {showFormats && (
-        <div style={ep.formatsPanel}>
+        <div style={{ ...ep.formatsPanel, ...(sharpThemeActive ? ep.formatsPanelSharp : {}) }}>
           <div style={ep.formatsHeader}>
             <div style={ep.formatsEyebrow}>Build from this audit</div>
             <div style={ep.formatsSub}>
@@ -520,7 +521,9 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
                   type="button"
                   style={{
                     ...ep.outputCard,
+                    ...(sharpThemeActive ? ep.outputCardSharp : {}),
                     ...(isSelected ? ep.outputCardSelected : {}),
+                    ...(isSelected && sharpThemeActive ? ep.outputCardSelectedSharp : {}),
                     ...(generating ? ep.outputCardDisabled : {}),
                   }}
                   onClick={() => !generating && setSelectedType(type)}
@@ -791,6 +794,11 @@ const ep = {
     padding: '16px 14px 14px',
     marginBottom: '1rem',
   },
+  formatsPanelSharp: {
+    border: '1px solid rgba(88, 133, 255, 0.24)',
+    background: 'linear-gradient(180deg, rgba(27,49,82,0.96) 0%, rgba(18,38,66,0.98) 100%)',
+    boxShadow: '0 0 0 1px rgba(88,133,255,0.08) inset',
+  },
   formatsHeader: {
     marginBottom: 14,
   },
@@ -826,10 +834,20 @@ const ep = {
     minWidth: 220,
     flex: '0 1 auto',
   },
+  outputCardSharp: {
+    background: 'rgba(255,255,255,0.03)',
+    border: '1px solid rgba(88,133,255,0.16)',
+    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.025)',
+  },
   outputCardSelected: {
     border: '1px solid var(--accent)',
     boxShadow: '0 0 0 1px rgba(88, 133, 255, 0.16) inset',
     background: 'rgba(58,115,234,0.10)',
+  },
+  outputCardSelectedSharp: {
+    border: '1px solid rgba(88,133,255,0.55)',
+    background: 'rgba(88,133,255,0.14)',
+    boxShadow: '0 0 0 1px rgba(88,133,255,0.14) inset, 0 12px 24px rgba(0,0,0,0.18)',
   },
   outputCardDisabled: {
     cursor: 'not-allowed',

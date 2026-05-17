@@ -71,21 +71,21 @@ const THEMES = {
     overlaySoft: 'rgba(0,0,0,0.07)',
   },
   sharp: {
-    bg: '#0F2239',
-    surface: '#132C49',
-    surface2: '#193857',
-    surface3: '#224567',
-    panel: '#132C49',
-    panelAlt: '#193857',
-    border: '#2D4E72',
-    border2: '#44678D',
+    bg: '#101B33',
+    surface: '#172946',
+    surface2: '#1C3151',
+    surface3: '#243E64',
+    panel: '#1B3152',
+    panelAlt: '#22385D',
+    border: '#355782',
+    border2: '#4C709D',
     text: '#F4F7FC',
     textSecondary: '#D8E2F1',
-    textMuted: '#A9BCD5',
-    textFaint: '#7B93B1',
-    accent: '#3A73EA',
-    accentLight: '#193857',
-    accentText: '#89A7E2',
+    textMuted: '#AFC2DE',
+    textFaint: '#7E97BC',
+    accent: '#5885FF',
+    accentLight: '#243D63',
+    accentText: '#AFC7FF',
     red: '#C07878',
     redBg: '#1A1A32',
     redText: '#C07878',
@@ -540,6 +540,7 @@ function buildAiOpportunityItems(reports, tier) {
 export default function Dashboard({ user, onStartAudit, onSignOut }) {
   const [theme, setTheme] = useState(() => localStorage.getItem('sa-theme') || 'dark')
   const themeVars = getThemeVars(theme)
+  const sharpThemeActive = theme === 'sharp'
   const [profile, setProfile] = useState(null)
   const [businessState, setBusinessState] = useState(null)
   const [businessStateLoading, setBusinessStateLoading] = useState(true)
@@ -820,7 +821,11 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
       )}
 
       <aside
-        style={{ ...styles.sidebar, ...(sidebarExpanded ? styles.sidebarExpanded : {}) }}
+        style={{
+          ...styles.sidebar,
+          ...(sidebarExpanded ? styles.sidebarExpanded : {}),
+          ...(sharpThemeActive ? styles.sidebarSharp : {}),
+        }}
       >
         <button
           type="button"
@@ -868,7 +873,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
       </aside>
 
       <div style={styles.appFrame}>
-        <header style={styles.topbar}>
+        <header style={{ ...styles.topbar, ...(sharpThemeActive ? styles.topbarSharp : {}) }}>
           <div style={styles.topbarLeft}>
             <div style={styles.logo} onClick={() => navigateSection('home')}>
               self<span style={{ color: G.accentText }}>audit</span>
@@ -877,11 +882,11 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
           </div>
 
           <div style={styles.topbarActions}>
-            <button type="button" style={styles.themeToggleButton} onClick={toggleTheme} aria-label="Cycle theme">
+            <button type="button" style={{ ...styles.themeToggleButton, ...(sharpThemeActive ? styles.themeToggleButtonSharp : {}) }} onClick={toggleTheme} aria-label="Cycle theme">
               <span style={styles.themeToggleIcon}>◐</span>
               <span>Theme</span>
             </button>
-            <button type="button" style={styles.ghostButton} onClick={startAudit}>
+            <button type="button" style={{ ...styles.ghostButton, ...(sharpThemeActive ? styles.ghostButtonSharp : {}) }} onClick={startAudit}>
               diagnose a problem
             </button>
             <button type="button" style={styles.primaryButton} onClick={() => setGoalModal(true)}>
@@ -902,6 +907,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
               onStartAudit={startAudit}
               onStartGoalAudit={() => setGoalModal(true)}
               healthIntel={healthIntel}
+              theme={theme}
             />
           )}
 
@@ -1006,7 +1012,8 @@ function PageShell({ title, sub, actions, children }) {
   )
 }
 
-function HomeSection({ user, profile, businessState, businessStateLoading, reports, reportsLoading, onStartAudit, onStartGoalAudit, healthIntel }) {
+function HomeSection({ user, profile, businessState, businessStateLoading, reports, reportsLoading, onStartAudit, onStartGoalAudit, healthIntel, theme }) {
+  const sharpThemeActive = theme === 'sharp'
   const [businessHealthExpanded, setBusinessHealthExpanded] = useState(false)
   const [openIssuesExpanded, setOpenIssuesExpanded] = useState(false)
   const [auditHistoryExpanded, setAuditHistoryExpanded] = useState(false)
@@ -1306,6 +1313,7 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
 
       <div style={styles.kpiGrid}>
         <KpiCard
+          sharpTheme={sharpThemeActive}
           label="Business health"
           value={reportsLoading ? '…' : healthScore ?? '—'}
           delta={healthScore === null ? 'No recent diagnostic report' : healthScore >= 70 ? 'Stable' : healthScore >= 45 ? 'Watch closely' : 'Needs attention'}
@@ -1321,6 +1329,7 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
           active={businessHealthExpanded}
         />
         <KpiCard
+          sharpTheme={sharpThemeActive}
           label="Open issues"
           value={reportsLoading ? '…' : openIssuesCount}
           delta={openIssuesCount === 0 ? 'Nothing flagged' : `${openIssuesCount} domains still open`}
@@ -1336,6 +1345,7 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
           active={openIssuesExpanded}
         />
         <KpiCard
+          sharpTheme={sharpThemeActive}
           label="Audit history"
           value={reportsLoading ? '…' : reports.length}
           delta={reports.length > 0 ? `Latest: ${lastReportDate}` : 'No reports yet'}
@@ -1351,6 +1361,7 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
           active={auditHistoryExpanded}
         />
         <KpiCard
+          sharpTheme={sharpThemeActive}
           label="AI opportunities"
           value={reportsLoading ? '…' : opportunityItems.length}
           delta={opportunityItems.length === 0 ? 'No opportunities extracted yet' : `${opportunityItems.length} ranked opportunities ready to review`}
@@ -1399,6 +1410,7 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
 
         <div style={styles.rightColumn}>
           <WeeklyDigestAlertsCard
+            theme={theme}
             profile={profile}
             notificationPrefs={notificationPrefs}
             prefsLoading={prefsLoading}
@@ -1589,11 +1601,11 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
   )
 }
 
-function KpiCard({ label, value, delta, tone, hint, onClick, active = false }) {
+function KpiCard({ label, value, delta, tone, hint, onClick, active = false, sharpTheme = false }) {
   const toneColor = tone === 'up' ? G.greenText : tone === 'warn' ? G.amberText : tone === 'down' ? G.redText : G.textFaint
   const cardStyle = active
-    ? { ...styles.kpiCard, ...styles.kpiCardActive }
-    : styles.kpiCard
+    ? { ...styles.kpiCard, ...(sharpTheme ? styles.kpiCardSharp : {}), ...styles.kpiCardActive }
+    : { ...styles.kpiCard, ...(sharpTheme ? styles.kpiCardSharp : {}) }
 
   if (onClick) {
     return (
@@ -1769,7 +1781,7 @@ function BusinessHealthPanel({ latestDomains, healthIntel, goalState, right = nu
   )
 }
 
-function WeeklyDigestAlertsCard({ profile, notificationPrefs, prefsLoading, onClick }) {
+function WeeklyDigestAlertsCard({ profile, notificationPrefs, prefsLoading, onClick, theme }) {
   const digest   = profile?.last_digest_summary ?? null
   const sentAt   = profile?.last_digest_sent_at ?? null
   const sentDate = sentAt
@@ -1793,7 +1805,15 @@ function WeeklyDigestAlertsCard({ profile, notificationPrefs, prefsLoading, onCl
     : 'Every Monday · 9am UTC'
 
   return (
-    <button type="button" style={{ ...styles.panelCard, ...styles.weeklyDigestCardButton }} onClick={onClick}>
+    <button
+      type="button"
+      style={{
+        ...styles.panelCard,
+        ...(theme === 'sharp' ? styles.panelCardSharp : {}),
+        ...styles.weeklyDigestCardButton,
+      }}
+      onClick={onClick}
+    >
       <div style={styles.panelTitle}>weekly digest & alerts</div>
       <div style={styles.weeklyDigestRail}>
         <div style={styles.weeklyDigestRailRow}>
@@ -3897,6 +3917,10 @@ const styles = {
     overflowX: 'hidden',
     overflowY: 'auto',
   },
+  sidebarSharp: {
+    background: 'linear-gradient(180deg, rgba(27,49,82,0.98) 0%, rgba(18,38,66,0.98) 100%)',
+    boxShadow: 'inset -1px 0 0 rgba(88,133,255,0.14)',
+  },
   sidebarExpanded: {
     width: 232,
     alignItems: 'stretch',
@@ -3990,6 +4014,10 @@ const styles = {
     gap: 16,
     flexShrink: 0,
   },
+  topbarSharp: {
+    background: 'linear-gradient(180deg, rgba(27,49,82,0.98) 0%, rgba(20,38,64,0.98) 100%)',
+    boxShadow: 'inset 0 -1px 0 rgba(88,133,255,0.18)',
+  },
   topbarLeft: {
     display: 'flex',
     alignItems: 'center',
@@ -4028,6 +4056,11 @@ const styles = {
     whiteSpace: 'nowrap',
     fontWeight: 500,
   },
+  themeToggleButtonSharp: {
+    background: 'rgba(255,255,255,0.03)',
+    border: '1px solid rgba(88,133,255,0.26)',
+    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)',
+  },
   themeToggleIcon: {
     fontSize: 15,
     lineHeight: 1,
@@ -4042,6 +4075,11 @@ const styles = {
     fontWeight: 500,
     cursor: 'pointer',
     whiteSpace: 'nowrap',
+  },
+  ghostButtonSharp: {
+    background: 'rgba(255,255,255,0.02)',
+    border: '1px solid rgba(88,133,255,0.22)',
+    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.025)',
   },
   primaryButton: {
     background: G.accent,
@@ -4157,6 +4195,11 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
   },
+  kpiCardSharp: {
+    background: 'linear-gradient(180deg, rgba(31,48,79,0.78) 0%, rgba(23,43,71,0.92) 100%)',
+    border: '1px solid rgba(88,133,255,0.18)',
+    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)',
+  },
   kpiCardButton: {
     width: '100%',
     textAlign: 'left',
@@ -4263,6 +4306,11 @@ const styles = {
     border: `0.5px solid ${G.border}`,
     borderRadius: 10,
     padding: 14,
+  },
+  panelCardSharp: {
+    background: 'linear-gradient(180deg, rgba(31,48,79,0.74) 0%, rgba(23,43,71,0.92) 100%)',
+    border: '1px solid rgba(88,133,255,0.18)',
+    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)',
   },
   weeklyDigestCardButton: {
     width: '100%',
