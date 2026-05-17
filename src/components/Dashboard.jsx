@@ -952,6 +952,7 @@ function PageShell({ title, sub, actions, children }) {
 function HomeSection({ user, profile, businessState, businessStateLoading, reports, reportsLoading, onStartAudit, onStartGoalAudit, healthIntel }) {
   const [businessHealthExpanded, setBusinessHealthExpanded] = useState(false)
   const [openIssuesExpanded, setOpenIssuesExpanded] = useState(false)
+  const [auditHistoryExpanded, setAuditHistoryExpanded] = useState(false)
   const latestReport = reports[0] || null
   const latestDiagnosticReport = getLatestDiagnosticReport(reports)
   const latestContent = latestDiagnosticReport ? parseReportContent(latestDiagnosticReport) : null
@@ -996,16 +997,17 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
   }
 
   useEffect(() => {
-    if (!businessHealthExpanded && !openIssuesExpanded) return undefined
+    if (!businessHealthExpanded && !openIssuesExpanded && !auditHistoryExpanded) return undefined
     const handleKeyDown = (event) => {
       if (event.key === 'Escape') {
         setBusinessHealthExpanded(false)
         setOpenIssuesExpanded(false)
+        setAuditHistoryExpanded(false)
       }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [businessHealthExpanded, openIssuesExpanded])
+  }, [businessHealthExpanded, openIssuesExpanded, auditHistoryExpanded])
 
   return (
     <div style={styles.pageShell}>
@@ -1024,6 +1026,7 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
               onClick={() => {
                 setBusinessHealthExpanded(false)
                 setOpenIssuesExpanded(true)
+                setAuditHistoryExpanded(false)
               }}
             >
               update status
@@ -1044,6 +1047,7 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
           hint={businessHealthExpanded ? 'Click to hide details' : 'Click for more'}
           onClick={() => {
             setOpenIssuesExpanded(false)
+            setAuditHistoryExpanded(false)
             setBusinessHealthExpanded((prev) => !prev)
           }}
           active={businessHealthExpanded}
@@ -1056,15 +1060,23 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
           hint={openIssuesExpanded ? 'Click to hide details' : 'Click for more'}
           onClick={() => {
             setBusinessHealthExpanded(false)
+            setAuditHistoryExpanded(false)
             setOpenIssuesExpanded((prev) => !prev)
           }}
           active={openIssuesExpanded}
         />
         <KpiCard
-          label="Audits run"
+          label="Audit history"
           value={reportsLoading ? '…' : reports.length}
           delta={reports.length > 0 ? `Latest: ${lastReportDate}` : 'No reports yet'}
           tone="neutral"
+          hint={auditHistoryExpanded ? 'Click to hide details' : 'Click for more'}
+          onClick={() => {
+            setBusinessHealthExpanded(false)
+            setOpenIssuesExpanded(false)
+            setAuditHistoryExpanded((prev) => !prev)
+          }}
+          active={auditHistoryExpanded}
         />
         <KpiCard
           label="Goal progress"
@@ -1082,7 +1094,6 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
             report={latestDiagnosticReport || latestReport}
             userInfo={shareUserInfo}
           />
-          <AuditHistoryPanel reports={reports} reportsLoading={reportsLoading} />
         </div>
 
         <div style={styles.rightColumn}>
@@ -1149,6 +1160,32 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
           </div>
         </div>
       )}
+
+      {auditHistoryExpanded && (
+        <div
+          style={styles.businessHealthOverlay}
+          onClick={(event) => {
+            if (event.target === event.currentTarget) setAuditHistoryExpanded(false)
+          }}
+        >
+          <div style={styles.businessHealthModal}>
+            <AuditHistoryDetailPanel
+              reports={reports}
+              reportsLoading={reportsLoading}
+              right={(
+                <button
+                  type="button"
+                  style={styles.businessHealthCloseBtn}
+                  onClick={() => setAuditHistoryExpanded(false)}
+                  aria-label="Close audit history details"
+                >
+                  Close
+                </button>
+              )}
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -1202,34 +1239,29 @@ function OpenIssuesDetailPanel({ report, domains, right = null }) {
   )
 }
 
-function AuditHistoryPanel({ reports, reportsLoading }) {
-  const [expanded, setExpanded] = useState(false)
-
+function AuditHistoryDetailPanel({ reports, reportsLoading, right = null }) {
   return (
-    <div style={styles.panelCard}>
-      <button type="button" style={styles.panelToggle} onClick={() => setExpanded((prev) => !prev)}>
-        <div style={styles.panelTitle}>audit history</div>
-        <div style={styles.panelToggleRight}>
-          <span style={styles.panelCountBadge}>{reports.length}</span>
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.18s ease', color: G.textFaint }}>
-            <path d="M4 6l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </div>
-      </button>
-      {expanded && (
-        reportsLoading ? (
-          <ReportSkeletons compact />
-        ) : reports.length === 0 ? (
-          <EmptyPanel message="No past audits yet." />
-        ) : (
+    <PanelCard title="audit history" right={right}>
+      {reportsLoading ? (
+        <ReportSkeletons compact />
+      ) : reports.length === 0 ? (
+        <EmptyPanel message="No past audits yet." />
+      ) : (
+        <>
+          <div style={styles.openIssuesSummaryRow}>
+            <div style={styles.openIssuesSummaryValue}>{reports.length}</div>
+            <div style={styles.openIssuesSummaryText}>
+              {reports.length === 1 ? '1 saved audit so far' : `${reports.length} saved audits so far`}
+            </div>
+          </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {reports.slice(0, 4).map((report) => (
+            {reports.map((report) => (
               <AuditHistoryRow key={report.id} report={report} />
             ))}
           </div>
-        )
+        </>
       )}
-    </div>
+    </PanelCard>
   )
 }
 
