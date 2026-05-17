@@ -79,6 +79,24 @@ const ARTIFACT_LABELS = {
   EMAIL:          'Email Draft',
 }
 
+const ARTIFACT_DESCRIPTIONS = {
+  ACTION_PLAN:    'Step-by-step execution roadmap',
+  SOP:            'Operational playbook',
+  PROCESS_CHANGE: 'Workflow improvements',
+  PRICING_MODEL:  'Monetization strategy',
+  HIRING_BRIEF:   'Role and team plan',
+  EMAIL:          'Outreach template',
+}
+
+const ARTIFACT_ICONS = {
+  ACTION_PLAN: '↗',
+  SOP: '≣',
+  PROCESS_CHANGE: '◌',
+  PRICING_MODEL: '$',
+  HIRING_BRIEF: '◍',
+  EMAIL: '✉',
+}
+
 function parseReportPayload(report) {
   if (!report) return null
   if (report.report_data && typeof report.report_data === 'object') return report.report_data
@@ -105,9 +123,91 @@ function isActionableReport(report) {
 function formatAuditOptionLabel(report) {
   const date = report?.created_at
     ? new Date(report.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-    : 'Latest'
+  : 'Latest'
   const title = report?.headline || report?.title || 'Audit'
   return `${date} — ${title}`
+}
+
+function trimWords(input, count = 3) {
+  return String(input || '')
+    .replace(/[^\w\s&/-]/g, ' ')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, count)
+    .join(' ')
+}
+
+function formatReportDate(report) {
+  return report?.created_at
+    ? new Date(report.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    : 'Latest'
+}
+
+function getReportModeLabel(parsedReport, report) {
+  const mode = parsedReport?.report_family === 'GOAL' || parsedReport?.conversation_mode === 'GOAL_GAP'
+    ? 'Goal audit'
+    : parsedReport?.conversation_mode === 'EXECUTION'
+      ? 'Execution audit'
+      : report?.conversation_mode === 'EXECUTION'
+        ? 'Execution audit'
+        : 'Diagnostic audit'
+  return mode
+}
+
+function getAuditTopic(report, parsedReport) {
+  const criticalDomain = parsedReport?.domains?.find((domain) => domain.status === 'critical')
+  const needsWorkDomain = parsedReport?.domains?.find((domain) => domain.status === 'needs_work')
+  const topDomain = criticalDomain || needsWorkDomain || parsedReport?.domains?.[0]
+
+  if (parsedReport?.goal_gap_analysis?.goal) return trimWords(parsedReport.goal_gap_analysis.goal, 3)
+  if (topDomain?.name) return trimWords(topDomain.name, 3)
+  return trimWords(report?.headline || report?.title || 'Audit focus', 3)
+}
+
+function getRecommendedMoveContent(report, parsedReport, recommendations) {
+  const topDomain = parsedReport?.domains?.find((domain) => domain.status === 'critical')
+    || parsedReport?.domains?.find((domain) => domain.status === 'needs_work')
+    || parsedReport?.domains?.[0]
+    || null
+  const topFix = parsedReport?.priority_actions?.[0]
+    || parsedReport?.non_ai_fixes?.[0]?.fix
+    || topDomain?.action
+    || parsedReport?.goal_gap_analysis?.fastest_path
+    || report?.headline
+    || 'Move on the highest-leverage fix'
+  const rationale = parsedReport?.honest_truth
+    || topDomain?.finding
+    || parsedReport?.goal_gap_analysis?.gap
+    || 'SelfAudit is surfacing the strongest next move from this audit so execution stays tied to the real bottleneck.'
+  const primaryType = recommendations?.[0] || 'ACTION_PLAN'
+  const dateLabel = formatReportDate(report)
+  const topic = getAuditTopic(report, parsedReport)
+
+  return {
+    dateLabel,
+    topic,
+    modeLabel: getReportModeLabel(parsedReport, report),
+    title: String(topFix || '').replace(/\.$/, ''),
+    rationale: String(rationale || '').trim(),
+    primaryType,
+    stats: [
+      {
+        icon: '↑',
+        label: 'High leverage',
+        value: topDomain?.name ? `${topDomain.name} bottleneck first` : 'Strong upside from the next move',
+      },
+      {
+        icon: '◎',
+        label: 'Audit source',
+        value: `${dateLabel} · ${topic || 'Audit focus'}`,
+      },
+      {
+        icon: '▣',
+        label: 'Best first format',
+        value: ARTIFACT_LABELS[primaryType] || 'Action Plan',
+      },
+    ],
+  }
 }
 
 function buildScopedUserInfo(userInfo, report, parsedReport) {
@@ -137,6 +237,7 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
   const [currentArtifact, setCurrentArtifact] = useState(null)
   const [pastArtifacts, setPastArtifacts] = useState([])
   const [recommendations, setRecommendations] = useState([])
+  const [showFormats, setShowFormats] = useState(false)
   const [expandedPast, setExpandedPast]   = useState({})
   const [copyState, setCopyState]         = useState({})
   const [error, setError]                 = useState(null)
@@ -157,6 +258,18 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
     () => buildScopedUserInfo(userInfo, activeReport, parsedReport),
     [userInfo, activeReport, parsedReport]
   )
+  const recommendationContent = useMemo(
+    () => getRecommendedMoveContent(activeReport, parsedReport, recommendations),
+    [activeReport, parsedReport, recommendations]
+  )
+  const activeIndex = useMemo(
+    () => reportOptions.findIndex((item) => item.id === activeReport?.id),
+    [reportOptions, activeReport]
+  )
+
+  useEffect(() => {
+    setShowFormats(false)
+  }, [activeReport?.id])
 
   useEffect(() => {
     let cancelled = false
@@ -297,6 +410,12 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
 
   const isGenerateDisabled = !selectedType || generating || !parsedReport
 
+  const cycleReport = (direction) => {
+    if (reportOptions.length <= 1) return
+    const nextIndex = (activeIndex + direction + reportOptions.length) % reportOptions.length
+    setSelectedReportId(reportOptions[nextIndex]?.id ?? reportOptions[0]?.id ?? null)
+  }
+
   if (!parsedReport) {
     return (
       <div style={{ ...themeVars, ...(variant === 'dashboard' ? ep.cardWrapper : ep.wrapper) }} data-pdf-hide>
@@ -315,64 +434,131 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
         <p style={ep.subtitle}>Generate ready-to-use outputs from your audit findings.</p>
       </div>
 
-      {reportOptions.length > 1 && (
-        <div style={ep.scopeRow}>
-          <span style={ep.scopeLabel}>Generating from</span>
-          <select
-            value={activeReport?.id ?? ''}
-            onChange={(event) => setSelectedReportId(event.target.value)}
-            style={ep.scopeSelect}
+      <div style={ep.recommendedCard}>
+        <div style={ep.recommendedTopRow}>
+          <div style={ep.recommendedEyebrow}>Recommended move</div>
+          <div style={ep.auditSelectorWrap}>
+            {reportOptions.length > 1 && (
+              <button type="button" style={ep.auditNavBtn} onClick={() => cycleReport(-1)} disabled={generating} aria-label="Previous audit">
+                ←
+              </button>
+            )}
+            {reportOptions.length > 1 ? (
+              <select
+                value={activeReport?.id ?? ''}
+                onChange={(event) => setSelectedReportId(event.target.value)}
+                style={ep.auditSelector}
+                disabled={generating}
+              >
+                {reportOptions.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {formatAuditOptionLabel(item)}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <div style={ep.auditSelectorStatic}>
+                {recommendationContent.dateLabel} · {recommendationContent.topic || 'Audit focus'}
+              </div>
+            )}
+            {reportOptions.length > 1 && (
+              <button type="button" style={ep.auditNavBtn} onClick={() => cycleReport(1)} disabled={generating} aria-label="Next audit">
+                →
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div style={ep.recommendedTitle}>{recommendationContent.title}</div>
+        <div style={ep.recommendedBody}>{recommendationContent.rationale}</div>
+
+        <div style={ep.recommendedStats}>
+          {recommendationContent.stats.map((item) => (
+            <div key={item.label} style={ep.recommendedStat}>
+              <div style={ep.recommendedStatIcon}>{item.icon}</div>
+              <div>
+                <div style={ep.recommendedStatLabel}>{item.label}</div>
+                <div style={ep.recommendedStatValue}>{item.value}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div style={ep.recommendedActions}>
+          <button
+            style={{ ...ep.generateBtn, ...(generating ? ep.generateBtnDisabled : {}) }}
+            onClick={() => {
+              setSelectedType('ACTION_PLAN')
+              setShowFormats(true)
+            }}
             disabled={generating}
           >
-            {reportOptions.map((item) => (
-              <option key={item.id} value={item.id}>
-                {formatAuditOptionLabel(item)}
-              </option>
-            ))}
-          </select>
+            Execute Action Plan →
+          </button>
+          <div style={ep.recommendedMeta}>
+            {recommendationContent.modeLabel}
+          </div>
+        </div>
+      </div>
+
+      {showFormats && (
+        <div style={ep.formatsPanel}>
+          <div style={ep.formatsHeader}>
+            <div style={ep.formatsEyebrow}>Build from this audit</div>
+            <div style={ep.formatsSub}>
+              Pick the output SelfAudit should generate for {recommendationContent.dateLabel} · {recommendationContent.topic || 'Audit focus'}.
+            </div>
+          </div>
+
+          <div style={ep.outputCardGrid}>
+            {ARTIFACT_TYPES.map((type) => {
+              const isSelected = selectedType === type
+              const isRec = recommendations.includes(type)
+              return (
+                <button
+                  key={type}
+                  type="button"
+                  style={{
+                    ...ep.outputCard,
+                    ...(isSelected ? ep.outputCardSelected : {}),
+                    ...(generating ? ep.outputCardDisabled : {}),
+                  }}
+                  onClick={() => !generating && setSelectedType(type)}
+                >
+                  <div style={ep.outputCardIcon}>{ARTIFACT_ICONS[type]}</div>
+                  <div style={ep.outputCardBody}>
+                    <div style={ep.outputCardTitleRow}>
+                      <div style={ep.outputCardTitle}>{ARTIFACT_LABELS[type]}</div>
+                      {isRec && <span style={ep.recBadge}>Recommended</span>}
+                    </div>
+                    <div style={ep.outputCardText}>{ARTIFACT_DESCRIPTIONS[type]}</div>
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+
+          <button
+            style={{ ...ep.generateBtn, ...(isGenerateDisabled ? ep.generateBtnDisabled : {}) }}
+            onClick={handleGenerate}
+            disabled={isGenerateDisabled}
+          >
+            {generating ? (
+              <span style={ep.generateBtnInner}>
+                <span style={ep.spinner} />
+                Generating...
+              </span>
+            ) : (
+              `Generate ${selectedType ? ARTIFACT_LABELS[selectedType] : '...'}`
+            )}
+          </button>
         </div>
       )}
 
-      <div style={ep.pillRow}>
-        {ARTIFACT_TYPES.map(type => {
-          const isSelected = selectedType === type
-          const isRec = recommendations.includes(type)
-          return (
-            <button
-              key={type}
-              style={{
-                ...ep.pill,
-                ...(isSelected ? ep.pillSelected : {}),
-                ...(generating ? ep.pillDisabled : {}),
-              }}
-              onClick={() => !generating && setSelectedType(type)}
-            >
-              {ARTIFACT_LABELS[type]}
-              {isRec && <span style={ep.recBadge}>Recommended</span>}
-            </button>
-          )
-        })}
-      </div>
-
-      <button
-        style={{ ...ep.generateBtn, ...(isGenerateDisabled ? ep.generateBtnDisabled : {}) }}
-        onClick={handleGenerate}
-        disabled={isGenerateDisabled}
-      >
-        {generating ? (
-          <span style={ep.generateBtnInner}>
-            <span style={ep.spinner} />
-            Generating...
-          </span>
-        ) : (
-          `Generate ${selectedType ? ARTIFACT_LABELS[selectedType] : '...'}`
-        )}
-      </button>
-
-      {loadingSaved && <p style={ep.helperText}>Loading saved outputs for this audit…</p>}
+      {loadingSaved && showFormats && <p style={ep.helperText}>Loading saved outputs for this audit…</p>}
       {error && <p style={ep.errorMsg}>{error}</p>}
 
-      {currentArtifact && (
+      {showFormats && currentArtifact && (
         <div style={ep.artifactPanel}>
           <ArtifactContent
             artifact={currentArtifact}
@@ -384,7 +570,7 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
         </div>
       )}
 
-      {pastArtifacts.length > 0 && (
+      {showFormats && pastArtifacts.length > 0 && (
         <div style={ep.pastList}>
           {pastArtifacts.map((a, i) => (
             <div key={i} style={ep.pastCard}>
@@ -477,49 +663,207 @@ const ep = {
   subtitle: {
     fontSize: 14, color: 'var(--text-soft)', lineHeight: 1.6, margin: 0,
   },
-  scopeRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 10,
+  recommendedCard: {
+    border: '1px solid rgba(88, 133, 255, 0.55)',
+    background: 'linear-gradient(180deg, rgba(31,48,79,0.96) 0%, rgba(15,32,57,0.98) 100%)',
+    boxShadow: '0 0 0 1px rgba(88, 133, 255, 0.14) inset, 0 18px 40px rgba(0,0,0,0.28)',
+    borderRadius: 14,
+    padding: '20px 24px',
     marginBottom: '1rem',
+  },
+  recommendedTopRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 14,
+    marginBottom: 16,
     flexWrap: 'wrap',
   },
-  scopeLabel: {
+  recommendedEyebrow: {
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: '0.14em',
+    color: 'var(--accent)',
+    fontWeight: 600,
+  },
+  auditSelectorWrap: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    flexWrap: 'wrap',
+  },
+  auditNavBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 999,
+    border: '1px solid rgba(255,255,255,0.12)',
+    background: 'rgba(255,255,255,0.03)',
+    color: 'var(--text-soft)',
+    cursor: 'pointer',
+    flexShrink: 0,
+  },
+  auditSelector: {
+    minWidth: 240,
+    maxWidth: '100%',
+    background: 'rgba(255,255,255,0.04)',
+    border: '0.5px solid rgba(255,255,255,0.12)',
+    color: 'var(--text)',
+    borderRadius: 999,
+    padding: '8px 14px',
+    fontSize: 12,
+    fontFamily: 'inherit',
+  },
+  auditSelectorStatic: {
+    background: 'rgba(255,255,255,0.04)',
+    border: '0.5px solid rgba(255,255,255,0.12)',
+    color: 'var(--text-soft)',
+    borderRadius: 999,
+    padding: '8px 14px',
+    fontSize: 12,
+  },
+  recommendedTitle: {
+    fontSize: 36,
+    lineHeight: 1.08,
+    color: 'var(--button-text)',
+    fontWeight: 600,
+    maxWidth: 900,
+    marginBottom: 12,
+    fontFamily: 'Georgia, Times New Roman, serif',
+  },
+  recommendedBody: {
+    fontSize: 15,
+    color: 'var(--text-soft)',
+    lineHeight: 1.8,
+    maxWidth: 760,
+    marginBottom: 18,
+  },
+  recommendedStats: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+    gap: 16,
+    marginBottom: 22,
+  },
+  recommendedStat: {
+    display: 'flex',
+    gap: 12,
+    alignItems: 'flex-start',
+    minWidth: 0,
+  },
+  recommendedStatIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 999,
+    border: '1px solid rgba(255,255,255,0.22)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: 'var(--button-text)',
+    fontSize: 16,
+    flexShrink: 0,
+  },
+  recommendedStatLabel: {
     fontSize: 11,
     color: 'var(--text-muted)',
     textTransform: 'uppercase',
     letterSpacing: '0.08em',
+    marginBottom: 4,
   },
-  scopeSelect: {
-    minWidth: 240,
-    maxWidth: '100%',
-    background: 'var(--input-bg)',
-    border: '0.5px solid var(--border)',
-    color: 'var(--text)',
-    borderRadius: 8,
-    padding: '8px 12px',
+  recommendedStatValue: {
     fontSize: 13,
-    fontFamily: 'inherit',
+    color: 'var(--text-soft)',
+    lineHeight: 1.55,
   },
-  pillRow: {
-    display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: '1rem',
+  recommendedActions: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 18,
+    flexWrap: 'wrap',
   },
-  pill: {
-    display: 'inline-flex', alignItems: 'center', gap: 7,
-    padding: '6px 14px',
-    borderRadius: 'var(--radius-pill)',
-    fontSize: 13, fontWeight: 500, cursor: 'pointer',
-    border: '1.5px solid var(--border)',
-    background: 'var(--surface)', color: 'var(--text-soft)',
-    transition: 'border-color 0.1s, background 0.1s, color 0.1s',
-    lineHeight: 1,
+  recommendedMeta: {
+    fontSize: 13,
+    color: 'var(--text-muted)',
   },
-  pillSelected: {
-    border: '1.5px solid var(--accent)',
-    background: 'var(--accent)', color: 'var(--button-text)',
+  formatsPanel: {
+    border: '0.5px solid var(--border)',
+    borderRadius: 'var(--radius)',
+    background: 'rgba(18, 34, 57, 0.92)',
+    padding: '18px 16px 16px',
+    marginBottom: '1rem',
   },
-  pillDisabled: {
-    cursor: 'not-allowed', opacity: 0.55,
+  formatsHeader: {
+    marginBottom: 14,
+  },
+  formatsEyebrow: {
+    fontSize: 11,
+    color: 'var(--text-muted)',
+    textTransform: 'uppercase',
+    letterSpacing: '0.12em',
+    marginBottom: 6,
+  },
+  formatsSub: {
+    fontSize: 14,
+    color: 'var(--text-soft)',
+    lineHeight: 1.6,
+  },
+  outputCardGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))',
+    gap: 12,
+    marginBottom: '1rem',
+  },
+  outputCard: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: 12,
+    textAlign: 'left',
+    padding: '14px 14px',
+    borderRadius: 10,
+    border: '1px solid var(--border)',
+    background: 'var(--surface)',
+    color: 'var(--text-soft)',
+    cursor: 'pointer',
+  },
+  outputCardSelected: {
+    border: '1px solid var(--accent)',
+    boxShadow: '0 0 0 1px rgba(88, 133, 255, 0.16) inset',
+    background: 'rgba(58,115,234,0.10)',
+  },
+  outputCardDisabled: {
+    cursor: 'not-allowed',
+    opacity: 0.55,
+  },
+  outputCardIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 8,
+    border: '1px solid var(--border)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: 15,
+    flexShrink: 0,
+    background: 'rgba(255,255,255,0.02)',
+  },
+  outputCardBody: {
+    minWidth: 0,
+    flex: 1,
+  },
+  outputCardTitleRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    flexWrap: 'wrap',
+    marginBottom: 4,
+  },
+  outputCardTitle: {
+    fontSize: 14,
+    color: 'var(--text)',
+    fontWeight: 500,
+  },
+  outputCardText: {
+    fontSize: 12,
+    color: 'var(--text-muted)',
+    lineHeight: 1.5,
   },
   recBadge: {
     fontSize: 10, fontWeight: 600,
