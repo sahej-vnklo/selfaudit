@@ -630,17 +630,6 @@ export default function IntelligenceBrief({ user, profile, onProfileChange }) {
             </div>
           )}
 
-          {intelligenceUnlocked && (
-            <div style={card}>
-              <div style={cardBodyStandalone}>
-                <div style={panelLabel}>Alert preferences</div>
-                <div style={{ fontSize: 13, color: COLORS.textSecondary, lineHeight: 1.7 }}>
-                  Alert preferences now live on the dashboard inside <strong>Weekly digest &amp; alerts</strong>, so your digest settings and proactive alert controls stay together in one place.
-                </div>
-              </div>
-            </div>
-          )}
-
           <SectionCard
             title="Financial metrics"
             isOpen={openSections.financial}
