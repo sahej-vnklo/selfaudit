@@ -1,6 +1,19 @@
 import React, { useState, useEffect } from 'react'
 import * as Sentry from '@sentry/react'
 import { usePostHog } from '@posthog/react'
+import {
+  SHARP_ACCENT,
+  SHARP_ACCENT_SOFT,
+  SHARP_ACCENT_TEXT,
+  SHARP_BORDER,
+  SHARP_HERO_SURFACE,
+  SHARP_INPUT_BG,
+  SHARP_PAGE_BG,
+  SHARP_PANEL_SURFACE,
+  SHARP_TEXT,
+  SHARP_TEXT_MUTED,
+  SHARP_TEXT_SOFT,
+} from '../lib/sharpTheme.js'
 
 const THEMES = {
   dark: {
@@ -32,18 +45,18 @@ const THEMES = {
     buttonText: '#FBF7F2',
   },
   sharp: {
-    bg: '#0F2239',
-    surface: '#132C49',
-    surface2: '#193857',
-    border: '#2D4E72',
-    text: '#F4F7FC',
-    textSoft: '#D8E2F1',
-    textMuted: '#A9BCD5',
-    accent: '#3A73EA',
-    accentSoft: '#193857',
-    accentText: '#89A7E2',
-    inputBg: '#193857',
-    buttonText: '#F4F7FC',
+    bg: SHARP_PAGE_BG,
+    surface: SHARP_HERO_SURFACE,
+    surface2: SHARP_PANEL_SURFACE,
+    border: SHARP_BORDER,
+    text: SHARP_TEXT,
+    textSoft: SHARP_TEXT_SOFT,
+    textMuted: SHARP_TEXT_MUTED,
+    accent: SHARP_ACCENT,
+    accentSoft: SHARP_ACCENT_SOFT,
+    accentText: SHARP_ACCENT_TEXT,
+    inputBg: SHARP_INPUT_BG,
+    buttonText: SHARP_TEXT,
   },
 }
 

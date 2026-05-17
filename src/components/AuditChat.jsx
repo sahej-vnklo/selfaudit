@@ -3,6 +3,22 @@ import * as Sentry from '@sentry/react'
 import { sendMessage } from '../lib/audit.js'
 import { initSupabase } from '../lib/supabase.js'
 import { usePostHog } from '@posthog/react'
+import {
+  SHARP_ACCENT,
+  SHARP_ACCENT_DEEP,
+  SHARP_ACCENT_SOFT,
+  SHARP_ACCENT_TEXT,
+  SHARP_BORDER,
+  SHARP_BORDER_STRONG,
+  SHARP_HERO_SURFACE,
+  SHARP_PAGE_BG,
+  SHARP_PANEL_SURFACE,
+  SHARP_RED_BG,
+  SHARP_RED_TEXT,
+  SHARP_TEXT,
+  SHARP_TEXT_MUTED,
+  SHARP_TEXT_SOFT,
+} from '../lib/sharpTheme.js'
 
 // ─── Chat helpers ─────────────────────────────────────────────────────────────
 
@@ -513,23 +529,23 @@ const CHAT_THEMES = {
     errorText: '#7A2C2C',
   },
   sharp: {
-    bg: '#0F2239',
-    nav: '#132C49',
-    surface: '#193857',
-    surface2: '#224567',
-    border: '#2D4E72',
-    borderSoft: '#44678D',
-    text: '#F4F7FC',
-    textSoft: '#D8E2F1',
-    textMuted: '#A9BCD5',
-    accent: '#3A73EA',
-    accentDark: '#295FD1',
-    accentSoft: '#193857',
-    accentText: '#89A7E2',
-    userText: '#F4F7FC',
-    errorBg: '#1A1A32',
-    errorBorder: '#6A6AAA',
-    errorText: '#D8A0A0',
+    bg: SHARP_PAGE_BG,
+    nav: SHARP_HERO_SURFACE,
+    surface: SHARP_PANEL_SURFACE,
+    surface2: SHARP_PANEL_SURFACE,
+    border: SHARP_BORDER,
+    borderSoft: SHARP_BORDER_STRONG,
+    text: SHARP_TEXT,
+    textSoft: SHARP_TEXT_SOFT,
+    textMuted: SHARP_TEXT_MUTED,
+    accent: SHARP_ACCENT,
+    accentDark: SHARP_ACCENT_DEEP,
+    accentSoft: SHARP_ACCENT_SOFT,
+    accentText: SHARP_ACCENT_TEXT,
+    userText: SHARP_TEXT,
+    errorBg: SHARP_RED_BG,
+    errorBorder: SHARP_BORDER_STRONG,
+    errorText: SHARP_RED_TEXT,
   },
 }
 
@@ -629,4 +645,3 @@ function getStyles(theme) {
     hint: { fontSize: 11, color: T.textMuted, textAlign: 'center', maxWidth: 680, margin: '8px auto 0' }
   }
 }
-

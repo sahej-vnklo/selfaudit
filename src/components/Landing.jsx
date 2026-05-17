@@ -1,5 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { usePostHog } from '@posthog/react'
+import {
+  SHARP_ACCENT,
+  SHARP_ACCENT_DEEP,
+  SHARP_ACCENT_TEXT,
+  SHARP_BORDER,
+  SHARP_BORDER_STRONG,
+  SHARP_HERO_SURFACE,
+  SHARP_PAGE_BG,
+  SHARP_PANEL_SURFACE,
+  SHARP_PANEL_SURFACE_ALT,
+  SHARP_SOLID_PANEL,
+  SHARP_TEXT,
+  SHARP_TEXT_FAINT,
+  SHARP_TEXT_MUTED,
+  SHARP_TEXT_SOFT,
+} from '../lib/sharpTheme.js'
 
 const PALETTE = {
   onyx: '#222526',
@@ -62,28 +78,28 @@ const LIGHT = {
 }
 
 const SHARP = {
-  page: '#0F2239',
-  band: '#132C49',
-  panel: '#193857',
-  panel2: '#224567',
-  line: '#2D4E72',
-  lineStrong: '#44678D',
-  ink: '#F4F7FC',
-  soft: '#D8E2F1',
-  muted: '#A9BCD5',
-  faint: '#7B93B1',
-  accent: '#3A73EA',
-  accentDeep: '#295FD1',
-  consoleBg: '#0A1627',
-  consoleSurface: '#13253C',
-  consolePanel: '#182C46',
-  consolePanel2: '#213853',
-  consoleBorder: '#2D4F72',
-  consoleBorderSoft: '#43688D',
-  consoleInk: '#F5F8FE',
-  consoleSoft: '#D9E3F1',
-  consoleMuted: '#9DB0C9',
-  consoleFaint: '#7087A4',
+  page: SHARP_PAGE_BG,
+  band: SHARP_HERO_SURFACE,
+  panel: SHARP_PANEL_SURFACE,
+  panel2: SHARP_PANEL_SURFACE_ALT,
+  line: SHARP_BORDER,
+  lineStrong: SHARP_BORDER_STRONG,
+  ink: SHARP_TEXT,
+  soft: SHARP_TEXT_SOFT,
+  muted: SHARP_TEXT_MUTED,
+  faint: SHARP_TEXT_FAINT,
+  accent: SHARP_ACCENT,
+  accentDeep: SHARP_ACCENT_DEEP,
+  consoleBg: '#0D1930',
+  consoleSurface: '#152742',
+  consolePanel: '#1A2F4E',
+  consolePanel2: SHARP_SOLID_PANEL,
+  consoleBorder: SHARP_BORDER,
+  consoleBorderSoft: SHARP_BORDER_STRONG,
+  consoleInk: SHARP_TEXT,
+  consoleSoft: SHARP_TEXT_SOFT,
+  consoleMuted: SHARP_TEXT_MUTED,
+  consoleFaint: SHARP_TEXT_FAINT,
   consoleVerdict: '#7E9FE7',
   consoleVerdictBg: '#203756',
   consoleAmber: '#8DABEA',
@@ -148,7 +164,7 @@ const THEMES = {
     accent: SHARP.accent,
     accentDark: SHARP.accentDeep,
     accentSoft: SHARP.panel2,
-    accentText: '#89A7E2',
+    accentText: SHARP_ACCENT_TEXT,
     redMuted: '#6E8FDE',
     redSoft: SHARP.panel2,
     amber: '#90ABE5',
@@ -3145,7 +3161,7 @@ export default function Landing({ onStart, onSignUp, session }) {
             radial-gradient(circle at 85% 18%, rgba(137, 167, 226, 0.07), transparent 24%),
             linear-gradient(180deg, #122A47 0%, #0F2239 34%, #0a1627 100%);
           background-attachment: scroll;
-          background-color: ${C.bg};
+          background-color: #0D1930;
         }
       `
       : `

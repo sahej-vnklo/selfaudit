@@ -1,6 +1,20 @@
 import React, { useState } from 'react'
 import { initSupabase } from '../../lib/supabase.js'
 import { usePostHog } from '@posthog/react'
+import {
+  SHARP_ACCENT,
+  SHARP_ACCENT_SOFT,
+  SHARP_ACCENT_TEXT,
+  SHARP_BORDER,
+  SHARP_HERO_SURFACE,
+  SHARP_INPUT_BG,
+  SHARP_PAGE_BG,
+  SHARP_PANEL_SURFACE,
+  SHARP_RED,
+  SHARP_TEXT,
+  SHARP_TEXT_MUTED,
+  SHARP_TEXT_SOFT,
+} from '../../lib/sharpTheme.js'
 
 const THEMES = {
   dark: {
@@ -36,20 +50,20 @@ const THEMES = {
     focusRing: 'rgba(169,141,134,0.14)',
   },
   sharp: {
-    bg: '#0F2239',
-    surface: '#132C49',
-    surface2: '#193857',
-    border: '#2D4E72',
-    text: '#F4F7FC',
-    textSoft: '#D8E2F1',
-    textMuted: '#A9BCD5',
-    accent: '#3A73EA',
-    accentSoft: '#193857',
-    accentText: '#89A7E2',
-    inputBg: '#193857',
-    error: '#C07878',
-    buttonText: '#F4F7FC',
-    focusRing: 'rgba(58,115,234,0.18)',
+    bg: SHARP_PAGE_BG,
+    surface: SHARP_HERO_SURFACE,
+    surface2: SHARP_PANEL_SURFACE,
+    border: SHARP_BORDER,
+    text: SHARP_TEXT,
+    textSoft: SHARP_TEXT_SOFT,
+    textMuted: SHARP_TEXT_MUTED,
+    accent: SHARP_ACCENT,
+    accentSoft: SHARP_ACCENT_SOFT,
+    accentText: SHARP_ACCENT_TEXT,
+    inputBg: SHARP_INPUT_BG,
+    error: SHARP_RED,
+    buttonText: SHARP_TEXT,
+    focusRing: 'rgba(107,140,255,0.18)',
   },
 }
 

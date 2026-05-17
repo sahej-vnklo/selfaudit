@@ -1,5 +1,22 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { initSupabase } from '../lib/supabase.js'
+import {
+  SHARP_ACCENT,
+  SHARP_ACCENT_SOFT,
+  SHARP_BORDER,
+  SHARP_HERO_BORDER,
+  SHARP_HERO_INSET,
+  SHARP_HERO_SHADOW,
+  SHARP_HERO_SURFACE,
+  SHARP_INPUT_BG,
+  SHARP_PAGE_BG,
+  SHARP_PANEL_BORDER,
+  SHARP_PANEL_SHADOW,
+  SHARP_PANEL_SURFACE,
+  SHARP_TEXT,
+  SHARP_TEXT_MUTED,
+  SHARP_TEXT_SOFT,
+} from '../lib/sharpTheme.js'
 
 const THEMES = {
   dark: {
@@ -33,19 +50,19 @@ const THEMES = {
     buttonBorder: '#FBF7F2',
   },
   sharp: {
-    bg: '#101B33',
-    surface: '#1C3151',
-    border: '#45679A',
-    text: '#F4F7FC',
-    textSoft: '#D8E2F1',
-    textMuted: '#AFC2DE',
-    accent: '#6B8CFF',
-    accentSoft: '#2C446B',
-    inputBg: '#22385D',
+    bg: SHARP_PAGE_BG,
+    surface: SHARP_PANEL_SURFACE,
+    border: SHARP_BORDER,
+    text: SHARP_TEXT,
+    textSoft: SHARP_TEXT_SOFT,
+    textMuted: SHARP_TEXT_MUTED,
+    accent: SHARP_ACCENT,
+    accentSoft: SHARP_ACCENT_SOFT,
+    inputBg: SHARP_INPUT_BG,
     error: '#C07878',
-    buttonText: '#F4F7FC',
-    buttonTextSoft: '#D8E2F1',
-    buttonBorder: '#6B8CFF',
+    buttonText: SHARP_TEXT,
+    buttonTextSoft: SHARP_TEXT_SOFT,
+    buttonBorder: SHARP_ACCENT,
   },
 }
 
@@ -96,14 +113,6 @@ const ARTIFACT_ICONS = {
   HIRING_BRIEF: '◍',
   EMAIL: '✉',
 }
-
-const SHARP_HERO_SURFACE = 'linear-gradient(180deg, rgba(31,48,79,0.96) 0%, rgba(15,32,57,0.98) 100%)'
-const SHARP_HERO_BORDER = '1px solid rgba(107, 140, 255, 0.38)'
-const SHARP_HERO_INSET = '0 0 0 1px rgba(107, 140, 255, 0.14) inset'
-const SHARP_HERO_SHADOW = '0 18px 40px rgba(0,0,0,0.28)'
-const SHARP_PANEL_SURFACE = 'linear-gradient(180deg, rgba(34,54,88,0.96) 0%, rgba(18,36,62,0.985) 100%)'
-const SHARP_PANEL_BORDER = '1px solid rgba(107, 140, 255, 0.3)'
-const SHARP_PANEL_SHADOW = 'inset 0 1px 0 rgba(255,255,255,0.04), 0 14px 30px rgba(5,15,30,0.18)'
 
 function parseReportPayload(report) {
   if (!report) return null

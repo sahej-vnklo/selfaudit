@@ -2,6 +2,35 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { initSupabase } from '../lib/supabase.js'
 import IntelligenceBrief from './IntelligenceBrief.jsx'
 import ExecutionPanel from './ExecutionPanel.jsx'
+import {
+  SHARP_ACCENT,
+  SHARP_ACCENT_SOFT,
+  SHARP_ACCENT_TEXT,
+  SHARP_AMBER,
+  SHARP_AMBER_BG,
+  SHARP_AMBER_TEXT,
+  SHARP_BORDER,
+  SHARP_BORDER_STRONG,
+  SHARP_GREEN,
+  SHARP_GREEN_BG,
+  SHARP_GREEN_TEXT,
+  SHARP_HERO_BORDER,
+  SHARP_HERO_INSET,
+  SHARP_HERO_SHADOW,
+  SHARP_HERO_SURFACE,
+  SHARP_PAGE_BG,
+  SHARP_PANEL_BORDER,
+  SHARP_PANEL_SHADOW,
+  SHARP_PANEL_SURFACE,
+  SHARP_RED,
+  SHARP_RED_BG,
+  SHARP_RED_TEXT,
+  SHARP_SOLID_PANEL_ALT,
+  SHARP_TEXT,
+  SHARP_TEXT_FAINT,
+  SHARP_TEXT_MUTED,
+  SHARP_TEXT_SOFT,
+} from '../lib/sharpTheme.js'
 
 const THEME_ORDER = ['dark', 'light', 'sharp']
 
@@ -71,34 +100,34 @@ const THEMES = {
     overlaySoft: 'rgba(0,0,0,0.07)',
   },
   sharp: {
-    bg: '#101B33',
-    surface: '#162743',
-    surface2: '#1C3151',
-    surface3: '#284268',
-    panel: '#1C3151',
-    panelAlt: '#22385D',
-    border: '#45679A',
-    border2: '#5D7FB0',
-    text: '#F4F7FC',
-    textSecondary: '#D8E2F1',
-    textMuted: '#AFC2DE',
-    textFaint: '#7E97BC',
-    accent: '#6B8CFF',
-    accentLight: '#2C446B',
-    accentText: '#BED0FF',
-    red: '#C07878',
-    redBg: '#1A1A32',
-    redText: '#C07878',
-    amber: '#8A9E6A',
-    amberBg: '#1A2520',
-    amberText: '#A8C080',
-    green: '#4A9E8B',
-    greenBg: '#0A1A20',
-    greenText: '#6BC0A8',
-    blue: '#3A73EA',
-    violet: '#6A7AEA',
+    bg: SHARP_PAGE_BG,
+    surface: SHARP_HERO_SURFACE,
+    surface2: SHARP_PANEL_SURFACE,
+    surface3: SHARP_SOLID_PANEL_ALT,
+    panel: SHARP_PANEL_SURFACE,
+    panelAlt: SHARP_HERO_SURFACE,
+    border: SHARP_BORDER,
+    border2: SHARP_BORDER_STRONG,
+    text: SHARP_TEXT,
+    textSecondary: SHARP_TEXT_SOFT,
+    textMuted: SHARP_TEXT_MUTED,
+    textFaint: SHARP_TEXT_FAINT,
+    accent: SHARP_ACCENT,
+    accentLight: SHARP_ACCENT_SOFT,
+    accentText: SHARP_ACCENT_TEXT,
+    red: SHARP_RED,
+    redBg: SHARP_RED_BG,
+    redText: SHARP_RED_TEXT,
+    amber: SHARP_AMBER,
+    amberBg: SHARP_AMBER_BG,
+    amberText: SHARP_AMBER_TEXT,
+    green: SHARP_GREEN,
+    greenBg: SHARP_GREEN_BG,
+    greenText: SHARP_GREEN_TEXT,
+    blue: SHARP_ACCENT,
+    violet: '#8EA0FF',
     sand: '#8AABDE',
-    white: '#F4F7FC',
+    white: SHARP_TEXT,
     overlay: 'rgba(5,15,30,0.6)',
     overlaySoft: 'rgba(0,0,0,0.35)',
   },
@@ -136,14 +165,6 @@ const G = {
   overlay: 'var(--overlay)',
   overlaySoft: 'var(--overlay-soft)',
 }
-
-const SHARP_HERO_SURFACE = 'linear-gradient(180deg, rgba(31,48,79,0.96) 0%, rgba(15,32,57,0.98) 100%)'
-const SHARP_HERO_BORDER = '1px solid rgba(107,140,255,0.38)'
-const SHARP_HERO_INSET = '0 0 0 1px rgba(107,140,255,0.14) inset'
-const SHARP_HERO_SHADOW = '0 18px 40px rgba(0,0,0,0.28)'
-const SHARP_PANEL_SURFACE = 'linear-gradient(180deg, rgba(34,54,88,0.96) 0%, rgba(18,36,62,0.985) 100%)'
-const SHARP_PANEL_BORDER = '1px solid rgba(107,140,255,0.3)'
-const SHARP_PANEL_SHADOW = 'inset 0 1px 0 rgba(255,255,255,0.04), 0 14px 30px rgba(5,15,30,0.18)'
 
 function getThemeVars(theme) {
   const C = THEMES[theme] || THEMES.dark

@@ -1,5 +1,24 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { initSupabase } from '../lib/supabase.js'
+import {
+  SHARP_ACCENT,
+  SHARP_ACCENT_SOFT,
+  SHARP_ACCENT_TEXT,
+  SHARP_BORDER,
+  SHARP_BORDER_STRONG,
+  SHARP_GREEN,
+  SHARP_GREEN_TEXT,
+  SHARP_HERO_SURFACE,
+  SHARP_PAGE_BG,
+  SHARP_PANEL_SURFACE,
+  SHARP_RED,
+  SHARP_RED_TEXT,
+  SHARP_SOLID_PANEL_ALT,
+  SHARP_TEXT,
+  SHARP_TEXT_FAINT,
+  SHARP_TEXT_MUTED,
+  SHARP_TEXT_SOFT,
+} from '../lib/sharpTheme.js'
 
 const THEMES = {
   dark: {
@@ -39,22 +58,22 @@ const THEMES = {
     redText: '#8C2A2A',
   },
   sharp: {
-    bg: '#0F2239',
-    surface: '#132C49',
-    surface2: '#193857',
-    surface3: '#224567',
-    border: '#2D4E72',
-    border2: '#44678D',
-    text: '#F4F7FC',
-    textSecondary: '#D8E2F1',
-    textMuted: '#A9BCD5',
-    textFaint: '#7B93B1',
-    accent: '#3A73EA',
-    accentLight: '#193857',
-    accentText: '#89A7E2',
-    buttonText: '#F4F7FC',
-    red: '#C07878',
-    redText: '#C07878',
+    bg: SHARP_PAGE_BG,
+    surface: SHARP_HERO_SURFACE,
+    surface2: SHARP_PANEL_SURFACE,
+    surface3: SHARP_SOLID_PANEL_ALT,
+    border: SHARP_BORDER,
+    border2: SHARP_BORDER_STRONG,
+    text: SHARP_TEXT,
+    textSecondary: SHARP_TEXT_SOFT,
+    textMuted: SHARP_TEXT_MUTED,
+    textFaint: SHARP_TEXT_FAINT,
+    accent: SHARP_ACCENT,
+    accentLight: SHARP_ACCENT_SOFT,
+    accentText: SHARP_ACCENT_TEXT,
+    buttonText: SHARP_TEXT,
+    red: SHARP_RED,
+    redText: SHARP_RED_TEXT,
   },
 }
 
