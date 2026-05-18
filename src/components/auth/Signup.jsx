@@ -197,16 +197,18 @@ function SignupForm({ onLogin }) {
     setLoading(true)
     try {
       rememberPlanIntent()
-      const sb = await initSupabase()
-      const { error: otpError } = await sb.auth.signInWithOtp({
-        email: email.trim(),
-        options: {
-          shouldCreateUser: true,
-          emailRedirectTo: `${window.location.origin}/`,
-          data: { name: name.trim() },
-        },
+      const response = await fetch('/api/send-auth-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: email.trim(),
+          name: name.trim(),
+          mode: 'signup',
+          origin: window.location.origin,
+        }),
       })
-      if (otpError) throw otpError
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(data?.error || 'Could not send sign-in link.')
       setMagicLinkSent(true)
     } catch (e) {
       localStorage.removeItem(PENDING_AUTH_INTENT_KEY)
@@ -353,6 +355,7 @@ const SIGNUP_PLANS = [
 
 function friendlyError(msg) {
   if (msg.includes('already registered')) return 'An account with this email already exists.'
+  if (msg.includes('An account with this email already exists.')) return 'An account with this email already exists.'
   if (msg.includes('provider is not enabled')) return 'This sign-in method is not enabled yet.'
   return msg
 }

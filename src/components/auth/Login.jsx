@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { initSupabase } from '../../lib/supabase.js'
 import { usePostHog } from '@posthog/react'
 import {
@@ -133,7 +133,7 @@ function GoogleMark() {
 }
 
 
-export default function Login({ onSuccess, onSignup }) {
+export default function Login({ onSuccess, onSignup, initialMessage = '' }) {
   const [email, setEmail] = useState('')
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -141,6 +141,10 @@ export default function Login({ onSuccess, onSignup }) {
   const posthog = usePostHog()
   const theme = localStorage.getItem('sa-theme') || 'dark'
   const themeVars = getThemeVars(theme)
+
+  useEffect(() => {
+    if (initialMessage) setError(initialMessage)
+  }, [initialMessage])
 
   const handleOAuthLogin = async (provider) => {
     setError(null)
@@ -174,15 +178,17 @@ export default function Login({ onSuccess, onSignup }) {
     }
     setLoading(true)
     try {
-      const sb = await initSupabase()
-      const { error } = await sb.auth.signInWithOtp({
-        email: email.trim(),
-        options: {
-          shouldCreateUser: false,
-          emailRedirectTo: `${window.location.origin}/`,
-        },
+      const response = await fetch('/api/send-auth-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: email.trim(),
+          mode: 'login',
+          origin: window.location.origin,
+        }),
       })
-      if (error) throw error
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(data?.error || 'Could not send sign-in link.')
       setMagicLinkSent(true)
     } catch (e) {
       setError(friendlyError(e?.message || 'Could not send magic link.'))
@@ -285,6 +291,7 @@ function EmailField({ value, onChange, onEnter }) {
 function friendlyError(msg) {
   if (msg.includes('provider is not enabled')) return 'This sign-in method is not enabled yet in Supabase Auth.'
   if (msg.includes('Signups not allowed for otp')) return 'No account exists for that email yet.'
+  if (msg.includes('No account exists for that email yet.')) return 'No account exists for that email yet.'
   return msg
 }
 

@@ -42,6 +42,29 @@ function screenFromHash(isAuthenticated = false) {
   return null
 }
 
+async function maybeHandleEmailAuthConfirm(sb) {
+  if (window.location.pathname !== '/auth/confirm') return null
+
+  const params = new URLSearchParams(window.location.search)
+  const tokenHash = params.get('token_hash')
+  const type = params.get('type')
+  const next = params.get('next') || '/'
+
+  if (!tokenHash || !type) {
+    history.replaceState({}, '', '/#login')
+    return { error: 'That sign-in link is incomplete. Please request a new one.' }
+  }
+
+  const { error } = await sb.auth.verifyOtp({ token_hash: tokenHash, type })
+  history.replaceState({}, '', next.startsWith('/') ? next : '/')
+
+  if (error) {
+    return { error: error.message || 'That sign-in link is invalid or expired.' }
+  }
+
+  return { error: null }
+}
+
 export default function App() {
   const [screen,              setScreen]              = useState(screenFromHash() ?? SCREENS.LANDING)
   const [userInfo,            setUserInfo]            = useState(null)
@@ -49,6 +72,7 @@ export default function App() {
   const [auditSessionId,      setAuditSessionId]      = useState(null)
   const [session,             setSession]             = useState(null)
   const [authLoading,         setAuthLoading]         = useState(true)
+  const [authMessage,         setAuthMessage]         = useState('')
   const theme = localStorage.getItem('sa-theme') || 'dark'
   const pendingCheckoutRef = React.useRef(false)
 
@@ -142,6 +166,12 @@ export default function App() {
 
     initSupabase()
       .then(async (sb) => {
+        const confirmResult = await maybeHandleEmailAuthConfirm(sb)
+        if (confirmResult?.error) {
+          setAuthMessage(confirmResult.error)
+          navigate(SCREENS.LOGIN)
+        }
+
         // ── Step 1: resolve session fully before any auth-gated UI renders ──
         // getSession() reads from storage first; only hits network if token
         // is expired. refreshSession() would consume the refresh token on
@@ -295,6 +325,7 @@ export default function App() {
     // session is kept current by onAuthStateChange so this check is always fresh.
     if (session) { navigate(SCREENS.DASHBOARD); return null }
     return <Login
+      initialMessage={authMessage}
       onSuccess={(session) => {
         if (session) setSession(session)
       }}
