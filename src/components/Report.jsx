@@ -330,12 +330,16 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
         clone.style.paddingBottom = '0'
         document.body.appendChild(clone)
 
-        const canvas = await html2canvas(clone, {
-          scale: 2,
-          useCORS: true,
-          backgroundColor: null,
-        })
-        document.body.removeChild(clone)
+        let canvas
+        try {
+          canvas = await html2canvas(clone, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: null,
+          })
+        } finally {
+          document.body.removeChild(clone)
+        }
 
         const pdf = new jsPDF({ orientation: 'p', unit: 'pt', format: 'a4' })
         const pageWidth = pdf.internal.pageSize.getWidth()

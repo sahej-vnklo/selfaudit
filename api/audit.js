@@ -774,8 +774,12 @@ export default async function handler(req, res) {
     })
 
     if (!response.ok) {
-      const err = await response.json()
-      return res.status(response.status).json({ error: err.error?.message || 'Claude API error' })
+      let errMessage = 'Claude API error'
+      try {
+        const err = await response.json()
+        errMessage = err.error?.message || errMessage
+      } catch { /* non-JSON error body */ }
+      return res.status(response.status).json({ error: errMessage })
     }
 
     const data = await response.json()

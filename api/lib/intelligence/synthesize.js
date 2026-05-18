@@ -260,13 +260,13 @@ export async function synthesizeUserIntelligence(userId, options = {}) {
   }
 
   const [
-    { data: reports = [] },
-    { data: memoryRows = [] },
-    { data: businessState = null },
-    { data: intelligenceBrief = null },
-    { data: syncLogs = [] },
-    { data: previousProfile = null },
-    { data: existingPrefs = null },
+    reportsResult,
+    memoryResult,
+    businessStateResult,
+    briefResult,
+    syncLogsResult,
+    previousProfileResult,
+    existingPrefsResult,
   ] = await Promise.all([
     supabase
       .from('reports')
@@ -307,6 +307,20 @@ export async function synthesizeUserIntelligence(userId, options = {}) {
       .eq('user_id', userId)
       .maybeSingle(),
   ])
+
+  if (reportsResult.error)         console.warn('[synthesize] reports fetch error:', reportsResult.error.message)
+  if (memoryResult.error)          console.warn('[synthesize] memory fetch error:', memoryResult.error.message)
+  if (businessStateResult.error)   console.warn('[synthesize] business_state fetch error:', businessStateResult.error.message)
+  if (briefResult.error)           console.warn('[synthesize] brief fetch error:', briefResult.error.message)
+  if (syncLogsResult.error)        console.warn('[synthesize] sync_logs fetch error:', syncLogsResult.error.message)
+
+  const reports         = reportsResult.data         ?? []
+  const memoryRows      = memoryResult.data          ?? []
+  const businessState   = businessStateResult.data   ?? null
+  const intelligenceBrief = briefResult.data         ?? null
+  const syncLogs        = syncLogsResult.data        ?? []
+  const previousProfile = previousProfileResult.data ?? null
+  const existingPrefs   = existingPrefsResult.data   ?? null
 
   const reportData = extractFromReports(reports)
   const memoryData = extractFromMemory(memoryRows)

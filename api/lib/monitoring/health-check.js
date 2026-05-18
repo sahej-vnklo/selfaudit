@@ -439,9 +439,12 @@ export async function runBusinessHealthCheck(userId) {
       .single(),
   ])
 
-  const brain       = brainRes.status   === 'fulfilled' ? brainRes.value             : null
-  const brief       = briefRes.status   === 'fulfilled' ? briefRes.value.data        : null
+  const brain        = brainRes.status   === 'fulfilled' ? brainRes.value             : null
+  const brief        = briefRes.status   === 'fulfilled' ? briefRes.value.data        : null
   const integrations = profileRes.status === 'fulfilled' ? profileRes.value.data?.integrations : null
+
+  if (briefRes.status   === 'fulfilled' && briefRes.value.error)   console.warn('[health-check] brief fetch error:', briefRes.value.error.message)
+  if (profileRes.status === 'fulfilled' && profileRes.value.error) console.warn('[health-check] profile fetch error:', profileRes.value.error.message)
 
   // 5-6: Pull and normalize connector data (HubSpot first; non-blocking)
   let normalized = null

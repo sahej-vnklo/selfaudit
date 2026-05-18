@@ -117,11 +117,13 @@ export default function GoalGapReport({ report, Section, styles }) {
         </Section>
       )}
 
-      <Section title="The Honest Truth">
-        <div style={styles.truth}>
-          <p style={styles.truthText}>{report.honest_truth}</p>
-        </div>
-      </Section>
+      {report.honest_truth && (
+        <Section title="The Honest Truth">
+          <div style={styles.truth}>
+            <p style={styles.truthText}>{report.honest_truth}</p>
+          </div>
+        </Section>
+      )}
     </>
   )
 }

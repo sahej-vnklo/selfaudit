@@ -23,7 +23,11 @@ function verifyState(rawState) {
   const expectedSig = createHmac('sha256', secret).update(raw).digest('hex')
 
   if (providedSig.length !== expectedSig.length) return null
-  if (!timingSafeEqual(Buffer.from(providedSig, 'hex'), Buffer.from(expectedSig, 'hex'))) return null
+  try {
+    if (!timingSafeEqual(Buffer.from(providedSig, 'hex'), Buffer.from(expectedSig, 'hex'))) return null
+  } catch {
+    return null
+  }
 
   let payload
   try {

@@ -155,14 +155,18 @@ export async function gatherAgentContext(userId, plan) {
     }
   } catch { /* non-blocking */ }
 
+  // Resolve integrations before the parallel block — await inside allSettled args would serialize everything
+  const needsConnector = needed.includes('hubspot_pipeline') || needed.includes('hubspot_contacts')
+  const integrations = needsConnector && brain ? await getIntegrations(sb, userId) : null
+
   // Parallel loads for everything else
   const [briefBlock, auditBlock, healthBlock, alertBlock, connectorBlock] = await Promise.allSettled([
     needed.includes('intelligence_brief') ? loadIntelligenceBrief(sb, userId) : Promise.resolve(null),
     needed.includes('recent_audits')      ? loadRecentAudits(sb, userId)       : Promise.resolve(null),
     needed.includes('health_checks')      ? loadHealthChecks(sb, userId)        : Promise.resolve(null),
     needed.includes('risk_alerts')        ? loadRiskAlerts(sb, userId)          : Promise.resolve(null),
-    (needed.includes('hubspot_pipeline') || needed.includes('hubspot_contacts'))
-      ? loadConnectorData(userId, brain ? await getIntegrations(sb, userId) : null)
+    needsConnector
+      ? loadConnectorData(userId, integrations)
       : Promise.resolve(null),
   ])
 

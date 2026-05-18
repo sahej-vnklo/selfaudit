@@ -223,11 +223,13 @@ export default async function handler(req: any, res: any): Promise<void> {
   if (process.env.TSA_ADMIN_KEY && keyFromHeader === process.env.TSA_ADMIN_KEY) {
     isAuthorized = true
   } else if (authHeader.startsWith('Bearer ')) {
-    const token = authHeader.slice(7)
-    const { data, error } = await getSupabase().auth.getUser(token)
-    if (!error && data?.user?.email === ADMIN_EMAIL) {
-      isAuthorized = true
-    }
+    try {
+      const token = authHeader.slice(7)
+      const { data, error } = await getSupabase().auth.getUser(token)
+      if (!error && data?.user?.email === ADMIN_EMAIL) {
+        isAuthorized = true
+      }
+    } catch { /* supabase unavailable — deny access */ }
   }
 
   if (!isAuthorized) {
