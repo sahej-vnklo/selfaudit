@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { initSupabase } from '../lib/supabase.js'
 import {
   DARK_ACCENT,
@@ -155,24 +155,9 @@ function normalizeTier(raw) {
 }
 
 function isFilled(value) {
-  if (Array.isArray(value)) return value.length > 0
   if (value === 0) return true
   if (typeof value === 'number') return Number.isFinite(value)
   return !!String(value ?? '').trim()
-}
-
-function clampCompletion(value) {
-  return Math.max(0, Math.min(100, Math.round(value)))
-}
-
-function formatFileSize(size = 0) {
-  if (size < 1024) return `${size} B`
-  if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`
-  return `${(size / (1024 * 1024)).toFixed(1)} MB`
-}
-
-function sanitizeFileName(name) {
-  return name.toLowerCase().replace(/[^a-z0-9._-]+/g, '-')
 }
 
 function getIndustryFlags(industry = '') {
@@ -265,15 +250,13 @@ function normalizeFieldGroup(fields, source) {
   return next
 }
 
-function calculateCompletion(financialFields, financial, operational, context, docPaths) {
+function hasAnyBriefData(financialFields, financial, operational, context) {
   const visibleFields = [
     ...financialFields.map((field) => financial[field.key]),
     ...operationalFields.map((field) => operational[field.key]),
     ...getVisibleContextFields(context).map((field) => context[field.key]),
-    docPaths,
   ]
-  const filled = visibleFields.filter(isFilled).length
-  return clampCompletion((filled / Math.max(visibleFields.length, 1)) * 100)
+  return visibleFields.some(isFilled)
 }
 
 export default function IntelligenceBrief({ user, profile, onProfileChange }) {
@@ -282,20 +265,16 @@ export default function IntelligenceBrief({ user, profile, onProfileChange }) {
   const [financial, setFinancial] = useState({})
   const [operational, setOperational] = useState({})
   const [context, setContext] = useState({})
-  const [docPaths, setDocPaths] = useState(() => profile?.intelligence_docs || [])
   const [synthProfile, setSynthProfile] = useState(null)
   const [openSections, setOpenSections] = useState({
     synthesized: false,
     financial: false,
     operational: false,
     context: false,
-    documents: false,
   })
   const [loading, setLoading] = useState(true)
   const [savingSection, setSavingSection] = useState('')
-  const [uploading, setUploading] = useState(false)
   const [toast, setToast] = useState('')
-  const inputRef = useRef(null)
 
   const financialFields = useMemo(() => getFinancialFields(profile?.industry), [profile?.industry])
   const visibleContextFields = useMemo(() => getVisibleContextFields(context), [context])
@@ -321,7 +300,7 @@ export default function IntelligenceBrief({ user, profile, onProfileChange }) {
         const sb = await initSupabase()
         const { data } = await sb
           .from('intelligence_brief')
-          .select('financial, operational, context, doc_paths, completion_pct')
+          .select('financial, operational, context')
           .eq('user_id', user.id)
           .maybeSingle()
 
@@ -329,11 +308,6 @@ export default function IntelligenceBrief({ user, profile, onProfileChange }) {
         if (data?.financial) setFinancial(data.financial)
         if (data?.operational) setOperational(data.operational)
         if (data?.context) setContext(data.context)
-        if (Array.isArray(data?.doc_paths) && data.doc_paths.length > 0) {
-          setDocPaths(data.doc_paths)
-        } else if (Array.isArray(profile?.intelligence_docs)) {
-          setDocPaths(profile.intelligence_docs)
-        }
 
         if (intelligenceUnlocked) {
           try {
@@ -364,14 +338,9 @@ export default function IntelligenceBrief({ user, profile, onProfileChange }) {
     return () => {
       cancelled = true
     }
-  }, [intelligenceUnlocked, profile?.intelligence_docs, user?.id])
+  }, [intelligenceUnlocked, user?.id])
 
-  const completionPct = useMemo(
-    () => calculateCompletion(financialFields, financial, operational, context, docPaths),
-    [context, docPaths, financial, financialFields, operational]
-  )
-
-  const saveBrief = async (sectionKey, nextDocs = docPaths) => {
+  const saveBrief = async (sectionKey) => {
     if (!user?.id) return
     setSavingSection(sectionKey)
     try {
@@ -379,14 +348,11 @@ export default function IntelligenceBrief({ user, profile, onProfileChange }) {
       const nextFinancial = normalizeFieldGroup(financialFields, financial)
       const nextOperational = normalizeFieldGroup(operationalFields, operational)
       const nextContext = normalizeFieldGroup(visibleContextFields, context)
-      const nextCompletion = calculateCompletion(financialFields, nextFinancial, nextOperational, nextContext, nextDocs)
       const payload = {
         user_id: user.id,
         financial: nextFinancial,
         operational: nextOperational,
         context: nextContext,
-        doc_paths: nextDocs,
-        completion_pct: nextCompletion,
         updated_at: new Date().toISOString(),
       }
 
@@ -397,8 +363,7 @@ export default function IntelligenceBrief({ user, profile, onProfileChange }) {
       if (error) throw error
 
       const profileUpdate = {
-        intelligence_docs: nextDocs,
-        intelligence_complete: nextCompletion > 60,
+        intelligence_complete: hasAnyBriefData(financialFields, nextFinancial, nextOperational, nextContext),
       }
       const { error: profileError } = await sb
         .from('profiles')
@@ -413,105 +378,6 @@ export default function IntelligenceBrief({ user, profile, onProfileChange }) {
       setToast('Save failed')
     } finally {
       setSavingSection('')
-    }
-  }
-
-  const persistDocuments = async (nextDocs) => {
-    setDocPaths(nextDocs)
-    if (!user?.id) return
-    setSavingSection('documents')
-    try {
-      const sb = await initSupabase()
-      const { error } = await sb
-        .from('intelligence_brief')
-        .upsert(
-          {
-            user_id: user.id,
-            financial: normalizeFieldGroup(financialFields, financial),
-            operational: normalizeFieldGroup(operationalFields, operational),
-            context: normalizeFieldGroup(visibleContextFields, context),
-            doc_paths: nextDocs,
-            completion_pct: calculateCompletion(
-              financialFields,
-              normalizeFieldGroup(financialFields, financial),
-              normalizeFieldGroup(operationalFields, operational),
-              normalizeFieldGroup(visibleContextFields, context),
-              nextDocs
-            ),
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: 'user_id' }
-        )
-      if (error) throw error
-
-      const profileUpdate = {
-        intelligence_docs: nextDocs,
-        intelligence_complete: calculateCompletion(
-          financialFields,
-          normalizeFieldGroup(financialFields, financial),
-          normalizeFieldGroup(operationalFields, operational),
-          normalizeFieldGroup(visibleContextFields, context),
-          nextDocs
-        ) > 60,
-      }
-      const { error: profileError } = await sb.from('profiles').update(profileUpdate).eq('id', user.id)
-      if (profileError) throw profileError
-      onProfileChange?.(profileUpdate)
-      setToast('Saved')
-    } catch (err) {
-      console.error('[intelligence-brief] document sync failed:', err?.message || err)
-      setToast('Save failed')
-    } finally {
-      setSavingSection('')
-    }
-  }
-
-  const handleUpload = async (files) => {
-    if (!files?.length || !user?.id) return
-    setUploading(true)
-    try {
-      const sb = await initSupabase()
-      const nextDocs = [...docPaths]
-
-      for (const file of Array.from(files)) {
-        const path = `${user.id}/${Date.now()}-${sanitizeFileName(file.name)}`
-        const { error } = await sb.storage.from('intelligence-docs').upload(path, file, { upsert: false })
-        if (error) throw error
-        const doc = {
-          name: file.name,
-          path,
-          size: file.size,
-          uploaded_at: new Date().toISOString(),
-        }
-        nextDocs.unshift(doc)
-
-        fetch('/api/parse-intelligence-doc', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: user.id, path, name: file.name }),
-        }).catch(() => {})
-      }
-
-      await persistDocuments(nextDocs)
-    } catch (err) {
-      console.error('[intelligence-brief] upload failed:', err?.message || err)
-      setToast('Upload failed')
-    } finally {
-      setUploading(false)
-      if (inputRef.current) inputRef.current.value = ''
-    }
-  }
-
-  const handleRemoveDoc = async (doc) => {
-    if (!user?.id) return
-    try {
-      const sb = await initSupabase()
-      await sb.storage.from('intelligence-docs').remove([doc.path])
-      const nextDocs = docPaths.filter((item) => item.path !== doc.path)
-      await persistDocuments(nextDocs)
-    } catch (err) {
-      console.error('[intelligence-brief] remove failed:', err?.message || err)
-      setToast('Remove failed')
     }
   }
 
@@ -587,18 +453,15 @@ export default function IntelligenceBrief({ user, profile, onProfileChange }) {
     )
   }
 
-  const sectionTitle = `${completionPct}% complete`
-
   return (
     <div style={{ ...themeVars, maxWidth: 980 }}>
       <div style={pageHeader}>
         <div>
           <h1 style={pageTitle}>Intelligence brief</h1>
           <p style={pageSub}>
-            The more you fill in, the more precise every audit becomes. Incomplete fields are treated as assumptions.
+            Add the business context you want SelfAudit to reason from. Missing fields are treated as assumptions.
           </p>
         </div>
-        <div style={completionBadge}>Profile {sectionTitle}</div>
       </div>
 
       {toast && <div style={toastStyle}>{toast}</div>}
@@ -743,56 +606,6 @@ export default function IntelligenceBrief({ user, profile, onProfileChange }) {
             </div>
           </SectionCard>
 
-          <SectionCard
-            title="Documents"
-            isOpen={openSections.documents}
-            onToggle={() => setOpenSections((prev) => ({ ...prev, documents: !prev.documents }))}
-            onSave={() => saveBrief('documents')}
-            saving={savingSection === 'documents'}
-          >
-            <input
-              ref={inputRef}
-              type="file"
-              accept=".pdf,.xlsx,.csv,.docx"
-              multiple
-              style={{ display: 'none' }}
-              onChange={(event) => handleUpload(event.target.files)}
-            />
-            <button
-              type="button"
-              onClick={() => inputRef.current?.click()}
-              style={uploadShell}
-            >
-              <div style={{ fontSize: 14, color: COLORS.text }}>Drop files here or click to upload</div>
-              <div style={{ fontSize: 12, color: COLORS.textSecondary, marginTop: 6 }}>
-                P&amp;L, balance sheet, pitch deck, contracts — SelfAudit will extract key numbers automatically
-              </div>
-              <div style={{ fontSize: 11, color: COLORS.textFaint, marginTop: 10 }}>
-                Accepted: .pdf, .xlsx, .csv, .docx
-              </div>
-              {uploading && <div style={{ fontSize: 12, color: COLORS.accentText, marginTop: 10 }}>Uploading…</div>}
-            </button>
-
-            {docPaths.length > 0 && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 14 }}>
-                {docPaths.map((doc) => (
-                  <div key={doc.path} style={docRow}>
-                    <div style={{ minWidth: 0, flex: 1 }}>
-                      <div style={{ fontSize: 13, color: COLORS.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {doc.name}
-                      </div>
-                      <div style={{ fontSize: 11, color: COLORS.textFaint }}>
-                        {formatFileSize(doc.size)} · {doc.uploaded_at ? new Date(doc.uploaded_at).toLocaleDateString() : 'Uploaded'}
-                      </div>
-                    </div>
-                    <button type="button" style={removeBtn} onClick={() => handleRemoveDoc(doc)}>
-                      Remove
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </SectionCard>
         </div>
       )}
     </div>
@@ -886,10 +699,6 @@ function fieldAffixStyle(side) {
 }
 
 const pageHeader = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'flex-start',
-  gap: 20,
   marginBottom: 18,
 }
 
@@ -905,16 +714,6 @@ const pageSub = {
   fontSize: 13,
   color: COLORS.textSecondary,
   maxWidth: 620,
-}
-
-const completionBadge = {
-  background: COLORS.accentLight,
-  color: COLORS.accentText,
-  border: `0.5px solid ${COLORS.border2}`,
-  borderRadius: 999,
-  padding: '7px 12px',
-  fontSize: 12,
-  whiteSpace: 'nowrap',
 }
 
 const card = {
@@ -1018,16 +817,6 @@ const saveBtn = {
   cursor: 'pointer',
 }
 
-const uploadShell = {
-  width: '100%',
-  border: `1px dashed ${COLORS.border2}`,
-  borderRadius: 8,
-  padding: '24px 18px',
-  textAlign: 'center',
-  background: COLORS.surface,
-  cursor: 'pointer',
-}
-
 const prefsSelect = {
   width: '100%',
   minHeight: 40,
@@ -1062,26 +851,6 @@ const checkboxPill = {
   border: `0.5px solid ${COLORS.border}`,
   borderRadius: 999,
   background: COLORS.surface,
-}
-
-const docRow = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 12,
-  padding: '10px 12px',
-  background: COLORS.surface,
-  border: `0.5px solid ${COLORS.border}`,
-  borderRadius: 8,
-}
-
-const removeBtn = {
-  background: 'transparent',
-  color: COLORS.redText,
-  border: `0.5px solid ${COLORS.red}`,
-  borderRadius: 8,
-  padding: '6px 10px',
-  fontSize: 11,
-  cursor: 'pointer',
 }
 
 const loadingCard = {
