@@ -795,8 +795,9 @@ export default async function handler(req, res) {
       const requiredDiagnostic   = ['business_state','ranked_path','timeline_reality','forward_trajectory']
 
       const mode = report.conversation_mode
-      const required = goalMode                           ? []
-                     : mode === 'HUMAN_MOMENT'            ? requiredHumanMoment
+      const required = goalMode                            ? []
+                     : mode === 'HUMAN_MOMENT'             ? requiredHumanMoment
+                     : mode === 'EXECUTION_HUMAN'          ? requiredHumanMoment
                      : mode === 'EXECUTION'                ? requiredExecution
                      : mode === 'DIAGNOSTIC'               ? requiredDiagnostic
                      : null
@@ -825,7 +826,9 @@ export default async function handler(req, res) {
                   ? `Your response failed GOAL report validation for these fields: ${missing.join(', ')}. Regenerate the complete JSON with the goal-mode fields populated correctly. goal_gap_analysis and ranking_logic must be objects, missing_capabilities and priority_actions must be arrays, timeline_feasibility must begin with feasible, tight, or unrealistic, and confidence_level and honest_truth must be non-empty strings.`
                   : mode === 'DIAGNOSTIC'
                     ? `Your response failed DIAGNOSTIC report validation for these fields: ${missing.join(', ')}. Regenerate the complete JSON. forward_trajectory is required in DIAGNOSTIC mode, must compare current path vs top recommendation, must include dimension, horizon, summary, if_current_path_continues, if_top_recommendation_is_executed, comparison_points, and confidence_note, and must use numbers only when supported by evidence.`
-                    : `Your response failed EXECUTION report validation for these fields: ${missing.join(', ')}. Regenerate the complete JSON with all core EXECUTION fields populated. If you include forward_trajectory, it must be complete, practical, and tied to execution consequences.`,
+                    : (mode === 'HUMAN_MOMENT' || mode === 'EXECUTION_HUMAN')
+                      ? `Your response failed ${mode} report validation for these fields: ${missing.join(', ')}. Regenerate the complete JSON with all six required fields: headline, acknowledgment, what_this_actually_is, delivery_script, what_to_expect, and honest_truth. delivery_script must contain actual spoken words in first person as a continuous paragraph starting with "Something like this:" followed by the script in quotes.`
+                      : `Your response failed EXECUTION report validation for these fields: ${missing.join(', ')}. Regenerate the complete JSON with all core EXECUTION fields populated. If you include forward_trajectory, it must be complete, practical, and tied to execution consequences.`,
               },
             ]
             const retryResponse = await fetch(CLAUDE_API, {

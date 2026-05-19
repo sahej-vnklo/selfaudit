@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import * as Sentry from '@sentry/react'
 import { supabase, initSupabase } from './lib/supabase.js'
 import Landing from './components/Landing.jsx'
@@ -129,9 +129,16 @@ export default function App() {
   }, [])
 
   // ── Respond to history changes (back/forward, logo clicks) ────────────────
+  // Keep a ref so the listener always reads the current session without needing
+  // to be re-registered on every session change (avoids stale closure window).
+  const sessionRef = useRef(session)
+  useEffect(() => {
+    sessionRef.current = session
+  }, [session])
+
   useEffect(() => {
     const syncScreenFromLocation = () => {
-      const s = screenFromHash(!!session)
+      const s = screenFromHash(!!sessionRef.current)
       setScreen(s ?? SCREENS.LANDING)
     }
 
@@ -141,7 +148,7 @@ export default function App() {
       window.removeEventListener('hashchange', syncScreenFromLocation)
       window.removeEventListener('popstate', syncScreenFromLocation)
     }
-  }, [session])
+  }, [])
 
   // ── Auth state listener ───────────────────────────────────────────────────
   useEffect(() => {

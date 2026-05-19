@@ -179,7 +179,7 @@ export default function AuditChat({ theme = 'dark', userInfo, onReportReady, con
     if (!initialized) {
       const firstMsg = FIRST_MESSAGE(userInfo)
       setConversationHistory([
-        { role: 'assistant', content: firstMsg, display: firstMsg }
+        { _id: crypto.randomUUID(), role: 'assistant', content: firstMsg, display: firstMsg }
       ])
       setInitialized(true)
     }
@@ -237,6 +237,7 @@ export default function AuditChat({ theme = 'dark', userInfo, onReportReady, con
       ? extractNonContactText(text, parsedContact.email, parsedContact.name)
       : ''
     const userMsg = {
+      _id: crypto.randomUUID(),
       role: 'user',
       content: text,
       display: text,
@@ -261,6 +262,7 @@ export default function AuditChat({ theme = 'dark', userInfo, onReportReady, con
         setCollectingContact(false)
         awaitingContactRef.current = false
         newHistory = [...newHistory, {
+          _id: crypto.randomUUID(),
           role: 'assistant',
           content: CONTACT_CONFIRM_TEXT,
           display: CONTACT_CONFIRM_TEXT,
@@ -277,6 +279,7 @@ export default function AuditChat({ theme = 'dark', userInfo, onReportReady, con
       } else {
         setCollectingContact(true)
         setConversationHistory([...newHistory, {
+          _id: crypto.randomUUID(),
           role: 'assistant',
           content: CONTACT_RETRY_TEXT,
           display: CONTACT_RETRY_TEXT,
@@ -323,13 +326,14 @@ export default function AuditChat({ theme = 'dark', userInfo, onReportReady, con
         .replace('[READY_FOR_REPORT]', '')
         .trim()
 
-      const assistantMsg = { role: 'assistant', content: cleanResponse, display: cleanResponse }
+      const assistantMsg = { _id: crypto.randomUUID(), role: 'assistant', content: cleanResponse, display: cleanResponse }
       let finalHistory = [...newHistory, assistantMsg]
       const assistantCount = finalHistory.filter(m => m.role === 'assistant' && !isContactMetaMessage(m)).length
       if (!effectiveContactInfo.collected && !awaitingContactRef.current && assistantCount >= 4) {
         awaitingContactRef.current = true
         setCollectingContact(true)
         finalHistory = [...finalHistory, {
+          _id: crypto.randomUUID(),
           role: 'assistant',
           content: CONTACT_PROMPT_TEXT,
           display: CONTACT_PROMPT_TEXT,
@@ -416,7 +420,7 @@ export default function AuditChat({ theme = 'dark', userInfo, onReportReady, con
 
       <div style={themeStyles.messages}>
         {conversationHistory.map((msg, i) => (
-          <Message key={i} msg={msg} delay={i * 0.05} themeStyles={themeStyles} />
+          <Message key={msg._id ?? i} msg={msg} delay={i * 0.05} themeStyles={themeStyles} />
         ))}
 
         {loading && (

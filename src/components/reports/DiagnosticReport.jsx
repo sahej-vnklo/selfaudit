@@ -27,7 +27,7 @@ export default function DiagnosticReport({
       <Section title="Domain Findings">
         <div style={styles.domainsGrid}>
           {report.domains?.map((d, i) => (
-            <div key={i} style={{ ...styles.domainCard, borderTop: `3px solid ${statusColor[d.status]}` }}>
+            <div key={d.name ?? i} style={{ ...styles.domainCard, borderTop: `3px solid ${statusColor[d.status]}` }}>
               <div style={styles.domainTop}>
                 <span style={styles.domainName}>{d.name}</span>
                 <span style={{
@@ -47,7 +47,7 @@ export default function DiagnosticReport({
         <Section title="Fix These First">
           <div style={styles.fixList}>
             {report.non_ai_fixes.map((f, i) => (
-              <div key={i} style={styles.fixItem}>
+              <div key={f.issue ?? i} style={styles.fixItem}>
                 <div style={styles.fixIssue}>{f.issue}</div>
                 <div style={styles.fixSolution}>{f.fix}</div>
               </div>
@@ -60,7 +60,7 @@ export default function DiagnosticReport({
         <Section title="If You Actually Built This">
           <div style={styles.aiList}>
             {report.ai_opportunities.map((a, i) => (
-              <div key={i} style={styles.aiItem}>
+              <div key={a.area ?? i} style={styles.aiItem}>
                 <div style={styles.aiArea}>{a.area}</div>
                 <div style={styles.aiWhy}>{a.why}</div>
               </div>

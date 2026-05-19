@@ -127,6 +127,7 @@ function extractFromReports(reports) {
     topHeadlines: uniq(headlines).slice(0, 6),
     domainsAudited: uniq(domains),
     repeatedBlockers: countTop(blockers, 6),
+    rawBlockers: blockers,
     topPriorities: uniq(priorities).slice(0, 6),
     opportunities: uniq(opportunities).slice(0, 6),
     watchouts: uniq(watchouts).slice(0, 6),
@@ -152,6 +153,7 @@ function extractFromMemory(memoryRows) {
 
   return {
     repeatedBlockers: countTop(rootCauses, 6),
+    rawRootCauses: rootCauses,
     topPriorities: uniq(priorities).slice(0, 6),
     domainsAudited: uniq(domains),
     openLoops: uniq(openLoops).slice(0, 6),
@@ -326,7 +328,9 @@ export async function synthesizeUserIntelligence(userId, options = {}) {
   const memoryData = extractFromMemory(memoryRows)
   const connectorData = extractConnectorState(profile, syncLogs)
   const combinedDomains = uniq([...reportData.domainsAudited, ...memoryData.domainsAudited]).slice(0, 12)
-  const combinedBlockers = countTop([...reportData.repeatedBlockers, ...memoryData.repeatedBlockers, ...asArray(businessState?.operational_blockers)], 8)
+  // Use raw arrays so countTop sees true frequencies — merging the already-summarised
+  // repeatedBlockers arrays would discard frequency data and double-count items
+  const combinedBlockers = countTop([...reportData.rawBlockers, ...memoryData.rawRootCauses, ...asArray(businessState?.operational_blockers)], 8)
   const combinedPriorities = uniq([...reportData.topPriorities, ...memoryData.topPriorities]).slice(0, 8)
   const activeGoal = businessState?.active_goal || reportData.latestGoal || ''
   const goalScore = typeof businessState?.goal_score === 'number'

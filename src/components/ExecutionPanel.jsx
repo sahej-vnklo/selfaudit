@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { initSupabase } from '../lib/supabase.js'
 import html2canvas from 'html2canvas'
 import { jsPDF } from 'jspdf'
@@ -475,10 +475,23 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
   ), [reportOptions, selectedReportId])
 
   const parsedReport = useMemo(() => parseReportPayload(activeReport), [activeReport])
-  const scopedUserInfo = useMemo(
-    () => buildScopedUserInfo(userInfo, activeReport, parsedReport),
-    [userInfo, activeReport, parsedReport]
-  )
+
+  // Stabilise scopedUserInfo so the fetch effect doesn't re-fire on every parent
+  // re-render — userInfo is an object prop that gets a new reference each render
+  // even when its content hasn't changed. We compare JSON and return the previous
+  // reference when content is identical, keeping the effect dep stable.
+  const scopedUserInfoRef = useRef(null)
+  const scopedUserInfo = useMemo(() => {
+    const next = buildScopedUserInfo(userInfo, activeReport, parsedReport)
+    if (
+      scopedUserInfoRef.current !== null &&
+      JSON.stringify(next) === JSON.stringify(scopedUserInfoRef.current)
+    ) {
+      return scopedUserInfoRef.current
+    }
+    scopedUserInfoRef.current = next
+    return next
+  }, [userInfo, activeReport, parsedReport])
   const recommendationContent = useMemo(
     () => getRecommendedMoveContent(activeReport, parsedReport, recommendations),
     [activeReport, parsedReport, recommendations]
