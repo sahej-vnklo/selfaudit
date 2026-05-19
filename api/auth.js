@@ -1,5 +1,4 @@
 import { createClient } from '@supabase/supabase-js'
-import { attioCreateUser } from './log-to-attio.js'
 
 function getSupabase() {
   return createClient(
@@ -28,11 +27,6 @@ export default async function handler(req, res) {
     const opts = name ? { options: { data: { name: name.trim() } } } : {}
     const { data, error } = await supabase.auth.signUp({ email, password, ...opts })
     if (error) return res.status(400).json({ error: error.message })
-
-    if (data.user) {
-      attioCreateUser({ email, name: name?.trim() })
-        .catch(e => console.warn('[auth] Attio create_user failed:', e.message))
-    }
 
     // session is null when email confirmation is required
     return res.json({ session: data.session ?? null, user: data.user ?? null })

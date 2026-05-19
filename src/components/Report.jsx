@@ -273,23 +273,6 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
             })).catch(e => console.warn('[memory] save failed:', e?.message))
           }
 
-          const attioBase = { method: 'POST', headers: { 'Content-Type': 'application/json' } }
-          fetch('/api/log-to-attio', {
-            ...attioBase,
-            body: JSON.stringify({
-              action:              'log_audit',
-              email:               userInfo.email,
-              conversationHistory: apiMessages,
-              report:              r,
-              industry:            userInfo.industry,
-              domain:              userInfo.domain,
-            }),
-          }).catch(e => console.warn('[report] Attio log_audit failed:', e.message))
-
-          fetch('/api/log-to-attio', {
-            ...attioBase,
-            body: JSON.stringify({ action: 'increment_report_count', email: userInfo.email }),
-          }).catch(e => console.warn('[report] Attio increment failed:', e.message))
         }
 
         posthog?.capture('report_generated', {
