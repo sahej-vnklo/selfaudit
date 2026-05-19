@@ -72,7 +72,7 @@ function alertMatchesPreferences(alert, prefAreas) {
 function alertsAreDue(prefRow) {
   if (!prefRow?.enabled) return false
   const cadenceMs = ALERT_CADENCE_MS[prefRow.frequency] || ALERT_CADENCE_MS.daily
-  const lastMarker = prefRow.updated_at ? new Date(prefRow.updated_at).getTime() : 0
+  const lastMarker = prefRow.last_notified_at ? new Date(prefRow.last_notified_at).getTime() : 0
   if (!lastMarker || Number.isNaN(lastMarker)) return true
   return (Date.now() - lastMarker) >= cadenceMs
 }
@@ -186,7 +186,7 @@ export default async function handler(req, res) {
       try {
         const { data: prefRow } = await sb
           .from('intelligence_notification_preferences')
-          .select('enabled, frequency, channels, areas, updated_at')
+          .select('enabled, frequency, channels, areas, last_notified_at')
           .eq('user_id', user.id)
           .maybeSingle()
 
@@ -218,7 +218,7 @@ export default async function handler(req, res) {
               await sb.from('risk_alerts').update({ notification_sent: true }).in('id', alertIds)
               await sb
                 .from('intelligence_notification_preferences')
-                .update({ updated_at: new Date().toISOString() })
+                .update({ last_notified_at: new Date().toISOString() })
                 .eq('user_id', user.id)
               summary.alert_emails_sent += 1
             }
