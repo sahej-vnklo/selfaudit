@@ -40,7 +40,6 @@ export async function fetchHubspotBusinessState(userId, integrations) {
       ['deals', 'https://api.hubapi.com/crm/v3/objects/deals?limit=20&properties=dealname,amount,dealstage,closedate,hs_deal_stage_probability,pipeline&sort=-createdate'],
       ['pipelines', 'https://api.hubapi.com/crm/v3/pipelines/deals'],
       ['contacts', 'https://api.hubapi.com/crm/v3/objects/contacts?limit=20&properties=firstname,lastname,email,hs_lead_status,lifecyclestage,createdate&sort=-createdate'],
-      ['engagements', 'https://api.hubapi.com/engagements/v1/engagements/recent/modified?count=10'],
     ]
 
     const settled = await Promise.allSettled(
@@ -56,8 +55,7 @@ export async function fetchHubspotBusinessState(userId, integrations) {
     if (Object.keys(data).length === 0) throw new Error('HubSpot sync returned no data')
     const deals = data.deals?.results || []
     const contacts = data.contacts?.results || []
-    const engagements = data.engagements?.results || []
-    const recordCount = deals.length + contacts.length + engagements.length + (data.pipelines?.results?.length || 0)
+    const recordCount = deals.length + contacts.length + (data.pipelines?.results?.length || 0)
     const stageRows = (data.pipelines?.results || []).flatMap(pipe => pipe.stages || [])
     const stageNameById = Object.fromEntries(stageRows.map(stage => [stage.id, stage.label || stage.displayOrder || stage.id]))
     const closedStageIds = new Set(stageRows.filter(stage => String(stage?.metadata?.isClosed || '').toLowerCase() === 'true').map(stage => stage.id))
