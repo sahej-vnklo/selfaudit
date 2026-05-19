@@ -51,10 +51,19 @@ import {
 // ─── Chat helpers ─────────────────────────────────────────────────────────────
 
 const FIRST_MESSAGE = (userInfo) => {
+  const rawName = (userInfo?.name || '').trim()
+  const firstName = rawName.split(/\s+/)[0]
+  // Only greet by name if it looks like a real name — filters out email prefixes,
+  // numeric usernames, and the 'User' placeholder that Dashboard uses as a fallback
+  const useGreeting = firstName.length >= 2 && /^[A-Za-z'-]+$/.test(firstName) && firstName.toLowerCase() !== 'user'
+
   if (userInfo?.goalMode && userInfo?.goal) {
     const timeline = userInfo.goalTimeline ? ` by ${userInfo.goalTimeline}` : ''
-    return `So you want to ${userInfo.goal}${timeline} — let's map where you actually are. Walk me through the current state: what's your revenue today, and what's driving it?`
+    const opener = useGreeting ? `Hey ${firstName} — so` : 'So'
+    return `${opener} you want to ${userInfo.goal}${timeline} — let's map where you actually are. Walk me through the current state: what's your revenue today, and what's driving it?`
   }
+
+  if (useGreeting) return `Hey ${firstName} — what's going on in your business right now?`
   return `What's going on in your business right now?`
 }
 

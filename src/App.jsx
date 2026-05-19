@@ -268,7 +268,7 @@ export default function App() {
   const handleAuditStart = (problem) => {
     const isGoalMode = typeof problem === 'string' && problem.startsWith('Goal:')
     setUserInfo({
-      name: '',
+      name: session?.user?.user_metadata?.name || '',
       email: '',
       phone: '',
       context: problem || '',
