@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { initSupabase } from '../../lib/supabase.js'
 import { usePostHog } from '@posthog/react'
+import { PRIVACY_POLICY_URL, TERMS_HASH } from '../../lib/legal.js'
 import {
   DARK_ACCENT,
   DARK_ACCENT_SOFT,
@@ -265,6 +266,13 @@ export default function Login({ onSuccess, onSignup, initialMessage = '' }) {
               Don't have an account?{' '}
               <button style={s.link} onClick={onSignup}>Sign up</button>
             </p>
+
+            <p style={s.legal}>
+              By continuing, you agree to our{' '}
+              <a href={TERMS_HASH} style={s.legalLink}>Terms of Service</a>
+              {' '}and{' '}
+              <a href={PRIVACY_POLICY_URL} target="_blank" rel="noopener noreferrer" style={s.legalLink}>Privacy Policy</a>.
+            </p>
           </div>
         </div>
       </div>
@@ -319,4 +327,6 @@ const s = {
   btn: { width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--accent)', color: 'var(--button-text)', fontSize: 15, fontWeight: 500, padding: '13px', borderRadius: 'var(--radius)', cursor: 'pointer', border: 'none', transition: 'background 0.15s', marginBottom: '1.25rem' },
   switch: { fontSize: 13, color: 'var(--text-soft)', textAlign: 'center' },
   link: { background: 'none', border: 'none', color: 'var(--accent)', fontWeight: 500, cursor: 'pointer', fontSize: 13, padding: 0 },
+  legal: { fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', lineHeight: 1.5, margin: '0.5rem 0 0' },
+  legalLink: { color: 'var(--accent-text)', textDecoration: 'none', fontWeight: 500 },
 }

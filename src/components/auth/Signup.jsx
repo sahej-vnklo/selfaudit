@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { initSupabase } from '../../lib/supabase.js'
 import { usePostHog } from '@posthog/react'
+import { PRIVACY_POLICY_URL, TERMS_HASH } from '../../lib/legal.js'
 import {
   DARK_ACCENT,
   DARK_ACCENT_SOFT,
@@ -339,7 +340,10 @@ function SignupForm({ onLogin }) {
           </div>
 
           <p style={s.privacy}>
-            By signing up you agree to our terms. Your data is only used to run and store your audits.
+            By signing up, you agree to our{' '}
+            <a href={TERMS_HASH} style={s.legalLink}>Terms of Service</a>
+            {' '}and{' '}
+            <a href={PRIVACY_POLICY_URL} target="_blank" rel="noopener noreferrer" style={s.legalLink}>Privacy Policy</a>.
           </p>
         </div>
 
@@ -383,4 +387,5 @@ const s = {
   errorMsg:     { fontSize: 13, color: 'var(--error)', margin: 0 },
   btn:          { width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--accent)', color: 'var(--button-text)', fontSize: 15, fontWeight: 500, padding: '13px', borderRadius: 'var(--radius)', cursor: 'pointer', border: 'none', transition: 'background 0.15s' },
   privacy:      { fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', lineHeight: 1.5, marginTop: '1.25rem', marginBottom: 0 },
+  legalLink:    { color: 'var(--accent-text)', textDecoration: 'none', fontWeight: 500 },
 }

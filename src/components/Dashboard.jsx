@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { initSupabase } from '../lib/supabase.js'
+import { PRIVACY_POLICY_URL, TERMS_HASH } from '../lib/legal.js'
 import IntelligenceBrief from './IntelligenceBrief.jsx'
 import ExecutionPanel from './ExecutionPanel.jsx'
 import {
@@ -3247,6 +3248,18 @@ function AccountSection({ user, profile, onProfileChange, onSignOut }) {
         </button>
       </div>
 
+      <div style={account.legalRow}>
+        <span style={account.legalLabel}>Legal</span>
+        <div style={account.legalLinks}>
+          <a href={PRIVACY_POLICY_URL} target="_blank" rel="noopener noreferrer" style={account.legalLink}>
+            Privacy Policy
+          </a>
+          <a href={TERMS_HASH} style={account.legalLink}>
+            Terms of Service
+          </a>
+        </div>
+      </div>
+
       {showDelete && (
         <div style={account.overlay} onClick={() => setShowDelete(false)}>
           <div style={account.modal} onClick={(event) => event.stopPropagation()}>
@@ -5631,6 +5644,29 @@ const account = {
     padding: '8px 12px',
     fontSize: 12,
     cursor: 'pointer',
+  },
+  legalRow: {
+    marginTop: 16,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 14,
+    flexWrap: 'wrap',
+  },
+  legalLabel: {
+    fontSize: 12,
+    color: G.textFaint,
+  },
+  legalLinks: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 14,
+    flexWrap: 'wrap',
+  },
+  legalLink: {
+    color: G.accentText,
+    textDecoration: 'none',
+    fontSize: 12,
+    fontWeight: 500,
   },
   overlay: {
     position: 'fixed',

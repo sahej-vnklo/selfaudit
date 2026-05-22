@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { usePostHog } from '@posthog/react'
+import { PRIVACY_POLICY_URL, TERMS_HASH } from '../lib/legal.js'
 import {
   DARK_ACCENT,
   DARK_ACCENT_DEEP,
@@ -937,6 +938,14 @@ function LandingFooter({ C, theme, setTheme }) {
           Built by{' '}
           <a href="https://vnklo.com" target="_blank" rel="noopener" style={{ color: C.accent, textDecoration: 'none', fontWeight: 500 }}>
             Vnklo
+          </a>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap', fontSize: 14 }}>
+          <a href={PRIVACY_POLICY_URL} target="_blank" rel="noopener noreferrer" style={{ color: C.inkMuted, textDecoration: 'none' }}>
+            Privacy Policy
+          </a>
+          <a href={TERMS_HASH} style={{ color: C.inkMuted, textDecoration: 'none' }}>
+            Terms of Service
           </a>
         </div>
       </div>
