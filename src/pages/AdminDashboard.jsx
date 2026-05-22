@@ -216,6 +216,11 @@ function normTier(tier) {
   return 'foundation'
 }
 
+function displayTierLabel(tier) {
+  if (normTier(tier) === 'intelligence') return 'Intelligence'
+  return 'Foundation'
+}
+
 function fmtDate(iso) {
   if (!iso) return '—'
   return new Date(iso).toLocaleDateString('en-US', {
@@ -1117,7 +1122,7 @@ function UsersTable({ users, detailCache, onSelectUser, title = 'Users' }) {
                 fontFamily: SANS,
               }}
             >
-              {tier}
+              {tier === 'all' ? 'All plans' : displayTierLabel(tier)}
             </button>
           ))}
         </div>
@@ -1127,7 +1132,7 @@ function UsersTable({ users, detailCache, onSelectUser, title = 'Users' }) {
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead style={{ position: 'sticky', top: 0, background: G.surface, zIndex: 1 }}>
             <tr>
-              {['', 'Name', 'Email', 'Tier', 'Industry', 'Domain', 'Reports', 'Joined', 'Last audit'].map(label => (
+              {['', 'Name', 'Email', 'Plan', 'Industry', 'Domain', 'Reports', 'Joined', 'Last audit'].map(label => (
                 <th
                   key={label || 'status'}
                   style={{
@@ -1181,7 +1186,7 @@ function UsersTable({ users, detailCache, onSelectUser, title = 'Users' }) {
                       fontSize: 11,
                       textTransform: 'uppercase',
                     }}>
-                      {normTier(user.tier)}
+                      {displayTierLabel(user.tier)}
                     </span>
                   </td>
                   <td style={{ padding: '12px', color: G.textMuted, fontSize: 12 }}>{user.industry || '—'}</td>
@@ -1240,7 +1245,7 @@ function RightRail({ stats, users, detailCache }) {
 
       <div style={{ ...panelStyle({ padding: '16px 16px 14px' }) }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 14 }}>
-          <div style={{ color: G.text, fontSize: 13 }}>Tier distribution</div>
+          <div style={{ color: G.text, fontSize: 13 }}>Plan distribution</div>
           <div style={{ color: G.accentText, fontSize: 13, ...monoStyle() }}>${mrr}/mo</div>
         </div>
         {[
@@ -1252,7 +1257,7 @@ function RightRail({ stats, users, detailCache }) {
           return (
             <div key={tier} style={{ marginBottom: 12 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                <div style={{ color: G.textMuted, fontSize: 11 }}>{tier}</div>
+                <div style={{ color: G.textMuted, fontSize: 11 }}>{displayTierLabel(tier)}</div>
                 <div style={{ color: G.text, fontSize: 11, ...monoStyle() }}>{count} · ${count * price}</div>
               </div>
               <div style={{ height: 8, borderRadius: 4, border: `0.5px solid ${G.border2}`, background: G.surface2, overflow: 'hidden' }}>
@@ -1289,7 +1294,7 @@ function TierEditor({ email, tier, onChange, saving }) {
           fontFamily: SANS,
         }}
       >
-        {normTier(tier)}
+        {displayTierLabel(tier)}
         <IconChevron open={open} />
       </button>
       {open && (
@@ -1674,7 +1679,7 @@ function UserDetailView({ user, detail, onBack, onTierChange, tierSaving, sessio
       </div>
 
       <div style={{ ...panelStyle({ padding: '16px 18px' }) }}>
-        <div style={{ color: G.text, fontSize: 13, marginBottom: 14 }}>Tier management</div>
+        <div style={{ color: G.text, fontSize: 13, marginBottom: 14 }}>Plan management</div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
           {['foundation', 'intelligence'].map(tier => (
             <button
@@ -1694,7 +1699,7 @@ function UserDetailView({ user, detail, onBack, onTierChange, tierSaving, sessio
                 fontFamily: SANS,
               }}
             >
-              {tier}
+              {displayTierLabel(tier)}
             </button>
           ))}
         </div>
