@@ -121,18 +121,19 @@ export default function App() {
         return true
       }
       console.warn('[auth] pending checkout failed:', data?.error || 'unknown error')
-      // Intent is still in localStorage — send user back to signup so they
-      // can retry. Returning true prevents callers from navigating to dashboard.
-      navigate(SCREENS.SIGNUP)
+      // Intent is still in localStorage — send user back to signup with the
+      // originally-selected plan in the hash so the UI pre-selects it correctly.
+      // Returning true prevents callers from navigating to dashboard.
+      window.location.hash = `signup?plan=${intent.plan}`
       return true
     } catch (error) {
       console.warn('[auth] pending checkout threw:', error?.message ?? error)
-      navigate(SCREENS.SIGNUP)
+      window.location.hash = `signup?plan=${intent.plan}`
       return true
     } finally {
       pendingCheckoutRef.current = false
     }
-  }, [navigate])
+  }, [])
 
   // ── Respond to history changes (back/forward, logo clicks) ────────────────
   // Keep a ref so the listener always reads the current session without needing
