@@ -103,7 +103,6 @@ export default function App() {
 
     pendingCheckoutRef.current = true
     try {
-      localStorage.removeItem(PENDING_AUTH_INTENT_KEY)
       const response = await fetch('/api/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
@@ -115,18 +114,25 @@ export default function App() {
       })
       const data = await response.json()
       if (response.ok && data?.url) {
+        // Only remove intent after we have a valid Stripe URL — if anything
+        // above threw or returned an error the intent stays so the user can retry.
+        try { localStorage.removeItem(PENDING_AUTH_INTENT_KEY) } catch (_) {}
         window.location.href = data.url
         return true
       }
       console.warn('[auth] pending checkout failed:', data?.error || 'unknown error')
-      return false
+      // Intent is still in localStorage — send user back to signup so they
+      // can retry. Returning true prevents callers from navigating to dashboard.
+      navigate(SCREENS.SIGNUP)
+      return true
     } catch (error) {
       console.warn('[auth] pending checkout threw:', error?.message ?? error)
-      return false
+      navigate(SCREENS.SIGNUP)
+      return true
     } finally {
       pendingCheckoutRef.current = false
     }
-  }, [])
+  }, [navigate])
 
   // ── Respond to history changes (back/forward, logo clicks) ────────────────
   // Keep a ref so the listener always reads the current session without needing
