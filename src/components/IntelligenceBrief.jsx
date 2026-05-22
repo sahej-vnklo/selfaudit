@@ -267,7 +267,7 @@ export default function IntelligenceBrief({ user, profile, onProfileChange }) {
   const [context, setContext] = useState({})
   const [synthProfile, setSynthProfile] = useState(null)
   const [openSections, setOpenSections] = useState({
-    synthesized: false,
+    synthesized: true,
     financial: false,
     operational: false,
     context: false,

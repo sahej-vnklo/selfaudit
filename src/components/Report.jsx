@@ -448,7 +448,7 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
             onClick={handleDownload}
             disabled={downloadState === 'downloading'}
           >
-            {downloadState === 'downloading' ? 'Downloading...' : 'Download Report'}
+            {downloadState === 'downloading' ? 'Downloading PDF...' : 'Download PDF'}
           </button>
           <div style={styles.navRight}>Audit Report</div>
         </div>
@@ -1065,8 +1065,8 @@ const styles = {
   logo: { fontSize: 16, fontWeight: 500, letterSpacing: '-0.4px' },
   navRight: { fontSize: 12, color: 'var(--gray-400)' },
   downloadBtn: {
-    fontSize: 12, fontWeight: 500, color: 'var(--gray-600)',
-    background: 'none', border: '0.5px solid var(--gray-200)',
+    fontSize: 12, fontWeight: 600, color: 'var(--accent-text)',
+    background: 'var(--accent-soft)', border: '0.5px solid var(--accent-soft)',
     borderRadius: 6, padding: '6px 12px', cursor: 'pointer',
     transition: 'border-color 0.15s',
   },

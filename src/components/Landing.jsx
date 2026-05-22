@@ -1676,7 +1676,7 @@ function PricingPage({ C, onSignUp, onStartAudit }) {
               { feature: 'Persistent business intelligence',  foundation: false, intelligence: true },
               { feature: 'AI opportunity breakdown',          foundation: false, intelligence: true },
               { feature: 'Health score tracking',             foundation: false, intelligence: true },
-              { feature: 'Ask TSA (business Q&A)',            foundation: false, intelligence: true },
+              { feature: 'Ask SelfAudit (business Q&A)',      foundation: false, intelligence: true },
               { feature: 'Risk alerts',                       foundation: false, intelligence: true },
               { feature: 'Connector integrations',            foundation: false, intelligence: true },
             ].map(({ feature, foundation, intelligence }, i) => (

@@ -914,10 +914,10 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
   const sectionMeta = {
     home: '/ command centre',
     reports: '/ reports',
-    intelligence: '/ intelligence brief',
-    'business-state': '/ what we know',
+    intelligence: '/ Intelligence Brief',
+    'business-state': '/ What We Know',
     connectors: '/ connectors',
-    agent: '/ ask tsa',
+    agent: '/ Ask SelfAudit',
     billing: '/ billing',
     account: '/ account',
   }
@@ -986,10 +986,10 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
         </button>
         <SidebarButton icon={<IconHome />} active={section === 'home'} onClick={() => navigateSection('home')} label="Home" expanded={sidebarExpanded} sharpTheme={richThemeActive} />
         <SidebarButton icon={<IconReports />} active={section === 'reports'} onClick={() => navigateSection('reports')} label="Reports" expanded={sidebarExpanded} sharpTheme={richThemeActive} />
-        <SidebarButton icon={<IconIntelligence />} active={section === 'intelligence'} onClick={() => navigateSection('intelligence')} label="Intelligence brief" expanded={sidebarExpanded} sharpTheme={richThemeActive} />
-        <SidebarButton icon={<IconBrain />} active={section === 'business-state'} onClick={() => navigateSection('business-state')} label="What we know" expanded={sidebarExpanded} sharpTheme={richThemeActive} />
+        <SidebarButton icon={<IconIntelligence />} active={section === 'intelligence'} onClick={() => navigateSection('intelligence')} label="Intelligence Brief" expanded={sidebarExpanded} sharpTheme={richThemeActive} />
+        <SidebarButton icon={<IconBrain />} active={section === 'business-state'} onClick={() => navigateSection('business-state')} label="What We Know" expanded={sidebarExpanded} sharpTheme={richThemeActive} />
         <SidebarButton icon={<IconConnectors />} active={section === 'connectors'} onClick={() => navigateSection('connectors')} label="Connectors" expanded={sidebarExpanded} sharpTheme={richThemeActive} />
-        <SidebarButton icon={<IconAgent />} active={section === 'agent'} onClick={() => navigateSection('agent')} label="Ask TSA" expanded={sidebarExpanded} sharpTheme={richThemeActive} />
+        <SidebarButton icon={<IconAgent />} active={section === 'agent'} onClick={() => navigateSection('agent')} label="Ask SelfAudit" expanded={sidebarExpanded} sharpTheme={richThemeActive} />
         <div style={{ flex: 1 }} />
         <SidebarButton icon={<IconGear />} active={section === 'billing'} onClick={() => navigateSection('billing')} label="Billing" expanded={sidebarExpanded} />
         <button
@@ -2732,7 +2732,7 @@ function ConnectorsSection({ user }) {
 
               {connector.required_tier && (
                 <div style={styles.connectorTierLabel}>
-                  {connector.required_tier === 'intelligence' ? 'Intelligence tier' : connector.required_tier}
+                  {connector.required_tier === 'intelligence' ? 'Intelligence' : connector.required_tier}
                 </div>
               )}
             </div>
@@ -2823,7 +2823,7 @@ function AgentSection({ user }) {
 
   return (
     <PageShell
-      title="Ask TSA"
+      title="Ask SelfAudit"
       sub="Your operational strategist. Investigates your live business data before answering."
     >
       {/* Suggested prompts (only when no result yet) */}
@@ -2869,7 +2869,7 @@ function AgentSection({ user }) {
       {loading && (
         <div style={agent.thinkingBox}>
           <span style={agent.thinkingDot} />
-          TSA is planning the investigation…
+          SelfAudit is planning the investigation…
         </div>
       )}
 
