@@ -379,6 +379,7 @@ const DEFAULT_NOTIFICATION_PREFS = {
   areas: NOTIFICATION_AREAS.map((area) => area.key),
 }
 const FOUNDER_CHECKIN_SNOOZE_MS = 24 * 60 * 60 * 1000
+const BUSINESS_STATE_FIELDS = ['core_offer', 'revenue_streams', 'operational_blockers', 'target_customer', 'funnel_stages']
 const LEGACY_NOTIFICATION_AREA_MAP = {
   revenue: 'pipeline_revenue',
   connectors: 'pipeline_revenue',
@@ -414,20 +415,47 @@ function notificationChannelLabel(value) {
   return 'Dashboard'
 }
 
-function founderCheckInSnoozeKey(reportId) {
-  return reportId ? `tsa_founder_checkin_snooze_${reportId}` : ''
+function getFounderCheckInSnooze(state, reportId) {
+  const snooze = state?.founder_checkin_snooze
+  if (!reportId || !snooze || typeof snooze !== 'object') return null
+  const until = Number(snooze.until)
+  if (!Number.isFinite(until) || until <= Date.now()) return null
+  if (snooze.report_id && snooze.report_id !== reportId) return null
+  return { until, reportId: snooze.report_id || reportId }
 }
 
-function isFounderCheckInSnoozed(reportId) {
-  if (!reportId || typeof window === 'undefined') return false
-  const raw = localStorage.getItem(founderCheckInSnoozeKey(reportId))
-  const until = Number(raw)
-  if (!Number.isFinite(until)) return false
-  if (until <= Date.now()) {
-    localStorage.removeItem(founderCheckInSnoozeKey(reportId))
-    return false
-  }
-  return true
+function isFounderCheckInSnoozed(state, reportId) {
+  return !!getFounderCheckInSnooze(state, reportId)
+}
+
+function getOpenIssueStatuses(state, reportId) {
+  if (!reportId || !state?.open_issue_statuses || typeof state.open_issue_statuses !== 'object') return {}
+  const reportStatuses = state.open_issue_statuses[reportId]
+  return reportStatuses && typeof reportStatuses === 'object' ? reportStatuses : {}
+}
+
+function hasMeaningfulBusinessState(source) {
+  return BUSINESS_STATE_FIELDS.some((field) => {
+    const value = source?.[field]
+    return Array.isArray(value) ? value.some(Boolean) : !!String(value || '').trim()
+  })
+}
+
+function mergeBusinessState(primary, fallback) {
+  const base = primary ? { ...primary } : {}
+  const backup = fallback && typeof fallback === 'object' ? fallback : {}
+  const next = { ...backup, ...base }
+
+  BUSINESS_STATE_FIELDS.forEach((field) => {
+    const primaryValue = base[field]
+    const fallbackValue = backup[field]
+    const primaryPresent = Array.isArray(primaryValue) ? primaryValue.length > 0 : !!String(primaryValue || '').trim()
+    if (!primaryPresent && fallbackValue != null) {
+      next[field] = fallbackValue
+    }
+  })
+
+  return next
 }
 
 function parseReportContent(input) {
@@ -819,22 +847,41 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
       setBusinessStateLoading(true)
       try {
         const sb = await initSupabase()
-        const { data, error } = await sb
-          .from('business_state')
-          .select('*')
-          .eq('user_id', user.id)
-          .single()
+        const [{ data, error }, { data: memoryRows, error: memoryError }] = await Promise.all([
+          sb
+            .from('business_state')
+            .select('*')
+            .eq('user_id', user.id)
+            .single(),
+          sb
+            .from('user_memory')
+            .select('business_state, created_at')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(20),
+        ])
 
         if (cancelled) return
         if (error) {
           if (error.code !== 'PGRST116') {
             console.error('[dashboard] business_state fetch error:', error.message)
           }
-          setBusinessState(null)
-          return
+        }
+        if (memoryError) {
+          console.warn('[dashboard] user_memory fallback fetch error:', memoryError.message)
         }
 
-        setBusinessState(data || null)
+        const fallbackMemory = Array.isArray(memoryRows)
+          ? memoryRows.find((row) => hasMeaningfulBusinessState(row?.business_state))
+          : null
+        const fallbackState = fallbackMemory?.business_state
+          ? { ...fallbackMemory.business_state, updated_at: fallbackMemory.created_at, _autofilled_from_memory: true }
+          : null
+        const mergedState = data
+          ? mergeBusinessState(data, fallbackState)
+          : fallbackState
+
+        setBusinessState(mergedState || null)
 
         // Non-blocking: enrich health panel with cross-session intelligence
         sb.auth.getSession().then(({ data: { session: _s } }) => {
@@ -1275,17 +1322,24 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
     ;(async () => {
       setCheckInLoading(true)
       try {
-        const snoozed = isFounderCheckInSnoozed(latestDiagnosticReport.id)
         const sb = await initSupabase()
-        const { data } = await sb
-          .from('user_memory')
-          .select('id, business_state, created_at')
-          .eq('user_id', user.id)
-          .eq('report_id', latestDiagnosticReport.id)
-          .order('created_at', { ascending: false })
-          .limit(1)
+        const [{ data }, { data: stateRow }] = await Promise.all([
+          sb
+            .from('user_memory')
+            .select('id, business_state, created_at')
+            .eq('user_id', user.id)
+            .eq('report_id', latestDiagnosticReport.id)
+            .order('created_at', { ascending: false })
+            .limit(1),
+          sb
+            .from('business_state')
+            .select('founder_checkin_snooze')
+            .eq('user_id', user.id)
+            .single(),
+        ])
 
         if (cancelled) return
+        const snoozed = isFounderCheckInSnoozed(stateRow, latestDiagnosticReport.id)
         const existing = Array.isArray(data) ? data.find((row) => row?.business_state?.checkin_type === 'dashboard_followup') : null
         setCheckInSaved(!!existing)
         setCheckInSnoozed(snoozed)
@@ -1293,9 +1347,8 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
       } catch (error) {
         console.warn('[dashboard] check-in lookup failed:', error?.message || error)
         if (!cancelled) {
-          const snoozed = isFounderCheckInSnoozed(latestDiagnosticReport.id)
-          setCheckInSnoozed(snoozed)
-          setCheckInOpen(staleReport && !snoozed)
+          setCheckInSnoozed(false)
+          setCheckInOpen(staleReport)
         }
       } finally {
         if (!cancelled) setCheckInLoading(false)
@@ -1308,14 +1361,38 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
   }, [latestDiagnosticReport?.id, staleReport, user?.id])
 
   const snoozeFounderCheckIn = () => {
-    if (latestDiagnosticReport?.id && typeof window !== 'undefined') {
-      localStorage.setItem(
-        founderCheckInSnoozeKey(latestDiagnosticReport.id),
-        String(Date.now() + FOUNDER_CHECKIN_SNOOZE_MS)
-      )
+    if (!user?.id || !latestDiagnosticReport?.id) {
+      setCheckInOpen(false)
+      setCheckInSnoozed(true)
+      return
     }
-    setCheckInOpen(false)
-    setCheckInSnoozed(true)
+
+    const until = Date.now() + FOUNDER_CHECKIN_SNOOZE_MS
+    ;(async () => {
+      try {
+        const sb = await initSupabase()
+        const payload = {
+          user_id: user.id,
+          founder_checkin_snooze: {
+            report_id: latestDiagnosticReport.id,
+            until,
+          },
+          updated_at: new Date().toISOString(),
+        }
+        const { data, error } = await sb
+          .from('business_state')
+          .upsert(payload, { onConflict: 'user_id' })
+          .select('*')
+          .single()
+        if (error) throw error
+        setBusinessState((prev) => mergeBusinessState(data || payload, prev))
+        setCheckInOpen(false)
+        setCheckInSnoozed(true)
+      } catch (error) {
+        console.warn('[dashboard] snooze save failed:', error?.message || error)
+        setPrefsToast('Could not snooze reminder')
+      }
+    })()
   }
 
   useEffect(() => {
@@ -1407,8 +1484,21 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
       if (!response.ok) throw new Error(data?.error || 'Could not save update right now.')
       setCheckInSaved(true)
       setCheckInSnoozed(false)
-      if (latestDiagnosticReport?.id && typeof window !== 'undefined') {
-        localStorage.removeItem(founderCheckInSnoozeKey(latestDiagnosticReport.id))
+      try {
+        const payload = {
+          user_id: user.id,
+          founder_checkin_snooze: {},
+          updated_at: new Date().toISOString(),
+        }
+        const { data: stateData, error: stateError } = await sb
+          .from('business_state')
+          .upsert(payload, { onConflict: 'user_id' })
+          .select('*')
+          .single()
+        if (stateError) throw stateError
+        setBusinessState((prev) => mergeBusinessState(stateData || payload, prev))
+      } catch (clearError) {
+        console.warn('[dashboard] snooze clear failed:', clearError?.message || clearError)
       }
       setCheckInOpen(false)
       setPrefsToast('Founder update saved')
@@ -1602,6 +1692,9 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
             <OpenIssuesDetailPanel
               report={latestDiagnosticReport}
               domains={sortedDomains}
+              userId={user?.id}
+              issueState={businessState}
+              onIssueStateChange={setBusinessState}
               right={(
                 <button
                   type="button"
@@ -1767,8 +1860,9 @@ function KpiCard({ label, value, delta, tone, hint, onClick, active = false, sha
   )
 }
 
-function OpenIssuesDetailPanel({ report, domains, right = null }) {
-  const count = domains.length
+function OpenIssuesDetailPanel({ report, domains, userId, issueState, onIssueStateChange, right = null }) {
+  const persisted = getOpenIssueStatuses(issueState, report?.id)
+  const count = domains.filter((domain) => (persisted[domain.name] || 'open') !== 'resolved').length
 
   return (
     <PanelCard title="open issues" right={right}>
@@ -1782,7 +1876,7 @@ function OpenIssuesDetailPanel({ report, domains, right = null }) {
               {count === 1 ? '1 domain still open' : `${count} domains still open`}
             </div>
           </div>
-          <OpenIssuesTracker report={report} domains={domains} limit={null} />
+          <OpenIssuesTracker report={report} domains={domains} userId={userId} issueState={issueState} onIssueStateChange={onIssueStateChange} limit={null} />
         </>
       )}
     </PanelCard>
@@ -2402,7 +2496,9 @@ function BusinessStateCard({ user, businessState, loading }) {
     }
   }, [editing, savedState])
 
-  const subtitle = `Updated after ${formatAuditUpdateLabel(savedState?.updated_at)} audit`
+  const subtitle = savedState?._autofilled_from_memory
+    ? `Auto-filled from your latest audit on ${formatAuditUpdateLabel(savedState?.updated_at)}`
+    : `Updated after ${formatAuditUpdateLabel(savedState?.updated_at)} audit`
 
   const save = async () => {
     if (!user?.id) return
@@ -3180,12 +3276,26 @@ function AccountSection({ user, profile, onProfileChange, onSignOut }) {
     setDeleting(true)
     try {
       const sb = await initSupabase()
-      await sb.from('profiles').delete().eq('id', user.id)
-      await sb.auth.signOut()
+      const { data: { session } } = await sb.auth.getSession()
+      const response = await fetch('/api/delete-account', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+        },
+        body: JSON.stringify({ userId: user.id }),
+      })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(data?.error || 'Could not delete account right now.')
+      try {
+        await sb.auth.signOut()
+      } catch (signOutError) {
+        console.warn('[dashboard] sign-out after delete failed:', signOutError?.message || signOutError)
+      }
       window.location.href = '/'
     } catch (error) {
       console.error(error)
-      setDeleteError('Something went wrong. Please try again.')
+      setDeleteError(error?.message || 'Something went wrong. Please try again.')
       setDeleting(false)
     }
   }
@@ -3493,21 +3603,56 @@ function AuditScopeSetupModal({ user, onClose, onSaved }) {
   )
 }
 
-function OpenIssuesTracker({ report, domains, limit = 3 }) {
-  const getKey = (domainName) => `tsa_issue_${report.id}_${domainName}`
+function OpenIssuesTracker({ report, domains, userId, issueState, onIssueStateChange, limit = 3 }) {
   const [statuses, setStatuses] = useState(() => {
     const initial = {}
+    const persisted = getOpenIssueStatuses(issueState, report?.id)
     domains.forEach((domain) => {
-      initial[domain.name] = localStorage.getItem(getKey(domain.name)) || 'open'
+      initial[domain.name] = persisted[domain.name] || 'open'
     })
     return initial
   })
 
+  useEffect(() => {
+    const initial = {}
+    const persisted = getOpenIssueStatuses(issueState, report?.id)
+    domains.forEach((domain) => {
+      initial[domain.name] = persisted[domain.name] || 'open'
+    })
+    setStatuses(initial)
+  }, [domains, issueState, report?.id])
+
   const cycleStatus = (domainName) => {
     const current = statuses[domainName] || 'open'
     const next = current === 'open' ? 'in_progress' : current === 'in_progress' ? 'resolved' : 'open'
-    localStorage.setItem(getKey(domainName), next)
-    setStatuses((prev) => ({ ...prev, [domainName]: next }))
+    const nextStatuses = { ...statuses, [domainName]: next }
+    setStatuses(nextStatuses)
+
+    if (!userId || !report?.id) return
+    ;(async () => {
+      try {
+        const sb = await initSupabase()
+        const existingByReport = {
+          ...(issueState?.open_issue_statuses && typeof issueState.open_issue_statuses === 'object' ? issueState.open_issue_statuses : {}),
+        }
+        existingByReport[report.id] = nextStatuses
+        const payload = {
+          user_id: userId,
+          open_issue_statuses: existingByReport,
+          updated_at: new Date().toISOString(),
+        }
+        const { data, error } = await sb
+          .from('business_state')
+          .upsert(payload, { onConflict: 'user_id' })
+          .select('*')
+          .single()
+        if (error) throw error
+        onIssueStateChange?.((prev) => mergeBusinessState(data || payload, prev))
+      } catch (error) {
+        console.warn('[dashboard] open issue save failed:', error?.message || error)
+        setStatuses((prev) => ({ ...prev, [domainName]: current }))
+      }
+    })()
   }
 
   const rows = (typeof limit === 'number' ? domains.slice(0, limit) : domains).map((domain) => ({
