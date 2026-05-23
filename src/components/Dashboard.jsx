@@ -383,6 +383,7 @@ const LEGACY_NOTIFICATION_AREA_MAP = {
   customer_experience: 'customer_health',
 }
 const SECTIONS = ['home', 'reports', 'intelligence', 'business-state', 'alerts', 'connectors', 'agent', 'billing', 'account']
+const INTELLIGENCE_ONLY_SECTIONS = new Set(['alerts', 'connectors', 'agent'])
 
 function normalizeTier(raw) {
   if (raw === 'intelligence') return 'intelligence'
@@ -772,6 +773,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
   const initials = getInitials(name, email)
   const tier = normalizeTier(profile?.tier)
   const badge = TIER_BADGE[tier] || TIER_BADGE.foundation
+  const intelligenceUnlocked = tier === 'intelligence'
 
   useEffect(() => {
     localStorage.setItem('sa-theme', theme)
@@ -789,6 +791,13 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
       window.removeEventListener('popstate', syncSection)
     }
   }, [])
+
+  useEffect(() => {
+    if (intelligenceUnlocked) return
+    if (!INTELLIGENCE_ONLY_SECTIONS.has(section)) return
+    history.replaceState({ section: 'home' }, '', '#home')
+    setSection('home')
+  }, [intelligenceUnlocked, section])
 
   useEffect(() => {
     if (!user) return
@@ -1184,8 +1193,12 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
         <SidebarButton icon={<IconReports />} active={section === 'reports'} onClick={() => navigateSection('reports')} label="Reports" expanded={sidebarExpanded} sharpTheme={richThemeActive} />
         <SidebarButton icon={<IconIntelligence />} active={section === 'intelligence'} onClick={() => navigateSection('intelligence')} label="Intelligence Brief" expanded={sidebarExpanded} sharpTheme={richThemeActive} />
         <SidebarButton icon={<IconBrain />} active={section === 'business-state'} onClick={() => navigateSection('business-state')} label="What We Know" expanded={sidebarExpanded} sharpTheme={richThemeActive} />
-        <SidebarButton icon={<IconConnectors />} active={section === 'connectors'} onClick={() => navigateSection('connectors')} label="Connectors" expanded={sidebarExpanded} sharpTheme={richThemeActive} />
-        <SidebarButton icon={<IconAgent />} active={section === 'agent'} onClick={() => navigateSection('agent')} label="Ask SelfAudit" expanded={sidebarExpanded} sharpTheme={richThemeActive} />
+        {intelligenceUnlocked && (
+          <SidebarButton icon={<IconConnectors />} active={section === 'connectors'} onClick={() => navigateSection('connectors')} label="Connectors" expanded={sidebarExpanded} sharpTheme={richThemeActive} />
+        )}
+        {intelligenceUnlocked && (
+          <SidebarButton icon={<IconAgent />} active={section === 'agent'} onClick={() => navigateSection('agent')} label="Ask SelfAudit" expanded={sidebarExpanded} sharpTheme={richThemeActive} />
+        )}
         <div style={{ flex: 1 }} />
         <SidebarButton icon={<IconGear />} active={section === 'billing'} onClick={() => navigateSection('billing')} label="Billing" expanded={sidebarExpanded} />
         <button

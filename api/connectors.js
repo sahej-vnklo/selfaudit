@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { getConnectorRegistry } from './lib/connectors/registry.js'
+import { requireIntelligencePlan } from './lib/plans.js'
 
 function getAnonSupabase() {
   return createClient(
@@ -29,6 +30,7 @@ export default async function handler(req, res) {
   if (authError || authData?.user?.id !== userId) return res.status(401).json({ error: 'Unauthorized' })
 
   const service = getServiceSupabase()
+  if (!await requireIntelligencePlan({ userId, res, supabase: service, feature: 'Connectors' })) return
   const { data, error } = await service
     .from('profiles')
     .select('integrations')

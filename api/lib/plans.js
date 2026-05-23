@@ -25,9 +25,9 @@ export async function getUserPlan(userId, supabase = null) {
     .from('profiles')
     .select('tier')
     .eq('id', userId)
-    .single()
+    .maybeSingle()
 
-  if (error) throw error
+  if (error && error.code !== 'PGRST116') throw error
   return normalizePlan(data?.tier)
 }
 
