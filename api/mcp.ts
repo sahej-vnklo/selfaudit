@@ -15,6 +15,36 @@ function ok(data: unknown) {
   return { content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }] };
 }
 
+async function safeCount(queryPromise: Promise<{ count: number | null; error: { message: string } | null }>) {
+  try {
+    const { count, error } = await queryPromise;
+    if (error) return null;
+    return count ?? 0;
+  } catch {
+    return null;
+  }
+}
+
+async function safeRows<T>(queryPromise: Promise<{ data: T[] | null; error: { message: string } | null }>) {
+  try {
+    const { data, error } = await queryPromise;
+    if (error) return [];
+    return data ?? [];
+  } catch {
+    return [];
+  }
+}
+
+async function safeSingle<T>(queryPromise: Promise<{ data: T | null; error: { message: string } | null }>) {
+  try {
+    const { data, error } = await queryPromise;
+    if (error) return null;
+    return data ?? null;
+  } catch {
+    return null;
+  }
+}
+
 function buildServer() {
   const server = new McpServer({ name: "tsa-admin", version: "1.0.0" });
   const sb = getSupabase();
@@ -179,6 +209,85 @@ function buildServer() {
       if (error) throw new Error(error.message);
 
       return ok({ success: true, email, tier, message: `Updated ${email} to tier: ${tier}` });
+    },
+  );
+
+  // ── tsa_get_reliability ───────────────────────────────────────────────────
+  server.tool(
+    "tsa_get_reliability",
+    "Returns read-only background system health signals: alerts, health checks, connector syncs, and synthesis recency.",
+    {},
+    async () => {
+      const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+      const [
+        unresolvedAlerts,
+        oldUnresolvedAlerts,
+        acknowledgedAlerts,
+        latestHealthCheck,
+        healthChecksLastDay,
+        latestConnectorSync,
+        failingSyncs,
+        latestSynthesis,
+        staleSynthCount,
+        recentAlerts,
+      ] = await Promise.all([
+        safeCount(
+          sb.from("risk_alerts").select("*", { count: "exact", head: true }).in("status", ["open", "acknowledged"]),
+        ),
+        safeCount(
+          sb.from("risk_alerts").select("*", { count: "exact", head: true }).in("status", ["open", "acknowledged"]).lt("created_at", weekAgo),
+        ),
+        safeCount(
+          sb.from("risk_alerts").select("*", { count: "exact", head: true }).eq("status", "acknowledged"),
+        ),
+        safeSingle(
+          sb.from("business_health_checks").select("checked_at, health_score").order("checked_at", { ascending: false }).limit(1).maybeSingle(),
+        ),
+        safeCount(
+          sb.from("business_health_checks").select("*", { count: "exact", head: true }).gte("checked_at", dayAgo),
+        ),
+        safeSingle(
+          sb.from("connector_sync_logs").select("provider, status, synced_at").order("synced_at", { ascending: false }).limit(1).maybeSingle(),
+        ),
+        safeRows(
+          sb.from("connector_sync_logs")
+            .select("user_id, provider, status, error_message, synced_at")
+            .in("status", ["error", "partial"])
+            .order("synced_at", { ascending: false })
+            .limit(5),
+        ),
+        safeSingle(
+          sb.from("intelligence_profiles").select("last_synthesized_at").order("last_synthesized_at", { ascending: false }).limit(1).maybeSingle(),
+        ),
+        safeCount(
+          sb.from("intelligence_profiles").select("*", { count: "exact", head: true }).lt("last_synthesized_at", weekAgo),
+        ),
+        safeRows(
+          sb.from("risk_alerts")
+            .select("user_id, title, severity, status, created_at")
+            .in("status", ["open", "acknowledged"])
+            .order("created_at", { ascending: false })
+            .limit(5),
+        ),
+      ]);
+
+      return ok({
+        unresolved_alerts: unresolvedAlerts,
+        acknowledged_alerts: acknowledgedAlerts,
+        old_unresolved_alerts: oldUnresolvedAlerts,
+        latest_health_check_at: latestHealthCheck?.checked_at ?? null,
+        latest_health_score: latestHealthCheck?.health_score ?? null,
+        health_checks_last_day: healthChecksLastDay,
+        latest_connector_sync_at: latestConnectorSync?.synced_at ?? null,
+        latest_connector_provider: latestConnectorSync?.provider ?? null,
+        latest_connector_status: latestConnectorSync?.status ?? null,
+        latest_synthesis_at: latestSynthesis?.last_synthesized_at ?? null,
+        stale_synthesis_count: staleSynthCount,
+        failing_syncs: failingSyncs,
+        recent_alerts: recentAlerts,
+      });
     },
   );
 

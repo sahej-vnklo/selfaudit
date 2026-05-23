@@ -124,6 +124,27 @@ export async function getOpenAlerts(userId) {
   return data ?? []
 }
 
+// Returns unresolved alerts for a user, newest first.
+// Includes both open and acknowledged items so the inbox can track work in progress.
+export async function getActiveAlerts(userId) {
+  if (!userId) return []
+
+  const sb = getSupabase()
+  const { data, error } = await sb
+    .from('risk_alerts')
+    .select('*')
+    .eq('user_id', userId)
+    .in('status', ['open', 'acknowledged'])
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('[risk-alerts] active fetch error:', error.message)
+    return []
+  }
+
+  return data ?? []
+}
+
 // Updates the status of a single alert owned by userId.
 // Allowed transitions: open → acknowledged, open/acknowledged → resolved.
 export async function updateAlertStatus(userId, alertId, status) {

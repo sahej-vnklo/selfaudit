@@ -1,4 +1,4 @@
-import { getOpenAlerts } from './lib/monitoring/risk-alerts.js'
+import { getActiveAlerts } from './lib/monitoring/risk-alerts.js'
 import { validateUserToken } from './lib/auth.js'
 
 export default async function handler(req, res) {
@@ -13,7 +13,7 @@ export default async function handler(req, res) {
   if (!await validateUserToken(req, res, userId)) return
 
   try {
-    const alerts = await getOpenAlerts(userId)
+    const alerts = await getActiveAlerts(userId)
     return res.status(200).json({ alerts })
   } catch (err) {
     console.error('[risk-alerts]', err.message)

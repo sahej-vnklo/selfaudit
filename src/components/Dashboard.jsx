@@ -387,7 +387,7 @@ const LEGACY_NOTIFICATION_AREA_MAP = {
   people: 'execution',
   customer_experience: 'customer_health',
 }
-const SECTIONS = ['home', 'reports', 'intelligence', 'business-state', 'connectors', 'agent', 'billing', 'account']
+const SECTIONS = ['home', 'reports', 'intelligence', 'business-state', 'alerts', 'connectors', 'agent', 'billing', 'account']
 
 function normalizeTier(raw) {
   if (raw === 'intelligence') return 'intelligence'
@@ -413,6 +413,28 @@ function notificationFrequencyLabel(value) {
 function notificationChannelLabel(value) {
   if (value === 'email') return 'Email'
   return 'Dashboard'
+}
+
+function alertSeverityTone(value) {
+  if (value === 'critical') return { bg: G.redBg, color: G.redText, border: G.red }
+  if (value === 'high') return { bg: G.amberBg, color: G.amberText, border: G.amber }
+  return { bg: G.surface3, color: G.textSecondary, border: G.border2 }
+}
+
+function alertStatusTone(value) {
+  if (value === 'acknowledged') return { bg: G.accentLight, color: G.accentText, border: G.accent }
+  return { bg: G.surface3, color: G.textSecondary, border: G.border2 }
+}
+
+function alertAgeLabel(input) {
+  if (!input) return 'just now'
+  const created = new Date(input)
+  if (Number.isNaN(created.getTime())) return 'just now'
+  const hours = (Date.now() - created.getTime()) / (1000 * 60 * 60)
+  if (hours >= 48) return `${Math.round(hours / 24)} days old`
+  if (hours >= 24) return '1 day old'
+  if (hours >= 1) return `${Math.round(hours)}h old`
+  return 'New'
 }
 
 function getFounderCheckInSnooze(state, reportId) {
@@ -744,6 +766,10 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
   const [goalModal, setGoalModal] = useState(false)
   const [scopeSetupOpen, setScopeSetupOpen] = useState(false)
+  const [alerts, setAlerts] = useState([])
+  const [alertsLoading, setAlertsLoading] = useState(true)
+  const [alertsError, setAlertsError] = useState('')
+  const [updatingAlertIds, setUpdatingAlertIds] = useState({})
   const pendingAuditRef = useRef(null)
 
   const name = profile?.name?.trim() || user?.user_metadata?.name?.trim() || ''
@@ -934,6 +960,48 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
     }
   }, [user?.id])
 
+  useEffect(() => {
+    if (!user?.id || tier !== 'intelligence') {
+      setAlerts([])
+      setAlertsLoading(false)
+      setAlertsError('')
+      return
+    }
+
+    let cancelled = false
+
+    ;(async () => {
+      setAlertsLoading(true)
+      setAlertsError('')
+      try {
+        const sb = await initSupabase()
+        const { data: { session } } = await sb.auth.getSession()
+        const response = await fetch('/api/risk-alerts', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+          },
+          body: JSON.stringify({ userId: user.id }),
+        })
+        const payload = await response.json().catch(() => ({}))
+        if (!response.ok) throw new Error(payload?.error || 'Could not load alerts right now.')
+        if (!cancelled) setAlerts(Array.isArray(payload?.alerts) ? payload.alerts : [])
+      } catch (error) {
+        if (!cancelled) {
+          setAlerts([])
+          setAlertsError(error?.message || 'Could not load alerts right now.')
+        }
+      } finally {
+        if (!cancelled) setAlertsLoading(false)
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [tier, user?.id])
+
   const navigateSection = (nextSection) => {
     history.pushState({ section: nextSection }, '', `#${nextSection}`)
     setSection(nextSection)
@@ -990,6 +1058,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
     reports: '/ reports',
     intelligence: '/ Intelligence Brief',
     'business-state': '/ What We Know',
+    alerts: '/ alerts',
     connectors: '/ connectors',
     agent: '/ Ask SelfAudit',
     billing: '/ billing',
@@ -1001,6 +1070,64 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
       const idx = THEME_ORDER.indexOf(prev)
       return THEME_ORDER[(idx + 1) % THEME_ORDER.length]
     })
+  }
+
+  const refreshAlerts = async () => {
+    if (!user?.id || tier !== 'intelligence') return
+    setAlertsLoading(true)
+    setAlertsError('')
+    try {
+      const sb = await initSupabase()
+      const { data: { session } } = await sb.auth.getSession()
+      const response = await fetch('/api/risk-alerts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+        },
+        body: JSON.stringify({ userId: user.id }),
+      })
+      const payload = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(payload?.error || 'Could not load alerts right now.')
+      setAlerts(Array.isArray(payload?.alerts) ? payload.alerts : [])
+    } catch (error) {
+      setAlertsError(error?.message || 'Could not load alerts right now.')
+    } finally {
+      setAlertsLoading(false)
+    }
+  }
+
+  const updateAlertStatus = async (alertId, nextStatus) => {
+    if (!user?.id || !alertId || !nextStatus) return
+    setUpdatingAlertIds((prev) => ({ ...prev, [alertId]: true }))
+    setAlertsError('')
+    try {
+      const sb = await initSupabase()
+      const { data: { session } } = await sb.auth.getSession()
+      const response = await fetch('/api/update-risk-alert', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+        },
+        body: JSON.stringify({ userId: user.id, alertId, status: nextStatus }),
+      })
+      const payload = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(payload?.error || 'Could not update alert right now.')
+      const updated = payload?.alert
+      setAlerts((prev) => {
+        if (nextStatus === 'resolved') return prev.filter((alert) => alert.id !== alertId)
+        return prev.map((alert) => (alert.id === alertId ? { ...alert, ...updated } : alert))
+      })
+    } catch (error) {
+      setAlertsError(error?.message || 'Could not update alert right now.')
+    } finally {
+      setUpdatingAlertIds((prev) => {
+        const next = { ...prev }
+        delete next[alertId]
+        return next
+      })
+    }
   }
 
   return (
@@ -1098,6 +1225,12 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
               <span style={styles.themeToggleIcon}>◐</span>
               <span>Theme</span>
             </button>
+            {tier === 'intelligence' && (
+              <button type="button" style={{ ...styles.ghostButton, ...(richThemeActive ? styles.ghostButtonSharp : {}) }} onClick={() => navigateSection('alerts')}>
+                <span>Alerts</span>
+                <span style={styles.topbarCountBadge}>{alertsLoading ? '…' : alerts.length}</span>
+              </button>
+            )}
             <button type="button" style={{ ...styles.ghostButton, ...(richThemeActive ? styles.ghostButtonSharp : {}) }} onClick={startAudit}>
               diagnose a problem
             </button>
@@ -1152,6 +1285,23 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
               sub="Your current operating picture, compiled from saved audit context and editable when something changes."
             >
               <BusinessStateCard user={user} businessState={businessState} loading={businessStateLoading} />
+            </PageShell>
+          )}
+
+          {section === 'alerts' && (
+            <PageShell
+              title="Alerts"
+              sub="Review unresolved monitoring signals, acknowledge what you have seen, and resolve what is actually handled."
+            >
+              <AlertsInboxSection
+                intelligenceUnlocked={tier === 'intelligence'}
+                alerts={alerts}
+                alertsLoading={alertsLoading}
+                alertsError={alertsError}
+                onRefreshAlerts={refreshAlerts}
+                onUpdateAlert={updateAlertStatus}
+                updatingAlertIds={updatingAlertIds}
+              />
             </PageShell>
           )}
 
@@ -1883,6 +2033,111 @@ function KpiCard({ label, value, delta, tone, hint, onClick, active = false, sha
       <div style={{ ...styles.kpiDelta, color: toneColor }}>{delta}</div>
       {hint ? <div style={styles.kpiHint}>{hint}</div> : null}
     </div>
+  )
+}
+
+function AlertsInboxSection({
+  intelligenceUnlocked,
+  alerts,
+  alertsLoading,
+  alertsError,
+  onRefreshAlerts,
+  onUpdateAlert,
+  updatingAlertIds,
+}) {
+  if (!intelligenceUnlocked) {
+    return (
+      <PanelCard title="alerts inbox">
+        <EmptyPanel message="Alerts inbox is reserved for Intelligence users." />
+      </PanelCard>
+    )
+  }
+
+  return (
+    <PanelCard
+      title="alerts inbox"
+      right={(
+        <button type="button" style={styles.businessHealthCloseBtn} onClick={onRefreshAlerts} disabled={alertsLoading}>
+          {alertsLoading ? 'Refreshing…' : 'Refresh'}
+        </button>
+      )}
+    >
+      <div style={styles.alertsSummaryRow}>
+        <div>
+          <div style={styles.alertsSummaryValue}>{alertsLoading ? '…' : alerts.length}</div>
+          <div style={styles.openIssuesSummaryText}>
+            {alerts.length === 1 ? '1 unresolved alert' : `${alerts.length} unresolved alerts`}
+          </div>
+        </div>
+        <div style={styles.alertsSummaryMeta}>
+          Acknowledge what you have seen. Resolve only when the underlying issue is truly handled.
+        </div>
+      </div>
+
+      {alertsError ? <div style={styles.alertsError}>{alertsError}</div> : null}
+
+      {alertsLoading ? (
+        <div style={styles.weeklyDigestEmpty}>Loading alerts…</div>
+      ) : alerts.length === 0 ? (
+        <EmptyPanel message="No unresolved alerts right now." />
+      ) : (
+        <div style={styles.alertsList}>
+          {alerts.map((alert) => {
+            const severityTone = alertSeverityTone(alert.severity)
+            const statusTone = alertStatusTone(alert.status)
+            const busy = !!updatingAlertIds?.[alert.id]
+            return (
+              <div key={alert.id} style={styles.alertRow}>
+                <div style={styles.alertRowTop}>
+                  <div style={styles.alertTitleWrap}>
+                    <div style={styles.alertTitle}>{alert.title}</div>
+                    <div style={styles.alertMeta}>
+                      <span>{alert.category?.replace(/_/g, ' ') || 'general'}</span>
+                      <span>·</span>
+                      <span>{alertAgeLabel(alert.created_at)}</span>
+                    </div>
+                  </div>
+                  <div style={styles.alertPills}>
+                    <span style={{ ...styles.alertPill, background: severityTone.bg, color: severityTone.color, borderColor: severityTone.border }}>
+                      {alert.severity || 'medium'}
+                    </span>
+                    <span style={{ ...styles.alertPill, background: statusTone.bg, color: statusTone.color, borderColor: statusTone.border }}>
+                      {alert.status || 'open'}
+                    </span>
+                  </div>
+                </div>
+
+                {alert.description ? <div style={styles.alertDescription}>{alert.description}</div> : null}
+                {alert.recommended_action ? (
+                  <div style={styles.alertActionCopy}>
+                    <strong style={{ color: G.text }}>Recommended:</strong> {alert.recommended_action}
+                  </div>
+                ) : null}
+
+                <div style={styles.alertActionRow}>
+                  <button
+                    type="button"
+                    style={styles.alertInboxGhostBtn}
+                    disabled={busy || alert.status === 'acknowledged'}
+                    onClick={() => onUpdateAlert(alert.id, 'acknowledged')}
+                  >
+                    {busy && alert.status !== 'acknowledged' ? 'Saving…' : alert.status === 'acknowledged' ? 'Acknowledged' : 'Acknowledge'}
+                  </button>
+                  <button
+                    type="button"
+                    style={styles.alertInboxPrimaryBtn}
+                    disabled={busy}
+                    onClick={() => onUpdateAlert(alert.id, 'resolved')}
+                  >
+                    {busy ? 'Saving…' : 'Resolve'}
+                  </button>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </PanelCard>
   )
 }
 
@@ -4438,6 +4693,19 @@ const styles = {
     border: 'var(--rich-panel-border)',
     boxShadow: 'var(--rich-panel-shadow)',
   },
+  topbarCountBadge: {
+    minWidth: 22,
+    height: 22,
+    borderRadius: 999,
+    padding: '0 7px',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    background: G.accentLight,
+    color: G.accentText,
+    fontSize: 11,
+    marginLeft: 8,
+  },
   primaryButton: {
     background: G.accent,
     color: G.white,
@@ -4812,6 +5080,120 @@ const styles = {
     fontSize: 13,
     color: G.textFaint,
     lineHeight: 1.6,
+  },
+  alertsSummaryRow: {
+    display: 'grid',
+    gridTemplateColumns: 'minmax(0, 180px) minmax(0, 1fr)',
+    gap: 16,
+    alignItems: 'end',
+    marginBottom: 16,
+  },
+  alertsSummaryValue: {
+    fontSize: 28,
+    color: G.text,
+    lineHeight: 1,
+    marginBottom: 8,
+  },
+  alertsSummaryMeta: {
+    fontSize: 12,
+    color: G.textSecondary,
+    lineHeight: 1.65,
+  },
+  alertsError: {
+    fontSize: 12,
+    color: G.redText,
+    marginBottom: 12,
+  },
+  alertsList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 12,
+  },
+  alertRow: {
+    border: `0.5px solid ${G.border}`,
+    background: G.surface,
+    borderRadius: 10,
+    padding: '14px 15px',
+  },
+  alertRowTop: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  alertTitleWrap: {
+    minWidth: 0,
+    flex: 1,
+  },
+  alertTitle: {
+    fontSize: 15,
+    color: G.text,
+    lineHeight: 1.4,
+  },
+  alertMeta: {
+    marginTop: 6,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 6,
+    fontSize: 11,
+    color: G.textFaint,
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    flexWrap: 'wrap',
+  },
+  alertPills: {
+    display: 'flex',
+    gap: 8,
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-end',
+  },
+  alertPill: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    border: '1px solid transparent',
+    borderRadius: 999,
+    padding: '4px 9px',
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    whiteSpace: 'nowrap',
+  },
+  alertDescription: {
+    marginTop: 12,
+    fontSize: 13,
+    color: G.textSecondary,
+    lineHeight: 1.65,
+  },
+  alertActionCopy: {
+    marginTop: 10,
+    fontSize: 12,
+    color: G.textSecondary,
+    lineHeight: 1.6,
+  },
+  alertActionRow: {
+    marginTop: 14,
+    display: 'flex',
+    gap: 10,
+    flexWrap: 'wrap',
+  },
+  alertInboxGhostBtn: {
+    border: `0.5px solid ${G.border2}`,
+    background: 'transparent',
+    color: G.textSecondary,
+    borderRadius: 8,
+    padding: '9px 12px',
+    fontSize: 12,
+    cursor: 'pointer',
+  },
+  alertInboxPrimaryBtn: {
+    background: G.accent,
+    color: G.white,
+    border: 'none',
+    borderRadius: 8,
+    padding: '9px 12px',
+    fontSize: 12,
+    cursor: 'pointer',
   },
   weeklyDigestScoreRow: {
     display: 'flex',

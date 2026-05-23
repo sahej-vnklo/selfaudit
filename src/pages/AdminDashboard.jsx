@@ -230,6 +230,28 @@ function fmtDate(iso) {
   })
 }
 
+function fmtRelative(iso) {
+  if (!iso) return '—'
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) return '—'
+  const diffMs = date.getTime() - Date.now()
+  const absMs = Math.abs(diffMs)
+  const units = [
+    ['day', 24 * 60 * 60 * 1000],
+    ['hour', 60 * 60 * 1000],
+    ['minute', 60 * 1000],
+  ]
+  const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' })
+
+  for (const [unit, size] of units) {
+    if (absMs >= size || unit === 'minute') {
+      return rtf.format(Math.round(diffMs / size), unit)
+    }
+  }
+
+  return 'just now'
+}
+
 function panelStyle(extra = {}) {
   return {
     background: G.surface,
@@ -1204,7 +1226,7 @@ function UsersTable({ users, detailCache, onSelectUser, title = 'Users' }) {
   )
 }
 
-function RightRail({ stats, users, detailCache }) {
+function RightRail({ stats, users, detailCache, reliability }) {
   const totalUsers = stats?.total_users ?? users.length
   const totalReports = stats?.total_reports ?? users.reduce((sum, user) => sum + (user.report_count ?? 0), 0)
   const totalSessions = stats?.total_chat_sessions ?? 0
@@ -1266,6 +1288,64 @@ function RightRail({ stats, users, detailCache }) {
             </div>
           )
         })}
+      </div>
+
+      <div style={{ ...panelStyle({ padding: '16px 16px 14px' }) }}>
+        <div style={{ color: G.text, fontSize: 13, marginBottom: 12 }}>Reliability watch</div>
+        {[
+          ['unresolved alerts', reliability?.unresolved_alerts],
+          ['acknowledged alerts', reliability?.acknowledged_alerts],
+          ['old unresolved alerts', reliability?.old_unresolved_alerts],
+          ['health checks (24h)', reliability?.health_checks_last_day],
+          ['stale syntheses', reliability?.stale_synthesis_count],
+        ].map(([label, value], index, list) => (
+          <div key={label} style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '8px 0',
+            borderBottom: index === list.length - 1 ? 'none' : `0.5px solid ${G.border}`,
+          }}>
+            <div style={{ color: G.textMuted, fontSize: 12 }}>{label}</div>
+            <div style={{ color: G.text, fontSize: 12, ...monoStyle() }}>{value ?? '—'}</div>
+          </div>
+        ))}
+
+        <div style={{ marginTop: 14, paddingTop: 12, borderTop: `0.5px solid ${G.border}` }}>
+          <div style={{ color: G.textFaint, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+            Latest runs
+          </div>
+          {[
+            ['health check', reliability?.latest_health_check_at ? fmtRelative(reliability.latest_health_check_at) : '—'],
+            ['connector sync', reliability?.latest_connector_sync_at ? `${reliability.latest_connector_provider || 'unknown'} · ${fmtRelative(reliability.latest_connector_sync_at)}` : '—'],
+            ['synthesis', reliability?.latest_synthesis_at ? fmtRelative(reliability.latest_synthesis_at) : '—'],
+          ].map(([label, value]) => (
+            <div key={label} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 8 }}>
+              <div style={{ color: G.textMuted, fontSize: 11 }}>{label}</div>
+              <div style={{ color: G.text, fontSize: 11, textAlign: 'right' }}>{value}</div>
+            </div>
+          ))}
+        </div>
+
+        {(reliability?.failing_syncs?.length ?? 0) > 0 && (
+          <div style={{ marginTop: 14, paddingTop: 12, borderTop: `0.5px solid ${G.border}` }}>
+            <div style={{ color: G.textFaint, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+              Recent sync failures
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {reliability.failing_syncs.slice(0, 3).map((item, index) => (
+                <div key={`${item.provider}-${item.synced_at}-${index}`} style={{ background: G.surface2, borderRadius: 6, padding: '8px 10px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 4 }}>
+                    <div style={{ color: G.text, fontSize: 11 }}>{item.provider || 'unknown'}</div>
+                    <div style={{ color: item.status === 'error' ? G.redText : G.amberText, fontSize: 11, textTransform: 'uppercase' }}>{item.status || 'issue'}</div>
+                  </div>
+                  <div style={{ color: G.textMuted, fontSize: 11, lineHeight: 1.5 }}>{textClamp(item.error_message || 'No error message captured.', 70)}</div>
+                  <div style={{ color: G.textFaint, fontSize: 10, marginTop: 4 }}>{fmtRelative(item.synced_at)}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
     </div>
@@ -1727,6 +1807,7 @@ export default function AdminDashboard({ session, onUnauthorized }) {
   const [stats, setStats] = useState(null)
   const [users, setUsers] = useState([])
   const [detailCache, setDetailCache] = useState({})
+  const [reliability, setReliability] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [tierSaving, setTierSaving] = useState(false)
@@ -1757,13 +1838,15 @@ export default function AdminDashboard({ session, onUnauthorized }) {
       setLoading(true)
       setError('')
       try {
-        const [statsData, usersData] = await Promise.all([
+        const [statsData, usersData, reliabilityData] = await Promise.all([
           callAdminTool('tsa_get_stats', {}, session.access_token),
           callAdminTool('tsa_list_users', {}, session.access_token),
+          callAdminTool('tsa_get_reliability', {}, session.access_token),
         ])
         if (cancelled) return
         setStats(statsData)
         setUsers(Array.isArray(usersData) ? usersData : [])
+        setReliability(reliabilityData || null)
       } catch (loadError) {
         if (!cancelled) setError(loadError.message || 'Unable to load admin data.')
       } finally {
@@ -1944,7 +2027,7 @@ export default function AdminDashboard({ session, onUnauthorized }) {
                   <UsersTable users={users} detailCache={detailCache} onSelectUser={handleSelectUser} title="User table" />
                 </div>
 
-                <RightRail stats={stats} users={users} detailCache={detailCache} />
+                <RightRail stats={stats} users={users} detailCache={detailCache} reliability={reliability} />
               </div>
             ) : navSection === 'users' ? (
               <UsersTable users={users} detailCache={detailCache} onSelectUser={handleSelectUser} title="Users" />
