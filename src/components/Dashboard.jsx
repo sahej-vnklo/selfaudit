@@ -441,10 +441,29 @@ function hasMeaningfulBusinessState(source) {
   })
 }
 
+function normalizeBusinessStateSnapshot(source) {
+  if (!source || typeof source !== 'object') return {}
+  return {
+    ...source,
+    core_offer: typeof source.core_offer === 'string' ? source.core_offer.trim() : source.core_offer,
+    revenue_streams: Array.isArray(source.revenue_streams)
+      ? source.revenue_streams.filter(Boolean)
+      : source.revenue_streams,
+    operational_blockers: Array.isArray(source.operational_blockers)
+      ? source.operational_blockers.filter(Boolean)
+      : (Array.isArray(source.current_constraints) ? source.current_constraints.filter(Boolean) : source.operational_blockers),
+    target_customer: typeof source.target_customer === 'string' ? source.target_customer.trim() : source.target_customer,
+    funnel_stages: Array.isArray(source.funnel_stages)
+      ? source.funnel_stages.filter(Boolean)
+      : source.funnel_stages,
+  }
+}
+
 function mergeBusinessState(primary, fallback) {
-  const base = primary ? { ...primary } : {}
-  const backup = fallback && typeof fallback === 'object' ? fallback : {}
+  const base = normalizeBusinessStateSnapshot(primary)
+  const backup = normalizeBusinessStateSnapshot(fallback)
   const next = { ...backup, ...base }
+  let usedFallback = false
 
   BUSINESS_STATE_FIELDS.forEach((field) => {
     const primaryValue = base[field]
@@ -452,8 +471,15 @@ function mergeBusinessState(primary, fallback) {
     const primaryPresent = Array.isArray(primaryValue) ? primaryValue.length > 0 : !!String(primaryValue || '').trim()
     if (!primaryPresent && fallbackValue != null) {
       next[field] = fallbackValue
+      usedFallback = true
     }
   })
+
+  if (usedFallback) {
+    next._autofilled_from_memory = true
+  } else {
+    delete next._autofilled_from_memory
+  }
 
   return next
 }
