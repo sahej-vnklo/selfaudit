@@ -4,6 +4,7 @@ import { getCompanyBrain, upsertCompanyBrain } from './lib/intelligence/company-
 import { isConversational, getAvailableDataSources, planWithClaude } from './lib/agent/planner.js'
 import { gatherAgentContext } from './lib/agent/gather-context.js'
 import { generateAgentAnswer } from './lib/agent/generate-agent-answer.js'
+import { requireIntelligencePlan } from './lib/plans.js'
 
 /*
   SQL — run once in Supabase Dashboard:
@@ -56,6 +57,7 @@ export default async function handler(req, res) {
   if (!apiKey) return res.status(500).json({ error: 'CLAUDE_API_KEY not configured' })
 
   const sb = getSupabase()
+  if (!await requireIntelligencePlan({ userId, res, supabase: sb, feature: 'Ask SelfAudit' })) return
 
   // ── Step 1: Load brain + integrations in parallel ────────────────────────────
   const [brain, integrations] = await Promise.all([

@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { fetchHubspotBusinessState } from '../../lib/connectors/hubspot.js'
+import { requireIntelligencePlan } from '../lib/plans.js'
 
 function getAnonSupabase() {
   return createClient(
@@ -30,6 +31,7 @@ export default async function handler(req, res) {
     if (authError || authData?.user?.id !== userId) return res.status(200).json({ data: null })
 
     const service = getServiceSupabase()
+    if (!await requireIntelligencePlan({ userId, res, supabase: service, feature: 'Connector previews' })) return
     const { data } = await service
       .from('profiles')
       .select('integrations')

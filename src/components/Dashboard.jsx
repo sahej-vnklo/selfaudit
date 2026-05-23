@@ -339,11 +339,6 @@ const BUSINESS_OPTIONS = [
 const TIER_BADGE = {
   foundation:  { bg: 'var(--accent-light)', color: 'var(--accent-text)', label: 'Foundation' },
   intelligence: { bg: 'var(--surface3)', color: 'var(--blue)', label: 'Intelligence' },
-  essential:   { bg: 'var(--accent-light)', color: 'var(--accent-text)', label: 'Foundation' },
-  business:    { bg: 'var(--surface3)', color: 'var(--blue)', label: 'Intelligence' },
-  portfolio:   { bg: 'var(--surface3)', color: 'var(--violet)', label: 'Intelligence' },
-  free:        { bg: 'var(--accent-light)', color: 'var(--accent-text)', label: 'Foundation' },
-  paid:        { bg: 'var(--surface3)', color: 'var(--blue)', label: 'Intelligence' },
 }
 
 const TIERS = [
@@ -364,7 +359,7 @@ const TIERS = [
   },
 ]
 
-const TIER_ORDER = { foundation: 0, intelligence: 1, essential: 0, business: 1, portfolio: 2, free: 0, paid: 1 }
+const TIER_ORDER = { foundation: 0, intelligence: 1 }
 const NOTIFICATION_AREAS = [
   { key: 'goal_progress', label: 'Goal progress' },
   { key: 'pipeline_revenue', label: 'Pipeline & revenue' },
@@ -776,7 +771,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
   const email = user?.email || ''
   const initials = getInitials(name, email)
   const tier = normalizeTier(profile?.tier)
-  const badge = TIER_BADGE[tier] || TIER_BADGE.essential
+  const badge = TIER_BADGE[tier] || TIER_BADGE.foundation
 
   useEffect(() => {
     localStorage.setItem('sa-theme', theme)
@@ -3075,7 +3070,24 @@ function ConnectorsSection({ user }) {
                   <button
                     type="button"
                     style={styles.connectorConnectBtn}
-                    onClick={() => { window.location.href = `/api/connect/${connector.id}/auth?state=${user.id}` }}
+                    onClick={async () => {
+                      const token = await getSessionToken()
+                      if (!token) return
+                      const response = await fetch(`/api/connect/${connector.id}/auth`, {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          Authorization: `Bearer ${token}`,
+                        },
+                        body: JSON.stringify({ userId: user.id }),
+                      })
+                      const data = await response.json().catch(() => ({}))
+                      if (response.ok && data?.url) {
+                        window.location.href = data.url
+                        return
+                      }
+                      setToast(data?.error || `Could not connect ${connector.name}.`)
+                    }}
                   >
                     Connect {connector.name}
                   </button>

@@ -6,8 +6,8 @@ export function buildPriceIdMap(env = process.env) {
 }
 
 export function normalizeCheckoutTier(rawTier) {
-  if (rawTier === 'foundation' || rawTier === 'essential') return 'foundation'
-  if (rawTier === 'intelligence' || rawTier === 'business') return 'intelligence'
+  if (rawTier === 'foundation') return 'foundation'
+  if (rawTier === 'intelligence') return 'intelligence'
   return rawTier || null
 }
 

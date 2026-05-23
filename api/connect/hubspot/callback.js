@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { PROVIDER_CONFIGS } from '../../lib/connectors/providers.js'
 import { synthesizeUserIntelligence } from '../../lib/intelligence/synthesize.js'
 import { verifyOAuthState } from '../lib/connectors/oauth-state.js'
+import { getUserPlan } from '../lib/plans.js'
 
 function getSupabase() {
   return createClient(
@@ -20,6 +21,12 @@ export default async function handler(req, res) {
   try {
     const decoded = verifyOAuthState(rawState, process.env.OAUTH_STATE_SECRET)
     if (!code || decoded?.provider !== 'hubspot' || !decoded?.userId) {
+      return res.redirect(302, `${appUrl}/#connectors?error=hubspot`)
+    }
+
+    const supabase = getSupabase()
+    const plan = await getUserPlan(decoded.userId, supabase).catch(() => 'foundation')
+    if (plan !== 'intelligence') {
       return res.redirect(302, `${appUrl}/#connectors?error=hubspot`)
     }
 
@@ -51,7 +58,6 @@ export default async function handler(req, res) {
       last_synced_at: null,
     }
 
-    const supabase = getSupabase()
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('integrations')

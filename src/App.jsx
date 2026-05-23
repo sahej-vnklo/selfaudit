@@ -30,7 +30,7 @@ const HASH_SCREENS = new Set([
   SCREENS.ADMIN, SCREENS.TERMS,
 ])
 
-const DASHBOARD_SECTION_HASHES = new Set(['home', 'reports', 'intelligence', 'connectors', 'agent', 'billing', 'account'])
+const DASHBOARD_SECTION_HASHES = new Set(['home', 'reports', 'intelligence', 'business-state', 'alerts', 'connectors', 'agent', 'billing', 'account'])
 
 function screenFromHash(isAuthenticated = false) {
   const h = window.location.hash.replace(/^#\/?/, '')
@@ -197,7 +197,7 @@ export default function App() {
         clearTimeout(authTimeout)
         setSession(data?.session ?? null)
         if (data?.session) {
-          // If the user clicked Google on the Login page, check they have a paid account
+          // If the user clicked Google on the Login page, check they have an active plan
           // before letting them in. This runs on the OAuth redirect path (page reload),
           // so it must be here — onAuthStateChange fires too late.
           const loginIntent = localStorage.getItem('sa-oauth-login-intent')

@@ -218,25 +218,25 @@ function Step2({ onSelect, loadingTier }) {
 
 // ─── Step 3 — domains ─────────────────────────────────────────────────────────
 
-function isPaidTier(tier) {
+function isIntelligenceTier(tier) {
   return tier === 'intelligence'
 }
 
 function Step3({ tier, selected, onToggle, onNext, onBack, domainLabels }) {
-  const isFree  = !isPaidTier(tier)
-  const canNext = isFree ? selected.length >= 1 : true
-  const hint    = isFree
+  const isFoundation = !isIntelligenceTier(tier)
+  const canNext = isFoundation ? selected.length >= 1 : true
+  const hint    = isFoundation
     ? `Choose 1 domain to focus your audit. (${selected.length}/1 selected)`
     : 'Your Intelligence plan covers all domains for your industry — the audit runs across everything.'
 
   return (
     <div>
       <p style={s.eyebrow}>Step 2 of 3</p>
-      <h2 style={s.title}>{isFree ? 'Pick your focus.' : 'Everything is covered.'}</h2>
+      <h2 style={s.title}>{isFoundation ? 'Pick your focus.' : 'Everything is covered.'}</h2>
 
-      {!isFree && (
+      {!isFoundation && (
         <div style={s.proBanner}>
-          ✦ Your Pro plan includes full-spectrum auditing across all domains.
+          ✦ Your Intelligence plan includes full-spectrum auditing across all domains.
         </div>
       )}
 
@@ -245,7 +245,7 @@ function Step3({ tier, selected, onToggle, onNext, onBack, domainLabels }) {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 24 }}>
         {domainLabels.map(label => {
           const active   = selected.includes(label)
-          const disabled = isFree && !active && selected.length >= 1
+          const disabled = isFoundation && !active && selected.length >= 1
           return (
             <button
               key={label}
@@ -320,7 +320,7 @@ export default function AccountOnboarding({ user, onComplete, onBack }) {
   const [domains,         setDomains]         = useState([])
   const [ctxText,         setCtxText]         = useState('')
   const [saving,          setSaving]          = useState(false)
-  const [tier,            setTier]            = useState('free')
+  const [tier,            setTier]            = useState('foundation')
   const [tierLoaded,      setTierLoaded]      = useState(false)
   const [pendingCategory, setPendingCategory] = useState(null)
   const posthog = usePostHog()
@@ -343,12 +343,12 @@ export default function AccountOnboarding({ user, onComplete, onBack }) {
       )
     )
       .then(({ data }) => {
-        setTier(data?.tier ?? 'free')
+        setTier(data?.tier ?? 'foundation')
         setTierLoaded(true)
       })
       .catch((err) => {
         Sentry.captureException(err)
-        setTierLoaded(true) // unblock with default 'free' tier on any error
+        setTierLoaded(true) // unblock with default Foundation access on any error
       })
   }, [user])
 
@@ -356,14 +356,13 @@ export default function AccountOnboarding({ user, onComplete, onBack }) {
   useEffect(() => {
     if (!tierLoaded || pendingCategory === null) return
     setStep(3)
-    if (!isPaidTier(tier)) setDomains([])
+    if (!isIntelligenceTier(tier)) setDomains([])
     setPendingCategory(null)
   }, [tierLoaded, pendingCategory, tier])
 
-  // Paid tiers: animate domains selecting one by one.
-  // Portfolio cascades ALL domain labels; business/paid uses the industry-filtered set.
+  // Intelligence plan: animate domains selecting one by one across the full scope.
   useEffect(() => {
-    if (step !== 3 || !isPaidTier(tier)) return
+    if (step !== 3 || !isIntelligenceTier(tier)) return
     let i = 0
     const interval = setInterval(() => {
       i++
@@ -382,14 +381,14 @@ export default function AccountOnboarding({ user, onComplete, onBack }) {
       return
     }
     setStep(3)
-    if (!isPaidTier(tier)) setDomains([])
+    if (!isIntelligenceTier(tier)) setDomains([])
   }
 
   const toggleDomain = (label) => {
-    if (!isPaidTier(tier)) {
+    if (!isIntelligenceTier(tier)) {
       setDomains(prev => prev.includes(label) ? [] : [label])
     } else {
-      // Paid tiers: allow deselect/reselect after animation completes
+      // Intelligence users can fine-tune domains after the auto-selection finishes.
       setDomains(prev =>
         prev.includes(label) ? prev.filter(d => d !== label) : [...prev, label]
       )
@@ -397,7 +396,7 @@ export default function AccountOnboarding({ user, onComplete, onBack }) {
   }
 
   const handleDomainsNext = () => {
-    const selectedDomain = isPaidTier(tier) ? (domains[0] ?? null) : domains[0]
+    const selectedDomain = isIntelligenceTier(tier) ? (domains[0] ?? null) : domains[0]
     const generated = buildContext(tier, category, selectedDomain)
     setCtxText(generated)
     setStep(4)

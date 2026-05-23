@@ -6,20 +6,30 @@ import { isAuthorisedCronRequest } from '../api/lib/cron-auth.js'
 import { signOAuthState, verifyOAuthState } from '../api/lib/connectors/oauth-state.js'
 import { validateSaveReportPayload } from '../api/lib/save-report-validation.js'
 import { buildAccountDataExport, buildAccountExportFilename, sanitizeIntegrationsForExport } from '../api/lib/data-governance.js'
+import { isIntelligencePlan, normalizePlan, VALID_PLANS } from '../api/lib/plans.js'
 
-test('checkout tier aliases resolve to current plans', () => {
+test('checkout only accepts current plan names', () => {
   const env = {
     STRIPE_PRICE_FOUNDATION: 'price_foundation',
     STRIPE_PRICE_INTELLIGENCE: 'price_intelligence',
   }
 
-  assert.equal(normalizeCheckoutTier('essential'), 'foundation')
-  assert.equal(normalizeCheckoutTier('business'), 'intelligence')
+  assert.equal(normalizeCheckoutTier('foundation'), 'foundation')
+  assert.equal(normalizeCheckoutTier('intelligence'), 'intelligence')
+  assert.equal(normalizeCheckoutTier('legacy-tier'), 'legacy-tier')
   assert.equal(getCheckoutPriceId('foundation', env), 'price_foundation')
-  assert.equal(getCheckoutPriceId('essential', env), 'price_foundation')
   assert.equal(getCheckoutPriceId('intelligence', env), 'price_intelligence')
-  assert.equal(getCheckoutPriceId('business', env), 'price_intelligence')
+  assert.equal(getCheckoutPriceId('legacy-tier', env), null)
   assert.equal(getCheckoutAppUrl({ APP_URL: 'https://tryselfaudit.com' }), 'https://tryselfaudit.com')
+})
+
+test('plan helper normalizes access to foundation or intelligence only', () => {
+  assert.deepEqual(VALID_PLANS, ['foundation', 'intelligence'])
+  assert.equal(normalizePlan('foundation'), 'foundation')
+  assert.equal(normalizePlan('intelligence'), 'intelligence')
+  assert.equal(normalizePlan('legacy-tier'), 'foundation')
+  assert.equal(isIntelligencePlan('intelligence'), true)
+  assert.equal(isIntelligencePlan('foundation'), false)
 })
 
 test('cron auth accepts header and query secret', () => {

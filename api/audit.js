@@ -14,6 +14,7 @@ import { validateUserToken } from './lib/auth.js'
 import { fetchHubspotBusinessState } from './lib/connectors/hubspot.js'
 import { normalizeHubspotData, formatNormalizedForPrompt } from './lib/connectors/normalize.js'
 import { getCompanyBrain, formatBrainForPrompt } from './lib/intelligence/company-brain.js'
+import { getUserPlan } from './lib/plans.js'
 
 const CLAUDE_API = 'https://api.anthropic.com/v1/messages'
 
@@ -65,6 +66,9 @@ async function fetchPatterns(industry, domain) {
 async function fetchConnectorContext(userId, supabase) {
   if (!userId) return ''
   try {
+    const plan = await getUserPlan(userId, supabase)
+    if (plan !== 'intelligence') return ''
+
     const { data } = await supabase
       .from('profiles')
       .select('integrations')
