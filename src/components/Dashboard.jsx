@@ -1386,7 +1386,6 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
   const sharpThemeActive = theme === 'sharp' || theme === 'dark' || theme === 'light'
   const [businessHealthExpanded, setBusinessHealthExpanded] = useState(false)
   const [openIssuesExpanded, setOpenIssuesExpanded] = useState(false)
-  const [auditHistoryExpanded, setAuditHistoryExpanded] = useState(false)
   const [aiOpportunitiesExpanded, setAiOpportunitiesExpanded] = useState(false)
   const [weeklyDigestExpanded, setWeeklyDigestExpanded] = useState(false)
   const [notificationPrefs, setNotificationPrefs] = useState(DEFAULT_NOTIFICATION_PREFS)
@@ -1580,19 +1579,18 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
   }
 
   useEffect(() => {
-    if (!businessHealthExpanded && !openIssuesExpanded && !auditHistoryExpanded && !aiOpportunitiesExpanded && !weeklyDigestExpanded) return undefined
+    if (!businessHealthExpanded && !openIssuesExpanded && !aiOpportunitiesExpanded && !weeklyDigestExpanded) return undefined
     const handleKeyDown = (event) => {
       if (event.key === 'Escape') {
         setBusinessHealthExpanded(false)
         setOpenIssuesExpanded(false)
-        setAuditHistoryExpanded(false)
         setAiOpportunitiesExpanded(false)
         setWeeklyDigestExpanded(false)
       }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [businessHealthExpanded, openIssuesExpanded, auditHistoryExpanded, aiOpportunitiesExpanded, weeklyDigestExpanded])
+  }, [businessHealthExpanded, openIssuesExpanded, aiOpportunitiesExpanded, weeklyDigestExpanded])
 
   const togglePreferenceArea = (areaKey) => {
     setNotificationPrefs((prev) => {
@@ -1710,7 +1708,6 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
               onClick={() => {
                 setBusinessHealthExpanded(false)
                 setOpenIssuesExpanded(true)
-                setAuditHistoryExpanded(false)
                 setAiOpportunitiesExpanded(false)
                 setWeeklyDigestExpanded(false)
               }}
@@ -1734,7 +1731,6 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
           hint={businessHealthExpanded ? 'Click to hide details' : 'Click for more'}
           onClick={() => {
             setOpenIssuesExpanded(false)
-            setAuditHistoryExpanded(false)
             setAiOpportunitiesExpanded(false)
             setWeeklyDigestExpanded(false)
             setBusinessHealthExpanded((prev) => !prev)
@@ -1750,28 +1746,11 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
           hint={openIssuesExpanded ? 'Click to hide details' : 'Click for more'}
           onClick={() => {
             setBusinessHealthExpanded(false)
-            setAuditHistoryExpanded(false)
             setAiOpportunitiesExpanded(false)
             setWeeklyDigestExpanded(false)
             setOpenIssuesExpanded((prev) => !prev)
           }}
           active={openIssuesExpanded}
-        />
-        <KpiCard
-          sharpTheme={sharpThemeActive}
-          label="Audit history"
-          value={reportsLoading ? '…' : reports.length}
-          delta={reports.length > 0 ? `Latest: ${lastReportDate}` : 'No reports yet'}
-          tone="neutral"
-          hint={auditHistoryExpanded ? 'Click to hide details' : 'Click for more'}
-          onClick={() => {
-            setBusinessHealthExpanded(false)
-            setOpenIssuesExpanded(false)
-            setAiOpportunitiesExpanded(false)
-            setWeeklyDigestExpanded(false)
-            setAuditHistoryExpanded((prev) => !prev)
-          }}
-          active={auditHistoryExpanded}
         />
         <KpiCard
           sharpTheme={sharpThemeActive}
@@ -1783,11 +1762,27 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
           onClick={() => {
             setBusinessHealthExpanded(false)
             setOpenIssuesExpanded(false)
-            setAuditHistoryExpanded(false)
             setWeeklyDigestExpanded(false)
             setAiOpportunitiesExpanded((prev) => !prev)
           }}
           active={aiOpportunitiesExpanded}
+        />
+        <KpiCard
+          sharpTheme={sharpThemeActive}
+          label="Weekly digest & alerts"
+          value={notificationPrefs.enabled ? notificationFrequencyLabel(notificationPrefs.frequency) : 'Paused'}
+          delta={profile?.last_digest_sent_at
+            ? `Latest digest ${new Date(profile.last_digest_sent_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+            : (prefsLoading ? 'Loading preferences…' : 'Every Monday · 9am UTC')}
+          tone={notificationPrefs.enabled ? 'neutral' : 'warn'}
+          hint={weeklyDigestExpanded ? 'Click to hide details' : 'Click for more'}
+          onClick={() => {
+            setBusinessHealthExpanded(false)
+            setOpenIssuesExpanded(false)
+            setAiOpportunitiesExpanded(false)
+            setWeeklyDigestExpanded((prev) => !prev)
+          }}
+          active={weeklyDigestExpanded}
         />
       </div>
 
@@ -1812,28 +1807,13 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
       )}
 
       <div style={styles.homeColumns}>
-        <div style={styles.leftColumn}>
+        <div style={styles.leftColumnFull}>
           <ExecutionPanel
             variant="dashboard"
             reports={reports}
             report={latestDiagnosticReport || latestReport}
             userInfo={shareUserInfo}
-          />
-        </div>
-
-        <div style={styles.rightColumn}>
-          <WeeklyDigestAlertsCard
             theme={theme}
-            profile={profile}
-            notificationPrefs={notificationPrefs}
-            prefsLoading={prefsLoading}
-            onClick={() => {
-              setBusinessHealthExpanded(false)
-              setOpenIssuesExpanded(false)
-              setAuditHistoryExpanded(false)
-              setAiOpportunitiesExpanded(false)
-              setWeeklyDigestExpanded(true)
-            }}
           />
         </div>
       </div>
@@ -1885,32 +1865,6 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
                   style={styles.businessHealthCloseBtn}
                   onClick={() => setOpenIssuesExpanded(false)}
                   aria-label="Close open issues details"
-                >
-                  Close
-                </button>
-              )}
-            />
-          </div>
-        </div>
-      )}
-
-      {auditHistoryExpanded && (
-        <div
-          style={styles.businessHealthOverlay}
-          onClick={(event) => {
-            if (event.target === event.currentTarget) setAuditHistoryExpanded(false)
-          }}
-        >
-          <div style={styles.businessHealthModal}>
-            <AuditHistoryDetailPanel
-              reports={reports}
-              reportsLoading={reportsLoading}
-              right={(
-                <button
-                  type="button"
-                  style={styles.businessHealthCloseBtn}
-                  onClick={() => setAuditHistoryExpanded(false)}
-                  aria-label="Close audit history details"
                 >
                   Close
                 </button>
@@ -2166,32 +2120,6 @@ function OpenIssuesDetailPanel({ report, domains, userId, issueState, onIssueSta
             </div>
           </div>
           <OpenIssuesTracker report={report} domains={domains} userId={userId} issueState={issueState} onIssueStateChange={onIssueStateChange} limit={null} />
-        </>
-      )}
-    </PanelCard>
-  )
-}
-
-function AuditHistoryDetailPanel({ reports, reportsLoading, right = null }) {
-  return (
-    <PanelCard title="audit history" right={right}>
-      {reportsLoading ? (
-        <ReportSkeletons compact />
-      ) : reports.length === 0 ? (
-        <EmptyPanel message="No past audits yet." />
-      ) : (
-        <>
-          <div style={styles.openIssuesSummaryRow}>
-            <div style={styles.openIssuesSummaryValue}>{reports.length}</div>
-            <div style={styles.openIssuesSummaryText}>
-              {reports.length === 1 ? '1 saved audit so far' : `${reports.length} saved audits so far`}
-            </div>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {reports.map((report) => (
-              <AuditHistoryRow key={report.id} report={report} />
-            ))}
-          </div>
         </>
       )}
     </PanelCard>
@@ -5007,6 +4935,13 @@ const styles = {
     flexDirection: 'column',
     gap: 12,
     minWidth: 0,
+  },
+  leftColumnFull: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 12,
+    minWidth: 0,
+    gridColumn: '1 / -1',
   },
   rightColumn: {
     display: 'flex',

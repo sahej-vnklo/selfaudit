@@ -444,8 +444,8 @@ async function downloadArtifactPdf(artifact, artifactLabel) {
   }
 }
 
-export default function ExecutionPanel({ report, reports = [], userInfo, variant = 'report' }) {
-  const theme = localStorage.getItem('sa-theme') || 'dark'
+export default function ExecutionPanel({ report, reports = [], userInfo, variant = 'report', theme: themeProp = null }) {
+  const theme = themeProp || localStorage.getItem('sa-theme') || 'dark'
   const themeVars = getThemeVars(theme)
   const sharpThemeActive = theme === 'sharp'
   const darkThemeActive = theme === 'dark'
