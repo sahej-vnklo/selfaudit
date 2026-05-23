@@ -18,6 +18,7 @@ import { createClient } from '@supabase/supabase-js'
 import { runBusinessHealthCheck } from '../lib/monitoring/health-check.js'
 import { createRiskAlertsFromHealthCheck } from '../lib/monitoring/risk-alerts.js'
 import { buildRiskAlertEmail } from '../lib/notifications/risk-email.js'
+import { isAuthorisedCronRequest } from '../lib/cron-auth.js'
 
 const INTELLIGENCE_TIERS = new Set(['intelligence'])
 const BATCH_LIMIT = 50   // max users processed per cron invocation
@@ -33,24 +34,6 @@ function getSupabase() {
     process.env.SUPABASE_SERVICE_ROLE_KEY,
     { auth: { persistSession: false } }
   )
-}
-
-function isAuthorised(req) {
-  const secret = process.env.CRON_SECRET
-  if (!secret) {
-    console.warn('[cron/business-health] CRON_SECRET not set — rejecting request')
-    return false
-  }
-
-  // Vercel cron header
-  const authHeader = String(req.headers.authorization || '')
-  if (authHeader === `Bearer ${secret}`) return true
-
-  // Manual trigger via query param
-  const qSecret = req.query?.secret || new URL(req.url || '', 'http://x').searchParams.get('secret')
-  if (qSecret === secret) return true
-
-  return false
 }
 
 function mapAlertCategoryToPreference(alert) {
@@ -114,7 +97,12 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  if (!isAuthorised(req)) {
+  if (!process.env.CRON_SECRET) {
+    console.warn('[cron/business-health] CRON_SECRET not set — rejecting request')
+    return res.status(401).json({ error: 'Unauthorised' })
+  }
+
+  if (!isAuthorisedCronRequest(req, process.env.CRON_SECRET)) {
     return res.status(401).json({ error: 'Unauthorised' })
   }
 

@@ -1,14 +1,6 @@
 import Stripe from 'stripe'
 import { validateUserToken } from './lib/auth.js'
-
-const PRICE_IDS = {
-  foundation:   process.env.STRIPE_PRICE_FOUNDATION   || process.env.STRIPE_PRICE_ESSENTIAL  || null,
-  intelligence: process.env.STRIPE_PRICE_INTELLIGENCE || process.env.STRIPE_PRICE_BUSINESS   || null,
-  // legacy aliases
-  essential:    process.env.STRIPE_PRICE_FOUNDATION   || process.env.STRIPE_PRICE_ESSENTIAL  || null,
-  business:     process.env.STRIPE_PRICE_INTELLIGENCE || process.env.STRIPE_PRICE_BUSINESS   || null,
-  portfolio:    process.env.STRIPE_PRICE_PORTFOLIO    || null,
-}
+import { getCheckoutAppUrl, getCheckoutPriceId, normalizeCheckoutTier } from './lib/checkout.js'
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -21,7 +13,8 @@ export default async function handler(req, res) {
   }
   if (!await validateUserToken(req, res, userId)) return
 
-  const priceId = PRICE_IDS[tier]
+  const normalizedTier = normalizeCheckoutTier(tier)
+  const priceId = getCheckoutPriceId(tier)
   if (!priceId) {
     return res.status(400).json({ error: `Unknown or unconfigured tier: ${tier}` })
   }
@@ -31,7 +24,7 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Stripe secret key not configured' })
   }
 
-  const appUrl = process.env.APP_URL || 'http://localhost:3000'
+  const appUrl = getCheckoutAppUrl()
 
   try {
     const stripe = new Stripe(secretKey, { apiVersion: '2023-10-16' })
@@ -43,7 +36,7 @@ export default async function handler(req, res) {
       client_reference_id: userId,
       success_url: `${appUrl}/#dashboard`,
       cancel_url:  `${appUrl}/#signup`,
-      metadata: { userId, tier, priceId },
+      metadata: { userId, tier: normalizedTier || tier, priceId },
     })
 
     return res.status(200).json({ url: session.url })

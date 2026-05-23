@@ -3,6 +3,7 @@ import { validateUserToken } from './lib/auth.js'
 import { synthesizeUserIntelligence } from './lib/intelligence/synthesize.js'
 import { upsertCompanyBrain } from './lib/intelligence/company-brain.js'
 import { sendUserReportEmail } from './lib/notifications/user-report-email.js'
+import { validateSaveReportPayload } from './lib/save-report-validation.js'
 
 const supabase = createClient(
   process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
@@ -61,8 +62,9 @@ export default async function handler(req, res) {
   }
 
   const { userId, sessionId, report: r, industry, domain, goalTimeline, goalBaseline, goalMode, userEmail, userName } = req.body
-  if (!userId || !r) {
-    return res.status(400).json({ error: 'Missing userId or report' })
+  const validationError = validateSaveReportPayload(req.body)
+  if (validationError) {
+    return res.status(400).json({ error: validationError })
   }
   if (!await validateUserToken(req, res, userId)) return
 

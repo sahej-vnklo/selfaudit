@@ -8,6 +8,7 @@
 
 import { createClient } from '@supabase/supabase-js'
 import { runBusinessHealthCheck } from '../lib/monitoring/health-check.js'
+import { isAuthorisedCronRequest } from '../lib/cron-auth.js'
 
 const INTELLIGENCE_TIERS = new Set(['intelligence'])
 const BATCH_LIMIT = 50
@@ -18,19 +19,6 @@ function getSupabase() {
     process.env.SUPABASE_SERVICE_ROLE_KEY,
     { auth: { persistSession: false } }
   )
-}
-
-function isAuthorised(req) {
-  const secret = process.env.CRON_SECRET
-  if (!secret) {
-    console.warn('[cron/weekly-digest] CRON_SECRET not set — rejecting request')
-    return false
-  }
-  const authHeader = String(req.headers.authorization || '')
-  if (authHeader === `Bearer ${secret}`) return true
-  const qSecret = req.query?.secret || new URL(req.url || '', 'http://x').searchParams.get('secret')
-  if (qSecret === secret) return true
-  return false
 }
 
 function esc(s) {
@@ -230,7 +218,12 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  if (!isAuthorised(req)) {
+  if (!process.env.CRON_SECRET) {
+    console.warn('[cron/weekly-digest] CRON_SECRET not set — rejecting request')
+    return res.status(401).json({ error: 'Unauthorised' })
+  }
+
+  if (!isAuthorisedCronRequest(req, process.env.CRON_SECRET)) {
     return res.status(401).json({ error: 'Unauthorised' })
   }
 

@@ -3493,6 +3493,8 @@ function AccountSection({ user, profile, onProfileChange, onSignOut }) {
   const [deleteConf, setDeleteConf] = useState('')
   const [deleteError, setDeleteError] = useState('')
   const [deleting, setDeleting] = useState(false)
+  const [exportingData, setExportingData] = useState(false)
+  const [exportError, setExportError] = useState('')
   const nameRef = useRef(null)
   const phoneRef = useRef(null)
 
@@ -3581,6 +3583,44 @@ function AccountSection({ user, profile, onProfileChange, onSignOut }) {
     }
   }
 
+  async function handleExportData() {
+    setExportingData(true)
+    setExportError('')
+    try {
+      const sb = await initSupabase()
+      const { data: { session } } = await sb.auth.getSession()
+      const response = await fetch('/api/export-account-data', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+        },
+        body: JSON.stringify({ userId: user.id }),
+      })
+      const payload = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(payload?.error || 'Could not export your data right now.')
+
+      const safePrefix = String(email || 'selfaudit-user')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 40) || 'selfaudit-user'
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `${safePrefix}-account-data.json`
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      setExportError(error?.message || 'Could not export your data right now.')
+    } finally {
+      setExportingData(false)
+    }
+  }
+
   return (
     <PageShell title="Account settings" sub="Manage your profile and preferences.">
       <div style={account.card}>
@@ -3636,6 +3676,20 @@ function AccountSection({ user, profile, onProfileChange, onSignOut }) {
       <div style={{ marginTop: 10 }}>
         <button type="button" style={account.signOutBtn} onClick={onSignOut}>
           Sign out
+        </button>
+      </div>
+
+      <div style={account.dataCard}>
+        <div style={account.dataCardTitle}>Your data</div>
+        <div style={account.dataCardText}>
+          Download a JSON export of your saved reports, chats, business context, alerts, and related account data. Connector access tokens are not included in the export.
+        </div>
+        <div style={account.dataCardMeta}>
+          SelfAudit currently keeps your account data until you delete the account. Deletion is permanent.
+        </div>
+        {exportError ? <div style={account.dataCardError}>{exportError}</div> : null}
+        <button type="button" style={account.dataExportBtn} onClick={handleExportData} disabled={exportingData}>
+          {exportingData ? 'Preparing export…' : 'Export my data'}
         </button>
       </div>
 
@@ -6195,6 +6249,45 @@ const account = {
     borderRadius: 8,
     color: G.textSecondary,
     padding: '8px 12px',
+    fontSize: 12,
+    cursor: 'pointer',
+  },
+  dataCard: {
+    marginTop: 22,
+    background: G.surface2,
+    border: `0.5px solid ${G.border}`,
+    borderRadius: 12,
+    padding: '16px 18px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 10,
+  },
+  dataCardTitle: {
+    fontSize: 13,
+    color: G.text,
+  },
+  dataCardText: {
+    fontSize: 12,
+    color: G.textSecondary,
+    lineHeight: 1.65,
+    maxWidth: 760,
+  },
+  dataCardMeta: {
+    fontSize: 11,
+    color: G.textFaint,
+    lineHeight: 1.6,
+  },
+  dataCardError: {
+    fontSize: 12,
+    color: G.redText,
+  },
+  dataExportBtn: {
+    alignSelf: 'flex-start',
+    background: G.accent,
+    border: 'none',
+    borderRadius: 8,
+    color: G.white,
+    padding: '9px 13px',
     fontSize: 12,
     cursor: 'pointer',
   },
