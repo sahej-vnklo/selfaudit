@@ -390,6 +390,10 @@ function normalizeTier(raw) {
   return 'foundation'
 }
 
+function profileRequiresPayment(profile) {
+  return !profile?.stripe_subscription_id
+}
+
 function normalizeNotificationAreas(input) {
   const allowed = new Set(NOTIFICATION_AREAS.map((area) => area.key))
   const next = []
@@ -559,6 +563,12 @@ function getSectionFromHash() {
   const hash = window.location.hash.replace(/^#\/?/, '')
   const section = hash.split('?')[0]
   return SECTIONS.includes(section) ? section : 'home'
+}
+
+function getHashParams() {
+  const hash = window.location.hash.replace(/^#\/?/, '')
+  const query = hash.includes('?') ? hash.slice(hash.indexOf('?') + 1) : ''
+  return new URLSearchParams(query)
 }
 
 function formatRelativeTime(input) {
@@ -756,6 +766,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
   const [billing, setBilling] = useState(null)
   const [billingLoading, setBillingLoading] = useState(false)
   const [billingError, setBillingError] = useState('')
+  const [checkoutSyncing, setCheckoutSyncing] = useState(false)
   const [portalLoading, setPortalLoading] = useState(false)
   const [section, setSection] = useState(() => getSectionFromHash())
   const [requiresPayment, setRequiresPayment] = useState(false)
@@ -822,11 +833,13 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
 
         if (data) {
           setProfile(data)
-          // No tier and no subscription means the user signed up via OAuth but
-          // never completed payment — gate them to the billing screen.
-          if (!data.tier && !data.stripe_subscription_id) {
+          // Any authenticated account without an active subscription still
+          // needs to finish billing before the dashboard is fully unlocked.
+          if (profileRequiresPayment(data)) {
             setRequiresPayment(true)
             setSection('billing')
+          } else {
+            setRequiresPayment(false)
           }
         } else {
           await new Promise((resolve) => setTimeout(resolve, 800))
@@ -837,9 +850,11 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
             .single()
           if (!cancelled && retry.data) {
             setProfile(retry.data)
-            if (!retry.data.tier && !retry.data.stripe_subscription_id) {
+            if (profileRequiresPayment(retry.data)) {
               setRequiresPayment(true)
               setSection('billing')
+            } else {
+              setRequiresPayment(false)
             }
           }
         }
@@ -890,6 +905,78 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
       }
     })()
   }, [billing, profile?.stripe_customer_id, profile?.stripe_subscription_id, section])
+
+  useEffect(() => {
+    if (!user?.id) return
+
+    const params = getHashParams()
+    const sessionId = params.get('session_id')
+    const checkoutState = params.get('checkout')
+    const returnPlan = normalizeTier(params.get('plan'))
+
+    if (section !== 'billing' || checkoutState !== 'success' || !sessionId) return
+    if (profile?.stripe_subscription_id && normalizeTier(profile?.tier) === returnPlan) return
+
+    let cancelled = false
+
+    ;(async () => {
+      setCheckoutSyncing(true)
+      setBillingError('')
+      try {
+        const sb = await initSupabase()
+        const { data: { session } } = await sb.auth.getSession()
+        const token = session?.access_token || ''
+
+        for (let attempt = 0; attempt < 6; attempt += 1) {
+          const response = await fetch('/api/checkout-session-status', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify({ userId: user.id, sessionId }),
+          })
+
+          const data = await response.json().catch(() => ({}))
+          if (!response.ok) {
+            throw new Error(data?.error || 'Could not verify your checkout session.')
+          }
+
+          if (data?.ready) {
+            if (cancelled) return
+            setProfile((prev) => ({
+              ...prev,
+              tier: data.tier || returnPlan,
+              stripe_customer_id: data.stripeCustomerId || prev?.stripe_customer_id || null,
+              stripe_subscription_id: data.stripeSubscriptionId || prev?.stripe_subscription_id || null,
+              stripe_price_id: data.stripePriceId || prev?.stripe_price_id || null,
+            }))
+            setRequiresPayment(false)
+            setBilling(null)
+            history.replaceState({ section: 'home' }, '', '#home')
+            setSection('home')
+            return
+          }
+
+          await new Promise((resolve) => setTimeout(resolve, 1200))
+        }
+
+        if (!cancelled) {
+          setBillingError('Your payment went through, but account activation is still syncing. Refresh in a few seconds if this does not resolve.')
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setBillingError(err.message || 'Could not verify your checkout session.')
+        }
+      } finally {
+        if (!cancelled) setCheckoutSyncing(false)
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [profile?.stripe_subscription_id, profile?.tier, section, user?.id])
 
   useEffect(() => {
     if (!user?.id) {
@@ -1334,6 +1421,14 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
                   </span>
                 </div>
               )}
+              {checkoutSyncing && (
+                <div style={{ background: 'var(--accent-soft, rgba(255,255,255,0.04))', border: '1px solid var(--accent, #8b5cf6)', borderRadius: 8, padding: '14px 18px', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <span style={{ fontSize: 16 }}>↻</span>
+                  <span style={{ fontSize: 14, color: 'var(--accent-text, #fff)', fontWeight: 500 }}>
+                    Finalizing your checkout and updating your plan…
+                  </span>
+                </div>
+              )}
               {tier === 'intelligence' && (
                 <LiveBillingCard
                   billing={billing}
@@ -1345,7 +1440,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
               )}
               <div style={styles.tierGrid}>
                 {TIERS.map((item) => (
-                  <TierCard key={item.key} tier={item} currentTier={tier} userId={user?.id} email={user?.email} />
+                  <TierCard key={item.key} tier={item} currentTier={tier} userId={user?.id} email={user?.email} requiresPayment={requiresPayment} />
                 ))}
               </div>
             </PageShell>
@@ -4338,19 +4433,25 @@ function BillingMetric({ label, value, sub, accent }) {
   )
 }
 
-function TierCard({ tier, currentTier, userId, email }) {
+function TierCard({ tier, currentTier, userId, email, requiresPayment = false }) {
   const [loading, setLoading] = useState(false)
-  const current = tier.key === currentTier
-  const isUpgrade = (TIER_ORDER[tier.key] ?? 0) > (TIER_ORDER[currentTier] ?? 0)
-  const isDowngrade = (TIER_ORDER[tier.key] ?? 0) < (TIER_ORDER[currentTier] ?? 0)
+  const current = !requiresPayment && tier.key === currentTier
+  const isUpgrade = !requiresPayment && (TIER_ORDER[tier.key] ?? 0) > (TIER_ORDER[currentTier] ?? 0)
+  const isDowngrade = !requiresPayment && (TIER_ORDER[tier.key] ?? 0) < (TIER_ORDER[currentTier] ?? 0)
 
   const handleCheckout = async () => {
     if (!userId || !email) return
     setLoading(true)
     try {
+      const sb = await initSupabase()
+      const { data: { session } } = await sb.auth.getSession()
+      const token = session?.access_token || ''
       const response = await fetch('/api/create-checkout-session', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({ tier: tier.key, userId, email }),
       })
       const data = await response.json()
@@ -4380,6 +4481,11 @@ function TierCard({ tier, currentTier, userId, email }) {
         ))}
       </ul>
       {current && <div style={styles.activePlan}>Active plan</div>}
+      {requiresPayment && (
+        <button type="button" onClick={handleCheckout} disabled={loading} style={styles.tierUpgradeBtn}>
+          {loading ? 'Redirecting…' : `Choose ${tier.name}`}
+        </button>
+      )}
       {isUpgrade && (
         <button type="button" onClick={handleCheckout} disabled={loading} style={styles.tierUpgradeBtn}>
           {loading ? 'Redirecting…' : `Upgrade to ${tier.name}`}

@@ -32,16 +32,33 @@ const HASH_SCREENS = new Set([
 
 const DASHBOARD_SECTION_HASHES = new Set(['home', 'reports', 'intelligence', 'business-state', 'alerts', 'connectors', 'agent', 'billing', 'account'])
 
+function readPendingCheckoutIntent() {
+  try {
+    const intent = JSON.parse(localStorage.getItem(PENDING_AUTH_INTENT_KEY) || 'null')
+    if (intent?.plan && ['foundation', 'intelligence'].includes(intent.plan)) {
+      return intent
+    }
+  } catch (_) {}
+  return null
+}
+
+function clearPendingCheckoutIntent() {
+  try {
+    localStorage.removeItem(PENDING_AUTH_INTENT_KEY)
+  } catch (_) {}
+}
+
 function screenFromHash(isAuthenticated = false) {
   const h = window.location.hash.replace(/^#\/?/, '')
-  if (h === 'login')              return SCREENS.LOGIN
-  if (h === 'signup' || h.startsWith('signup?')) return SCREENS.SIGNUP
-  if (h === 'dashboard')          return SCREENS.DASHBOARD
-  if (h === 'account_onboarding') return isAuthenticated ? SCREENS.DASHBOARD : SCREENS.LOGIN
-  if (h === 'admin')              return SCREENS.ADMIN
-  if (h === 'terms')              return SCREENS.TERMS
+  const section = h.split('?')[0]
+  if (section === 'login')              return SCREENS.LOGIN
+  if (section === 'signup')             return SCREENS.SIGNUP
+  if (section === 'dashboard')          return SCREENS.DASHBOARD
+  if (section === 'account_onboarding') return isAuthenticated ? SCREENS.DASHBOARD : SCREENS.LOGIN
+  if (section === 'admin')              return SCREENS.ADMIN
+  if (section === 'terms')              return SCREENS.TERMS
   // Dashboard section hashes (#billing, #reports, etc.) must not exit the dashboard
-  if (isAuthenticated && DASHBOARD_SECTION_HASHES.has(h)) return SCREENS.DASHBOARD
+  if (isAuthenticated && DASHBOARD_SECTION_HASHES.has(section)) return SCREENS.DASHBOARD
   return null
 }
 
@@ -90,19 +107,10 @@ export default function App() {
   }, [])
 
   const maybeStartPendingCheckout = useCallback(async (session) => {
-    if (!session?.user?.id || !session?.user?.email || pendingCheckoutRef.current) return false
+    if (!session?.user?.id || !session?.user?.email || pendingCheckoutRef.current) return 'noop'
 
-    let intent = null
-    try {
-      intent = JSON.parse(localStorage.getItem(PENDING_AUTH_INTENT_KEY) || 'null')
-    } catch (_) {
-      intent = null
-    }
-
-    if (!intent?.plan || !['foundation', 'intelligence'].includes(intent.plan)) {
-      try { localStorage.removeItem(PENDING_AUTH_INTENT_KEY) } catch (_) {}
-      return false
-    }
+    const intent = readPendingCheckoutIntent()
+    if (!intent) return 'noop'
 
     pendingCheckoutRef.current = true
     try {
@@ -117,22 +125,17 @@ export default function App() {
       })
       const data = await response.json()
       if (response.ok && data?.url) {
-        // Only remove intent after we have a valid Stripe URL — if anything
-        // above threw or returned an error the intent stays so the user can retry.
-        try { localStorage.removeItem(PENDING_AUTH_INTENT_KEY) } catch (_) {}
+        clearPendingCheckoutIntent()
         window.location.href = data.url
-        return true
+        return 'redirected'
       }
       console.warn('[auth] pending checkout failed:', data?.error || 'unknown error')
-      // Intent is still in localStorage — send user back to signup with the
-      // originally-selected plan in the hash so the UI pre-selects it correctly.
-      // Returning true prevents callers from navigating to dashboard.
-      window.location.hash = `signup?plan=${intent.plan}`
-      return true
+      clearPendingCheckoutIntent()
+      return 'failed'
     } catch (error) {
       console.warn('[auth] pending checkout threw:', error?.message ?? error)
-      window.location.hash = `signup?plan=${intent.plan}`
-      return true
+      clearPendingCheckoutIntent()
+      return 'failed'
     } finally {
       pendingCheckoutRef.current = false
     }
@@ -215,8 +218,13 @@ export default function App() {
               return
             }
           }
-          const redirected = await maybeStartPendingCheckout(data.session)
-          if (redirected) return
+          const checkoutResult = await maybeStartPendingCheckout(data.session)
+          if (checkoutResult === 'redirected') return
+          if (checkoutResult === 'failed') {
+            setAuthLoading(false)
+            navigate(SCREENS.DASHBOARD)
+            return
+          }
           const currentHash = window.location.hash.replace(/^#\/?/, '')
           if (currentHash !== 'admin' && currentHash !== 'dashboard' && !DASHBOARD_SECTION_HASHES.has(currentHash)) {
             navigate(SCREENS.DASHBOARD)
@@ -253,8 +261,13 @@ export default function App() {
                 return
               }
             }
-            const redirected = await maybeStartPendingCheckout(session)
-            if (redirected) return
+            const checkoutResult = await maybeStartPendingCheckout(session)
+            if (checkoutResult === 'redirected') return
+            if (checkoutResult === 'failed') {
+              setAuthLoading(false)
+              navigate(SCREENS.DASHBOARD)
+              return
+            }
             setAuthLoading(false)
             const currentHash = window.location.hash.replace(/^#\/?/, '')
             if (currentHash === 'admin') return
@@ -351,7 +364,19 @@ export default function App() {
   }
 
   if (screen === SCREENS.SIGNUP) {
-    if (session) { navigate(SCREENS.DASHBOARD); return null }
+    if (session) {
+      if (readPendingCheckoutIntent()) {
+        return (
+          <div style={{ height: '100vh', background: '#0F1520', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, color: '#E9EEF5' }}>
+            <div style={{ width: 32, height: 32, border: '2px solid #1E2D42', borderTopColor: '#4A7FA8', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+            <div style={{ fontSize: 14 }}>Preparing checkout…</div>
+            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+          </div>
+        )
+      }
+      navigate(SCREENS.DASHBOARD)
+      return null
+    }
     return <Signup onLogin={() => navigate(SCREENS.LOGIN)} />
   }
 

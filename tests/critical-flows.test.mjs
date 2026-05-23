@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { getCheckoutAppUrl, getCheckoutPriceId, normalizeCheckoutTier } from '../api/lib/checkout.js'
+import { getCheckoutAppUrl, getCheckoutCancelUrl, getCheckoutPriceId, getCheckoutSuccessUrl, normalizeCheckoutTier } from '../api/lib/checkout.js'
 import { isAuthorisedCronRequest } from '../api/lib/cron-auth.js'
 import { signOAuthState, verifyOAuthState } from '../api/lib/connectors/oauth-state.js'
 import { validateSaveReportPayload } from '../api/lib/save-report-validation.js'
@@ -10,6 +10,7 @@ import { isIntelligencePlan, normalizePlan, VALID_PLANS } from '../api/lib/plans
 
 test('checkout only accepts current plan names', () => {
   const env = {
+    APP_URL: 'https://tryselfaudit.com',
     STRIPE_PRICE_FOUNDATION: 'price_foundation',
     STRIPE_PRICE_INTELLIGENCE: 'price_intelligence',
   }
@@ -21,6 +22,14 @@ test('checkout only accepts current plan names', () => {
   assert.equal(getCheckoutPriceId('intelligence', env), 'price_intelligence')
   assert.equal(getCheckoutPriceId('legacy-tier', env), null)
   assert.equal(getCheckoutAppUrl({ APP_URL: 'https://tryselfaudit.com' }), 'https://tryselfaudit.com')
+  assert.equal(
+    getCheckoutSuccessUrl('intelligence', env),
+    'https://tryselfaudit.com/#billing?checkout=success&plan=intelligence&session_id={CHECKOUT_SESSION_ID}',
+  )
+  assert.equal(
+    getCheckoutCancelUrl('intelligence', env),
+    'https://tryselfaudit.com/#signup?plan=intelligence',
+  )
 })
 
 test('plan helper normalizes access to foundation or intelligence only', () => {

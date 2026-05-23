@@ -1,6 +1,6 @@
 import Stripe from 'stripe'
 import { validateUserToken } from './lib/auth.js'
-import { getCheckoutAppUrl, getCheckoutPriceId, normalizeCheckoutTier } from './lib/checkout.js'
+import { getCheckoutCancelUrl, getCheckoutPriceId, getCheckoutSuccessUrl, normalizeCheckoutTier } from './lib/checkout.js'
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -24,8 +24,6 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Stripe secret key not configured' })
   }
 
-  const appUrl = getCheckoutAppUrl()
-
   try {
     const stripe = new Stripe(secretKey, { apiVersion: '2023-10-16' })
 
@@ -34,8 +32,8 @@ export default async function handler(req, res) {
       line_items: [{ price: priceId, quantity: 1 }],
       customer_email: email,
       client_reference_id: userId,
-      success_url: `${appUrl}/#dashboard`,
-      cancel_url:  `${appUrl}/#signup`,
+      success_url: getCheckoutSuccessUrl(normalizedTier || tier),
+      cancel_url:  getCheckoutCancelUrl(normalizedTier || tier),
       metadata: { userId, tier: normalizedTier || tier, priceId },
     })
 
