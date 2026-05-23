@@ -81,13 +81,6 @@ export default async function handler(req, res) {
     })
     if (insertError) throw insertError
 
-    if (sessionId) {
-      await supabase
-        .from('audit_sessions')
-        .update({ conversation_mode: r.conversation_mode ?? null })
-        .eq('session_id', sessionId)
-    }
-
     // Structured memory: append new entry to profiles.context
     try {
       const { data: profile } = await supabase
