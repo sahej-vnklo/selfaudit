@@ -1,0 +1,1140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SelfAudit Onboarding Flow Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d1422;
+      --panel: #1e2b45;
+      --panel-soft: #243452;
+      --panel-strong: #2a3c5f;
+      --border: rgba(141, 163, 211, 0.24);
+      --text: #f0f4ff;
+      --text-soft: #cad5ee;
+      --text-faint: #8b99bb;
+      --accent: #7c92ff;
+      --accent-soft: rgba(124, 146, 255, 0.18);
+      --accent-text: #aebcff;
+      --green: #8ec594;
+      --shadow: 0 30px 90px rgba(2, 8, 20, 0.42);
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background:
+        radial-gradient(circle at top left, #1a2845 0%, #0e1524 48%, #09111c 100%);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body { padding: 18px; }
+
+    .frame {
+      position: relative;
+      width: min(1480px, calc(100vw - 36px));
+      min-height: 940px;
+      margin: 0 auto;
+      border-radius: 30px;
+      overflow: hidden;
+      border: 1px solid rgba(149, 172, 216, 0.14);
+      background: linear-gradient(180deg, #16213a 0%, #101826 100%);
+      box-shadow: 0 40px 100px rgba(0, 0, 0, 0.34);
+    }
+
+    .chrome {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      grid-template-columns: 0 1fr;
+      transition: grid-template-columns 0.7s cubic-bezier(.22,1,.36,1);
+    }
+
+    .chrome.sidebar-open {
+      grid-template-columns: 220px 1fr;
+    }
+
+    .sidebar {
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding: 16px 8px;
+      border-right: 0.5px solid rgba(69, 103, 154, 0.55);
+      background: linear-gradient(180deg, rgba(31,48,79,0.96) 0%, rgba(15,32,57,0.98) 100%);
+      box-shadow: inset -1px 0 0 rgba(107,140,255,0.22);
+      transform: translateX(-26px);
+      opacity: 0;
+      transition: opacity 0.55s ease, transform 0.7s cubic-bezier(.22,1,.36,1);
+    }
+
+    .chrome.sidebar-open .sidebar {
+      transform: translateX(0);
+      opacity: 1;
+    }
+
+    .sidebar-top {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 6px;
+    }
+
+    .collapse-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      border: none;
+      background: rgba(255,255,255,0.03);
+      color: var(--text-soft);
+      display: grid;
+      place-items: center;
+      font-size: 14px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.03), 0 0 0 1px rgba(255,255,255,0.06);
+      cursor: pointer;
+    }
+
+    .nav, .bottom-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .bottom-stack { margin-top: auto; padding-top: 8px; }
+
+    .nav-item, .bottom-item {
+      height: 34px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 10px;
+      border-radius: 10px;
+      border: 1px solid transparent;
+      color: var(--text-soft);
+      background: transparent;
+      opacity: 0;
+      transform: translateY(16px);
+      transition:
+        opacity 0.35s ease,
+        transform 0.45s cubic-bezier(.22,1,.36,1),
+        border-color 0.25s ease,
+        background 0.25s ease;
+    }
+
+    .nav-item.visible, .bottom-item.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .nav-item.active, .bottom-item.active {
+      background: linear-gradient(180deg, rgba(34,54,88,0.96) 0%, rgba(18,36,62,0.985) 100%);
+      border-color: rgba(93,127,176,0.55);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+      color: var(--text);
+    }
+
+    .nav-icon {
+      width: 16px;
+      height: 16px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      color: inherit;
+    }
+
+    .nav-label {
+      font-size: 13px;
+      color: inherit;
+      white-space: nowrap;
+    }
+
+    .account {
+      height: 34px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 10px;
+      border-radius: 10px;
+      color: var(--text-soft);
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 0.35s ease, transform 0.45s cubic-bezier(.22,1,.36,1);
+      margin-top: 4px;
+    }
+
+    .account.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .avatar {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: rgba(107,140,255,0.18);
+      font-size: 10px;
+      flex-shrink: 0;
+    }
+
+    .content {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 0 20px;
+      border-bottom: 0.5px solid rgba(69,103,154,0.45);
+      background: linear-gradient(180deg, rgba(31,48,79,0.96) 0%, rgba(15,32,57,0.98) 100%);
+      box-shadow: inset 0 -1px 0 rgba(107,140,255,0.24);
+      opacity: 0;
+      transform: translateY(-28px);
+      transition: opacity 0.5s ease, transform 0.7s cubic-bezier(.22,1,.36,1);
+    }
+
+    .topbar.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .logo {
+      font-size: 16px;
+      letter-spacing: -0.04em;
+      color: var(--text);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .logo span { color: #6B8CFF; }
+
+    .crumb {
+      color: var(--text-faint);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .action-btn {
+      height: 38px;
+      padding: 0 16px;
+      border-radius: 8px;
+      border: 0.5px solid rgba(93,127,176,0.55);
+      background: linear-gradient(180deg, rgba(34,54,88,0.96) 0%, rgba(18,36,62,0.985) 100%);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+      color: var(--text-soft);
+      font-size: 14px;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .action-btn.primary {
+      background: #6B8CFF;
+      border-color: transparent;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .count {
+      margin-left: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 22px;
+      height: 22px;
+      padding: 0 7px;
+      border-radius: 999px;
+      background: rgba(107,140,255,0.2);
+      color: #aebcff;
+      font-size: 11px;
+    }
+
+    .main {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      min-height: 164px;
+      padding: 20px;
+      border-radius: 20px;
+      border: 1px solid rgba(149, 172, 216, 0.14);
+      background: linear-gradient(180deg, rgba(45, 63, 103, 0.7) 0%, rgba(35, 49, 80, 0.92) 100%);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity 0.4s ease, transform 0.55s cubic-bezier(.22,1,.36,1);
+    }
+
+    .card.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .eyebrow {
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 12px;
+      color: var(--text-faint);
+      margin-bottom: 18px;
+    }
+
+    .metric {
+      font-size: 54px;
+      line-height: 1;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+
+    .metric-sub {
+      color: var(--green);
+      font-size: 16px;
+      margin-bottom: 20px;
+    }
+
+    .hint {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-faint);
+    }
+
+    .followup {
+      min-height: 142px;
+      border-radius: 20px;
+      border: 1px solid rgba(149, 172, 216, 0.14);
+      background: linear-gradient(180deg, rgba(45, 63, 103, 0.7) 0%, rgba(35, 49, 80, 0.92) 100%);
+      padding: 22px;
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      align-items: center;
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity 0.4s ease, transform 0.55s cubic-bezier(.22,1,.36,1);
+      display: none;
+    }
+
+    .followup.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .followup-title {
+      font-size: 20px;
+      margin-bottom: 12px;
+    }
+
+    .followup-copy {
+      color: var(--text-soft);
+      font-size: 15px;
+      line-height: 1.6;
+      max-width: 860px;
+    }
+
+    .followup-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .ghost-btn, .primary-mini {
+      height: 36px;
+      padding: 0 18px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .ghost-btn {
+      border: 0.5px solid rgba(93,127,176,0.45);
+      background: rgba(255,255,255,0.025);
+      color: var(--text-soft);
+    }
+
+    .primary-mini {
+      border: none;
+      background: #6B8CFF;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .recommended {
+      min-height: 360px;
+      border-radius: 24px;
+      border: 1px solid rgba(149, 172, 216, 0.14);
+      background: linear-gradient(180deg, rgba(40, 58, 95, 0.88) 0%, rgba(27, 41, 67, 0.96) 100%);
+      padding: 26px 28px 30px;
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity 0.4s ease, transform 0.55s cubic-bezier(.22,1,.36,1);
+    }
+
+    .recommended.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .recommended-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .chip {
+      padding: 14px 22px;
+      border-radius: 999px;
+      border: 1px solid rgba(149, 172, 216, 0.14);
+      color: var(--text-soft);
+      font-size: 15px;
+      background: rgba(255,255,255,0.03);
+    }
+
+    .recommended-title {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(42px, 4.8vw, 70px);
+      line-height: 1.03;
+      letter-spacing: -0.05em;
+      margin: 0 0 16px;
+      max-width: 1080px;
+    }
+
+    .recommended-copy {
+      font-size: 17px;
+      line-height: 1.8;
+      color: var(--text-soft);
+      max-width: 1100px;
+    }
+
+    .welcome-layer,
+    .sequence-layer,
+    .zero-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 20;
+      transition: opacity 0.45s ease;
+    }
+
+    .hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .welcome-layer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(180deg, rgba(10, 15, 26, 0.3) 0%, rgba(10, 15, 26, 0.5) 100%);
+      cursor: pointer;
+    }
+
+    .welcome-copy {
+      text-align: center;
+      padding: 40px;
+    }
+
+    .welcome-title {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(54px, 6vw, 90px);
+      line-height: 1.02;
+      letter-spacing: -0.06em;
+      margin: 0 0 12px;
+    }
+
+    .sequence-layer {
+      background: transparent;
+      pointer-events: none;
+    }
+
+    .nav-callout-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 22;
+      pointer-events: none;
+    }
+
+    .nav-callout {
+      position: absolute;
+      font-family: 'Caveat', 'Brush Script MT', cursive;
+      font-size: 21px;
+      font-weight: 500;
+      line-height: 1.3;
+      color: rgba(252, 244, 218, 0.96);
+      white-space: nowrap;
+      padding: 0;
+      background: none;
+      border: none;
+      box-shadow: none;
+      opacity: 0;
+      transform: translateY(-50%);
+      transition: opacity 0.36s ease;
+    }
+
+    .nav-callout.visible {
+      opacity: 1;
+    }
+
+    .statement {
+      position: absolute;
+      font-family: 'Caveat', 'Brush Script MT', cursive;
+      font-size: 26px;
+      font-weight: 500;
+      line-height: 1.35;
+      color: rgba(252, 244, 218, 0.96);
+      text-align: center;
+      background: none;
+      border: none;
+      box-shadow: none;
+      padding: 0;
+      max-width: 520px;
+      opacity: 0;
+      transition: opacity 0.38s ease;
+    }
+
+    .statement.visible {
+      opacity: 1;
+    }
+
+    .statement .line {
+      display: block;
+      white-space: normal;
+    }
+
+    .statement.cards-band {
+      max-width: 600px;
+      text-align: center;
+    }
+
+    .statement.center-x {
+      transform: translateX(-50%);
+    }
+
+    .statement.center-x.visible {
+      transform: translateX(-50%);
+    }
+
+    .highlight {
+      color: #ffd97a;
+      font-weight: 600;
+      background: none;
+      padding: 0;
+    }
+
+    .zero-state {
+      min-height: 620px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 50px 24px 24px;
+      text-align: center;
+    }
+
+    .chrome.zeroed .cards,
+    .chrome.zeroed .recommended {
+      display: none;
+    }
+
+    .chrome.zeroed .zero-state {
+      display: flex;
+    }
+
+    .zero-card {
+      max-width: 760px;
+      text-align: center;
+      padding: 40px;
+    }
+
+    .zero-title {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(48px, 5.4vw, 82px);
+      line-height: 1.04;
+      letter-spacing: -0.05em;
+      margin: 0 0 14px;
+    }
+
+    .zero-copy {
+      font-size: 20px;
+      line-height: 1.7;
+      color: var(--text-soft);
+      max-width: 660px;
+      margin: 0 auto;
+    }
+
+    .demo-controls {
+      position: absolute;
+      right: 24px;
+      bottom: 22px;
+      z-index: 30;
+      display: flex;
+      gap: 10px;
+    }
+
+    .demo-btn {
+      min-height: 42px;
+      padding: 0 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(159, 181, 235, 0.16);
+      background: rgba(10, 16, 29, 0.72);
+      color: var(--text-soft);
+      font-size: 14px;
+      backdrop-filter: blur(10px);
+    }
+
+    @media (max-width: 1180px) {
+      .chrome.sidebar-open { grid-template-columns: 290px 1fr; }
+      .cards { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 920px) {
+      body { padding: 0; }
+      .frame { width: 100vw; min-height: 100vh; border-radius: 0; }
+      .chrome.sidebar-open { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .cards { grid-template-columns: 1fr; }
+      .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+        height: auto;
+        gap: 14px;
+        padding: 18px;
+      }
+      .actions { flex-wrap: wrap; }
+      .main { padding: 18px; }
+      .followup { flex-direction: column; align-items: flex-start; }
+      .statement {
+        left: 16px !important;
+        width: calc(100vw - 32px);
+        max-width: none;
+      }
+      .nav-callout {
+        left: 16px;
+        width: calc(100vw - 32px);
+        white-space: normal;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="frame" id="frame">
+    <div class="chrome" id="chrome">
+      <aside class="sidebar">
+        <div class="sidebar-top">
+          <div class="collapse-btn">‹</div>
+        </div>
+        <nav class="nav" id="navList">
+          <div class="nav-item active" data-item="home">
+            <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2.5 6.5L8 2L13.5 6.5V13.5H9.75V9.75H6.25V13.5H2.5V6.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></span>
+            <span class="nav-label">Home</span>
+          </div>
+          <div class="nav-item" data-item="reports">
+            <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 2.5H10.5L13 5V13.5H4V2.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M10.5 2.5V5H13" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M6 8H11M6 10.5H11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+            <span class="nav-label">Reports</span>
+          </div>
+          <div class="nav-item" data-item="brief">
+            <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><ellipse cx="8" cy="3.5" rx="4.5" ry="2" stroke="currentColor" stroke-width="1.5"/><path d="M3.5 3.5V7.75C3.5 8.85 5.51 9.75 8 9.75C10.49 9.75 12.5 8.85 12.5 7.75V3.5" stroke="currentColor" stroke-width="1.5"/><path d="M3.5 7.75V12.5C3.5 13.6 5.51 14.5 8 14.5C10.49 14.5 12.5 13.6 12.5 12.5V7.75" stroke="currentColor" stroke-width="1.5"/><path d="M6 6.5H10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+            <span class="nav-label">Intelligence Brief</span>
+          </div>
+          <div class="nav-item" data-item="know">
+            <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.4 2.1C4.8 2.1 3.5 3.4 3.5 5c0 .4.1.7.2 1A2.9 2.9 0 0 0 2.5 8.5c0 1.3.8 2.4 2 2.8v.2c0 1.3 1 2.3 2.3 2.3.8 0 1.5-.4 1.9-1 .4.6 1.1 1 1.9 1 1.3 0 2.3-1 2.3-2.3v-.2a3 3 0 0 0 .6-5.3c.1-.3.2-.6.2-1 0-1.6-1.3-2.9-2.9-2.9-.8 0-1.6.3-2.1.9-.6-.6-1.3-.9-2.1-.9Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M8 4.2v7.2M8 7.1c-.6 0-1 .4-1 1M8 6.4c.6 0 1 .4 1 1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></span>
+            <span class="nav-label">What We Know</span>
+          </div>
+          <div class="nav-item" data-item="connectors">
+            <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10.5 5.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" stroke="currentColor" stroke-width="1.2"/><path d="M5.5 14.5a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" stroke="currentColor" stroke-width="1.2"/><path d="M8.5 3.5H6a2.5 2.5 0 0 0 0 5h4a2.5 2.5 0 0 1 0 5H7.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></span>
+            <span class="nav-label">Connectors</span>
+          </div>
+          <div class="nav-item" data-item="agent">
+            <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 14c0-2.76 2.24-5 5-5s5 2.24 5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M11.5 8.5l1.5 1.5-1.5 1.5" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            <span class="nav-label">Ask SelfAudit</span>
+          </div>
+        </nav>
+        <div class="bottom-stack">
+          <div class="bottom-item" data-item="billing">
+            <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 5.5A2.5 2.5 0 1 0 8 10.5A2.5 2.5 0 1 0 8 5.5Z" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.75V3.25M8 12.75V14.25M12.45 3.55L11.39 4.61M4.61 11.39L3.55 12.45M14.25 8H12.75M3.25 8H1.75M12.45 12.45L11.39 11.39M4.61 4.61L3.55 3.55" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+            <span class="nav-label">Billing</span>
+          </div>
+          <div class="account" data-item="account">
+            <div class="avatar">SV</div>
+            <span class="nav-label">Account</span>
+          </div>
+        </div>
+      </aside>
+
+      <section class="content">
+        <header class="topbar" id="topbar">
+          <div class="brand">
+            <div class="logo">self<span>audit</span></div>
+            <div class="crumb">/ command centre</div>
+          </div>
+          <div class="actions">
+            <button class="action-btn">◐ Theme</button>
+            <button class="action-btn">Alerts <span class="count">3</span></button>
+            <button class="action-btn">diagnose a problem</button>
+            <button class="action-btn primary">map a goal</button>
+          </div>
+        </header>
+
+        <main class="main">
+          <div class="cards">
+            <div class="card" data-card="health">
+              <div class="eyebrow">Business health</div>
+            </div>
+            <div class="card" data-card="issues">
+              <div class="eyebrow">Open issues</div>
+            </div>
+            <div class="card" data-card="opps">
+              <div class="eyebrow">AI opportunities</div>
+            </div>
+            <div class="card" data-card="digest">
+              <div class="eyebrow">Weekly digest & alerts</div>
+            </div>
+          </div>
+
+          <div class="followup" data-card="followup">
+            <div>
+              <div class="eyebrow">Founder follow-up</div>
+              <div class="followup-title">What changed since your May 15 audit?</div>
+              <div class="followup-copy">Tell SelfAudit what actually moved, what improved, and what is still stuck so the next digest and alerts use founder-confirmed facts.</div>
+            </div>
+            <div class="followup-actions">
+              <button class="ghost-btn">Later</button>
+              <button class="primary-mini">Add update</button>
+            </div>
+          </div>
+
+          <div class="recommended" data-card="recommended">
+            <div class="recommended-top">
+              <div>
+                <div class="eyebrow" style="color: var(--accent-text);">Recommended move</div>
+                <div style="font-size: 18px; color: var(--text-soft);">SelfAudit’s strongest next move from your audit findings.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="zero-state" id="zeroState">
+            <div class="zero-card">
+              <h2 class="zero-title">SelfAudit doesn’t know your business yet.</h2>
+              <p class="zero-copy">That changes after your first audit.</p>
+            </div>
+          </div>
+        </main>
+      </section>
+    </div>
+
+    <div class="welcome-layer" id="welcomeLayer">
+      <div class="welcome-copy">
+        <h1 class="welcome-title">Welcome to SelfAudit</h1>
+      </div>
+    </div>
+
+    <div class="sequence-layer" id="sequenceLayer">
+      <svg id="arrowSvg" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;">
+        <defs>
+          <marker id="arrowHead" markerWidth="11" markerHeight="8" refX="10" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+            <path d="M 0 0 L 10 4 L 0 8 Z" fill="#DCB878" opacity="0.82"/>
+          </marker>
+        </defs>
+      </svg>
+      <div class="nav-callout-layer" id="navCalloutLayer"></div>
+      <div class="statement" id="statement">
+        <span class="line" id="statementLine"></span>
+      </div>
+    </div>
+
+    <div class="demo-controls">
+      <button class="demo-btn" id="restartBtn">Restart demo</button>
+    </div>
+  </div>
+
+  <script>
+    const welcomeLayer = document.getElementById('welcomeLayer');
+    const sequenceLayer = document.getElementById('sequenceLayer');
+    const navCalloutLayer = document.getElementById('navCalloutLayer');
+    const arrowSvg = document.getElementById('arrowSvg');
+    const chrome = document.getElementById('chrome');
+    const topbar = document.getElementById('topbar');
+    const statement = document.getElementById('statement');
+    const statementLine = document.getElementById('statementLine');
+    const restartBtn = document.getElementById('restartBtn');
+
+    const navSequence = [
+      {
+        selector: '[data-item="home"]',
+        text: 'This is your <span class="highlight">command centre</span>.',
+        calloutTop: 246
+      },
+      {
+        selector: '[data-item="reports"]',
+        text: '<span class="highlight">Reports</span> — Every audit, stored. Nothing forgotten.',
+        calloutTop: 306
+      },
+      {
+        selector: '[data-item="brief"]',
+        text: '<span class="highlight">Intelligence Brief</span> — What matters right now, always at hand.',
+        calloutTop: 366
+      },
+      {
+        selector: '[data-item="know"]',
+        text: '<span class="highlight">What We Know</span> — Everything SelfAudit knows about your business.',
+        calloutTop: 426
+      },
+      {
+        selector: '[data-item="connectors"]',
+        text: '<span class="highlight">Connectors</span> — Real data, not self-reported.',
+        calloutTop: 486
+      },
+      {
+        selector: '[data-item="agent"]',
+        text: '<span class="highlight">Ask SelfAudit</span> investigates before answering.',
+        calloutTop: 546
+      },
+      {
+        selector: '[data-item="billing"]',
+        text: '<span class="highlight">Billing</span> manages your plan.',
+        calloutTop: 760
+      },
+      {
+        selector: '[data-item="account"]',
+        text: '<span class="highlight">Account</span> controls your workspace.',
+        calloutTop: 824
+      }
+    ];
+
+    const cardSequence = [
+      {
+        selector: '[data-card="health"]',
+        text: 'Your score, updated after every audit.',
+        panel: { x: 1070, y: 516 }
+      },
+      {
+        selector: '[data-card="issues"]',
+        text: 'What\'s still unresolved.',
+        panel: { x: 1070, y: 516 }
+      },
+      {
+        selector: '[data-card="opps"]',
+        text: 'Where AI moves the needle for you.',
+        panel: { x: 1070, y: 516 }
+      },
+      {
+        selector: '[data-card="digest"]',
+        text: 'What changed since your last audit.',
+        panel: { x: 1070, y: 516 }
+      },
+    ];
+
+    const recommendedSequence = [
+      {
+        selector: '[data-card="recommended"]',
+        text: 'The one thing to do this week.',
+        panel: { x: 980, y: 624 }
+      }
+    ];
+
+    let stage = 'welcome';
+    let typingTimer = null;
+    let sequenceTimer = null;
+
+    function clearTimers() {
+      if (typingTimer) clearTimeout(typingTimer);
+      if (sequenceTimer) clearTimeout(sequenceTimer);
+      typingTimer = null;
+      sequenceTimer = null;
+    }
+
+    function resetElements() {
+      document.querySelectorAll('.nav-item, .bottom-item, .account, .card, .followup, .recommended').forEach((el) => {
+        el.classList.remove('visible', 'active');
+      });
+      const home = document.querySelector('[data-item="home"]');
+      if (home) home.classList.add('active');
+      topbar.classList.remove('visible');
+      chrome.classList.remove('sidebar-open', 'zeroed');
+      navCalloutLayer.innerHTML = '';
+      arrowSvg.querySelectorAll('path').forEach(p => p.remove());
+      statement.classList.remove('visible');
+      statement.classList.remove('tail-left');
+      statement.classList.remove('center-x');
+      statementLine.innerHTML = '';
+    }
+
+    function typeHtmlInto(target, html, done, speed = 26) {
+      target.innerHTML = '';
+      const tmp = document.createElement('div');
+      tmp.innerHTML = html;
+      const finalHtml = tmp.innerHTML;
+      let i = 0;
+
+      function step() {
+        i += 1;
+        target.innerHTML = finalHtml.slice(0, i);
+        if (i < finalHtml.length) {
+          typingTimer = setTimeout(step, speed);
+        } else {
+          done();
+        }
+      }
+
+      step();
+    }
+
+    function getOffsetInFrame(el) {
+      const frame = document.getElementById('frame');
+      let top = 0, left = 0;
+      let cur = el;
+      while (cur && cur !== frame) {
+        top += cur.offsetTop;
+        left += cur.offsetLeft;
+        cur = cur.offsetParent;
+      }
+      return { top, left, width: el.offsetWidth, height: el.offsetHeight };
+    }
+
+    function drawNavArrow(targetEl, centerY, calloutX) {
+      const { left: navLeft, width: navWidth } = getOffsetInFrame(targetEl);
+
+      const sx = calloutX - 10;
+      const sy = centerY - 5;
+      const ex = navLeft + navWidth - 10;
+      const ey = centerY;
+
+      const cp1x = sx - 20;
+      const cp1y = sy - 22;
+      const cp2x = ex + 26;
+      const cp2y = ey - 18;
+
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', `M ${sx} ${sy} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${ex} ${ey}`);
+      path.setAttribute('stroke', '#DCB878');
+      path.setAttribute('stroke-opacity', '0.65');
+      path.setAttribute('stroke-width', '1.6');
+      path.setAttribute('fill', 'none');
+      path.setAttribute('stroke-linecap', 'round');
+      path.setAttribute('marker-end', 'url(#arrowHead)');
+      arrowSvg.appendChild(path);
+
+      const len = path.getTotalLength();
+      path.style.strokeDasharray = `${len}`;
+      path.style.strokeDashoffset = `${len}`;
+
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        path.style.transition = 'stroke-dashoffset 0.5s cubic-bezier(.4,0,.2,1)';
+        path.style.strokeDashoffset = '0';
+      }));
+    }
+
+    function appendNavLine(item, done) {
+      const target = document.querySelector(item.selector);
+      const line = document.createElement('div');
+      line.className = 'nav-callout';
+
+      if (target) {
+        const { top, height } = getOffsetInFrame(target);
+        const centerY = top + height / 2;
+        const sidebar = document.querySelector('.sidebar');
+        const calloutX = sidebar.offsetWidth + 36;
+        line.style.top = `${centerY}px`;
+        line.style.left = `${calloutX}px`;
+        navCalloutLayer.appendChild(line);
+        requestAnimationFrame(() => line.classList.add('visible'));
+        typeHtmlInto(line, item.text, () => {
+          drawNavArrow(target, centerY, calloutX);
+          done();
+        }, 28);
+      } else {
+        navCalloutLayer.appendChild(line);
+        requestAnimationFrame(() => line.classList.add('visible'));
+        typeHtmlInto(line, item.text, done, 28);
+      }
+    }
+
+    function positionStatement(item, options = {}) {
+      const { tail = true, cardsBand = false } = options;
+      const target = document.querySelector(item.selector);
+      statement.classList.remove('tail-left', 'center-x');
+      statement.classList.toggle('cards-band', cardsBand);
+
+      if (target) {
+        const { top, left, width, height } = getOffsetInFrame(target);
+        if (cardsBand) {
+          statement.style.left = `${left + width / 2}px`;
+          statement.style.top = `${top + height + 18}px`;
+          statement.classList.add('center-x');
+        } else {
+          statement.style.left = `${left + width / 2}px`;
+          statement.style.top = `${top + 36}px`;
+          statement.classList.add('center-x');
+        }
+      } else {
+        statement.style.left = `${item.panel?.x ?? 800}px`;
+        statement.style.top = `${item.panel?.y ?? 400}px`;
+      }
+      if (tail) statement.classList.add('tail-left');
+    }
+
+    function runSequence(items, callback, options = {}) {
+      const {
+        accumulate = false,
+        hold = 1200,
+        speed = 26
+      } = options;
+      let i = 0;
+
+      function next() {
+        if (i >= items.length) {
+          callback();
+          return;
+        }
+
+        const item = items[i];
+        const target = document.querySelector(item.selector);
+        if (target) target.classList.add('visible', 'active');
+        const finishTyping = () => {
+          sequenceTimer = setTimeout(() => {
+            if (target && item.selector !== '[data-item="home"]') target.classList.remove('active');
+            i += 1;
+            next();
+          }, hold);
+        };
+
+        if (accumulate) {
+          appendNavLine(item, finishTyping);
+        } else {
+          positionStatement(item, {
+            tail: options.tail ?? true,
+            cardsBand: options.cardsBand ?? false
+          });
+          statement.classList.add('visible');
+          typeHtmlInto(statementLine, item.text, finishTyping, speed);
+        }
+      }
+
+      next();
+    }
+
+    function startNavSequence() {
+      stage = 'nav-sequence';
+      welcomeLayer.classList.add('hidden');
+      chrome.classList.remove('zeroed');
+      sequenceLayer.classList.remove('hidden');
+      topbar.classList.add('visible');
+      chrome.classList.add('sidebar-open');
+      sequenceTimer = setTimeout(() => {
+        runSequence(navSequence, () => {
+          stage = 'nav-wait';
+        }, {
+          accumulate: true,
+          hold: 1580,
+          speed: 30
+        });
+      }, 540);
+    }
+
+    function clearStatement() {
+      statement.classList.remove('visible', 'tail-left', 'cards-band', 'center-x');
+    }
+
+    function startCardSequence() {
+      stage = 'card-sequence';
+      navCalloutLayer.innerHTML = '';
+      arrowSvg.querySelectorAll('path').forEach(p => p.remove());
+      clearStatement();
+      sequenceTimer = setTimeout(() => {
+        runSequence(cardSequence, () => {
+          stage = 'cards-wait';
+          clearStatement();
+        }, {
+          accumulate: false,
+          hold: 1550,
+          speed: 28,
+          tail: false,
+          cardsBand: true
+        });
+      }, 560);
+    }
+
+    function startRecommendedSequence() {
+      stage = 'recommended-sequence';
+      clearStatement();
+      sequenceTimer = setTimeout(() => {
+        runSequence(recommendedSequence, () => {
+          stage = 'recommended-wait';
+          clearStatement();
+        }, {
+          accumulate: false,
+          hold: 1650,
+          speed: 28,
+          tail: false,
+          cardsBand: false
+        });
+      }, 560);
+    }
+
+    function showZeroState() {
+      stage = 'done';
+      clearStatement();
+      chrome.classList.add('zeroed');
+    }
+
+    function restartDemo() {
+      clearTimers();
+      stage = 'welcome';
+      welcomeLayer.classList.remove('hidden');
+      chrome.classList.remove('zeroed');
+      sequenceLayer.classList.remove('hidden');
+      resetElements();
+    }
+
+    function handleFrameClick(event) {
+      if (event.target === restartBtn) return;
+      if (stage === 'welcome') {
+        startNavSequence();
+      } else if (stage === 'nav-wait') {
+        startCardSequence();
+      } else if (stage === 'cards-wait') {
+        startRecommendedSequence();
+      } else if (stage === 'recommended-wait') {
+        showZeroState();
+      }
+    }
+
+    document.getElementById('frame').addEventListener('click', handleFrameClick);
+    restartBtn.addEventListener('click', restartDemo);
+    restartDemo();
+  </script>
+</body>
+</html>
