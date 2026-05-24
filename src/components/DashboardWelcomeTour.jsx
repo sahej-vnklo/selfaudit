@@ -33,6 +33,24 @@ function createScopedStyles() {
       display: none !important;
     }
 
+    .nav-callout,
+    .statement {
+      font-family: Georgia, "Times New Roman", serif;
+      font-style: italic;
+      letter-spacing: -0.01em;
+    }
+
+    .nav-callout {
+      font-size: 18px;
+      line-height: 1.45;
+    }
+
+    .statement {
+      font-size: 24px;
+      line-height: 1.45;
+      max-width: 560px;
+    }
+
     .click-hint {
       position: absolute;
       right: 24px;
