@@ -32,6 +32,31 @@ function createScopedStyles() {
     .demo-controls {
       display: none !important;
     }
+
+    .click-hint {
+      position: absolute;
+      right: 24px;
+      bottom: 22px;
+      z-index: 35;
+      min-height: 42px;
+      padding: 0 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(159, 181, 235, 0.16);
+      background: rgba(10, 16, 29, 0.8);
+      color: var(--text-soft);
+      font-size: 14px;
+      display: inline-flex;
+      align-items: center;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.24);
+      transition: opacity 0.22s ease, transform 0.22s ease;
+    }
+
+    .click-hint.hidden {
+      opacity: 0;
+      transform: translateY(8px);
+      pointer-events: none;
+    }
   `
 }
 
@@ -61,7 +86,10 @@ export default function DashboardWelcomeTour({ onComplete }) {
     const mount = document.createElement('div')
     mount.innerHTML = content
 
-    root.append(fontPreconnect, fontStylesheet, style, mount)
+    const clickHint = document.createElement('div')
+    clickHint.className = 'click-hint hidden'
+
+    root.append(fontPreconnect, fontStylesheet, style, mount, clickHint)
 
     const welcomeLayer = root.getElementById('welcomeLayer')
     const sequenceLayer = root.getElementById('sequenceLayer')
@@ -252,6 +280,16 @@ export default function DashboardWelcomeTour({ onComplete }) {
       statement.classList.remove('visible', 'tail-left', 'cards-band', 'center-x')
     }
 
+    const setClickHint = (text = '') => {
+      if (!text) {
+        clickHint.textContent = ''
+        clickHint.classList.add('hidden')
+        return
+      }
+      clickHint.textContent = text
+      clickHint.classList.remove('hidden')
+    }
+
     const runSequence = (items, callback, options = {}) => {
       const { accumulate = false, hold = 1200, speed = 26 } = options
       let index = 0
@@ -291,6 +329,7 @@ export default function DashboardWelcomeTour({ onComplete }) {
 
     const startNavSequence = () => {
       stage = 'nav-sequence'
+      setClickHint('')
       welcomeLayer.classList.add('hidden')
       chrome.classList.remove('zeroed')
       sequenceLayer.classList.remove('hidden')
@@ -299,6 +338,7 @@ export default function DashboardWelcomeTour({ onComplete }) {
       sequenceTimer = window.setTimeout(() => {
         runSequence(navSequence, () => {
           stage = 'nav-wait'
+          setClickHint('Click anywhere to continue')
         }, {
           accumulate: true,
           hold: 1580,
@@ -309,6 +349,7 @@ export default function DashboardWelcomeTour({ onComplete }) {
 
     const startCardSequence = () => {
       stage = 'card-sequence'
+      setClickHint('')
       navCalloutLayer.innerHTML = ''
       arrowSvg.querySelectorAll('path').forEach((p) => p.remove())
       clearStatement()
@@ -316,6 +357,7 @@ export default function DashboardWelcomeTour({ onComplete }) {
         runSequence(cardSequence, () => {
           stage = 'cards-wait'
           clearStatement()
+          setClickHint('Click anywhere to continue')
         }, {
           accumulate: false,
           hold: 1550,
@@ -328,11 +370,13 @@ export default function DashboardWelcomeTour({ onComplete }) {
 
     const startRecommendedSequence = () => {
       stage = 'recommended-sequence'
+      setClickHint('')
       clearStatement()
       sequenceTimer = window.setTimeout(() => {
         runSequence(recommendedSequence, () => {
           stage = 'recommended-wait'
           clearStatement()
+          setClickHint('Click anywhere to continue')
         }, {
           accumulate: false,
           hold: 1650,
@@ -347,6 +391,7 @@ export default function DashboardWelcomeTour({ onComplete }) {
       stage = 'done'
       clearStatement()
       chrome.classList.add('zeroed')
+      setClickHint('Click anywhere to enter dashboard')
     }
 
     const finishTour = () => {
@@ -359,6 +404,7 @@ export default function DashboardWelcomeTour({ onComplete }) {
       cleanupTimers()
       completionTriggeredRef.current = false
       stage = 'welcome'
+      setClickHint('Click anywhere to begin')
       welcomeLayer.classList.remove('hidden')
       chrome.classList.remove('zeroed')
       sequenceLayer.classList.remove('hidden')

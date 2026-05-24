@@ -7,6 +7,7 @@ import Report from './components/Report.jsx'
 import Login from './components/auth/Login.jsx'
 import Signup from './components/auth/Signup.jsx'
 import Dashboard from './components/Dashboard.jsx'
+import DashboardWelcomeTour from './components/DashboardWelcomeTour.jsx'
 import AdminDashboard from './pages/AdminDashboard.jsx'
 import TermsPage from './components/TermsPage.jsx'
 
@@ -20,6 +21,7 @@ const SCREENS = {
   LOGIN:               'login',
   SIGNUP:              'signup',
   DASHBOARD:           'dashboard',
+  TOUR_PREVIEW:        'tour-preview',
   ADMIN:               'admin',
   TERMS:               'terms',
 }
@@ -27,6 +29,7 @@ const SCREENS = {
 const HASH_SCREENS = new Set([
   SCREENS.LOGIN, SCREENS.SIGNUP,
   SCREENS.DASHBOARD,
+  SCREENS.TOUR_PREVIEW,
   SCREENS.ADMIN, SCREENS.TERMS,
 ])
 
@@ -116,6 +119,7 @@ function screenFromHash(isAuthenticated = false) {
   if (section === 'login')              return SCREENS.LOGIN
   if (section === 'signup')             return SCREENS.SIGNUP
   if (section === 'dashboard')          return SCREENS.DASHBOARD
+  if (section === 'tour-preview')       return SCREENS.TOUR_PREVIEW
   if (section === 'admin')              return SCREENS.ADMIN
   if (section === 'terms')              return SCREENS.TERMS
   // Dashboard section hashes (#billing, #reports, etc.) must not exit the dashboard
@@ -523,6 +527,10 @@ export default function App() {
       session={session}
       onUnauthorized={() => navigate(SCREENS.LANDING)}
     />
+  }
+
+  if (screen === SCREENS.TOUR_PREVIEW) {
+    return <DashboardWelcomeTour onComplete={() => {}} />
   }
 
   if (screen === SCREENS.TERMS) {
