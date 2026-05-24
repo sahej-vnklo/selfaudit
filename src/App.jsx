@@ -11,6 +11,7 @@ import AdminDashboard from './pages/AdminDashboard.jsx'
 import TermsPage from './components/TermsPage.jsx'
 
 const PENDING_AUTH_INTENT_KEY = 'sa-auth-intent'
+const PENDING_CHECKOUT_RETURN_KEY = 'sa-checkout-return'
 
 const SCREENS = {
   LANDING:             'landing',
@@ -70,6 +71,47 @@ function clearPendingCheckoutIntent() {
   } catch (_) {}
 }
 
+function readPendingCheckoutReturn() {
+  try {
+    const pending = JSON.parse(localStorage.getItem(PENDING_CHECKOUT_RETURN_KEY) || 'null')
+    if (pending?.sessionId) return pending
+  } catch (_) {}
+  return null
+}
+
+function writePendingCheckoutReturn(payload) {
+  try {
+    localStorage.setItem(PENDING_CHECKOUT_RETURN_KEY, JSON.stringify(payload))
+  } catch (_) {}
+}
+
+function clearPendingCheckoutReturn() {
+  try {
+    localStorage.removeItem(PENDING_CHECKOUT_RETURN_KEY)
+  } catch (_) {}
+}
+
+function captureCheckoutReturnFromHash() {
+  const section = getHashSection()
+  if (section !== 'billing') return null
+  const hash = window.location.hash.replace(/^#\/?/, '')
+  const query = hash.includes('?') ? hash.slice(hash.indexOf('?') + 1) : ''
+  const params = new URLSearchParams(query)
+  const checkout = params.get('checkout')
+  const sessionId = params.get('session_id')
+  const plan = params.get('plan')
+
+  if (checkout !== 'success' || !sessionId) return null
+
+  const payload = {
+    sessionId,
+    plan: plan === 'intelligence' ? 'intelligence' : 'foundation',
+    at: Date.now(),
+  }
+  writePendingCheckoutReturn(payload)
+  return payload
+}
+
 function screenFromHash(isAuthenticated = false) {
   const section = getHashSection()
   if (section === 'login')              return SCREENS.LOGIN
@@ -117,6 +159,10 @@ export default function App() {
   const theme = localStorage.getItem('sa-theme') || 'dark'
   const pendingCheckoutRef = React.useRef(false)
 
+  useEffect(() => {
+    captureCheckoutReturnFromHash()
+  }, [])
+
   // ── navigate: defined early so effects can safely reference it ────────────
   const navigate = useCallback((s) => {
     setScreen(s)
@@ -160,6 +206,51 @@ export default function App() {
     } finally {
       pendingCheckoutRef.current = false
     }
+  }, [])
+
+  const maybeFinishCheckoutReturn = useCallback(async (session) => {
+    const pending = captureCheckoutReturnFromHash() || readPendingCheckoutReturn()
+    if (!pending?.sessionId || !session?.user?.id || !session?.access_token) return 'noop'
+
+    setScreen(SCREENS.DASHBOARD)
+    if (getHashSection() !== 'billing') {
+      window.location.hash = 'billing'
+    }
+
+    try {
+      for (let attempt = 0; attempt < 8; attempt += 1) {
+        const response = await fetch('/api/checkout-session-status', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            userId: session.user.id,
+            sessionId: pending.sessionId,
+          }),
+        })
+
+        const data = await response.json().catch(() => ({}))
+        if (!response.ok) {
+          console.warn('[auth] checkout return verify failed:', data?.error || 'unknown error')
+          return 'pending'
+        }
+
+        if (data?.ready) {
+          clearPendingCheckoutReturn()
+          history.replaceState({ section: 'home' }, '', '#home')
+          setScreen(SCREENS.DASHBOARD)
+          return 'activated'
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 1200))
+      }
+    } catch (error) {
+      console.warn('[auth] checkout return verify threw:', error?.message ?? error)
+    }
+
+    return 'pending'
   }, [])
 
   // ── Respond to history changes (back/forward, logo clicks) ────────────────
@@ -223,6 +314,17 @@ export default function App() {
         if (data?.session) {
           syncScreenForAuthenticatedHash(setScreen)
 
+          const checkoutReturnResult = await maybeFinishCheckoutReturn(data.session)
+          if (checkoutReturnResult === 'activated') {
+            setAuthLoading(false)
+            return
+          }
+          if (checkoutReturnResult === 'pending') {
+            setAuthLoading(false)
+            setScreen(SCREENS.DASHBOARD)
+            return
+          }
+
           // If the user clicked Google on the Login page, check they have an active plan
           // before letting them in. This runs on the OAuth redirect path (page reload),
           // so it must be here — onAuthStateChange fires too late.
@@ -269,6 +371,17 @@ export default function App() {
           }
 
           if (session && event === 'SIGNED_IN') {
+            const checkoutReturnResult = await maybeFinishCheckoutReturn(session)
+            if (checkoutReturnResult === 'activated') {
+              setAuthLoading(false)
+              return
+            }
+            if (checkoutReturnResult === 'pending') {
+              setAuthLoading(false)
+              setScreen(SCREENS.DASHBOARD)
+              return
+            }
+
             // If the user clicked Google on the Login page but has no existing account,
             // sign them out and redirect to signup instead of landing them in the dashboard.
             const loginIntent = localStorage.getItem('sa-oauth-login-intent')
@@ -319,7 +432,7 @@ export default function App() {
       clearTimeout(authTimeout)
       subscription?.unsubscribe()
     }
-  }, [maybeStartPendingCheckout, navigate])
+  }, [maybeFinishCheckoutReturn, maybeStartPendingCheckout, navigate])
 
   // ── Existing audit flow handlers ──────────────────────────────────────────
   const handleAuditStart = (problem) => {

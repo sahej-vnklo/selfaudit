@@ -11,6 +11,15 @@ function getServiceSupabase() {
   )
 }
 
+function tierFromPriceId(priceId) {
+  if (!priceId) return null
+  const foundationPrice = process.env.STRIPE_PRICE_FOUNDATION || process.env.STRIPE_PRICE_ESSENTIAL
+  const intelligencePrice = process.env.STRIPE_PRICE_INTELLIGENCE || process.env.STRIPE_PRICE_BUSINESS
+  if (priceId === foundationPrice) return 'foundation'
+  if (priceId === intelligencePrice) return 'intelligence'
+  return null
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
@@ -31,30 +40,40 @@ export default async function handler(req, res) {
 
   try {
     const stripe = new Stripe(secretKey, { apiVersion: '2023-10-16' })
-    const session = await stripe.checkout.sessions.retrieve(sessionId)
+    const session = await stripe.checkout.sessions.retrieve(sessionId, {
+      expand: ['subscription', 'line_items.data.price'],
+    })
     const checkoutUserId = session.client_reference_id || session.metadata?.userId
 
     if (checkoutUserId !== userId) {
       return res.status(403).json({ error: 'This checkout session does not belong to the current user.' })
     }
 
-    const normalizedTier = normalizeCheckoutTier(session.metadata?.tier)
-    const isReady = session.payment_status === 'paid' && session.status === 'complete' && !!session.subscription
+    const subscription = typeof session.subscription === 'object' ? session.subscription : null
+    const subscriptionId = subscription?.id || session.subscription || null
+    const subscriptionStatus = subscription?.status || null
+    const inferredTier = normalizeCheckoutTier(session.metadata?.tier)
+      || tierFromPriceId(subscription?.items?.data?.[0]?.price?.id)
+      || tierFromPriceId(session.line_items?.data?.[0]?.price?.id)
+    const isReady = session.status === 'complete'
+      && !!subscriptionId
+      && ['active', 'trialing'].includes(subscriptionStatus || '')
 
     if (!isReady) {
       return res.status(200).json({
         ready: false,
         status: session.status || null,
         paymentStatus: session.payment_status || null,
-        tier: normalizedTier || 'foundation',
+        subscriptionStatus,
+        tier: inferredTier || 'foundation',
       })
     }
 
     const supabase = getServiceSupabase()
     const payload = {
-      tier: normalizedTier || 'foundation',
+      tier: inferredTier || 'foundation',
       stripe_customer_id: session.customer || null,
-      stripe_subscription_id: session.subscription || null,
+      stripe_subscription_id: subscriptionId,
     }
 
     const { error } = await supabase
@@ -71,6 +90,7 @@ export default async function handler(req, res) {
       tier: payload.tier,
       stripeCustomerId: payload.stripe_customer_id,
       stripeSubscriptionId: payload.stripe_subscription_id,
+      subscriptionStatus,
     })
   } catch (error) {
     return res.status(500).json({ error: error?.message || 'Could not verify checkout session.' })

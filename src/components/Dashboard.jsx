@@ -785,6 +785,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
   const tier = normalizeTier(profile?.tier)
   const badge = TIER_BADGE[tier] || TIER_BADGE.foundation
   const intelligenceUnlocked = tier === 'intelligence'
+  const activationLocked = requiresPayment || checkoutSyncing
 
   useEffect(() => {
     localStorage.setItem('sa-theme', theme)
@@ -1095,6 +1096,11 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
   }, [tier, user?.id])
 
   const navigateSection = (nextSection) => {
+    if (activationLocked && nextSection !== 'billing' && nextSection !== 'account') {
+      history.pushState({ section: 'billing' }, '', '#billing')
+      setSection('billing')
+      return
+    }
     history.pushState({ section: nextSection }, '', `#${nextSection}`)
     setSection(nextSection)
   }
@@ -1120,10 +1126,18 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
   }
 
   const startAudit = () => {
+    if (activationLocked) {
+      navigateSection('billing')
+      return
+    }
     ensureScopeThen((scope) => onStartAudit({ ...baseAuditInfo(), ...scope }))
   }
 
   const startGoalAudit = (goalData) => {
+    if (activationLocked) {
+      navigateSection('billing')
+      return
+    }
     ensureScopeThen((scope) => onStartAudit({ ...baseAuditInfo(), ...scope, goalMode: true, ...goalData }))
   }
 
@@ -1330,7 +1344,17 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
             <button type="button" style={{ ...styles.ghostButton, ...(richThemeActive ? styles.ghostButtonSharp : {}) }} onClick={startAudit}>
               diagnose a problem
             </button>
-            <button type="button" style={styles.primaryButton} onClick={() => setGoalModal(true)}>
+            <button
+              type="button"
+              style={styles.primaryButton}
+              onClick={() => {
+                if (activationLocked) {
+                  navigateSection('billing')
+                  return
+                }
+                setGoalModal(true)
+              }}
+            >
               map a goal
             </button>
           </div>
