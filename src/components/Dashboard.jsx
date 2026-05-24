@@ -3,6 +3,7 @@ import { initSupabase } from '../lib/supabase.js'
 import { PRIVACY_POLICY_URL, TERMS_HASH } from '../lib/legal.js'
 import IntelligenceBrief from './IntelligenceBrief.jsx'
 import ExecutionPanel from './ExecutionPanel.jsx'
+import DashboardWelcomeTour from './DashboardWelcomeTour.jsx'
 import {
   DARK_ACCENT,
   DARK_ACCENT_SOFT,
@@ -384,6 +385,7 @@ const LEGACY_NOTIFICATION_AREA_MAP = {
 }
 const SECTIONS = ['home', 'reports', 'intelligence', 'business-state', 'alerts', 'connectors', 'agent', 'billing', 'account']
 const INTELLIGENCE_ONLY_SECTIONS = new Set(['alerts', 'connectors', 'agent'])
+const WELCOME_TOUR_ROLLOUT_AT = Date.parse('2026-05-24T00:30:00-04:00')
 
 function normalizeTier(raw) {
   if (raw === 'intelligence') return 'intelligence'
@@ -392,6 +394,14 @@ function normalizeTier(raw) {
 
 function profileRequiresPayment(profile) {
   return !profile?.stripe_subscription_id
+}
+
+function shouldShowWelcomeTourForProfile(profile) {
+  if (!profile) return false
+  if (profile.onboarding_complete) return false
+  const createdAt = Date.parse(profile.created_at || '')
+  if (!Number.isFinite(createdAt)) return false
+  return createdAt >= WELCOME_TOUR_ROLLOUT_AT
 }
 
 function normalizeNotificationAreas(input) {
@@ -777,6 +787,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
   const [alertsLoading, setAlertsLoading] = useState(true)
   const [alertsError, setAlertsError] = useState('')
   const [updatingAlertIds, setUpdatingAlertIds] = useState({})
+  const [completingOnboarding, setCompletingOnboarding] = useState(false)
   const pendingAuditRef = useRef(null)
 
   const name = profile?.name?.trim() || user?.user_metadata?.name?.trim() || ''
@@ -786,6 +797,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
   const badge = TIER_BADGE[tier] || TIER_BADGE.foundation
   const intelligenceUnlocked = tier === 'intelligence'
   const activationLocked = requiresPayment || checkoutSyncing
+  const shouldShowWelcomeTour = !!profile && !requiresPayment && shouldShowWelcomeTourForProfile(profile)
 
   useEffect(() => {
     localStorage.setItem('sa-theme', theme)
@@ -822,7 +834,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
 
         const { data, error } = await sb
           .from('profiles')
-          .select('tier, industry, domain, context, name, phone, onboarding_complete, stripe_customer_id, stripe_subscription_id, intelligence_docs, intelligence_complete, shared_with_vnklo, shared_report_id, notification_email, last_digest_sent_at, last_digest_summary')
+          .select('tier, industry, domain, context, name, phone, onboarding_complete, created_at, stripe_customer_id, stripe_subscription_id, intelligence_docs, intelligence_complete, shared_with_vnklo, shared_report_id, notification_email, last_digest_sent_at, last_digest_summary')
           .eq('id', user.id)
           .single()
 
@@ -847,7 +859,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
           await new Promise((resolve) => setTimeout(resolve, 800))
           const retry = await sb
             .from('profiles')
-            .select('tier, industry, domain, context, name, phone, onboarding_complete, stripe_customer_id, stripe_subscription_id, intelligence_docs, intelligence_complete, shared_with_vnklo, shared_report_id, notification_email, last_digest_sent_at, last_digest_summary')
+            .select('tier, industry, domain, context, name, phone, onboarding_complete, created_at, stripe_customer_id, stripe_subscription_id, intelligence_docs, intelligence_complete, shared_with_vnklo, shared_report_id, notification_email, last_digest_sent_at, last_digest_summary')
             .eq('id', user.id)
             .single()
           if (!cancelled && retry.data) {
@@ -1234,6 +1246,37 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
         return next
       })
     }
+  }
+
+  const completeWelcomeTour = async () => {
+    if (!user?.id || completingOnboarding) return
+    setCompletingOnboarding(true)
+    try {
+      const sb = await initSupabase()
+      const { error } = await sb
+        .from('profiles')
+        .update({ onboarding_complete: true })
+        .eq('id', user.id)
+
+      if (error) throw error
+      setProfile((prev) => ({ ...(prev || {}), onboarding_complete: true }))
+      history.replaceState({ section: 'home' }, '', '#home')
+      setSection('home')
+    } catch (error) {
+      console.error('[dashboard] onboarding completion failed:', error?.message ?? error)
+    } finally {
+      setCompletingOnboarding(false)
+    }
+  }
+
+  if (shouldShowWelcomeTour) {
+    return (
+      <DashboardWelcomeTour
+        onComplete={completeWelcomeTour}
+        completing={completingOnboarding}
+        theme={theme}
+      />
+    )
   }
 
   return (

@@ -20,14 +20,13 @@ const SCREENS = {
   LOGIN:               'login',
   SIGNUP:              'signup',
   DASHBOARD:           'dashboard',
-  ACCOUNT_ONBOARDING:  'account_onboarding',
   ADMIN:               'admin',
   TERMS:               'terms',
 }
 
 const HASH_SCREENS = new Set([
   SCREENS.LOGIN, SCREENS.SIGNUP,
-  SCREENS.DASHBOARD, SCREENS.ACCOUNT_ONBOARDING,
+  SCREENS.DASHBOARD,
   SCREENS.ADMIN, SCREENS.TERMS,
 ])
 
@@ -117,7 +116,6 @@ function screenFromHash(isAuthenticated = false) {
   if (section === 'login')              return SCREENS.LOGIN
   if (section === 'signup')             return SCREENS.SIGNUP
   if (section === 'dashboard')          return SCREENS.DASHBOARD
-  if (section === 'account_onboarding') return isAuthenticated ? SCREENS.DASHBOARD : SCREENS.LOGIN
   if (section === 'admin')              return SCREENS.ADMIN
   if (section === 'terms')              return SCREENS.TERMS
   // Dashboard section hashes (#billing, #reports, etc.) must not exit the dashboard
@@ -518,12 +516,6 @@ export default function App() {
       return null
     }
     return <Signup onLogin={() => navigate(SCREENS.LOGIN)} />
-  }
-
-  if (screen === SCREENS.ACCOUNT_ONBOARDING) {
-    if (!session) { navigate(SCREENS.LOGIN); return null }
-    navigate(SCREENS.DASHBOARD)
-    return null
   }
 
   if (screen === SCREENS.ADMIN) {
