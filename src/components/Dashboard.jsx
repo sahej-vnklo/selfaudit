@@ -1577,7 +1577,22 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
   const staleReport = latestDiagnosticReport && (Date.now() - new Date(latestDiagnosticReport.created_at).getTime()) > 24 * 60 * 60 * 1000
   const alertDomain = flaggedDomains[0]
   const healthScore = latestDomains.length ? computeHealthScore(latestDomains) : null
+  const criticalIssuesCount = latestDomains.filter((domain) => domain.status === 'critical').length
   const openIssuesCount = flaggedDomains.length
+  const businessHealthStatus = healthScore === null
+    ? '—'
+    : healthScore >= 70
+      ? 'Stable'
+      : healthScore >= 45
+        ? 'Watch closely'
+        : 'Needs attention'
+  const businessHealthReason = healthScore === null
+    ? 'No recent diagnostic report'
+    : criticalIssuesCount > 0
+      ? `${criticalIssuesCount} critical ${criticalIssuesCount === 1 ? 'area needs' : 'areas need'} action`
+      : openIssuesCount > 0
+        ? `${openIssuesCount} ${openIssuesCount === 1 ? 'area needs' : 'areas need'} attention`
+        : 'All core areas look stable'
   const goalState = extractGoalState(profile, reports, businessState)
   const normalizedTier = normalizeTier(profile?.tier)
   const intelligenceUnlocked = normalizedTier === 'intelligence'
@@ -1888,8 +1903,8 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
         <KpiCard
           sharpTheme={sharpThemeActive}
           label="Business health"
-          value={reportsLoading ? '…' : healthScore ?? '—'}
-          delta={healthScore === null ? 'No recent diagnostic report' : healthScore >= 70 ? 'Stable' : healthScore >= 45 ? 'Watch closely' : 'Needs attention'}
+          value={reportsLoading ? '…' : businessHealthStatus}
+          delta={reportsLoading ? 'Reviewing your latest report' : businessHealthReason}
           tone={healthScore === null ? 'neutral' : healthScore >= 70 ? 'up' : healthScore >= 45 ? 'warn' : 'down'}
           hint={businessHealthExpanded ? 'Click to hide details' : 'Click for more'}
           onClick={() => {
