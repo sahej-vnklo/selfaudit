@@ -181,7 +181,7 @@ function SignupForm({ onLogin }) {
 
   const handleVerifyCode = async () => {
     setError(null)
-    if (!code.trim()) { setError('Enter the 6-digit code first.'); return }
+    if (!code.trim()) { setError('Enter the code first.'); return }
     setLoading(true)
     try {
       const sb = await initSupabase()
@@ -211,7 +211,7 @@ function SignupForm({ onLogin }) {
             <p style={s.eyebrow}>Check your inbox</p>
             <h2 style={s.title}>Enter your account code</h2>
             <p style={{ fontSize: 15, color: 'var(--text-soft)', lineHeight: 1.7, marginTop: 12 }}>
-              We sent a 6-digit code to <strong style={{ color: 'var(--text)' }}>{email}</strong>.
+              We sent an account code to <strong style={{ color: 'var(--text)' }}>{email}</strong>.
               Enter it here on this device to create your account, then we&apos;ll take you straight into checkout for the {selectedPlan === 'intelligence' ? 'Intelligence' : 'Foundation'} plan.
             </p>
             <CodeField value={code} onChange={setCode} onEnter={handleVerifyCode} />
@@ -349,8 +349,8 @@ function CodeField({ value, onChange, onEnter }) {
       inputMode="numeric"
       autoComplete="one-time-code"
       value={value}
-      onChange={e => onChange(e.target.value.replace(/\D/g, '').slice(0, 6))}
-      placeholder="123456"
+      onChange={e => onChange(e.target.value.replace(/\D/g, '').slice(0, 10))}
+      placeholder="Enter code"
       onKeyDown={e => e.key === 'Enter' && onEnter?.()}
     />
   )

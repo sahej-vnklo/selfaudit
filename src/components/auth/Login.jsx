@@ -157,7 +157,7 @@ export default function Login({ onSuccess, onSignup, initialMessage = '' }) {
   const handleVerifyCode = async () => {
     setError(null)
     if (!code.trim()) {
-      setError('Enter the 6-digit code first.')
+      setError('Enter the code first.')
       return
     }
     setLoading(true)
@@ -193,7 +193,7 @@ export default function Login({ onSuccess, onSignup, initialMessage = '' }) {
               <h2 style={s.title}>Enter your sign-in code</h2>
             </div>
             <p style={{ fontSize: 15, color: 'var(--text-soft)', lineHeight: 1.7, marginTop: 12 }}>
-              We sent a 6-digit code to <strong style={{ color: 'var(--text)' }}>{email}</strong>.
+              We sent a sign-in code to <strong style={{ color: 'var(--text)' }}>{email}</strong>.
               Enter it here on this device to sign in.
             </p>
             <CodeField value={code} onChange={setCode} onEnter={handleVerifyCode} />
@@ -227,7 +227,7 @@ export default function Login({ onSuccess, onSignup, initialMessage = '' }) {
           <div style={s.header}>
             <p style={s.eyebrow}>Welcome back</p>
             <h2 style={s.title}>Log in to your account</h2>
-            <p style={s.sub}>We&apos;ll email you a 6-digit code to enter on this device.</p>
+            <p style={s.sub}>We&apos;ll email you a sign-in code to enter on this device.</p>
           </div>
 
           <div style={s.authStack}>
@@ -282,8 +282,8 @@ function CodeField({ value, onChange, onEnter }) {
       inputMode="numeric"
       autoComplete="one-time-code"
       value={value}
-      onChange={e => onChange(e.target.value.replace(/\D/g, '').slice(0, 6))}
-      placeholder="123456"
+      onChange={e => onChange(e.target.value.replace(/\D/g, '').slice(0, 10))}
+      placeholder="Enter code"
       onFocus={() => setFocused(true)}
       onBlur={() => setFocused(false)}
       onKeyDown={e => e.key === 'Enter' && onEnter?.()}
