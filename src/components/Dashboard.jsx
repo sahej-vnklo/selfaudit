@@ -837,6 +837,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
           // needs to finish billing before the dashboard is fully unlocked.
           if (profileRequiresPayment(data)) {
             setRequiresPayment(true)
+            history.replaceState({ section: 'billing' }, '', '#billing')
             setSection('billing')
           } else {
             setRequiresPayment(false)
@@ -852,6 +853,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
             setProfile(retry.data)
             if (profileRequiresPayment(retry.data)) {
               setRequiresPayment(true)
+              history.replaceState({ section: 'billing' }, '', '#billing')
               setSection('billing')
             } else {
               setRequiresPayment(false)
@@ -949,7 +951,6 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
               tier: data.tier || returnPlan,
               stripe_customer_id: data.stripeCustomerId || prev?.stripe_customer_id || null,
               stripe_subscription_id: data.stripeSubscriptionId || prev?.stripe_subscription_id || null,
-              stripe_price_id: data.stripePriceId || prev?.stripe_price_id || null,
             }))
             setRequiresPayment(false)
             setBilling(null)

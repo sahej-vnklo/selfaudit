@@ -55,7 +55,6 @@ export default async function handler(req, res) {
       tier: normalizedTier || 'foundation',
       stripe_customer_id: session.customer || null,
       stripe_subscription_id: session.subscription || null,
-      stripe_price_id: session.metadata?.priceId || null,
     }
 
     const { error } = await supabase
@@ -72,7 +71,6 @@ export default async function handler(req, res) {
       tier: payload.tier,
       stripeCustomerId: payload.stripe_customer_id,
       stripeSubscriptionId: payload.stripe_subscription_id,
-      stripePriceId: payload.stripe_price_id,
     })
   } catch (error) {
     return res.status(500).json({ error: error?.message || 'Could not verify checkout session.' })

@@ -144,7 +144,6 @@ export default async function handler(req, res) {
           tier,
           stripe_customer_id:     session.customer     || null,
           stripe_subscription_id: session.subscription || null,
-          stripe_price_id:        priceId              || null,
         })
         .eq('id', userId)
 
