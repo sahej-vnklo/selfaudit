@@ -32,6 +32,11 @@ const HASH_SCREENS = new Set([
 
 const DASHBOARD_SECTION_HASHES = new Set(['home', 'reports', 'intelligence', 'business-state', 'alerts', 'connectors', 'agent', 'billing', 'account'])
 
+function getHashSection() {
+  const hash = window.location.hash.replace(/^#\/?/, '')
+  return hash.split('?')[0]
+}
+
 function readPendingCheckoutIntent() {
   try {
     const intent = JSON.parse(localStorage.getItem(PENDING_AUTH_INTENT_KEY) || 'null')
@@ -49,8 +54,7 @@ function clearPendingCheckoutIntent() {
 }
 
 function screenFromHash(isAuthenticated = false) {
-  const h = window.location.hash.replace(/^#\/?/, '')
-  const section = h.split('?')[0]
+  const section = getHashSection()
   if (section === 'login')              return SCREENS.LOGIN
   if (section === 'signup')             return SCREENS.SIGNUP
   if (section === 'dashboard')          return SCREENS.DASHBOARD
@@ -225,7 +229,7 @@ export default function App() {
             navigate(SCREENS.DASHBOARD)
             return
           }
-          const currentHash = window.location.hash.replace(/^#\/?/, '')
+          const currentHash = getHashSection()
           if (currentHash !== 'admin' && currentHash !== 'dashboard' && !DASHBOARD_SECTION_HASHES.has(currentHash)) {
             navigate(SCREENS.DASHBOARD)
           }
@@ -269,11 +273,11 @@ export default function App() {
               return
             }
             setAuthLoading(false)
-            const currentHash = window.location.hash.replace(/^#\/?/, '')
+            const currentHash = getHashSection()
             if (currentHash === 'admin') return
             // Don't navigate away from signup — let the signup flow finish writing
             // the tier and subscription before onSuccess redirects to dashboard.
-            if (currentHash === 'signup' || currentHash.startsWith('signup?')) return
+            if (currentHash === 'signup') return
             navigate(SCREENS.DASHBOARD)
           }
         })
