@@ -37,6 +37,23 @@ function getHashSection() {
   return hash.split('?')[0]
 }
 
+function syncScreenForAuthenticatedHash(setScreen) {
+  const section = getHashSection()
+  if (section === 'admin') {
+    setScreen(SCREENS.ADMIN)
+    return true
+  }
+  if (section === 'terms') {
+    setScreen(SCREENS.TERMS)
+    return true
+  }
+  if (section === 'dashboard' || DASHBOARD_SECTION_HASHES.has(section)) {
+    setScreen(SCREENS.DASHBOARD)
+    return true
+  }
+  return false
+}
+
 function readPendingCheckoutIntent() {
   try {
     const intent = JSON.parse(localStorage.getItem(PENDING_AUTH_INTENT_KEY) || 'null')
@@ -204,6 +221,8 @@ export default function App() {
         clearTimeout(authTimeout)
         setSession(data?.session ?? null)
         if (data?.session) {
+          syncScreenForAuthenticatedHash(setScreen)
+
           // If the user clicked Google on the Login page, check they have an active plan
           // before letting them in. This runs on the OAuth redirect path (page reload),
           // so it must be here — onAuthStateChange fires too late.
@@ -275,6 +294,10 @@ export default function App() {
             setAuthLoading(false)
             const currentHash = getHashSection()
             if (currentHash === 'admin') return
+            if (DASHBOARD_SECTION_HASHES.has(currentHash) || currentHash === 'dashboard') {
+              setScreen(SCREENS.DASHBOARD)
+              return
+            }
             // Don't navigate away from signup — let the signup flow finish writing
             // the tier and subscription before onSuccess redirects to dashboard.
             if (currentHash === 'signup') return
