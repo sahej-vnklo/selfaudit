@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
 import { initSupabase } from '../../lib/supabase.js'
-import { usePostHog } from '@posthog/react'
 import { PRIVACY_POLICY_URL, TERMS_HASH } from '../../lib/legal.js'
 import {
   DARK_ACCENT,
@@ -112,34 +111,13 @@ function getThemeVars(theme) {
   }
 }
 
-function ProviderButton({ icon, label, onClick, disabled }) {
-  return (
-    <button type="button" style={s.providerButton} onClick={onClick} disabled={disabled}>
-      <span style={s.providerIconWrap}>{icon}</span>
-      <span>{label}</span>
-    </button>
-  )
-}
-
-function GoogleMark() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
-      <path fill="#EA4335" d="M12 10.2v3.9h5.5c-.2 1.3-1.5 3.9-5.5 3.9-3.3 0-6-2.7-6-6s2.7-6 6-6c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 3.5 14.6 2.6 12 2.6 6.8 2.6 2.6 6.8 2.6 12S6.8 21.4 12 21.4c6.9 0 9.1-4.8 9.1-7.3 0-.5-.1-.9-.1-1.3H12z" />
-      <path fill="#4285F4" d="M21.1 12.1c0-.5-.1-.9-.1-1.3H12v3.9h5.5c-.3 1.2-1.3 2.2-2.6 2.9l3.2 2.5c1.9-1.8 3-4.4 3-8z" opacity=".001" />
-      <path fill="#FBBC05" d="M4.8 7.6l3.2 2.4C8.8 8.3 10.2 7 12 7c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 4.5 14.6 3.6 12 3.6c-3.6 0-6.7 2-8.2 4.9z" />
-      <path fill="#34A853" d="M12 20.4c2.5 0 4.7-.8 6.2-2.3l-3.2-2.5c-.9.6-2 1-3 1-2.5 0-4.7-1.7-5.5-4l-3.3 2.5c1.5 3 4.6 5.3 8.8 5.3z" />
-      <path fill="#4285F4" d="M6.5 12.6c-.2-.6-.3-1.2-.3-1.9s.1-1.3.3-1.9L3.2 6.3C2.8 7.2 2.6 8.2 2.6 9.2s.2 2 .6 2.9l3.3-2.5z" />
-    </svg>
-  )
-}
-
-
 export default function Login({ onSuccess, onSignup, initialMessage = '' }) {
   const [email, setEmail] = useState('')
+  const [code, setCode] = useState('')
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
-  const [magicLinkSent, setMagicLinkSent] = useState(false)
-  const posthog = usePostHog()
+  const [codeSent, setCodeSent] = useState(false)
+  const [otpType, setOtpType] = useState('magiclink')
   const theme = localStorage.getItem('sa-theme') || 'dark'
   const themeVars = getThemeVars(theme)
 
@@ -147,31 +125,7 @@ export default function Login({ onSuccess, onSignup, initialMessage = '' }) {
     if (initialMessage) setError(initialMessage)
   }, [initialMessage])
 
-  const handleOAuthLogin = async (provider) => {
-    setError(null)
-    setLoading(true)
-    try {
-      localStorage.setItem('sa-oauth-login-intent', '1')
-      const sb = await initSupabase()
-      const { data, error } = await sb.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo: `${window.location.origin}/`,
-        },
-      })
-      if (error) throw error
-      if (data?.url) {
-        window.location.href = data.url
-        return
-      }
-      throw new Error('Could not start social sign in.')
-    } catch (e) {
-      setError(friendlyError(e?.message || 'Could not start sign in.'))
-      setLoading(false)
-    }
-  }
-
-  const handleMagicLinkLogin = async () => {
+  const handleSendCode = async () => {
     setError(null)
     if (!email.trim()) {
       setError('Enter your email first.')
@@ -189,16 +143,41 @@ export default function Login({ onSuccess, onSignup, initialMessage = '' }) {
         }),
       })
       const data = await response.json().catch(() => ({}))
-      if (!response.ok) throw new Error(data?.error || 'Could not send sign-in link.')
-      setMagicLinkSent(true)
+      if (!response.ok) throw new Error(data?.error || 'Could not send sign-in code.')
+      setOtpType(data?.otpType || 'magiclink')
+      setCodeSent(true)
+      setCode('')
     } catch (e) {
-      setError(friendlyError(e?.message || 'Could not send magic link.'))
+      setError(friendlyError(e?.message || 'Could not send sign-in code.'))
     } finally {
       setLoading(false)
     }
   }
 
-  if (magicLinkSent) {
+  const handleVerifyCode = async () => {
+    setError(null)
+    if (!code.trim()) {
+      setError('Enter the 6-digit code first.')
+      return
+    }
+    setLoading(true)
+    try {
+      const sb = await initSupabase()
+      const { data, error: verifyError } = await sb.auth.verifyOtp({
+        email: email.trim(),
+        token: code.trim(),
+        type: otpType || 'magiclink',
+      })
+      if (verifyError) throw verifyError
+      onSuccess?.(data?.session || null)
+    } catch (e) {
+      setError(friendlyError(e?.message || 'Could not verify that code.'))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (codeSent) {
     return (
       <div style={{ ...themeVars, ...s.page }}>
         <nav style={s.nav}>
@@ -211,14 +190,19 @@ export default function Login({ onSuccess, onSignup, initialMessage = '' }) {
           <div style={s.card}>
             <div style={s.header}>
               <p style={s.eyebrow}>Check your inbox</p>
-              <h2 style={s.title}>Your sign-in link is on the way</h2>
+              <h2 style={s.title}>Enter your sign-in code</h2>
             </div>
             <p style={{ fontSize: 15, color: 'var(--text-soft)', lineHeight: 1.7, marginTop: 12 }}>
-              We sent a magic link to <strong style={{ color: 'var(--text)' }}>{email}</strong>.
-              Open it to sign in to your account.
+              We sent a 6-digit code to <strong style={{ color: 'var(--text)' }}>{email}</strong>.
+              Enter it here on this device to sign in.
             </p>
-            <button style={{ ...s.btn, marginTop: 28 }} onClick={() => setMagicLinkSent(false)}>
-              Back
+            <CodeField value={code} onChange={setCode} onEnter={handleVerifyCode} />
+            {error && <p style={{ ...s.errorMsg, marginTop: 12 }}>{error}</p>}
+            <button style={{ ...s.btn, marginTop: 20, opacity: loading ? 0.7 : 1 }} onClick={handleVerifyCode} disabled={loading}>
+              {loading ? 'Verifying…' : 'Verify code'}
+            </button>
+            <button style={s.secondaryBtn} onClick={() => { setCodeSent(false); setCode(''); setError(null) }}>
+              Use a different email
             </button>
           </div>
         </div>
@@ -243,23 +227,16 @@ export default function Login({ onSuccess, onSignup, initialMessage = '' }) {
           <div style={s.header}>
             <p style={s.eyebrow}>Welcome back</p>
             <h2 style={s.title}>Log in to your account</h2>
+            <p style={s.sub}>We&apos;ll email you a 6-digit code to enter on this device.</p>
           </div>
 
           <div style={s.authStack}>
-            <ProviderButton icon={<GoogleMark />} label="Continue with Google" onClick={() => handleOAuthLogin('google')} disabled={loading} />
-
-            <div style={s.dividerRow}>
-              <span style={s.dividerLine} />
-              <span style={s.dividerLabel}>or continue with email</span>
-              <span style={s.dividerLine} />
-            </div>
-
-            <EmailField value={email} onChange={setEmail} onEnter={handleMagicLinkLogin} />
+            <EmailField value={email} onChange={setEmail} onEnter={handleSendCode} />
 
             {error && <p style={s.errorMsg}>{error}</p>}
 
-            <button style={{ ...s.btn, opacity: loading ? 0.7 : 1 }} onClick={handleMagicLinkLogin} disabled={loading}>
-              {loading ? 'Sending…' : 'Send sign-in link'}
+            <button style={{ ...s.btn, opacity: loading ? 0.7 : 1 }} onClick={handleSendCode} disabled={loading}>
+              {loading ? 'Sending…' : 'Email me a code'}
             </button>
 
             <p style={s.switch}>
@@ -296,10 +273,29 @@ function EmailField({ value, onChange, onEnter }) {
   )
 }
 
+function CodeField({ value, onChange, onEnter }) {
+  const [focused, setFocused] = useState(false)
+  return (
+    <input
+      style={{ ...s.input, ...s.codeInput, ...(focused ? s.inputFocused : {}) }}
+      type="text"
+      inputMode="numeric"
+      autoComplete="one-time-code"
+      value={value}
+      onChange={e => onChange(e.target.value.replace(/\D/g, '').slice(0, 6))}
+      placeholder="123456"
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
+      onKeyDown={e => e.key === 'Enter' && onEnter?.()}
+    />
+  )
+}
+
 function friendlyError(msg) {
-  if (msg.includes('provider is not enabled')) return 'This sign-in method is not enabled yet in Supabase Auth.'
   if (msg.includes('Signups not allowed for otp')) return 'No account exists for that email yet.'
   if (msg.includes('No account exists for that email yet.')) return 'No account exists for that email yet.'
+  if (msg.includes('Token has expired') || msg.includes('expired')) return 'That code expired. Request a new one.'
+  if (msg.includes('Token verification failed') || msg.includes('invalid')) return 'That code is incorrect. Check it and try again.'
   return msg
 }
 
@@ -315,16 +311,14 @@ const s = {
   header: { marginBottom: '2rem' },
   eyebrow: { fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--accent)', marginBottom: 8 },
   title: { fontFamily: 'var(--serif)', fontSize: 24, fontWeight: 400, lineHeight: 1.3, color: 'var(--text)' },
+  sub: { fontSize: 14, color: 'var(--text-soft)', marginTop: 10 },
   authStack: { display: 'flex', flexDirection: 'column', gap: '0.875rem' },
-  providerButton: { width: '100%', padding: '11px 16px', borderRadius: 'var(--radius-sm)', border: '0.5px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: 14, fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 },
-  providerIconWrap: { width: 18, height: 18, display: 'grid', placeItems: 'center', flexShrink: 0 },
-  dividerRow: { display: 'flex', alignItems: 'center', gap: 10 },
-  dividerLine: { flex: 1, height: 1, background: 'var(--border)' },
-  dividerLabel: { fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-soft)', whiteSpace: 'nowrap' },
   input: { width: '100%', padding: '10px 12px', border: '0.5px solid var(--border)', borderRadius: 'var(--radius-sm)', fontSize: 14, color: 'var(--text)', background: 'var(--input-bg)', transition: 'border-color 0.15s' },
   inputFocused: { borderColor: 'var(--accent)', boxShadow: '0 0 0 3px var(--focus-ring)' },
+  codeInput: { marginTop: 18, textAlign: 'center', fontSize: 24, letterSpacing: '0.35em', fontVariantNumeric: 'tabular-nums' },
   errorMsg: { fontSize: 13, color: 'var(--error)', marginBottom: '1rem' },
   btn: { width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--accent)', color: 'var(--button-text)', fontSize: 15, fontWeight: 500, padding: '13px', borderRadius: 'var(--radius)', cursor: 'pointer', border: 'none', transition: 'background 0.15s', marginBottom: '1.25rem' },
+  secondaryBtn: { width: '100%', padding: '12px', borderRadius: 'var(--radius-sm)', border: '0.5px solid var(--border)', background: 'transparent', color: 'var(--text-soft)', fontSize: 14, fontWeight: 500, cursor: 'pointer' },
   switch: { fontSize: 13, color: 'var(--text-soft)', textAlign: 'center' },
   link: { background: 'none', border: 'none', color: 'var(--accent)', fontWeight: 500, cursor: 'pointer', fontSize: 13, padding: 0 },
   legal: { fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', lineHeight: 1.5, margin: '0.5rem 0 0' },

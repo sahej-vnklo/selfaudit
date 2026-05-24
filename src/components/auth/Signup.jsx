@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import { initSupabase } from '../../lib/supabase.js'
-import { usePostHog } from '@posthog/react'
 import { PRIVACY_POLICY_URL, TERMS_HASH } from '../../lib/legal.js'
 import {
   DARK_ACCENT,
@@ -122,28 +121,6 @@ function getThemeVars(theme) {
   }
 }
 
-function ProviderButton({ icon, label, onClick, disabled }) {
-  return (
-    <button type="button" style={s.providerButton} onClick={onClick} disabled={disabled}>
-      <span style={s.providerIconWrap}>{icon}</span>
-      <span>{label}</span>
-    </button>
-  )
-}
-
-function GoogleMark() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
-      <path fill="#EA4335" d="M12 10.2v3.9h5.5c-.2 1.3-1.5 3.9-5.5 3.9-3.3 0-6-2.7-6-6s2.7-6 6-6c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 3.5 14.6 2.6 12 2.6 6.8 2.6 2.6 6.8 2.6 12S6.8 21.4 12 21.4c6.9 0 9.1-4.8 9.1-7.3 0-.5-.1-.9-.1-1.3H12z" />
-      <path fill="#4285F4" d="M21.1 12.1c0-.5-.1-.9-.1-1.3H12v3.9h5.5c-.3 1.2-1.3 2.2-2.6 2.9l3.2 2.5c1.9-1.8 3-4.4 3-8z" opacity=".001" />
-      <path fill="#FBBC05" d="M4.8 7.6l3.2 2.4C8.8 8.3 10.2 7 12 7c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 4.5 14.6 3.6 12 3.6c-3.6 0-6.7 2-8.2 4.9z" />
-      <path fill="#34A853" d="M12 20.4c2.5 0 4.7-.8 6.2-2.3l-3.2-2.5c-.9.6-2 1-3 1-2.5 0-4.7-1.7-5.5-4l-3.3 2.5c1.5 3 4.6 5.3 8.8 5.3z" />
-      <path fill="#4285F4" d="M6.5 12.6c-.2-.6-.3-1.2-.3-1.9s.1-1.3.3-1.9L3.2 6.3C2.8 7.2 2.6 8.2 2.6 9.2s.2 2 .6 2.9l3.3-2.5z" />
-    </svg>
-  )
-}
-
-
 export default function Signup({ onLogin }) {
   return <SignupForm onLogin={onLogin} />
 }
@@ -154,6 +131,7 @@ function SignupForm({ onLogin }) {
 
   const [name,  setName]                = useState('')
   const [email, setEmail]               = useState('')
+  const [code, setCode]                 = useState('')
   const [selectedPlan, setSelectedPlan] = useState(() => {
     const hash = window.location.hash.replace(/^#\/?/, '')
     if (hash.startsWith('signup?plan=')) {
@@ -164,34 +142,14 @@ function SignupForm({ onLogin }) {
   })
   const [loading,      setLoading]      = useState(false)
   const [error,        setError]        = useState(null)
-  const [magicLinkSent, setMagicLinkSent] = useState(false)
-  const posthog = usePostHog()
+  const [codeSent, setCodeSent]         = useState(false)
+  const [otpType, setOtpType]           = useState('signup')
 
   const rememberPlanIntent = () => {
     localStorage.setItem(PENDING_AUTH_INTENT_KEY, JSON.stringify({ plan: selectedPlan, at: Date.now() }))
   }
 
-  const handleOAuthSignup = async (provider) => {
-    setError(null)
-    setLoading(true)
-    try {
-      rememberPlanIntent()
-      const sb = await initSupabase()
-      const { data, error: oauthError } = await sb.auth.signInWithOAuth({
-        provider,
-        options: { redirectTo: `${window.location.origin}/` },
-      })
-      if (oauthError) throw oauthError
-      if (data?.url) { window.location.href = data.url; return }
-      throw new Error('Could not start sign in.')
-    } catch (e) {
-      localStorage.removeItem(PENDING_AUTH_INTENT_KEY)
-      setError(friendlyError(e?.message || 'Could not start sign in.'))
-      setLoading(false)
-    }
-  }
-
-  const handleMagicLinkSignup = async () => {
+  const handleSendCode = async () => {
     setError(null)
     if (!name.trim()) { setError('Enter your name first.'); return }
     if (!email.trim()) { setError('Enter your email first.'); return }
@@ -209,17 +167,38 @@ function SignupForm({ onLogin }) {
         }),
       })
       const data = await response.json().catch(() => ({}))
-      if (!response.ok) throw new Error(data?.error || 'Could not send sign-in link.')
-      setMagicLinkSent(true)
+      if (!response.ok) throw new Error(data?.error || 'Could not send sign-in code.')
+      setOtpType(data?.otpType || 'signup')
+      setCodeSent(true)
+      setCode('')
     } catch (e) {
       localStorage.removeItem(PENDING_AUTH_INTENT_KEY)
-      setError(friendlyError(e?.message || 'Could not send sign-in link.'))
+      setError(friendlyError(e?.message || 'Could not send sign-in code.'))
     } finally {
       setLoading(false)
     }
   }
 
-  if (magicLinkSent) {
+  const handleVerifyCode = async () => {
+    setError(null)
+    if (!code.trim()) { setError('Enter the 6-digit code first.'); return }
+    setLoading(true)
+    try {
+      const sb = await initSupabase()
+      const { error: verifyError } = await sb.auth.verifyOtp({
+        email: email.trim(),
+        token: code.trim(),
+        type: otpType || 'signup',
+      })
+      if (verifyError) throw verifyError
+    } catch (e) {
+      setError(friendlyError(e?.message || 'Could not verify that code.'))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (codeSent) {
     return (
       <div style={{ ...themeVars, ...s.page }}>
         <nav style={s.nav}>
@@ -230,13 +209,18 @@ function SignupForm({ onLogin }) {
         <div style={s.wrap}>
           <div style={s.card}>
             <p style={s.eyebrow}>Check your inbox</p>
-            <h2 style={s.title}>Your sign-in link is on the way</h2>
+            <h2 style={s.title}>Enter your account code</h2>
             <p style={{ fontSize: 15, color: 'var(--text-soft)', lineHeight: 1.7, marginTop: 12 }}>
-              We sent a magic link to <strong style={{ color: 'var(--text)' }}>{email}</strong>.
-              Open it to create your account — we&apos;ll take you straight into checkout for the {selectedPlan === 'intelligence' ? 'Intelligence' : 'Foundation'} plan.
+              We sent a 6-digit code to <strong style={{ color: 'var(--text)' }}>{email}</strong>.
+              Enter it here on this device to create your account, then we&apos;ll take you straight into checkout for the {selectedPlan === 'intelligence' ? 'Intelligence' : 'Foundation'} plan.
             </p>
-            <button style={{ ...s.btn, marginTop: 28 }} onClick={onLogin}>
-              Go to login
+            <CodeField value={code} onChange={setCode} onEnter={handleVerifyCode} />
+            {error && <p style={{ ...s.errorMsg, marginTop: 12 }}>{error}</p>}
+            <button style={{ ...s.btn, marginTop: 20, opacity: loading ? 0.7 : 1 }} onClick={handleVerifyCode} disabled={loading}>
+              {loading ? 'Verifying…' : 'Create account'}
+            </button>
+            <button style={s.secondaryBtn} onClick={() => { setCodeSent(false); setCode(''); setError(null) }}>
+              Use a different email
             </button>
           </div>
         </div>
@@ -308,14 +292,6 @@ function SignupForm({ onLogin }) {
 
           {/* Auth */}
           <div style={s.authStack}>
-            <ProviderButton icon={<GoogleMark />} label="Continue with Google" onClick={() => handleOAuthSignup('google')} disabled={loading} />
-
-            <div style={s.dividerRow}>
-              <span style={s.dividerLine} />
-              <span style={s.dividerLabel}>or continue with email</span>
-              <span style={s.dividerLine} />
-            </div>
-
             <input
               style={s.input}
               type="text"
@@ -329,13 +305,13 @@ function SignupForm({ onLogin }) {
               value={email}
               onChange={e => setEmail(e.target.value)}
               placeholder="you@company.com"
-              onKeyDown={e => e.key === 'Enter' && handleMagicLinkSignup()}
+              onKeyDown={e => e.key === 'Enter' && handleSendCode()}
             />
 
             {error && <p style={s.errorMsg}>{error}</p>}
 
-            <button style={{ ...s.btn, opacity: loading ? 0.7 : 1 }} onClick={handleMagicLinkSignup} disabled={loading}>
-              {loading ? 'Sending…' : 'Send sign-in link'}
+            <button style={{ ...s.btn, opacity: loading ? 0.7 : 1 }} onClick={handleSendCode} disabled={loading}>
+              {loading ? 'Sending…' : 'Email me a code'}
             </button>
           </div>
 
@@ -360,8 +336,24 @@ const SIGNUP_PLANS = [
 function friendlyError(msg) {
   if (msg.includes('already registered')) return 'An account with this email already exists.'
   if (msg.includes('An account with this email already exists.')) return 'An account with this email already exists.'
-  if (msg.includes('provider is not enabled')) return 'This sign-in method is not enabled yet.'
+  if (msg.includes('Token has expired') || msg.includes('expired')) return 'That code expired. Request a new one.'
+  if (msg.includes('Token verification failed') || msg.includes('invalid')) return 'That code is incorrect. Check it and try again.'
   return msg
+}
+
+function CodeField({ value, onChange, onEnter }) {
+  return (
+    <input
+      style={{ ...s.input, ...s.codeInput }}
+      type="text"
+      inputMode="numeric"
+      autoComplete="one-time-code"
+      value={value}
+      onChange={e => onChange(e.target.value.replace(/\D/g, '').slice(0, 6))}
+      placeholder="123456"
+      onKeyDown={e => e.key === 'Enter' && onEnter?.()}
+    />
+  )
 }
 
 const s = {
@@ -378,14 +370,11 @@ const s = {
   title:        { fontFamily: 'var(--serif)', fontSize: 24, fontWeight: 400, lineHeight: 1.3, marginBottom: 8, color: 'var(--text)' },
   sub:          { fontSize: 14, color: 'var(--text-soft)' },
   authStack:    { display: 'flex', flexDirection: 'column', gap: '0.875rem', marginBottom: '1.5rem' },
-  dividerRow:   { display: 'flex', alignItems: 'center', gap: 10 },
-  dividerLine:  { flex: 1, height: 1, background: 'var(--border)' },
-  dividerLabel: { fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-soft)', whiteSpace: 'nowrap' },
-  providerButton: { width: '100%', padding: '11px 16px', borderRadius: 'var(--radius-sm)', border: '0.5px solid var(--border)', background: 'var(--surface)', color: 'var(--text)', fontSize: 14, fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 },
-  providerIconWrap: { width: 18, height: 18, display: 'grid', placeItems: 'center', flexShrink: 0 },
   input:        { width: '100%', padding: '10px 12px', border: '0.5px solid var(--border)', borderRadius: 'var(--radius-sm)', fontSize: 14, color: 'var(--text)', background: 'var(--input-bg)', transition: 'border-color 0.15s', boxSizing: 'border-box' },
+  codeInput:    { marginTop: 18, textAlign: 'center', fontSize: 24, letterSpacing: '0.35em', fontVariantNumeric: 'tabular-nums' },
   errorMsg:     { fontSize: 13, color: 'var(--error)', margin: 0 },
   btn:          { width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--accent)', color: 'var(--button-text)', fontSize: 15, fontWeight: 500, padding: '13px', borderRadius: 'var(--radius)', cursor: 'pointer', border: 'none', transition: 'background 0.15s' },
+  secondaryBtn: { width: '100%', marginTop: 10, padding: '12px', borderRadius: 'var(--radius-sm)', border: '0.5px solid var(--border)', background: 'transparent', color: 'var(--text-soft)', fontSize: 14, fontWeight: 500, cursor: 'pointer' },
   privacy:      { fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', lineHeight: 1.5, marginTop: '1.25rem', marginBottom: 0 },
   legalLink:    { color: 'var(--accent-text)', textDecoration: 'none', fontWeight: 500 },
 }

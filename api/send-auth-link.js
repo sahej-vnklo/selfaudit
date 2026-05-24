@@ -41,15 +41,15 @@ async function findAuthUserByEmail(email) {
   return null
 }
 
-function buildEmailHtml({ mode, name, confirmUrl }) {
+function buildEmailHtml({ mode, name, code }) {
   const firstName = String(name || '').trim().split(/\s+/)[0] || 'there'
-  const title = mode === 'signup' ? 'Finish creating your SelfAudit account' : 'Your SelfAudit sign-in link'
+  const title = mode === 'signup' ? 'Finish creating your SelfAudit account' : 'Your SelfAudit sign-in code'
   const intro = mode === 'signup'
-    ? `Hi ${firstName}, your account link is ready.`
-    : `Hi ${firstName}, here is your secure sign-in link.`
+    ? `Hi ${firstName}, your account code is ready.`
+    : `Hi ${firstName}, here is your secure sign-in code.`
   const body = mode === 'signup'
-    ? 'Click below to create your account and continue inside SelfAudit.'
-    : 'Click below to sign in to your SelfAudit account.'
+    ? 'Enter this code on the same device where you started creating your account.'
+    : 'Enter this code on the same device where you started signing in.'
 
   return `<!DOCTYPE html>
 <html>
@@ -61,9 +61,10 @@ function buildEmailHtml({ mode, name, confirmUrl }) {
       .eyebrow { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: #7c6f63; margin-bottom: 10px; }
       h1 { font-size: 28px; line-height: 1.2; margin: 0 0 14px; color: #1f2937; }
       p { font-size: 15px; line-height: 1.7; color: #4b5563; margin: 0 0 14px; }
-      .button { display: inline-block; margin-top: 10px; padding: 13px 22px; border-radius: 10px; background: #4f46e5; color: #ffffff !important; text-decoration: none; font-weight: 600; }
+      .code-wrap { margin: 18px 0 8px; padding: 18px 16px; border-radius: 14px; background: #f5f0ff; border: 1px solid #ddd6fe; text-align: center; }
+      .code-label { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: #7c6f63; margin-bottom: 8px; }
+      .code { font-size: 34px; line-height: 1; letter-spacing: 0.28em; font-weight: 700; color: #312e81; font-variant-numeric: tabular-nums; }
       .footer { margin-top: 28px; padding-top: 18px; border-top: 1px solid #ece5da; font-size: 12px; color: #8b7d70; }
-      .fallback { word-break: break-all; font-size: 12px; color: #6b7280; margin-top: 14px; }
     </style>
   </head>
   <body>
@@ -72,8 +73,10 @@ function buildEmailHtml({ mode, name, confirmUrl }) {
       <h1>${title}</h1>
       <p>${intro}</p>
       <p>${body}</p>
-      <a class="button" href="${confirmUrl}">${mode === 'signup' ? 'Create account' : 'Sign in'}</a>
-      <p class="fallback">If the button does not open, paste this link into your browser:<br>${confirmUrl}</p>
+      <div class="code-wrap">
+        <div class="code-label">Your code</div>
+        <div class="code">${code}</div>
+      </div>
       <div class="footer">This link is secure and time-sensitive. If you did not request it, you can ignore this email.</div>
     </div>
   </body>
@@ -132,35 +135,29 @@ export default async function handler(req, res) {
       return res.status(409).json({ error: 'An account with this email already exists.' })
     }
 
-    const origin = buildOrigin(req)
-    const redirectTo = `${origin}/`
-
     const { data, error } = await supabase.auth.admin.generateLink({
       type: 'magiclink',
       email,
       options: {
         data: name ? { name } : undefined,
-        redirectTo,
       },
     })
 
     if (error) throw error
 
-    const tokenHash = data?.properties?.hashed_token
+    const emailOtp = data?.properties?.email_otp
     const verificationType = data?.properties?.verification_type
-    if (!tokenHash || !verificationType) {
-      throw new Error('Could not generate auth link')
+    if (!emailOtp || !verificationType) {
+      throw new Error('Could not generate auth code')
     }
-
-    const confirmUrl = `${origin}/auth/confirm?token_hash=${encodeURIComponent(tokenHash)}&type=${encodeURIComponent(verificationType)}`
 
     await sendEmail({
       to: email,
-      subject: mode === 'signup' ? 'Create your SelfAudit account' : 'Your SelfAudit sign-in link',
-      html: buildEmailHtml({ mode, name: name || existingUser?.user_metadata?.name || email, confirmUrl }),
+      subject: mode === 'signup' ? 'Your SelfAudit account code' : 'Your SelfAudit sign-in code',
+      html: buildEmailHtml({ mode, name: name || existingUser?.user_metadata?.name || email, code: emailOtp }),
     })
 
-    return res.status(200).json({ success: true })
+    return res.status(200).json({ success: true, otpType: verificationType })
   } catch (error) {
     return res.status(500).json({ error: error.message || 'Could not send sign-in link.' })
   }
