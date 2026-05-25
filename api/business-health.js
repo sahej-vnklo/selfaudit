@@ -46,7 +46,7 @@ export default async function handler(req, res) {
   if (!await validateUserToken(req, res, userId)) return
 
   try {
-    const [brain, reportRes] = await Promise.allSettled([
+    const [brain, reportRes, healthCheckRes] = await Promise.allSettled([
       getCompanyBrain(userId),
       supabase
         .from('reports')
@@ -56,10 +56,18 @@ export default async function handler(req, res) {
         .order('created_at', { ascending: false })
         .limit(1)
         .single(),
+      supabase
+        .from('business_health_checks')
+        .select('checked_at, summary, recommended_actions, evidence, risks')
+        .eq('user_id', userId)
+        .order('checked_at', { ascending: false })
+        .limit(1)
+        .single(),
     ])
 
     const b = brain.status === 'fulfilled' ? brain.value : null
     const latestReport = reportRes.status === 'fulfilled' ? reportRes.value.data : null
+    const latestHealthCheck = healthCheckRes.status === 'fulfilled' ? healthCheckRes.value.data : null
 
     // Parse domain statuses from the latest diagnostic report
     let latestDomains = []
@@ -83,6 +91,9 @@ export default async function handler(req, res) {
     }
 
     const healthScore = b ? computeScore(b, latestDomains) : (latestDomains.length ? Math.round(latestDomains.reduce((s, d) => s + domainScore(d.status), 0) / latestDomains.length) : null)
+    const governance = latestHealthCheck?.evidence?.governance && typeof latestHealthCheck.evidence.governance === 'object'
+      ? latestHealthCheck.evidence.governance
+      : {}
 
     return res.status(200).json({
       health_score:       healthScore,
@@ -94,6 +105,17 @@ export default async function handler(req, res) {
       known_bottlenecks:  b?.repeated_blockers     ?? [],
       last_updated_at:    b?.last_synthesized_at   ?? latestReport?.created_at ?? null,
       summary:            b?.intelligence_summary  ?? null,
+      health_check_summary: latestHealthCheck?.summary ?? null,
+      health_check_actions: Array.isArray(latestHealthCheck?.recommended_actions) ? latestHealthCheck.recommended_actions : [],
+      governance_summary: governance.advice_summary || null,
+      governance_area_statuses: Array.isArray(governance.area_statuses) ? governance.area_statuses : [],
+      governance_top_diagnoses: Array.isArray(governance.top_diagnoses) ? governance.top_diagnoses : [],
+      governance_alert_candidates: Number(governance.alert_candidates || 0) || 0,
+      governance_diagnoses_count: Number(governance.diagnoses || 0) || 0,
+      governance_areas_with_signals: Number(governance.areas_with_signals || 0) || 0,
+      governance_areas_needing_attention: Number(governance.areas_needing_attention || 0) || 0,
+      governance_areas_to_watch: Number(governance.areas_to_watch || 0) || 0,
+      governance_checked_at: latestHealthCheck?.checked_at ?? null,
     })
   } catch (err) {
     console.error('[business-health]', err.message)

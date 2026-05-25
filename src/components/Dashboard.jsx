@@ -4,6 +4,7 @@ import { PRIVACY_POLICY_URL, TERMS_HASH } from '../lib/legal.js'
 import IntelligenceBrief from './IntelligenceBrief.jsx'
 import ExecutionPanel from './ExecutionPanel.jsx'
 import DashboardWelcomeTour from './DashboardWelcomeTour.jsx'
+import { OPERATIONAL_AREAS } from '../lib/governance/areaRegistry.js'
 import {
   DARK_ACCENT,
   DARK_ACCENT_SOFT,
@@ -383,8 +384,9 @@ const LEGACY_NOTIFICATION_AREA_MAP = {
   people: 'execution',
   customer_experience: 'customer_health',
 }
-const SECTIONS = ['home', 'reports', 'intelligence', 'business-state', 'alerts', 'connectors', 'agent', 'billing', 'account']
-const INTELLIGENCE_ONLY_SECTIONS = new Set(['alerts', 'connectors', 'agent'])
+const GOVERNANCE_AREA_LABELS = Object.fromEntries(OPERATIONAL_AREAS.map((area) => [area.id, area.label]))
+const SECTIONS = ['home', 'oversight', 'reports', 'intelligence', 'business-state', 'alerts', 'connectors', 'agent', 'billing', 'account']
+const INTELLIGENCE_ONLY_SECTIONS = new Set(['oversight', 'alerts', 'connectors', 'agent'])
 const WELCOME_TOUR_ROLLOUT_AT = Date.parse('2026-05-24T00:30:00-04:00')
 
 function normalizeTier(raw) {
@@ -434,6 +436,13 @@ function alertSeverityTone(value) {
 function alertStatusTone(value) {
   if (value === 'acknowledged') return { bg: G.accentLight, color: G.accentText, border: G.accent }
   return { bg: G.surface3, color: G.textSecondary, border: G.border2 }
+}
+
+function governanceStatusTone(value) {
+  if (value === 'bad') return { bg: G.redBg, color: G.redText, border: G.red, label: 'Needs attention' }
+  if (value === 'watch') return { bg: G.amberBg, color: G.amberText, border: G.amber, label: 'Watch closely' }
+  if (value === 'good') return { bg: G.greenBg, color: G.greenText, border: G.green, label: 'Stable' }
+  return { bg: G.surface3, color: G.textSecondary, border: G.border2, label: 'No signal' }
 }
 
 function alertAgeLabel(input) {
@@ -1173,6 +1182,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
 
   const sectionMeta = {
     home: '/ command centre',
+    oversight: '/ operational oversight',
     reports: '/ reports',
     intelligence: '/ Intelligence Brief',
     'business-state': '/ What We Know',
@@ -1335,6 +1345,9 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
           }
         </button>
         <SidebarButton icon={<IconHome />} active={section === 'home'} onClick={() => navigateSection('home')} label="Home" expanded={sidebarExpanded} sharpTheme={richThemeActive} />
+        {intelligenceUnlocked && (
+          <SidebarButton icon={<IconOversight />} active={section === 'oversight'} onClick={() => navigateSection('oversight')} label="Oversight" expanded={sidebarExpanded} sharpTheme={richThemeActive} />
+        )}
         <SidebarButton icon={<IconReports />} active={section === 'reports'} onClick={() => navigateSection('reports')} label="Reports" expanded={sidebarExpanded} sharpTheme={richThemeActive} />
         <SidebarButton icon={<IconIntelligence />} active={section === 'intelligence'} onClick={() => navigateSection('intelligence')} label="Intelligence Brief" expanded={sidebarExpanded} sharpTheme={richThemeActive} />
         <SidebarButton icon={<IconBrain />} active={section === 'business-state'} onClick={() => navigateSection('business-state')} label="What We Know" expanded={sidebarExpanded} sharpTheme={richThemeActive} />
@@ -1416,7 +1429,20 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
               onStartGoalAudit={() => setGoalModal(true)}
               healthIntel={healthIntel}
               theme={theme}
+              onOpenOversight={() => navigateSection('oversight')}
             />
+          )}
+
+          {section === 'oversight' && (
+            <PageShell
+              title="Operational oversight"
+              sub="Your four operating lanes, what is drifting, and what SelfAudit thinks needs attention first."
+            >
+              <OperationalOversightSection
+                intelligenceUnlocked={intelligenceUnlocked}
+                healthIntel={healthIntel}
+              />
+            </PageShell>
           )}
 
           {section === 'reports' && (
@@ -1545,7 +1571,7 @@ function PageShell({ title, sub, actions, children }) {
   )
 }
 
-function HomeSection({ user, profile, businessState, businessStateLoading, reports, reportsLoading, onStartAudit, onStartGoalAudit, healthIntel, theme }) {
+function HomeSection({ user, profile, businessState, businessStateLoading, reports, reportsLoading, onStartAudit, onStartGoalAudit, healthIntel, theme, onOpenOversight }) {
   const sharpThemeActive = theme === 'sharp' || theme === 'dark' || theme === 'light'
   const [businessHealthExpanded, setBusinessHealthExpanded] = useState(false)
   const [openIssuesExpanded, setOpenIssuesExpanded] = useState(false)
@@ -1964,6 +1990,13 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
         />
       </div>
 
+      {intelligenceUnlocked && (
+        <OperationalOversightSnapshotCard
+          healthIntel={healthIntel}
+          onOpenOversight={onOpenOversight}
+        />
+      )}
+
       {staleReport && !checkInSaved && !checkInLoading && !checkInSnoozed && (
         <div style={styles.checkInCard}>
           <div>
@@ -2172,6 +2205,118 @@ function KpiCard({ label, value, delta, tone, hint, onClick, active = false, sha
       <div style={styles.kpiValue}>{value}</div>
       <div style={{ ...styles.kpiDelta, color: toneColor }}>{delta}</div>
       {hint ? <div style={styles.kpiHint}>{hint}</div> : null}
+    </div>
+  )
+}
+
+function OperationalOversightSnapshotCard({ healthIntel, onOpenOversight }) {
+  const attention = healthIntel?.governance_areas_needing_attention ?? 0
+  const watch = healthIntel?.governance_areas_to_watch ?? 0
+  const summary = healthIntel?.governance_summary || healthIntel?.health_check_summary || 'Run monitoring to see which operating lanes need attention.'
+  const topDiagnosis = Array.isArray(healthIntel?.governance_top_diagnoses) ? healthIntel.governance_top_diagnoses[0] : null
+  const topLabel = topDiagnosis?.area_id ? (GOVERNANCE_AREA_LABELS[topDiagnosis.area_id] || topDiagnosis.area_id) : ''
+  const statusTone = attention > 0 ? governanceStatusTone('bad') : watch > 0 ? governanceStatusTone('watch') : governanceStatusTone('good')
+
+  return (
+    <div style={styles.oversightSnapshotCard}>
+      <div style={styles.oversightSnapshotTop}>
+        <div>
+          <div style={styles.panelTitle}>operational oversight</div>
+          <div style={styles.oversightSnapshotHeadline}>{statusTone.label}</div>
+          <div style={styles.oversightSnapshotSummary}>{summary}</div>
+        </div>
+        <button type="button" style={styles.oversightSnapshotButton} onClick={onOpenOversight}>
+          Open oversight
+        </button>
+      </div>
+      <div style={styles.oversightSnapshotMetaRow}>
+        <span>{healthIntel?.governance_areas_with_signals ?? 0} areas with live signals</span>
+        <span>{attention} need attention</span>
+        <span>{watch} to watch</span>
+      </div>
+      {topDiagnosis && (
+        <div style={styles.oversightSnapshotDiagnosis}>
+          <span style={{ ...styles.alertPill, background: statusTone.bg, color: statusTone.color, borderColor: statusTone.border }}>
+            {topLabel || 'Top issue'}
+          </span>
+          <span style={styles.oversightSnapshotDiagnosisText}>{topDiagnosis.title}</span>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function OperationalOversightSection({ intelligenceUnlocked, healthIntel }) {
+  if (!intelligenceUnlocked) {
+    return (
+      <PanelCard title="operational oversight">
+        <EmptyPanel message="Operational oversight is reserved for Intelligence users." />
+      </PanelCard>
+    )
+  }
+
+  const statuses = Array.isArray(healthIntel?.governance_area_statuses) ? healthIntel.governance_area_statuses : []
+  const topDiagnoses = Array.isArray(healthIntel?.governance_top_diagnoses) ? healthIntel.governance_top_diagnoses : []
+  const actions = Array.isArray(healthIntel?.health_check_actions) ? healthIntel.health_check_actions : []
+
+  return (
+    <div style={styles.oversightGrid}>
+      <PanelCard title="founder view">
+        <div style={styles.oversightFounderSummary}>
+          <div style={styles.oversightFounderHeadline}>
+            {healthIntel?.governance_summary || 'No governance summary yet.'}
+          </div>
+          <div style={styles.oversightFounderMeta}>
+            <span>{healthIntel?.governance_areas_with_signals ?? 0} areas with signals</span>
+            <span>{healthIntel?.governance_alert_candidates ?? 0} alert candidates</span>
+            <span>{healthIntel?.governance_diagnoses_count ?? 0} diagnoses</span>
+          </div>
+        </div>
+        {actions.length > 0 ? (
+          <div style={styles.oversightActionList}>
+            {actions.slice(0, 5).map((action, index) => (
+              <div key={`${index}-${action}`} style={styles.oversightActionItem}>
+                <span style={styles.oversightActionIndex}>{index + 1}</span>
+                <span>{action}</span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <EmptyPanel message="Run monitoring again to populate recommended actions." />
+        )}
+      </PanelCard>
+
+      <PanelCard title="area workspaces">
+        {statuses.length === 0 ? (
+          <EmptyPanel message="No area-level monitoring signals yet." />
+        ) : (
+          <div style={styles.oversightAreaList}>
+            {statuses.map((item) => {
+              const tone = governanceStatusTone(item.status)
+              const areaLabel = GOVERNANCE_AREA_LABELS[item.area_id] || item.area_id
+              const matchingDiagnosis = topDiagnoses.find((diag) => diag.area_id === item.area_id)
+              return (
+                <div key={item.area_id} style={styles.oversightAreaCard}>
+                  <div style={styles.oversightAreaTop}>
+                    <div>
+                      <div style={styles.oversightAreaLabel}>{areaLabel}</div>
+                      <div style={styles.oversightAreaCoverage}>
+                        {item.coverage > 0 ? `${item.coverage} live signal${item.coverage !== 1 ? 's' : ''}` : 'No live signals yet'}
+                      </div>
+                    </div>
+                    <span style={{ ...styles.alertPill, background: tone.bg, color: tone.color, borderColor: tone.border }}>
+                      {tone.label}
+                    </span>
+                  </div>
+                  <div style={styles.oversightAreaDiagnosis}>
+                    {matchingDiagnosis?.title || 'No major issue flagged right now.'}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </PanelCard>
     </div>
   )
 }
@@ -4612,6 +4757,17 @@ function IconHome() {
   )
 }
 
+function IconOversight() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <path d="M2.5 13.5V8.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+      <path d="M6.5 13.5V4.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+      <path d="M10.5 13.5V10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+      <path d="M14 13.5V6.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 function IconReports() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -5065,6 +5221,61 @@ const styles = {
     textTransform: 'uppercase',
     letterSpacing: '0.09em',
   },
+  oversightSnapshotCard: {
+    background: G.panelAlt,
+    border: `0.5px solid ${G.border}`,
+    borderRadius: 10,
+    padding: 14,
+    marginBottom: 12,
+  },
+  oversightSnapshotTop: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    gap: 18,
+    alignItems: 'flex-start',
+  },
+  oversightSnapshotHeadline: {
+    marginTop: 8,
+    fontSize: 18,
+    color: G.text,
+    lineHeight: 1.2,
+  },
+  oversightSnapshotSummary: {
+    marginTop: 8,
+    fontSize: 13,
+    color: G.textSecondary,
+    lineHeight: 1.7,
+    maxWidth: 760,
+  },
+  oversightSnapshotButton: {
+    border: `0.5px solid ${G.border2}`,
+    background: G.accent,
+    color: G.white,
+    borderRadius: 8,
+    padding: '10px 14px',
+    fontSize: 12,
+    cursor: 'pointer',
+    flexShrink: 0,
+  },
+  oversightSnapshotMetaRow: {
+    display: 'flex',
+    gap: 14,
+    flexWrap: 'wrap',
+    marginTop: 12,
+    fontSize: 11.5,
+    color: G.textFaint,
+  },
+  oversightSnapshotDiagnosis: {
+    marginTop: 12,
+    display: 'flex',
+    gap: 10,
+    alignItems: 'center',
+    flexWrap: 'wrap',
+  },
+  oversightSnapshotDiagnosisText: {
+    fontSize: 12.5,
+    color: G.textSecondary,
+  },
   checkInCard: {
     background: G.surface2,
     border: `0.5px solid ${G.border}`,
@@ -5148,6 +5359,87 @@ const styles = {
     background: 'var(--rich-hero-surface)',
     border: 'var(--rich-hero-border)',
     boxShadow: 'var(--rich-hero-inset), var(--rich-hero-shadow)',
+  },
+  oversightGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'minmax(0, 1.15fr) minmax(0, 1fr)',
+    gap: 12,
+    alignItems: 'start',
+  },
+  oversightFounderSummary: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 10,
+  },
+  oversightFounderHeadline: {
+    fontSize: 15,
+    color: G.text,
+    lineHeight: 1.7,
+  },
+  oversightFounderMeta: {
+    display: 'flex',
+    gap: 12,
+    flexWrap: 'wrap',
+    fontSize: 11.5,
+    color: G.textFaint,
+  },
+  oversightActionList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 10,
+    marginTop: 14,
+  },
+  oversightActionItem: {
+    display: 'flex',
+    gap: 10,
+    alignItems: 'flex-start',
+    fontSize: 13,
+    color: G.textSecondary,
+  },
+  oversightActionIndex: {
+    width: 20,
+    height: 20,
+    borderRadius: 999,
+    background: G.accent,
+    color: G.white,
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: 11,
+    flexShrink: 0,
+    marginTop: 1,
+  },
+  oversightAreaList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 10,
+  },
+  oversightAreaCard: {
+    border: `0.5px solid ${G.border}`,
+    borderRadius: 10,
+    padding: 12,
+    background: G.surface,
+  },
+  oversightAreaTop: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    gap: 10,
+    alignItems: 'flex-start',
+  },
+  oversightAreaLabel: {
+    fontSize: 14,
+    color: G.text,
+  },
+  oversightAreaCoverage: {
+    marginTop: 4,
+    fontSize: 11.5,
+    color: G.textFaint,
+  },
+  oversightAreaDiagnosis: {
+    marginTop: 10,
+    fontSize: 12.5,
+    color: G.textSecondary,
+    lineHeight: 1.6,
   },
   weeklyDigestCardButton: {
     width: '100%',
