@@ -4,6 +4,7 @@ import { fetchHubspotBusinessState } from '../connectors/hubspot.js'
 import { normalizeHubspotData } from '../connectors/normalize.js'
 import { runGovernanceMonitoring } from '../governance/monitoring.js'
 import { buildGovernanceAdvice } from '../governance/advice.js'
+import { enrichGovernanceWithAI } from '../governance/ai-advisor.js'
 
 function getSupabase() {
   return createClient(
@@ -473,7 +474,13 @@ export async function runBusinessHealthCheck(userId) {
   const opportunities       = buildOpportunities(brain, normalized)
   const summary             = buildSummary(allRisks, brain)
   const governanceBase      = runGovernanceMonitoring({ brain, brief, normalized, checkedAt: checked_at })
-  const governanceAdvice    = buildGovernanceAdvice(governanceBase)
+  const deterministicGovernanceAdvice = buildGovernanceAdvice(governanceBase)
+  const governanceAdvice    = await enrichGovernanceWithAI({
+    governance: governanceBase,
+    brain,
+    intelligenceBrief: brief,
+    deterministicAdvice: deterministicGovernanceAdvice,
+  })
   const governance          = {
     ...governanceBase,
     advice_summary: governanceAdvice.summary,

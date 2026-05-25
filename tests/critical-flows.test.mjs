@@ -12,6 +12,7 @@ import { normalizeGovernanceMetrics, evaluateThresholdRule } from '../api/lib/go
 import { buildAreaMetricSnapshots } from '../api/lib/governance/metric-snapshots.js'
 import { runGovernanceMonitoring } from '../api/lib/governance/monitoring.js'
 import { buildGovernanceAdvice } from '../api/lib/governance/advice.js'
+import { enrichGovernanceWithAI } from '../api/lib/governance/ai-advisor.js'
 
 test('checkout only accepts current plan names', () => {
   const env = {
@@ -309,4 +310,126 @@ test('governance advice turns findings into alert candidates and action guidance
   assert.ok(advice.recommended_actions.length > 0)
   assert.ok(advice.alert_candidates.some((item) => item.category === 'finance-accounting'))
   assert.ok(advice.alert_candidates.some((item) => item.category === 'marketing-sales'))
+})
+
+test('governance AI advisor enriches deterministic diagnoses when Claude returns valid JSON', async () => {
+  const monitoring = runGovernanceMonitoring({
+    brain: {
+      active_goal: 'Reach profitability',
+      goal_score: 35,
+      top_priorities: ['Fix onboarding', 'Tighten pricing', 'Reduce churn'],
+      repeated_blockers: ['handoff gap', 'owner unclear'],
+      watchouts: ['thin team'],
+    },
+    brief: {
+      financial: {
+        churn: 6,
+        runway: 5,
+        ltv: 900,
+        cac: 1200,
+      },
+    },
+    normalized: {
+      metrics: [
+        { key: 'open_deals', value: 2 },
+        { key: 'leads', value: 12 },
+        { key: 'sqls', value: 1 },
+      ],
+    },
+  })
+
+  const deterministicAdvice = buildGovernanceAdvice(monitoring)
+  const originalFetch = global.fetch
+  process.env.CLAUDE_API_KEY = 'test-key'
+
+  global.fetch = async () => ({
+    ok: true,
+    async json() {
+      return {
+        content: [{
+          text: JSON.stringify({
+            summary: 'Finance pressure is the main threat right now because cash and revenue efficiency are both weak.',
+            diagnoses: deterministicAdvice.diagnoses.map((item) => ({
+              areaId: item.areaId,
+              title: item.title,
+              summary: `AI summary for ${item.title}`,
+              rootCause: `AI root cause for ${item.title}`,
+              impact: `AI impact for ${item.title}`,
+              recommendation: `AI recommendation for ${item.title}`,
+            })),
+            recommended_actions: ['Protect cash now', 'Rebuild pipeline quality'],
+            alert_candidates: deterministicAdvice.alert_candidates.map((item) => ({
+              category: item.category,
+              title: item.title,
+              description: `AI description for ${item.title}`,
+              recommended_action: `AI action for ${item.title}`,
+            })),
+          }),
+        }],
+      }
+    },
+  })
+
+  try {
+    const advice = await enrichGovernanceWithAI({
+      governance: monitoring,
+      brain: { active_goal: 'Reach profitability', goal_score: 35 },
+      intelligenceBrief: { financial: { churn: 6, runway: 5 } },
+      deterministicAdvice,
+    })
+
+    assert.equal(advice.summary, 'Finance pressure is the main threat right now because cash and revenue efficiency are both weak.')
+    assert.match(advice.diagnoses[0].rootCause, /^AI root cause/)
+    assert.match(advice.diagnoses[0].recommendation, /^AI recommendation/)
+    assert.deepEqual(advice.recommended_actions, ['Protect cash now', 'Rebuild pipeline quality'])
+    assert.match(advice.alert_candidates[0].description, /^AI description/)
+  } finally {
+    global.fetch = originalFetch
+    delete process.env.CLAUDE_API_KEY
+  }
+})
+
+test('governance AI advisor falls back to deterministic output when Claude fails', async () => {
+  const monitoring = runGovernanceMonitoring({
+    brain: {
+      goal_score: 35,
+      top_priorities: ['Fix onboarding', 'Tighten pricing', 'Reduce churn'],
+      repeated_blockers: ['handoff gap', 'owner unclear'],
+    },
+    brief: {
+      financial: {
+        churn: 6,
+        runway: 5,
+      },
+    },
+    normalized: {
+      metrics: [
+        { key: 'open_deals', value: 2 },
+        { key: 'leads', value: 12 },
+        { key: 'sqls', value: 1 },
+      ],
+    },
+  })
+
+  const deterministicAdvice = buildGovernanceAdvice(monitoring)
+  const originalFetch = global.fetch
+  process.env.CLAUDE_API_KEY = 'test-key'
+
+  global.fetch = async () => {
+    throw new Error('network down')
+  }
+
+  try {
+    const advice = await enrichGovernanceWithAI({
+      governance: monitoring,
+      brain: {},
+      intelligenceBrief: {},
+      deterministicAdvice,
+    })
+
+    assert.deepEqual(advice, deterministicAdvice)
+  } finally {
+    global.fetch = originalFetch
+    delete process.env.CLAUDE_API_KEY
+  }
 })
