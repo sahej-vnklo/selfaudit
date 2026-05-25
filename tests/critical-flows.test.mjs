@@ -9,6 +9,8 @@ import { buildAccountDataExport, buildAccountExportFilename, sanitizeIntegration
 import { isIntelligencePlan, normalizePlan, VALID_PLANS } from '../api/lib/plans.js'
 import { evaluateOperationalArea, getOperationalAreaModule } from '../api/lib/governance/area-registry.js'
 import { normalizeGovernanceMetrics, evaluateThresholdRule } from '../api/lib/governance/shared/contracts.js'
+import { buildAreaMetricSnapshots } from '../api/lib/governance/metric-snapshots.js'
+import { runGovernanceMonitoring } from '../api/lib/governance/monitoring.js'
 
 test('checkout only accepts current plan names', () => {
   const env = {
@@ -175,4 +177,93 @@ test('governance area registry exposes modular area logic and default findings',
   assert.ok(managementFindings.some((finding) => finding.id === 'management-strategy:goal-progress-watch'))
   assert.ok(managementFindings.some((finding) => finding.id === 'management-strategy:priority-backlog-bad'))
   assert.ok(managementFindings.some((finding) => finding.id === 'management-strategy:followthrough-bad'))
+})
+
+test('governance metric snapshots derive area metrics from existing business sources', () => {
+  const snapshots = buildAreaMetricSnapshots({
+    brain: {
+      goal_score: 42,
+      top_priorities: ['Fix onboarding', 'Tighten pricing'],
+      repeated_blockers: ['handoff gap'],
+      watchouts: ['thin team'],
+      recent_sessions: [
+        { status: 'open' },
+        { status: 'resolved' },
+      ],
+    },
+    brief: {
+      financial: {
+        mrr: 12000,
+        churn: 4.5,
+        burn_rate: 9000,
+        runway: 8,
+        ltv: 3600,
+        cac: 1800,
+      },
+      operational: {
+        sales_cycle: 55,
+        support_tickets_per_week: 12,
+      },
+    },
+    normalized: {
+      metrics: [
+        { key: 'open_pipeline_value', value: 75000 },
+        { key: 'open_deals', value: 2 },
+        { key: 'leads', value: 20 },
+        { key: 'sqls', value: 2 },
+      ],
+    },
+  })
+
+  const finance = snapshots.find((snapshot) => snapshot.areaId === 'finance-accounting')
+  const marketing = snapshots.find((snapshot) => snapshot.areaId === 'marketing-sales')
+  const management = snapshots.find((snapshot) => snapshot.areaId === 'management-strategy')
+
+  assert.equal(finance.metricsByKey.runway_months, 8)
+  assert.equal(finance.metricsByKey.ltv_cac_ratio, 2)
+  assert.equal(marketing.metricsByKey.open_deals, 2)
+  assert.equal(marketing.metricsByKey.stage_conversion, 10)
+  assert.equal(management.metricsByKey.goal_progress, 42)
+  assert.equal(management.metricsByKey.followthrough_rate, 50)
+})
+
+test('governance monitoring turns snapshots into area statuses and findings', () => {
+  const governance = runGovernanceMonitoring({
+    brain: {
+      goal_score: 35,
+      top_priorities: ['Fix onboarding', 'Tighten pricing', 'Hire AE', 'Fix handoff', 'Reduce churn', 'Improve reporting'],
+      repeated_blockers: ['handoff gap', 'owner unclear', 'approval delay'],
+      watchouts: ['thin team'],
+      recent_sessions: [
+        { status: 'open' },
+        { status: 'unknown (not followed up)' },
+        { status: 'resolved' },
+      ],
+    },
+    brief: {
+      financial: {
+        churn: 6,
+        burn_rate: 12000,
+        runway: 5,
+        ltv: 900,
+        cac: 1200,
+      },
+      operational: {
+        sales_cycle: 60,
+      },
+    },
+    normalized: {
+      metrics: [
+        { key: 'open_deals', value: 2 },
+        { key: 'leads', value: 12 },
+        { key: 'sqls', value: 1 },
+      ],
+    },
+  })
+
+  assert.equal(governance.summary.areasWithSignals >= 3, true)
+  assert.equal(governance.summary.areasNeedingAttention >= 2, true)
+  assert.ok(governance.risks.some((risk) => risk.category === 'finance-accounting'))
+  assert.ok(governance.risks.some((risk) => risk.category === 'management-strategy'))
+  assert.ok(governance.areas.some((area) => area.areaId === 'marketing-sales' && area.status !== 'good'))
 })

@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { getCompanyBrain } from '../intelligence/company-brain.js'
 import { fetchHubspotBusinessState } from '../connectors/hubspot.js'
 import { normalizeHubspotData } from '../connectors/normalize.js'
+import { runGovernanceMonitoring } from '../governance/monitoring.js'
 
 function getSupabase() {
   return createClient(
@@ -471,6 +472,7 @@ export async function runBusinessHealthCheck(userId) {
   const opportunities       = buildOpportunities(brain, normalized)
   const summary             = buildSummary(allRisks, brain)
   const recommended_actions = allRisks.slice(0, 5).map((r) => r.recommended_action)
+  const governance          = runGovernanceMonitoring({ brain, brief, normalized, checkedAt: checked_at })
 
   const evidence = {
     connector: normalized
@@ -482,6 +484,12 @@ export async function runBusinessHealthCheck(userId) {
       blockers:   brain?.repeated_blockers?.length ?? 0,
     },
     intelligence_brief_loaded: !!brief,
+    governance: {
+      areas_with_signals: governance.summary.areasWithSignals,
+      areas_needing_attention: governance.summary.areasNeedingAttention,
+      areas_to_watch: governance.summary.areasToWatch,
+      total_findings: governance.findings.length,
+    },
   }
 
   return {
@@ -493,5 +501,6 @@ export async function runBusinessHealthCheck(userId) {
     summary,
     recommended_actions,
     evidence,
+    governance,
   }
 }
