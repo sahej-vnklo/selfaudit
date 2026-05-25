@@ -39,8 +39,11 @@ function getSupabase() {
 function mapAlertCategoryToPreference(alert) {
   const category = String(alert?.category || '').toLowerCase()
   if (category === 'pipeline' || category === 'revenue') return 'pipeline_revenue'
+  if (category === 'marketing-sales' || category === 'finance-accounting') return 'pipeline_revenue'
   if (category === 'goal') return 'goal_progress'
+  if (category === 'management-strategy') return 'goal_progress'
   if (category === 'customer') return 'customer_health'
+  if (category === 'customer-service') return 'customer_health'
   if (category === 'execution' || category === 'operations') return 'execution'
   return null
 }

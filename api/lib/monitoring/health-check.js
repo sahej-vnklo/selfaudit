@@ -3,6 +3,7 @@ import { getCompanyBrain } from '../intelligence/company-brain.js'
 import { fetchHubspotBusinessState } from '../connectors/hubspot.js'
 import { normalizeHubspotData } from '../connectors/normalize.js'
 import { runGovernanceMonitoring } from '../governance/monitoring.js'
+import { buildGovernanceAdvice } from '../governance/advice.js'
 
 function getSupabase() {
   return createClient(
@@ -471,8 +472,19 @@ export async function runBusinessHealthCheck(userId) {
   const health_score        = scoreFromRisks(allRisks)
   const opportunities       = buildOpportunities(brain, normalized)
   const summary             = buildSummary(allRisks, brain)
-  const recommended_actions = allRisks.slice(0, 5).map((r) => r.recommended_action)
-  const governance          = runGovernanceMonitoring({ brain, brief, normalized, checkedAt: checked_at })
+  const governanceBase      = runGovernanceMonitoring({ brain, brief, normalized, checkedAt: checked_at })
+  const governanceAdvice    = buildGovernanceAdvice(governanceBase)
+  const governance          = {
+    ...governanceBase,
+    advice_summary: governanceAdvice.summary,
+    diagnoses: governanceAdvice.diagnoses,
+    recommended_actions: governanceAdvice.recommended_actions,
+    alert_candidates: governanceAdvice.alert_candidates,
+  }
+  const recommended_actions = [...new Set([
+    ...allRisks.slice(0, 5).map((r) => r.recommended_action),
+    ...governance.recommended_actions,
+  ].filter(Boolean))].slice(0, 8)
 
   const evidence = {
     connector: normalized
@@ -489,6 +501,19 @@ export async function runBusinessHealthCheck(userId) {
       areas_needing_attention: governance.summary.areasNeedingAttention,
       areas_to_watch: governance.summary.areasToWatch,
       total_findings: governance.findings.length,
+      alert_candidates: governance.alert_candidates.length,
+      diagnoses: governance.diagnoses.length,
+      advice_summary: governance.advice_summary,
+      area_statuses: governance.areas.map((area) => ({
+        area_id: area.areaId,
+        status: area.status,
+        coverage: area.coverage,
+      })),
+      top_diagnoses: governance.diagnoses.slice(0, 3).map((item) => ({
+        area_id: item.areaId,
+        title: item.title,
+        severity: item.severity,
+      })),
     },
   }
 

@@ -11,6 +11,7 @@ import { evaluateOperationalArea, getOperationalAreaModule } from '../api/lib/go
 import { normalizeGovernanceMetrics, evaluateThresholdRule } from '../api/lib/governance/shared/contracts.js'
 import { buildAreaMetricSnapshots } from '../api/lib/governance/metric-snapshots.js'
 import { runGovernanceMonitoring } from '../api/lib/governance/monitoring.js'
+import { buildGovernanceAdvice } from '../api/lib/governance/advice.js'
 
 test('checkout only accepts current plan names', () => {
   const env = {
@@ -266,4 +267,46 @@ test('governance monitoring turns snapshots into area statuses and findings', ()
   assert.ok(governance.risks.some((risk) => risk.category === 'finance-accounting'))
   assert.ok(governance.risks.some((risk) => risk.category === 'management-strategy'))
   assert.ok(governance.areas.some((area) => area.areaId === 'marketing-sales' && area.status !== 'good'))
+})
+
+test('governance advice turns findings into alert candidates and action guidance', () => {
+  const monitoring = runGovernanceMonitoring({
+    brain: {
+      goal_score: 35,
+      top_priorities: ['Fix onboarding', 'Tighten pricing', 'Hire AE', 'Fix handoff', 'Reduce churn', 'Improve reporting'],
+      repeated_blockers: ['handoff gap', 'owner unclear', 'approval delay'],
+      watchouts: ['thin team'],
+      recent_sessions: [
+        { status: 'open' },
+        { status: 'unknown (not followed up)' },
+        { status: 'resolved' },
+      ],
+    },
+    brief: {
+      financial: {
+        churn: 6,
+        burn_rate: 12000,
+        runway: 5,
+        ltv: 900,
+        cac: 1200,
+      },
+      operational: {
+        sales_cycle: 60,
+      },
+    },
+    normalized: {
+      metrics: [
+        { key: 'open_deals', value: 2 },
+        { key: 'leads', value: 12 },
+        { key: 'sqls', value: 1 },
+      ],
+    },
+  })
+
+  const advice = buildGovernanceAdvice(monitoring)
+  assert.ok(advice.summary.length > 0)
+  assert.ok(advice.diagnoses.length > 0)
+  assert.ok(advice.recommended_actions.length > 0)
+  assert.ok(advice.alert_candidates.some((item) => item.category === 'finance-accounting'))
+  assert.ok(advice.alert_candidates.some((item) => item.category === 'marketing-sales'))
 })

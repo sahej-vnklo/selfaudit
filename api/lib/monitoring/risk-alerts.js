@@ -69,7 +69,12 @@ export async function createRiskAlertsFromHealthCheck(userId, healthCheck) {
   const openIndex = await loadOpenAlertIndex(sb, userId)
 
   const toInsert = []
-  for (const risk of healthCheck.risks ?? []) {
+  const alertCandidates = [
+    ...(healthCheck.risks ?? []),
+    ...(healthCheck.governance?.alert_candidates ?? []),
+  ]
+
+  for (const risk of alertCandidates) {
     if (!ALERT_SEVERITIES.has(risk.severity)) continue
 
     const key = `${risk.category}::${normaliseTitle(risk.title)}`
