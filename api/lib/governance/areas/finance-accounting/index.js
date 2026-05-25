@@ -1,0 +1,105 @@
+import { createMetricDefinition, createRulePack, createThresholdRule, evaluateRulePack } from '../../shared/contracts.js'
+
+export const FINANCE_ACCOUNTING_AREA = {
+  id: 'finance-accounting',
+  connectors: ['stripe'],
+  businessLogic: {
+    objective: 'Protect cash, margins, and unit economics so the business can keep executing without hidden financial fragility.',
+    questions: [
+      'Is the business retaining enough revenue to justify growth?',
+      'Is cash health strong enough to support the current plan?',
+      'Are unit economics healthy, or is the company scaling something fragile?',
+    ],
+  },
+  metricFamilies: [
+    createMetricDefinition({ key: 'mrr', label: 'Monthly recurring revenue', unit: 'currency', description: 'Recurring monthly revenue baseline.', preferredDirection: 'higher-is-better', defaultInterpretation: 'Revenue trend matters, but on its own MRR does not tell you whether the business is healthy.' }),
+    createMetricDefinition({ key: 'churn_rate', label: 'Churn rate', unit: 'percent', description: 'Rate at which customers or revenue are being lost.', preferredDirection: 'lower-is-better', defaultInterpretation: 'High churn means growth effort is leaking out faster than it should.' }),
+    createMetricDefinition({ key: 'burn_rate', label: 'Burn rate', unit: 'currency', description: 'Average monthly cash burn.', preferredDirection: 'lower-is-better', defaultInterpretation: 'Burn is not always bad, but it must match runway and growth reality.' }),
+    createMetricDefinition({ key: 'runway_months', label: 'Runway', unit: 'months', description: 'Estimated months before cash runs out at current burn.', preferredDirection: 'higher-is-better', defaultInterpretation: 'Short runway removes strategic choices and forces reactive decisions.' }),
+    createMetricDefinition({ key: 'ltv_cac_ratio', label: 'LTV to CAC', unit: 'ratio', description: 'Unit-economics health signal comparing customer value to acquisition cost.', preferredDirection: 'higher-is-better', defaultInterpretation: 'Weak unit economics mean the business may be scaling something that does not pay back cleanly.' }),
+  ],
+  defaultRulePack: createRulePack({
+    defaults: [
+      createThresholdRule({
+        id: 'finance-accounting:churn-watch',
+        metricKey: 'churn_rate',
+        comparator: 'gt',
+        value: 2,
+        status: 'watch',
+        severity: 'medium',
+        title: 'Churn is above a healthy line',
+        summary: 'Revenue or customer loss is starting to compound against growth.',
+        recommendation: 'Review the main churn reasons and isolate which customers are most at risk.',
+        rationale: 'Elevated churn is one of the clearest signs that operational and product issues are leaking revenue.',
+      }),
+      createThresholdRule({
+        id: 'finance-accounting:churn-bad',
+        metricKey: 'churn_rate',
+        comparator: 'gt',
+        value: 5,
+        status: 'bad',
+        severity: 'high',
+        title: 'Churn is materially high',
+        summary: 'Too much revenue is leaking out every month for healthy compounding growth.',
+        recommendation: 'Treat churn reduction as a top operating priority and run a focused retention diagnosis.',
+        rationale: 'At this level, churn is usually hiding deeper delivery, product, or fit issues.',
+      }),
+      createThresholdRule({
+        id: 'finance-accounting:runway-watch',
+        metricKey: 'runway_months',
+        comparator: 'lt',
+        value: 12,
+        status: 'watch',
+        severity: 'high',
+        title: 'Runway is getting tight',
+        summary: 'The company has less than a year of runway at the current burn.',
+        recommendation: 'Start scenario planning now rather than waiting for the business to become reactive.',
+        rationale: 'Sub-12-month runway compresses optionality and increases decision pressure.',
+      }),
+      createThresholdRule({
+        id: 'finance-accounting:runway-bad',
+        metricKey: 'runway_months',
+        comparator: 'lt',
+        value: 6,
+        status: 'bad',
+        severity: 'critical',
+        title: 'Runway is critical',
+        summary: 'The company has less than six months of runway remaining.',
+        recommendation: 'Cut non-essential spend, accelerate collections, and make immediate capital planning decisions.',
+        rationale: 'Below six months, financial fragility becomes an existential operating issue.',
+      }),
+      createThresholdRule({
+        id: 'finance-accounting:ltv-cac-watch',
+        metricKey: 'ltv_cac_ratio',
+        comparator: 'lt',
+        value: 3,
+        status: 'watch',
+        severity: 'medium',
+        title: 'Unit economics are thinner than ideal',
+        summary: 'Customer value is not outpacing acquisition cost by a healthy margin.',
+        recommendation: 'Look for the fastest path to improve retention, pricing, or acquisition efficiency.',
+        rationale: 'Below 3x LTV:CAC, scaling can create pressure faster than value.',
+      }),
+      createThresholdRule({
+        id: 'finance-accounting:ltv-cac-bad',
+        metricKey: 'ltv_cac_ratio',
+        comparator: 'lt',
+        value: 1,
+        status: 'bad',
+        severity: 'critical',
+        title: 'Unit economics are upside down',
+        summary: 'The business is spending as much or more to acquire customers than they return.',
+        recommendation: 'Pause aggressive growth spend and fix the economics before scaling further.',
+        rationale: 'This is a strong sign that growth is amplifying operational debt instead of solving it.',
+      }),
+    ],
+    notes: [
+      'Watch cash stress, weak unit economics, revenue loss, and concentration risk.',
+      'This area should answer: is the business financially healthy enough to keep executing the plan?',
+    ],
+  }),
+}
+
+export function evaluateFinanceAccountingArea(metrics) {
+  return evaluateRulePack(FINANCE_ACCOUNTING_AREA.defaultRulePack, metrics)
+}
