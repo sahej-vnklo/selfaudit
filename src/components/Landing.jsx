@@ -3633,9 +3633,15 @@ export default function Landing({ onStart, onSignUp, session }) {
             margin: 0,
             color: C.ink,
           }}>
-            <span>Your business already has tools. </span>
-            <span style={{ color: C.inkFaint }}>It does not yet have something that reads them together, remembers what matters, and decides what to do next. </span>
-            <em style={{ color: C.redMuted, fontStyle: 'italic' }}>That is the gap.</em>
+            <span>Most founders know something is off. Revenue feels stuck. The team is busy but nothing moves. Cash is tighter than the numbers suggest.</span>
+            <br />
+            <br />
+            <span>
+              That feeling has a name:
+              <span style={{ color: C.redMuted }}> operational debt</span>.
+            </span>
+            <span style={{ color: C.inkFaint }}> It&apos;s not a management failure, it&apos;s an infrastructure failure.</span>
+            <span> And it&apos;s absorbing 20-25% of your productive capacity every year.</span>
           </p>
         </div>
       </section>
