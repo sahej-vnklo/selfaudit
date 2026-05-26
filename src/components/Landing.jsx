@@ -2910,10 +2910,10 @@ function CompoundingSection({ C }) {
 
   // Chart points [x, y] in a 560×210 viewbox (y=210 = baseline)
   const pts = [
-    { x: 20,  y: 188, label: 'DAY 1'  },
-    { x: 187, y: 148, label: 'DAY 30' },
-    { x: 373, y: 92,  label: 'DAY 60' },
-    { x: 540, y: 34,  label: 'DAY 90' },
+    { x: 20,  y: 188, label: 'MONTH 1'  },
+    { x: 187, y: 148, label: 'MONTH 3' },
+    { x: 373, y: 92,  label: 'MONTH 6' },
+    { x: 540, y: 34,  label: 'MONTH 12' },
   ]
 
   // Smooth cubic bezier through the four points
@@ -2927,16 +2927,16 @@ function CompoundingSection({ C }) {
         {/* ── Left: copy ── */}
         <div>
           <div style={{ fontFamily: 'inherit', fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.inkMuted, fontWeight: 600, marginBottom: 28 }}>
-            The compounding advantage
+            The data moat
           </div>
 
           <h2 style={{ fontFamily: serif, fontSize: 'clamp(32px, 5.5vw, 78px)', fontWeight: 700, lineHeight: 1.04, letterSpacing: '-0.04em', color: C.ink, margin: '0 0 28px' }}>
             Day 1, it sees your business.<br />
-            <em style={{ fontStyle: 'italic', color: C.redMuted }}>Day 90, it sees you.</em>
+            <em style={{ fontStyle: 'italic', color: C.redMuted }}>Month 6, it sees you.</em>
           </h2>
 
           <p style={{ fontFamily: serif, fontSize: 20, color: C.inkSoft, lineHeight: 1.65, margin: '0 0 28px', maxWidth: 480 }}>
-            Most tools reset every session. The brain builds state. Every audit, every metric, every decision sharpens what it knows.
+            Most tools reset every session. The brain builds state. Every audit, every connector pull, every decision compounds into a model of your business that gets sharper every week. By month 6, your SelfAudit knows your business better than any consultant ever could.
           </p>
 
           <blockquote style={{ borderLeft: `3px solid ${C.redMuted}`, paddingLeft: 20, margin: 0 }}>
