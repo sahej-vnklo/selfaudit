@@ -3377,7 +3377,7 @@ export default function Landing({ onStart, onSignUp, session }) {
         @media(max-width:600px){ .sa-ld-meta { grid-template-columns:repeat(2,1fr); } }
 
         /* Moat comparison */
-        .sa-moat-grid { display:grid; grid-template-columns:1fr 1.15fr; gap:40px; align-items:start; }
+        .sa-moat-grid { display:grid; grid-template-columns:1fr 1fr 1.15fr; gap:40px; align-items:start; }
         @media(max-width:768px){ .sa-moat-grid { grid-template-columns:1fr; } }
 
         /* Dashboard */
@@ -3712,6 +3712,25 @@ export default function Landing({ onStart, onSignUp, session }) {
               ))}
             </div>
 
+            {/* Middle — consultant */}
+            <div>
+              <div style={{ fontFamily: 'inherit', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.inkMuted, fontWeight: 600, paddingBottom: 16, borderBottom: `1px solid ${C.border}` }}>
+                Hiring a consultant
+              </div>
+              {[
+                'Costs $400/hr before they know your business',
+                'Gone after the engagement ends',
+                'Gives you a framework built for someone else',
+                'Says "it depends"',
+                'Answers based on their last client',
+                'Tells you what you want to hear',
+              ].map(item => (
+                <div key={item} style={{ fontFamily: serif, fontSize: 19, fontStyle: 'italic', color: C.inkMuted, padding: '22px 0', borderBottom: `1px solid ${C.border}` }}>
+                  {item}
+                </div>
+              ))}
+            </div>
+
             {/* Right — SelfAudit card */}
             <div style={{ background: C.theme === 'sharp' ? C.surface3 : C.card, border: `1px solid ${C.theme === 'sharp' ? C.border2 : C.border}`, borderRadius: 14, overflow: 'hidden' }}>
               <div style={{ fontFamily: 'inherit', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.inkMuted, fontWeight: 600, padding: '20px 32px 16px', borderBottom: `1px solid ${C.border}` }}>
@@ -3721,7 +3740,7 @@ export default function Landing({ onStart, onSignUp, session }) {
                 { plain: 'Reads your ',          italic: 'actual business' },
                 { plain: 'Compounds ',           italic: 'every audit' },
                 { plain: 'Picks ',               italic: 'one move' },
-                { plain: 'Says ',                italic: '"your churn lies — here\'s why"' },
+                { plain: 'Names the specific number ', italic: 'bleeding you' },
                 { plain: 'Answers based on ',    italic: 'what\'s happening' },
                 { plain: 'Says the thing ',      italic: 'no one will tell you' },
               ].map((row, i, arr) => (
