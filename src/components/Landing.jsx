@@ -3783,20 +3783,24 @@ export default function Landing({ onStart, onSignUp, session }) {
           <div style={{ borderTop: `1px solid ${C.border}` }}>
             {[
               {
-                label: 'SUN · 11:42 PM',
-                body: <>Your CAC drifted <em style={{ fontStyle: 'italic', color: C.redMuted }}>22% this week.</em> The cause sits in last Thursday&apos;s launch. Fix is in your inbox by Monday 7 AM.</>,
+                label: '2 HOURS AGO · SIGNAL',
+                body: <>B2B SaaS · $1.2M ARR — CAC drifted <em style={{ fontStyle: 'italic', color: C.redMuted }}>22% this week</em>. The cause sits in last Thursday&apos;s launch. Fix is in your inbox.</>,
               },
               {
-                label: 'MAR · GOAL #3',
-                body: <>Quietly checked every Friday. <em style={{ fontStyle: 'italic', color: C.redMuted }}>You&apos;re three weeks behind</em> — but salvageable. Here&apos;s what to drop.</>,
+                label: 'THIS MORNING · GOAL',
+                body: <>Agency · $2.1M ARR — Goal #3 is <em style={{ fontStyle: 'italic', color: C.redMuted }}>three weeks behind pace</em>. Salvageable if you drop two items from this sprint.</>,
               },
               {
-                label: 'METRIC · CHURN',
-                body: <>It opens an investigation <em style={{ fontStyle: 'italic', color: C.redMuted }}>without being asked.</em> By the time you log in, the diagnosis is already on your dashboard.</>,
+                label: 'YESTERDAY · CHURN',
+                body: <>B2B SaaS · $1.2M ARR — Opened an investigation without being asked. Activation dropped <em style={{ fontStyle: 'italic', color: C.redMuted }}>31% after your March dashboard redesign</em>. <em style={{ fontStyle: 'italic', color: C.redMuted }}>Nobody told you.</em></>,
               },
               {
-                label: 'CONNECTOR · STRIPE',
-                body: <>Revenue cohort shape changed last week. <em style={{ fontStyle: 'italic', color: C.redMuted }}>Three reasons surfaced</em>, ranked by likelihood. Awaiting your review.</>,
+                label: '3 DAYS AGO · REVENUE',
+                body: <>Consulting · $3.4M ARR — Revenue cohort shape changed. Three causes surfaced, ranked by likelihood. Awaiting your review.</>,
+              },
+              {
+                label: 'JUST NOW · PIPELINE',
+                body: <>SaaS · $800K ARR — Two deals silent for 11 days. No follow-up logged. At your current close rate, that&apos;s <em style={{ fontStyle: 'italic', color: C.redMuted }}>$34K slipping quietly</em>.</>,
               },
             ].map(row => (
               <div key={row.label} className="sa-always-row" style={{ borderBottom: `1px solid ${C.border}` }}>
