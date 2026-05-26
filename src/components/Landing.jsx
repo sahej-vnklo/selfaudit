@@ -742,7 +742,7 @@ function GrowthOSCard({ onSignUp, C }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 10 }}>
         <div style={{ fontFamily: serif, fontSize: 29, fontWeight: 700, color: C.ink, letterSpacing: '-0.03em' }}>Intelligence</div>
         <span style={{ background: C.accentSoft, color: C.accentText, borderRadius: 999, padding: '4px 10px', fontSize: 12 }}>
-          Recommended
+          Most Popular
         </span>
       </div>
 
@@ -3177,6 +3177,7 @@ export default function Landing({ onStart, onSignUp, session }) {
   const [storiesOpen, setStoriesOpen] = useState(false)
   const [connectedOpen, setConnectedOpen] = useState(false)
   const [pricingOpen, setPricingOpen] = useState(false)
+  const [pricingAnnual, setPricingAnnual] = useState(false)
   const [inputValue, setInputValue] = useState('')
   const [placeholder, setPlaceholder] = useState('')
   const [isTyping, setIsTyping] = useState(false)
@@ -3932,11 +3933,50 @@ export default function Landing({ onStart, onSignUp, session }) {
             </p>
           </div>
 
+          <div style={{ textAlign: 'center', marginBottom: 30 }}>
+            <p style={{ fontFamily: serif, fontSize: 22, fontStyle: 'italic', color: C.ink, lineHeight: 1.6, margin: '0 0 20px' }}>
+              One hour with a consultant costs $400. SelfAudit costs $29/month. And it doesn&apos;t leave.
+            </p>
+            <div style={{ fontSize: 12, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.inkMuted, fontWeight: 600, marginBottom: 12 }}>
+              Save 2 months with annual billing
+            </div>
+            <div style={{ display: 'inline-flex', alignItems: 'center', padding: 4, border: `1px solid ${C.border2}`, borderRadius: 999, background: C.surface }}>
+              {[
+                { key: 'monthly', label: 'Monthly', annual: false },
+                { key: 'annual', label: 'Annual', annual: true },
+              ].map(option => {
+                const active = pricingAnnual === option.annual
+                return (
+                  <button
+                    key={option.key}
+                    onClick={() => setPricingAnnual(option.annual)}
+                    style={{
+                      background: active ? C.accent : 'transparent',
+                      color: active ? (C.theme === 'light' ? '#FFFFFF' : C.ink) : C.inkMuted,
+                      border: 'none',
+                      borderRadius: 999,
+                      padding: '10px 18px',
+                      fontFamily: 'inherit',
+                      fontSize: 14,
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      transition: 'background 0.18s ease, color 0.18s ease',
+                    }}
+                  >
+                    {option.label}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
           {/* Plan rows */}
           <div style={{ borderTop: `1px solid ${C.border}` }}>
             {[
               {
-                price: '$29',
+                monthlyPrice: '$29',
+                annualPrice: '$20',
+                annualTotal: '$239/yr',
                 label: 'FOUNDATION',
                 heading: <>The <em style={{ fontStyle: 'italic', color: C.redMuted }}>diagnosis</em>, on demand.</>,
                 body: 'Unlimited audits. Full reports. Action plans, SOPs, and email drafts generated from any finding.',
@@ -3945,7 +3985,9 @@ export default function Landing({ onStart, onSignUp, session }) {
                 plan: 'foundation',
               },
               {
-                price: '$99',
+                monthlyPrice: '$99',
+                annualPrice: '$67',
+                annualTotal: '$799/yr',
                 label: 'INTELLIGENCE',
                 heading: <>The <em style={{ fontStyle: 'italic', color: C.redMuted }}>full brain.</em></>,
                 body: 'Live connectors. Compounding memory. Weekly governance. Ask SelfAudit anything — it investigates before answering.',
@@ -3959,9 +4001,12 @@ export default function Landing({ onStart, onSignUp, session }) {
                 {/* Price */}
                 <div style={{ lineHeight: 1 }}>
                   <span style={{ fontFamily: serif, fontSize: 68, fontWeight: 700, letterSpacing: '-0.04em', color: C.ink }}>
-                    {p.price}
+                    {pricingAnnual ? p.annualPrice : p.monthlyPrice}
                   </span>
                   <span style={{ fontFamily: serif, fontSize: 18, color: C.inkMuted, marginLeft: 3 }}>/mo</span>
+                  <div style={{ fontFamily: 'inherit', fontSize: 13, color: C.inkMuted, marginTop: 10, minHeight: 20 }}>
+                    {pricingAnnual ? `${p.annualTotal} billed annually` : 'Billed monthly'}
+                  </div>
                 </div>
 
                 {/* Description */}
@@ -4010,6 +4055,10 @@ export default function Landing({ onStart, onSignUp, session }) {
 
               </div>
             ))}
+          </div>
+
+          <div style={{ textAlign: 'center', fontFamily: 'inherit', fontSize: 14, color: C.inkMuted, marginTop: 22 }}>
+            Start free. No card. If you upgrade and it doesn&apos;t deliver — full refund within 30 days.
           </div>
 
         </div>
