@@ -2260,6 +2260,7 @@ function FourVerbs({ C }) {
 
 function LiveDiagnosis({ C }) {
   const sectionRef  = useRef(null)
+  const contextRef  = useRef(null)
   const symptomRef  = useRef(null)
   const step0Ref    = useRef(null)
   const step1Ref    = useRef(null)
@@ -2280,6 +2281,7 @@ function LiveDiagnosis({ C }) {
 
     const cycles = [
       {
+        context: 'David · Operations SaaS · $800K ARR',
         symptom: 'Our team is busy every day but nothing seems to be moving forward.',
         verdictSegments: [
           { text: 'You’re not held back by effort. You have ', italic: false },
@@ -2291,6 +2293,7 @@ function LiveDiagnosis({ C }) {
         meta: { m1: 'Strategic ambiguity', m2: '91% · High', m3: '$340K / quarter', m4: 'Re-anchor the team by Friday' },
       },
       {
+        context: 'Marcus · Agency · $2.1M ARR',
         symptom: 'Revenue is up but margins keep getting worse every month.',
         verdictSegments: [
           { text: 'Your revenue is growing because ', italic: false },
@@ -2302,6 +2305,7 @@ function LiveDiagnosis({ C }) {
         meta: { m1: 'Delivery model leak', m2: '88% · High', m3: '$210K / quarter', m4: 'Rework delivery before Q4' },
       },
       {
+        context: 'Lena · B2B SaaS · $1.2M ARR',
         symptom: 'Churn looks stable but new customer cohorts feel weaker.',
         verdictSegments: [
           { text: 'Your cohorts aren’t weaker. ', italic: false },
@@ -2313,6 +2317,7 @@ function LiveDiagnosis({ C }) {
         meta: { m1: 'Onboarding regression', m2: '94% · Very high', m3: '$185K LTV / cohort', m4: 'Revert flow · A/B in 7 days' },
       },
       {
+        context: 'James · Consulting · $3.4M ARR',
         symptom: 'We keep hiring and the work keeps slowing down.',
         verdictSegments: [
           { text: 'You’re hiring ahead of clarity. Every new person inherits ', italic: false },
@@ -2353,6 +2358,7 @@ function LiveDiagnosis({ C }) {
         cycleIndex++
 
         // 1. Reset
+        if (contextRef.current) contextRef.current.textContent = cycle.context
         if (symptomRef.current) { symptomRef.current.textContent = ''; symptomRef.current.classList.remove('ldc-done') }
         stepRefs.forEach(r => { if (r.current) r.current.classList.remove('ldc-show') })
         if (vlabelRef.current) vlabelRef.current.classList.remove('ldc-show')
@@ -2521,6 +2527,18 @@ function LiveDiagnosis({ C }) {
 
             {/* Symptom */}
             <div style={{ fontFamily: 'inherit', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', color: panelInkMuted, fontWeight: 600, marginBottom: 12 }}>SYMPTOM</div>
+            <div
+              ref={contextRef}
+              style={{
+                fontFamily: 'inherit',
+                fontSize: 11,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                color: C.inkMuted,
+                fontWeight: 600,
+                marginBottom: 10,
+              }}
+            />
             <div
               ref={symptomRef}
               className="ldc-symptom"
