@@ -1885,8 +1885,7 @@ function EngineRoom({ C }) {
             lineHeight: 1.65,
             margin: '0 0 40px',
           }}>
-            Every minute, the brain ingests signals from your tools, pattern-matches against thousands of business outcomes, and surfaces what matters.{' '}
-            <em style={{ fontStyle: 'italic' }}>This is what&apos;s happening right now.</em>
+            This is what runs behind every audit — reading your tools, detecting signals, and surfacing what matters before you have to ask.
           </p>
 
           <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 36, display: 'grid', gridTemplateColumns: '1fr 1fr', rowGap: 32 }}>
