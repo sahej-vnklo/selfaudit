@@ -412,7 +412,7 @@ const socialProofQuotes = [
   '"It told me exactly what was wrong. Not what I wanted to hear."',
 ]
 
-const freeFeatures = [
+const foundationFeatures = [
   'Root cause diagnosis',
   '6-10 question deep audit conversation',
   'Multi-domain coverage',
@@ -461,6 +461,7 @@ const heroConnectorStrip = [
 function PrimaryButton({ label, onClick, small = false, C }) {
   const [hovered, setHovered] = useState(false)
   const darkTheme = C.theme === 'dark'
+  const showArrow = !label.includes('→')
   return (
     <button
       onClick={onClick}
@@ -484,7 +485,7 @@ function PrimaryButton({ label, onClick, small = false, C }) {
       }}
     >
       {label}
-      <span style={{ fontSize: small ? 17 : 19 }}>→</span>
+      {showArrow && <span style={{ fontSize: small ? 17 : 19 }}>→</span>}
     </button>
   )
 }
@@ -913,7 +914,7 @@ function LandingNav({ C, pageOpen, onBack, onPricing, onStories, onConnected, on
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 14 }}>
           <ThemeTextToggle theme={theme} setTheme={setTheme} C={C} />
-          <PrimaryButton label="Start free" onClick={onStartAudit} small C={C} />
+          <PrimaryButton label="Diagnose free →" onClick={onStartAudit} small C={C} />
         </div>
       </div>
     </nav>
@@ -1054,7 +1055,7 @@ function StoriesPage({ C, onStartAudit }) {
           <div style={{ fontFamily: serif, fontSize: 'clamp(28px, 4vw, 44px)', color: C.ink, lineHeight: 1.15, marginBottom: 28 }}>
             Every audit starts with a question you have not asked yet.
           </div>
-          <PrimaryButton label="Start your free audit" onClick={() => onStartAudit('')} C={C} />
+          <PrimaryButton label="Find what's breaking →" onClick={() => onStartAudit('')} C={C} />
           <div style={{ fontSize: 14, color: C.inkMuted, marginTop: 14 }}>
             5 minutes. No account needed.
           </div>
@@ -1278,7 +1279,7 @@ function ConnectedPage({ C, theme, onStartAudit }) {
           <div style={{ fontSize: 14, color: C.inkSoft, marginBottom: 24 }}>
             Connect your first tool in 2 minutes.
           </div>
-          <PrimaryButton label="Start free audit" onClick={() => onStartAudit('')} C={C} />
+          <PrimaryButton label="Find what's breaking →" onClick={() => onStartAudit('')} C={C} />
           <div style={{ fontSize: 12, color: C.inkMuted, marginTop: 14 }}>
             HubSpot live now. Stripe, Slack, Gmail, Notion shipping soon.
           </div>
@@ -1670,7 +1671,7 @@ function PricingPage({ C, onSignUp, onStartAudit }) {
             </div>
             <div style={{ fontSize: 15, color: C.inkMuted, marginTop: 8, marginBottom: 28 }}>The truth about your business.</div>
             <div style={{ marginBottom: 28 }}>
-              <FeatureList items={freeFeatures} color={C.inkSoft} iconColor={C.accentText} />
+              <FeatureList items={foundationFeatures} color={C.inkSoft} iconColor={C.accentText} />
             </div>
             <div style={{ marginTop: 'auto' }}>
               <OutlineButton label="Start Foundation — $29/mo" onClick={() => onSignUp('foundation')} C={C} />
@@ -1747,9 +1748,9 @@ function PricingPage({ C, onSignUp, onStartAudit }) {
         {/* Bottom CTA */}
         <div style={{ textAlign: 'center' }}>
           <p style={{ fontFamily: serif, fontStyle: 'italic', fontSize: 20, color: C.inkSoft, marginBottom: 28 }}>
-            Not sure which plan? Start with the free audit first.
+            Not sure which plan? Start with a free diagnosis.
           </p>
-          <PrimaryButton label="Start your free audit" onClick={() => onStartAudit('')} C={C} />
+          <PrimaryButton label="Start with a free diagnosis →" onClick={() => onStartAudit('')} C={C} />
           <div style={{ fontSize: 13, color: C.inkMuted, marginTop: 12 }}>5 minutes. No account needed. Brutally honest.</div>
         </div>
 
@@ -3929,7 +3930,7 @@ export default function Landing({ onStart, onSignUp, session }) {
               <em style={{ fontStyle: 'italic', color: C.redMuted }}>with a consultant.</em>
             </h2>
             <p style={{ fontFamily: serif, fontSize: 20, fontStyle: 'italic', color: C.inkSoft, lineHeight: 1.6, margin: 0 }}>
-              Two ways to run the brain. Start free. Upgrade when you&apos;re convinced.
+              Two ways to run the brain. Diagnose free. Upgrade when you&apos;re convinced.
             </p>
           </div>
 
@@ -4058,7 +4059,7 @@ export default function Landing({ onStart, onSignUp, session }) {
           </div>
 
           <div style={{ textAlign: 'center', fontFamily: 'inherit', fontSize: 14, color: C.inkMuted, marginTop: 22 }}>
-            Start free. No card. If you upgrade and it doesn&apos;t deliver — full refund within 30 days.
+            Diagnose free. No card. If you upgrade and it doesn&apos;t deliver — full refund within 30 days.
           </div>
 
         </div>
