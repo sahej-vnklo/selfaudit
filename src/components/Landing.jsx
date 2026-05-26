@@ -3466,7 +3466,7 @@ export default function Landing({ onStart, onSignUp, session }) {
       <section style={{ padding: 'clamp(56px, 7vw, 112px) 0 clamp(48px, 6vw, 100px)', textAlign: 'center', background: 'none' }}>
         <div style={wrap}>
           <div style={{ fontSize: 13, letterSpacing: '0.18em', textTransform: 'uppercase', color: C.accentText, fontWeight: 600, marginBottom: 24 }}>
-            Now live — The ultimate business intelligence layer
+            OPERATIONAL DEBT DIAGNOSTICS
           </div>
 
           <h1 style={{
@@ -3479,7 +3479,7 @@ export default function Landing({ onStart, onSignUp, session }) {
             margin: '0 auto 16px',
             color: C.ink,
           }}>
-            Introducing the next generation business brain
+            Something is wrong. You can feel it. You just can&apos;t name it.
           </h1>
 
           <p style={{
@@ -3493,7 +3493,7 @@ export default function Landing({ onStart, onSignUp, session }) {
             color: C.inkSoft,
             maxWidth: 860,
           }}>
-            The missing layer that elevates your business to top-tier.
+            At $1M revenue, operational debt absorbs $230,000 a year. We find it in 5 minutes.
           </p>
 
           <p style={{
@@ -3505,7 +3505,7 @@ export default function Landing({ onStart, onSignUp, session }) {
             textAlign: 'center',
             fontWeight: 400,
           }}>
-            Tell it what feels wrong. It reads your live data, finds the cause, and tells you the next move — before you have to ask.
+            Tell it what feels wrong. Get the truth in five minutes.
           </p>
 
           <div style={{ maxWidth: 680, margin: '0 auto' }}>
