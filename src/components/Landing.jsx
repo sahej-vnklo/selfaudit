@@ -2763,7 +2763,7 @@ function DashboardSection({ C }) {
           It remembers <em style={{ fontStyle: 'italic', color: C.redMuted }}>everything.</em>
         </h2>
         <p style={{ fontFamily: serif, fontSize: 20, color: C.inkSoft, lineHeight: 1.6, margin: 0 }}>
-          Your business state, tracked. Your goals, watched. Your patterns, learned. This is what the brain looks like once it knows you.
+          By day 47, it stops asking questions. This is what you see every Monday morning.
         </p>
       </div>
 
