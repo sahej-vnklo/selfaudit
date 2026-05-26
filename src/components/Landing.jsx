@@ -445,6 +445,17 @@ const typewriterStatements = [
   'I want to go from 10 to 50 employees without breaking culture.',
 ]
 
+const heroConnectorStrip = [
+  { name: 'Zendesk', bubble: 'Z', bubbleBg: '#0F766E', bubbleColor: '#E8FFFB' },
+  { name: 'Freshdesk', bubble: 'F', bubbleBg: '#22C55E', bubbleColor: '#F3FFF6' },
+  { name: 'QuickBooks', bubble: 'Q', bubbleBg: '#2CA01C', bubbleColor: '#F3FFF0' },
+  { name: 'Xero', bubble: 'X', bubbleBg: '#13B5EA', bubbleColor: '#F2FCFF' },
+  { name: 'HubSpot', bubble: 'H', bubbleBg: '#FF7A59', bubbleColor: '#FFF4EF' },
+  { name: 'Salesforce', bubble: 'S', bubbleBg: '#00A1E0', bubbleColor: '#EFFBFF' },
+  { name: 'Notion', bubble: 'N', bubbleBg: '#8B949E', bubbleColor: '#111111' },
+  { name: 'Slack', bubble: 'S', bubbleBg: '#4A154B', bubbleColor: '#F7ECF7' },
+]
+
 // ── Sub-components ────────────────────────────────────────────────────────────
 
 function PrimaryButton({ label, onClick, small = false, C }) {
@@ -3564,6 +3575,48 @@ export default function Landing({ onStart, onSignUp, session }) {
             <div style={{ marginTop: 14, fontSize: 14, color: C.inkMuted }}>
               Free root-cause diagnosis. No account needed. Takes 5 minutes. Brutally honest.
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section style={{ background: C.surface3, borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}` }}>
+        <div style={{ ...wrap, paddingTop: 22, paddingBottom: 22 }}>
+          <div style={{ fontSize: 12, letterSpacing: '0.18em', textTransform: 'uppercase', color: C.inkFaint, fontWeight: 700, textAlign: 'center', marginBottom: 16 }}>
+            Connects to
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 18, flexWrap: 'wrap' }}>
+            {heroConnectorStrip.map((item) => (
+              <div
+                key={item.name}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  color: C.inkMuted,
+                  fontSize: 15,
+                  fontWeight: 500,
+                }}
+              >
+                <span
+                  style={{
+                    width: 38,
+                    height: 38,
+                    borderRadius: '50%',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: item.bubbleBg,
+                    color: item.bubbleColor,
+                    fontSize: 15,
+                    fontWeight: 700,
+                    flexShrink: 0,
+                  }}
+                >
+                  {item.bubble}
+                </span>
+                <span>{item.name}</span>
+              </div>
+            ))}
           </div>
         </div>
       </section>
