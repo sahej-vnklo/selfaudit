@@ -3588,7 +3588,7 @@ export default function Landing({ onStart, onSignUp, session }) {
                 onMouseEnter={e => e.currentTarget.style.background = C.accentDark}
                 onMouseLeave={e => e.currentTarget.style.background = C.accent}
               >
-                Let&apos;s go →
+                Find What&apos;s Broken →
               </button>
             </div>
             <div style={{ marginTop: 14, fontSize: 14, color: C.inkMuted }}>
@@ -3660,7 +3660,7 @@ export default function Landing({ onStart, onSignUp, session }) {
               <span style={{ color: C.redMuted }}> operational debt</span>.
             </span>
             <span style={{ color: C.inkFaint }}> It&apos;s not a management failure, it&apos;s an infrastructure failure.</span>
-            <span> And it&apos;s absorbing 20-25% of your productive capacity every year.</span>
+            <span> And it&apos;s absorbing 20–25% of your productive capacity every year.</span>
           </p>
         </div>
       </section>
