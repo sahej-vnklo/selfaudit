@@ -132,10 +132,17 @@ export function evaluateThresholdRule(rule, metrics) {
   }
 }
 
-export function evaluateRulePack(rulePack, metrics) {
+export function evaluateRulePack(rulePack, metrics, overrides = null) {
   const defaults = rulePack?.defaults ?? []
 
   return defaults
-    .map((rule) => evaluateThresholdRule(rule, metrics))
+    .map((rule) => {
+      if (overrides) {
+        const override = overrides.get(rule.id)
+        if (override && !override.enabled) return null
+        if (override) return evaluateThresholdRule({ ...rule, value: override.value }, metrics)
+      }
+      return evaluateThresholdRule(rule, metrics)
+    })
     .filter(Boolean)
 }

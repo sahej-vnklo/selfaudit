@@ -88,6 +88,6 @@ export const MARKETING_SALES_AREA = {
   }),
 }
 
-export function evaluateMarketingSalesArea(metrics) {
-  return evaluateRulePack(MARKETING_SALES_AREA.defaultRulePack, metrics)
+export function evaluateMarketingSalesArea(metrics, overrides = null) {
+  return evaluateRulePack(MARKETING_SALES_AREA.defaultRulePack, metrics, overrides)
 }

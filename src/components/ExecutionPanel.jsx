@@ -164,33 +164,39 @@ function getThemeVars(theme) {
   }
 }
 
-const ARTIFACT_TYPES = ['ACTION_PLAN', 'SOP', 'PROCESS_CHANGE', 'PRICING_MODEL', 'HIRING_BRIEF', 'EMAIL']
+const ARTIFACT_TYPES = ['ACTION_PLAN', 'SOP', 'PROCESS_CHANGE', 'PRICING_MODEL', 'HIRING_BRIEF', 'EMAIL', 'INVESTOR_UPDATE', 'TEAM_BRIEF']
 
 const ARTIFACT_LABELS = {
-  ACTION_PLAN:    'Action Plan',
-  SOP:            'Standard SOP',
-  PROCESS_CHANGE: 'Process Redesign',
-  PRICING_MODEL:  'Pricing Model',
-  HIRING_BRIEF:   'Hiring Brief',
-  EMAIL:          'Email Draft',
+  ACTION_PLAN:      'Action Plan',
+  SOP:              'Standard SOP',
+  PROCESS_CHANGE:   'Process Redesign',
+  PRICING_MODEL:    'Pricing Model',
+  HIRING_BRIEF:     'Hiring Brief',
+  EMAIL:            'Email Draft',
+  INVESTOR_UPDATE:  'Investor Update',
+  TEAM_BRIEF:       'Team Brief',
 }
 
 const ARTIFACT_DESCRIPTIONS = {
-  ACTION_PLAN:    'Step-by-step execution roadmap',
-  SOP:            'Operational playbook',
-  PROCESS_CHANGE: 'Workflow improvements',
-  PRICING_MODEL:  'Monetization strategy',
-  HIRING_BRIEF:   'Role and team plan',
-  EMAIL:          'Outreach template',
+  ACTION_PLAN:      'Step-by-step execution roadmap',
+  SOP:              'Operational playbook',
+  PROCESS_CHANGE:   'Workflow improvements',
+  PRICING_MODEL:    'Monetization strategy',
+  HIRING_BRIEF:     'Role and team plan',
+  EMAIL:            'Outreach template',
+  INVESTOR_UPDATE:  'Investor or advisor update',
+  TEAM_BRIEF:       'Internal team communication',
 }
 
 const ARTIFACT_ICONS = {
-  ACTION_PLAN: '↗',
-  SOP: '≣',
-  PROCESS_CHANGE: '◌',
-  PRICING_MODEL: '$',
-  HIRING_BRIEF: '◍',
-  EMAIL: '✉',
+  ACTION_PLAN:      '↗',
+  SOP:              '≣',
+  PROCESS_CHANGE:   '◌',
+  PRICING_MODEL:    '$',
+  HIRING_BRIEF:     '◍',
+  EMAIL:            '✉',
+  INVESTOR_UPDATE:  '◈',
+  TEAM_BRIEF:       '◉',
 }
 
 function parseReportPayload(report) {
@@ -461,7 +467,11 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
   const [generating, setGenerating]       = useState(false)
   const [recommendations, setRecommendations] = useState([])
   const [showFormats, setShowFormats] = useState(false)
-  const [error, setError]                 = useState(null)
+  const [error, setError]             = useState(null)
+  const [artifact, setArtifact]       = useState(null)
+  const [copiedSection, setCopiedSection] = useState(null)
+  const [pastArtifacts, setPastArtifacts] = useState([])
+  const [expandedPast, setExpandedPast]   = useState(null)
 
   useEffect(() => {
     if (reportOptions.some((item) => item.id === selectedReportId)) return
@@ -503,7 +513,30 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
 
   useEffect(() => {
     setShowFormats(false)
+    setArtifact(null)
+    setCopiedSection(null)
   }, [activeReport?.id])
+
+  useEffect(() => {
+    const userId = userInfo?.userId
+    if (!userId) return
+    let cancelled = false
+    async function loadPast() {
+      try {
+        const sb = await initSupabase()
+        const { data: { session: s } } = await sb.auth.getSession()
+        const token = s?.access_token || ''
+        const res = await fetch(`/api/artifacts?userId=${userId}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        })
+        if (!res.ok || cancelled) return
+        const data = await res.json()
+        if (!cancelled) setPastArtifacts(data.artifacts ?? [])
+      } catch { /* non-blocking */ }
+    }
+    loadPast()
+    return () => { cancelled = true }
+  }, [userInfo?.userId])
 
   useEffect(() => {
     let cancelled = false
@@ -570,7 +603,14 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
       if (data.recommendations?.recommended?.length) {
         setRecommendations(data.recommendations.recommended)
       }
-      await downloadArtifactPdf(data.artifact, ARTIFACT_LABELS[selectedType])
+      setArtifact(data.artifact)
+      setShowFormats(false)
+      if (data.savedArtifact) {
+        setPastArtifacts((prev) => [
+          { ...data.savedArtifact, artifact_type: selectedType, title: data.artifact?.title, summary: data.artifact?.summary, artifact_data: data.artifact },
+          ...prev.filter((a) => a.id !== data.savedArtifact.id),
+        ])
+      }
     } catch (e) {
       setError(e.message)
     } finally {
@@ -579,6 +619,20 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
   }
 
   const isGenerateDisabled = !selectedType || generating || !parsedReport
+
+  const copyAll = (art) => {
+    if (!art) return
+    const text = [art.title, art.summary, '', ...(art.sections || []).map(s => `${s.label}\n${s.content}`)].join('\n\n')
+    navigator.clipboard.writeText(text).catch(() => {})
+    setCopiedSection('all')
+    setTimeout(() => setCopiedSection(null), 2000)
+  }
+
+  const copySection = (section, idx) => {
+    navigator.clipboard.writeText(`${section.label}\n${section.content}`).catch(() => {})
+    setCopiedSection(idx)
+    setTimeout(() => setCopiedSection(null), 2000)
+  }
 
   const cycleReport = (direction) => {
     if (reportOptions.length <= 1) return
@@ -730,6 +784,85 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
       )}
 
       {error && <p style={ep.errorMsg}>{error}</p>}
+
+      {artifact && (
+        <div style={ep.artifactPanel}>
+          <div style={ep.artifactHeader}>
+            <div style={ep.artifactTitleGroup}>
+              <div style={ep.artifactTitle}>{artifact.title}</div>
+              {artifact.summary && <div style={ep.artifactSummary}>{artifact.summary}</div>}
+            </div>
+            <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+              <button type="button" style={ep.copyAllBtn} onClick={() => copyAll(artifact)}>
+                {copiedSection === 'all' ? 'Copied' : 'Copy all'}
+              </button>
+              <button
+                type="button"
+                style={{ ...ep.copyAllBtn, background: 'transparent', border: '1px solid var(--button-border)', color: 'var(--button-text)' }}
+                onClick={() => downloadArtifactPdf(artifact, ARTIFACT_LABELS[artifact.type] || artifact.type).catch(() => {})}
+              >
+                PDF
+              </button>
+            </div>
+          </div>
+          {(artifact.sections || []).map((section, idx, arr) => (
+            <div key={idx} style={idx === arr.length - 1 ? ep.sectionCardLast : ep.sectionCard}>
+              <div style={ep.sectionCardHeader}>
+                <div style={ep.sectionLabel}>{section.label}</div>
+                <button type="button" style={ep.copySectionBtn} onClick={() => copySection(section, idx)}>
+                  {copiedSection === idx ? 'Copied' : 'Copy'}
+                </button>
+              </div>
+              <p style={ep.sectionContent}>{section.content}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {pastArtifacts.length > 0 && (
+        <div style={ep.pastList}>
+          <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--text-muted)', marginBottom: 4 }}>
+            Previous artifacts
+          </div>
+          {pastArtifacts.map((past) => {
+            const isExpanded = expandedPast === past.id
+            const pastData = past.artifact_data
+            const label = ARTIFACT_LABELS[past.artifact_type] || past.artifact_type
+            const date = past.created_at
+              ? new Date(past.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+              : ''
+            return (
+              <div key={past.id} style={ep.pastCard}>
+                <div style={ep.pastCardHeader} onClick={() => setExpandedPast(isExpanded ? null : past.id)}>
+                  <div style={ep.pastCardLeft}>
+                    <span style={ep.pastTypeBadge}>{label}</span>
+                    <span style={ep.pastTitle}>{past.title || label}</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{date}</span>
+                    <span style={ep.expandIcon}>{isExpanded ? '▲' : '▼'}</span>
+                  </div>
+                </div>
+                {isExpanded && pastData && (
+                  <div style={ep.pastExpanded}>
+                    {(pastData.sections || []).map((section, idx, arr) => (
+                      <div key={idx} style={idx === arr.length - 1 ? ep.sectionCardLast : ep.sectionCard}>
+                        <div style={ep.sectionCardHeader}>
+                          <div style={ep.sectionLabel}>{section.label}</div>
+                          <button type="button" style={ep.copySectionBtn} onClick={() => copySection(section, `past-${past.id}-${idx}`)}>
+                            {copiedSection === `past-${past.id}-${idx}` ? 'Copied' : 'Copy'}
+                          </button>
+                        </div>
+                        <p style={ep.sectionContent}>{section.content}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }

@@ -88,6 +88,6 @@ export const CUSTOMER_SERVICE_AREA = {
   }),
 }
 
-export function evaluateCustomerServiceArea(metrics) {
-  return evaluateRulePack(CUSTOMER_SERVICE_AREA.defaultRulePack, metrics)
+export function evaluateCustomerServiceArea(metrics, overrides = null) {
+  return evaluateRulePack(CUSTOMER_SERVICE_AREA.defaultRulePack, metrics, overrides)
 }

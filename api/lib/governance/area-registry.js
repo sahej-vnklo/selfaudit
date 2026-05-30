@@ -37,8 +37,8 @@ const AREA_EVALUATORS = {
   'management-strategy': evaluateManagementStrategyArea,
 }
 
-export function evaluateOperationalArea(areaId, metrics) {
+export function evaluateOperationalArea(areaId, metrics, overrides = null) {
   const evaluator = AREA_EVALUATORS[areaId]
   if (!evaluator) return []
-  return evaluator(metrics)
+  return evaluator(metrics, overrides)
 }

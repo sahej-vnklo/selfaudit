@@ -10,6 +10,21 @@ function signal(type, severity, title, description, evidence, source) {
   return { type, severity, title, description, evidence, source }
 }
 
+// Merges two normalized outputs (e.g. HubSpot + Stripe) into one combined shape.
+export function mergeNormalized(base, overlay) {
+  if (!base) return overlay
+  if (!overlay) return base
+  return {
+    provider:      `${base.provider}+${overlay.provider}`,
+    fetched_at:    overlay.fetched_at,
+    metrics:       [...base.metrics,       ...overlay.metrics],
+    entities:      [...base.entities,      ...overlay.entities],
+    signals:       [...base.signals,       ...overlay.signals],
+    risks:         [...base.risks,         ...overlay.risks],
+    opportunities: [...base.opportunities, ...overlay.opportunities],
+  }
+}
+
 // Empty normalized output — seed this per provider.
 export function createNormalizedOutput(provider) {
   return {

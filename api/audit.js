@@ -141,7 +141,7 @@ async function fetchUserMemory(userId) {
     // Pull structured memory from user_memory table (Layer 4)
     const { data: memoryRows } = await supabase
       .from('user_memory')
-      .select('session_date, headline, core_problem, root_causes, priority_actions, ai_opportunities, domains_audited, business_state, ranked_path, status')
+      .select('session_date, headline, core_problem, root_causes, priority_actions, ai_opportunities, domains_audited, business_state, ranked_path, status, action_feedback')
       .eq('user_id', userId)
       .order('session_date', { ascending: false })
       .limit(3)
@@ -161,10 +161,20 @@ async function fetchUserMemory(userId) {
         if (row.domains_audited?.length)  lines.push(`Domains audited: ${row.domains_audited.join(', ')}`)
         if (row.business_state?.goal_state) lines.push(`Goal state: ${row.business_state.goal_state}`)
         if (row.business_state?.gap)        lines.push(`Gap identified: ${row.business_state.gap}`)
-        if (unresolved) lines.push('Follow-up status: previous actions still appear unresolved')
         if (row.ranked_path?.length > 0) {
           const top = row.ranked_path[0]
           if (top?.move) lines.push(`Top ranked move: ${top.move} (${top.impact ?? ''} impact, ${top.urgency ?? ''})`)
+        }
+        // Action follow-through: show specific per-action status when available
+        if (row.action_feedback?.length > 0) {
+          const done     = row.action_feedback.filter(a => a.status === 'done')
+          const failed   = row.action_feedback.filter(a => a.status === 'failed')
+          const progress = row.action_feedback.filter(a => a.status === 'in_progress')
+          if (done.length)     lines.push(`Actions confirmed done: ${done.map(a => a.text).join('; ')}`)
+          if (progress.length) lines.push(`Actions in progress: ${progress.map(a => a.text + (a.outcome ? ` (${a.outcome})` : '')).join('; ')}`)
+          if (failed.length)   lines.push(`Actions that did not work: ${failed.map(a => a.text + (a.outcome ? ` — ${a.outcome}` : '')).join('; ')}`)
+        } else if (unresolved) {
+          lines.push('Follow-up status: previous actions still appear unresolved')
         }
       }
     }
@@ -218,7 +228,56 @@ async function fetchUserMemory(userId) {
     lines.push('- Do not re-ask questions already answered in past sessions')
     lines.push('- If the user\'s stated problem contradicts past findings, surface the contradiction directly')
     lines.push('- If this is their 2nd+ audit, open with one sentence referencing a specific past finding')
+    lines.push('')
+    lines.push('ACTION FOLLOW-THROUGH CONTEXT (applies when action_feedback is present):')
+    lines.push('- If an action is confirmed done: do not re-recommend it. Reference it as executed fact.')
+    lines.push('- If an action failed or did not work: do not repeat the same recommendation. Diagnose one level deeper — what blocked it?')
+    lines.push('- If an action is in progress: treat it as live context. Ask one sharp question about where it stands.')
+    lines.push('- Never ask the user to re-explain what they already reported. Treat action_feedback as verified ground truth.')
+    lines.push('- If all top actions were done, open with that progress acknowledged before identifying the next constraint.')
 
+    return lines.join('\n')
+  } catch {
+    return ''
+  }
+}
+
+async function fetchGovernanceContext(userId) {
+  if (!userId) return ''
+  try {
+    const { data } = await supabase
+      .from('business_health_checks')
+      .select('checked_at, evidence')
+      .eq('user_id', userId)
+      .order('checked_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    if (!data?.evidence?.governance) return ''
+
+    const gov = data.evidence.governance
+    const areas = gov.area_statuses ?? []
+    const areasWithSignals = areas.filter(a => a.coverage > 0)
+    if (!areasWithSignals.length) return ''
+
+    const lines = ['LIVE GOVERNANCE STATUS (from continuous monitoring):']
+    const checkedDate = new Date(data.checked_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    lines.push(`Last checked: ${checkedDate}`)
+
+    for (const area of areas) {
+      if (!area.coverage) continue
+      const label = area.area_id.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+      const statusLabel = area.status === 'bad' ? 'NEEDS ATTENTION' : area.status === 'watch' ? 'WATCH' : 'STABLE'
+      lines.push(`  ${label}: ${statusLabel}`)
+    }
+
+    const topDiagnoses = (gov.top_diagnoses ?? []).slice(0, 2)
+    if (topDiagnoses.length) {
+      lines.push('Top findings:')
+      topDiagnoses.forEach(d => lines.push(`  — ${d.summary || d.title || ''}`))
+    }
+
+    lines.push('Treat these as verified live signals. Reference them in your diagnosis without re-explaining.')
     return lines.join('\n')
   } catch {
     return ''
@@ -275,7 +334,7 @@ function buildSessionContinuity(messages) {
   return lines.join('\n')
 }
 
-function buildSystemPrompt(industry, domain, intelligenceBrief, userMemory, goalMode, goal, goalTimeline, goalBaseline, businessState, patterns, connectorContext, sessionContinuity) {
+function buildSystemPrompt(industry, domain, intelligenceBrief, userMemory, goalMode, goal, goalTimeline, goalBaseline, businessState, patterns, connectorContext, sessionContinuity, governanceContext) {
   const base = `You are SelfAudit — a brutally honest, senior-level business and life advisor. Your job is to audit any situation a user brings — business, startup, side project, personal goals, career, anything.
 
 CORE RULES:
@@ -407,6 +466,7 @@ Do NOT open with "How can I help", "What are you working on", or any generic que
   const businessStateBlock = businessState ? `\n\n---\n${businessState}` : ''
   const patternsBlock      = patterns      ? `\n\n---\n${patterns}`       : ''
   const connectorBlock = connectorContext ? `\n\n---\nCONNECTOR DATA\n${connectorContext}` : ''
+  const governanceBlock = governanceContext ? `\n\n---\n${governanceContext}` : ''
   const sessionContinuityBlock = sessionContinuity ? `\n\n---\n${sessionContinuity}` : ''
   const contextPriorityBlock = `
 
@@ -419,7 +479,7 @@ CONTEXT PRIORITY:
 
 If two sources conflict, do not ignore it. Name the contradiction and ask one direct clarifying question.`
 
-  return base + goalBlock + scopeBlock + intelligenceBriefBlock + businessStateBlock + memoryBlock + patternsBlock + connectorBlock + sessionContinuityBlock + contextPriorityBlock + openingRule
+  return base + goalBlock + scopeBlock + intelligenceBriefBlock + businessStateBlock + memoryBlock + patternsBlock + connectorBlock + governanceBlock + sessionContinuityBlock + contextPriorityBlock + openingRule
 }
 
 function buildReportPrompt(goalMode) {
@@ -756,11 +816,12 @@ export default async function handler(req, res) {
     'anthropic-version': '2023-06-01',
   }
 
-  const [intelligenceBrief, userMemory, businessState, patterns] = await Promise.all([
+  const [intelligenceBrief, userMemory, businessState, patterns, governanceContext] = await Promise.all([
     fetchIntelligenceBrief(userId),
     fetchUserMemory(userId),
     fetchBusinessState(userId),
     fetchPatterns(industry, domain),
+    fetchGovernanceContext(userId),
   ])
   const connectorContext = await fetchConnectorContext(userId, supabase)
   const sessionContinuity = buildSessionContinuity(messages)
@@ -772,7 +833,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: isReport ? (goalMode ? 4000 : 3200) : 1024,
-        system: buildSystemPrompt(industry, domain, intelligenceBrief, userMemory, goalMode, goal, goalTimeline, goalBaseline, businessState, patterns, connectorContext, sessionContinuity),
+        system: buildSystemPrompt(industry, domain, intelligenceBrief, userMemory, goalMode, goal, goalTimeline, goalBaseline, businessState, patterns, connectorContext, sessionContinuity, governanceContext),
         messages: finalMessages,
       }),
     })
@@ -841,7 +902,7 @@ export default async function handler(req, res) {
               body: JSON.stringify({
                 model: 'claude-sonnet-4-20250514',
                 max_tokens: goalMode ? 4000 : 3200,
-                system: buildSystemPrompt(industry, domain, intelligenceBrief, userMemory, goalMode, goal, goalTimeline, goalBaseline, businessState, patterns, connectorContext, sessionContinuity),
+                system: buildSystemPrompt(industry, domain, intelligenceBrief, userMemory, goalMode, goal, goalTimeline, goalBaseline, businessState, patterns, connectorContext, sessionContinuity, governanceContext),
                 messages: retryMessages,
               }),
             })

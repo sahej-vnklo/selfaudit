@@ -100,6 +100,6 @@ export const FINANCE_ACCOUNTING_AREA = {
   }),
 }
 
-export function evaluateFinanceAccountingArea(metrics) {
-  return evaluateRulePack(FINANCE_ACCOUNTING_AREA.defaultRulePack, metrics)
+export function evaluateFinanceAccountingArea(metrics, overrides = null) {
+  return evaluateRulePack(FINANCE_ACCOUNTING_AREA.defaultRulePack, metrics, overrides)
 }

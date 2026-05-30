@@ -9,6 +9,7 @@ const supabase = createClient(
 )
 
 const ALLOWED_ACTION_STATUSES = new Set(['done', 'partial', 'not_started'])
+const ALLOWED_FEEDBACK_STATUSES = new Set(['done', 'in_progress', 'failed', 'skipped'])
 const ALLOWED_CHANGED_AREAS = new Set(['goal_progress', 'pipeline_revenue', 'execution', 'customer_health', 'critical_risks'])
 
 function sanitizeText(value) {
@@ -21,6 +22,23 @@ function sanitizeChangedAreas(input) {
     if (ALLOWED_CHANGED_AREAS.has(area) && !next.includes(area)) next.push(area)
   }
   return next
+}
+
+function sanitizeActionFeedback(input) {
+  if (!Array.isArray(input)) return []
+  return input.slice(0, 5).map(item => ({
+    text:    typeof item?.text    === 'string' ? item.text.trim().slice(0, 300)    : '',
+    status:  ALLOWED_FEEDBACK_STATUSES.has(item?.status) ? item.status             : 'skipped',
+    outcome: typeof item?.outcome === 'string' ? item.outcome.trim().slice(0, 400) : '',
+  })).filter(item => item.text)
+}
+
+// Derive a coarse session status from per-action feedback (backward compatible).
+function deriveActionStatus(feedback, fallback) {
+  if (!feedback?.length) return fallback
+  if (feedback.every(a => a.status === 'done'))                          return 'done'
+  if (feedback.some(a => a.status === 'done' || a.status === 'in_progress')) return 'partial'
+  return 'not_started'
 }
 
 export default async function handler(req, res) {
@@ -37,6 +55,7 @@ export default async function handler(req, res) {
     blocked = '',
     actionStatus = 'partial',
     changedAreas = [],
+    actionFeedback = [],
   } = req.body || {}
 
   if (!userId || !reportId) {
@@ -47,8 +66,9 @@ export default async function handler(req, res) {
   const cleanSinceLast = sanitizeText(sinceLast)
   const cleanImproved = sanitizeText(improved)
   const cleanBlocked = sanitizeText(blocked)
-  const cleanActionStatus = ALLOWED_ACTION_STATUSES.has(actionStatus) ? actionStatus : 'partial'
   const cleanChangedAreas = sanitizeChangedAreas(changedAreas)
+  const cleanActionFeedback = sanitizeActionFeedback(actionFeedback)
+  const cleanActionStatus = deriveActionStatus(cleanActionFeedback, ALLOWED_ACTION_STATUSES.has(actionStatus) ? actionStatus : 'partial')
 
   if (!cleanSinceLast) {
     return res.status(400).json({ error: 'Missing founder update summary' })
@@ -83,6 +103,7 @@ export default async function handler(req, res) {
         domains_audited: cleanChangedAreas,
         business_state: businessState,
         status: cleanActionStatus === 'done' ? 'done' : 'open',
+        action_feedback: cleanActionFeedback,
       })
 
     if (insertError) throw insertError

@@ -88,6 +88,6 @@ export const MANAGEMENT_STRATEGY_AREA = {
   }),
 }
 
-export function evaluateManagementStrategyArea(metrics) {
-  return evaluateRulePack(MANAGEMENT_STRATEGY_AREA.defaultRulePack, metrics)
+export function evaluateManagementStrategyArea(metrics, overrides = null) {
+  return evaluateRulePack(MANAGEMENT_STRATEGY_AREA.defaultRulePack, metrics, overrides)
 }

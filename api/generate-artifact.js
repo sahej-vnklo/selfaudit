@@ -3,7 +3,7 @@ import { validateUserToken } from './lib/auth.js'
 
 const CLAUDE_API = 'https://api.anthropic.com/v1/messages'
 
-const ARTIFACT_TYPES = ['ACTION_PLAN', 'SOP', 'PROCESS_CHANGE', 'PRICING_MODEL', 'HIRING_BRIEF', 'EMAIL']
+const ARTIFACT_TYPES = ['ACTION_PLAN', 'SOP', 'PROCESS_CHANGE', 'PRICING_MODEL', 'HIRING_BRIEF', 'EMAIL', 'INVESTOR_UPDATE', 'TEAM_BRIEF']
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -64,6 +64,18 @@ function recommend(report) {
   }
 
   if (!recommended.includes('ACTION_PLAN')) recommended.unshift('ACTION_PLAN')
+
+  // INVESTOR_UPDATE: runway tight, churn bad, or goal feasibility is tight/unrealistic
+  const financeWords = /runway|churn|burn|cash|ltv|unit economics/i
+  if (financeWords.test(allText) || report.timeline_feasibility?.startsWith('tight') || report.timeline_feasibility?.startsWith('unrealistic')) {
+    if (!recommended.includes('INVESTOR_UPDATE')) recommended.push('INVESTOR_UPDATE')
+  }
+
+  // TEAM_BRIEF: multiple critical domains, or execution/management issues
+  const criticalDomains = domains.filter(d => d.status === 'critical')
+  if (criticalDomains.length >= 2 || /team|management|execution|follow.?through|ownership/i.test(allText)) {
+    if (!recommended.includes('TEAM_BRIEF')) recommended.push('TEAM_BRIEF')
+  }
 
   return {
     recommended: [...new Set(recommended)].slice(0, 3),
@@ -147,12 +159,69 @@ Sections required (use these exact labels):
 - New State: Walk through the redesigned process step by step — be specific about what changes
 - Transition Steps: Who does what, in what order, to move from current state to new state
 - Owner: Who owns this ongoing, what their accountability looks like, and how you know it's working`,
+
+  INVESTOR_UPDATE: `Generate a concise investor or advisor update based on this audit report.
+
+Sections required (use these exact labels):
+- Subject Line: Direct one-line subject for the email or message
+- Highlights: 3 specific wins or progress points from the period — reference actual numbers or milestones from the report
+- Metrics: Key business metrics in this format — Metric: Value (vs prior period or target). Include at least 3.
+- Challenges: The real challenges right now, grounded in the report findings — no spin, be honest
+- Asks: 1-3 specific asks from the reader — money, intro, advice, or unblocking something concrete
+- Next Milestone: One clear next milestone with a timeline`,
+
+  TEAM_BRIEF: `Generate a team communication brief for the most urgent operational issue in this report.
+
+Sections required (use these exact labels):
+- Situation: What is happening right now — the honest one-paragraph version the team needs to hear
+- What Needs to Change: Specific behaviors, processes, or outputs that must change — not vague direction
+- Who Owns What: Clear ownership per workstream or area — name the role, not a person
+- Success Criteria: How the team will know in 30 days that this worked — make it measurable
+- What Happens If We Don't: The honest consequence of not fixing this — be direct`,
 }
 
-function buildUserPrompt(artifactType, report, userInfo) {
+// Strip report fields not needed for a given artifact type to keep the prompt tight.
+function compactReportForArtifact(report, artifactType) {
+  const always = {
+    headline: report.headline,
+    honest_truth: report.honest_truth,
+    priority_actions: report.priority_actions,
+    domains: report.domains,
+    conversation_mode: report.conversation_mode,
+  }
+  switch (artifactType) {
+    case 'ACTION_PLAN':
+      return { ...always, goal_gap_analysis: report.goal_gap_analysis, missing_capabilities: report.missing_capabilities, forward_trajectory: report.forward_trajectory, timeline_feasibility: report.timeline_feasibility }
+    case 'EMAIL':
+      return { ...always, non_ai_fixes: report.non_ai_fixes, goal_gap_analysis: report.goal_gap_analysis }
+    case 'SOP':
+    case 'PROCESS_CHANGE':
+      return { ...always, non_ai_fixes: report.non_ai_fixes, overall_verdict: report.overall_verdict }
+    case 'HIRING_BRIEF':
+      return { ...always, missing_capabilities: report.missing_capabilities, non_ai_fixes: report.non_ai_fixes }
+    case 'PRICING_MODEL':
+      return { ...always, non_ai_fixes: report.non_ai_fixes, goal_gap_analysis: report.goal_gap_analysis }
+    case 'INVESTOR_UPDATE':
+      return { ...always, forward_trajectory: report.forward_trajectory, goal_gap_analysis: report.goal_gap_analysis, timeline_feasibility: report.timeline_feasibility, overall_verdict: report.overall_verdict }
+    case 'TEAM_BRIEF':
+      return { ...always, non_ai_fixes: report.non_ai_fixes, overall_verdict: report.overall_verdict, missing_capabilities: report.missing_capabilities }
+    default:
+      return report
+  }
+}
+
+function buildUserPrompt(artifactType, report, userInfo, brain) {
   const goalContext = userInfo.goalMode
     ? `\nGoal: ${userInfo.goal || 'not specified'}\nGoal timeline: ${userInfo.goalTimeline || 'not specified'}`
     : ''
+
+  const brainContext = brain ? `
+BUSINESS CONTEXT (from memory — use to make the artifact specific to this business):
+Core offer: ${brain.core_offer || 'not specified'}
+Target customer: ${brain.target_customer || 'not specified'}
+Active goal: ${brain.active_goal || 'none'}
+Known blockers: ${(brain.repeated_blockers || []).join(', ') || 'none'}
+` : ''
 
   return `Generate a ${artifactType} artifact based on this audit report.
 
@@ -160,11 +229,11 @@ USER CONTEXT:
 Name: ${userInfo.name || '[user]'}
 Industry: ${userInfo.industry || 'not specified'}
 Domain: ${userInfo.domain || 'not specified'}${goalContext}
-
+${brainContext}
 ${TYPE_INSTRUCTIONS[artifactType]}
 
 AUDIT REPORT:
-${JSON.stringify(report, null, 2)}
+${JSON.stringify(compactReportForArtifact(report, artifactType), null, 2)}
 
 Return a single JSON object with this exact structure:
 {
@@ -182,7 +251,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { artifactType, report, userInfo, reportId, userId } = req.body
+  const { artifactType, report, userInfo, reportId, userId, brain } = req.body
   if (!report) {
     return res.status(400).json({ error: 'Missing report' })
   }
@@ -215,9 +284,9 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 2000,
+        max_tokens: 3000,
         system: SYSTEM_PROMPT,
-        messages: [{ role: 'user', content: buildUserPrompt(artifactType, report, userInfo) }],
+        messages: [{ role: 'user', content: buildUserPrompt(artifactType, report, userInfo, brain) }],
       }),
     })
 

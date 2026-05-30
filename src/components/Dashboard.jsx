@@ -738,7 +738,7 @@ function buildAiOpportunityItems(reports, tier) {
     }))
 }
 
-export default function Dashboard({ user, onStartAudit, onSignOut }) {
+export default function Dashboard({ user, onStartAudit, onSignOut, auditJustCompleted = false, onAuditCompletedAck }) {
   const [theme, setTheme] = useState(() => {
     const saved = localStorage.getItem('sa-theme')
     // Migrate away from removed 'sharp' theme
@@ -1418,30 +1418,51 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
           {section === 'home' && (
             <>
               <div className="dash-cards">
-                <section className="dash-card" aria-label="Agent X — Diagnostic engine">
-                  <header className="card-head">
-                    <div className="card-head-text">
-                      <div className="card-eyebrow">Agent X</div>
-                      <h2 className="card-title">Diagnostic engine</h2>
-                    </div>
-                    <div className="card-status">
-                      <span className="cs-dot warn" />
-                      Analyzing
-                    </div>
-                  </header>
-                </section>
-                <section className="dash-card" aria-label="Agent Y — Solution engine">
-                  <header className="card-head">
-                    <div className="card-head-text">
-                      <div className="card-eyebrow">Agent Y</div>
-                      <h2 className="card-title">Solution engine</h2>
-                    </div>
-                    <div className="card-status">
-                      <span className="cs-dot ok" />
-                      Proposing
-                    </div>
-                  </header>
-                </section>
+                {auditJustCompleted ? (
+                  <>
+                    <section className="dash-card" aria-label="Agent X — Diagnostic engine" />
+                    <section className="dash-card" aria-label="Agent Y — Solution engine">
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: '6px', color: 'var(--muted)' }}>
+                        <div style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text)' }}>Audit complete.</div>
+                        <div style={{ fontSize: '0.78rem' }}>Check Results in the nav bar.</div>
+                        <button
+                          type="button"
+                          onClick={onAuditCompletedAck}
+                          style={{ marginTop: '12px', padding: '4px 14px', borderRadius: '20px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', fontSize: '0.72rem', cursor: 'pointer' }}
+                        >
+                          Dismiss
+                        </button>
+                      </div>
+                    </section>
+                  </>
+                ) : (
+                  <>
+                    <section className="dash-card" aria-label="Agent X — Diagnostic engine">
+                      <header className="card-head">
+                        <div className="card-head-text">
+                          <div className="card-eyebrow">Agent X</div>
+                          <h2 className="card-title">Diagnostic engine</h2>
+                        </div>
+                        <div className="card-status">
+                          <span className="cs-dot warn" />
+                          Analyzing
+                        </div>
+                      </header>
+                    </section>
+                    <section className="dash-card" aria-label="Agent Y — Solution engine">
+                      <header className="card-head">
+                        <div className="card-head-text">
+                          <div className="card-eyebrow">Agent Y</div>
+                          <h2 className="card-title">Solution engine</h2>
+                        </div>
+                        <div className="card-status">
+                          <span className="cs-dot ok" />
+                          Proposing
+                        </div>
+                      </header>
+                    </section>
+                  </>
+                )}
               </div>
 
               <div className="dash-cmd">
@@ -1493,7 +1514,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
                     </div>
                   )}
                   <div style={{ marginTop: 24 }}>
-                    <OperationalOversightSection intelligenceUnlocked={intelligenceUnlocked} healthIntel={healthIntel} />
+                    <OperationalOversightSection intelligenceUnlocked={intelligenceUnlocked} healthIntel={healthIntel} userId={user?.id} />
                   </div>
                 </PageShell>
               )}
@@ -1617,6 +1638,7 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
     blocked: '',
     actionStatus: 'partial',
     changedAreas: ['goal_progress'],
+    actionFeedback: [],
   })
   const latestReport = reports[0] || null
   const latestDiagnosticReport = getLatestDiagnosticReport(reports)
@@ -1888,6 +1910,7 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
           blocked: checkInDraft.blocked,
           actionStatus: checkInDraft.actionStatus,
           changedAreas: checkInDraft.changedAreas,
+          actionFeedback: checkInDraft.actionFeedback,
         }),
       })
       const data = await response.json().catch(() => ({}))
@@ -2188,6 +2211,7 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
               reportDate={lastReportDate}
               onToggleArea={toggleCheckInArea}
               onSave={saveDashboardCheckIn}
+              priorityActions={latestContent?.priority_actions ?? []}
               right={(
                 <button
                   type="button"
@@ -2270,7 +2294,173 @@ function OperationalOversightSnapshotCard({ healthIntel, onOpenOversight }) {
   )
 }
 
-function OperationalOversightSection({ intelligenceUnlocked, healthIntel }) {
+const THRESHOLD_AREAS = [
+  {
+    id: 'customer-service',
+    label: 'Customer Service',
+    rules: [
+      { ruleId: 'customer-service:first-response-watch', label: 'First response — watch above', unit: 'hrs', defaultValue: 8,  min: 1,   max: 168 },
+      { ruleId: 'customer-service:first-response-bad',   label: 'First response — bad above',   unit: 'hrs', defaultValue: 24, min: 1,   max: 168 },
+      { ruleId: 'customer-service:resolution-watch',     label: 'Resolution time — watch above', unit: 'hrs', defaultValue: 48, min: 1,   max: 336 },
+      { ruleId: 'customer-service:repeat-issue-bad',     label: 'Repeat issue rate — bad above', unit: '%',   defaultValue: 20, min: 0,   max: 100 },
+      { ruleId: 'customer-service:csat-bad',             label: 'CSAT — bad below',              unit: 'pts', defaultValue: 80, min: 0,   max: 100 },
+    ],
+  },
+  {
+    id: 'marketing-sales',
+    label: 'Marketing & Sales',
+    rules: [
+      { ruleId: 'marketing-sales:open-deals-bad',            label: 'Open deals — bad below',        unit: 'deals', defaultValue: 3,  min: 0, max: 999 },
+      { ruleId: 'marketing-sales:lead-volume-watch',         label: 'Lead volume — watch below',     unit: 'leads', defaultValue: 10, min: 0, max: 999 },
+      { ruleId: 'marketing-sales:stage-conversion-watch',    label: 'Stage conversion — watch below',unit: '%',     defaultValue: 25, min: 0, max: 100 },
+      { ruleId: 'marketing-sales:stage-conversion-bad',      label: 'Stage conversion — bad below',  unit: '%',     defaultValue: 15, min: 0, max: 100 },
+      { ruleId: 'marketing-sales:sales-cycle-watch',         label: 'Sales cycle — watch above',     unit: 'days',  defaultValue: 45, min: 1, max: 365 },
+    ],
+  },
+  {
+    id: 'finance-accounting',
+    label: 'Finance & Accounting',
+    rules: [
+      { ruleId: 'finance-accounting:churn-watch',    label: 'Churn — watch above',   unit: '%',    defaultValue: 2,  min: 0,  max: 100 },
+      { ruleId: 'finance-accounting:churn-bad',      label: 'Churn — bad above',     unit: '%',    defaultValue: 5,  min: 0,  max: 100 },
+      { ruleId: 'finance-accounting:runway-watch',   label: 'Runway — watch below',  unit: 'mo',   defaultValue: 12, min: 1,  max: 120 },
+      { ruleId: 'finance-accounting:runway-bad',     label: 'Runway — bad below',    unit: 'mo',   defaultValue: 6,  min: 1,  max: 120 },
+      { ruleId: 'finance-accounting:ltv-cac-watch',  label: 'LTV:CAC — watch below', unit: 'ratio',defaultValue: 3,  min: 0,  max: 20  },
+      { ruleId: 'finance-accounting:ltv-cac-bad',    label: 'LTV:CAC — bad below',   unit: 'ratio',defaultValue: 1,  min: 0,  max: 20  },
+    ],
+  },
+  {
+    id: 'management-strategy',
+    label: 'Management & Strategy',
+    rules: [
+      { ruleId: 'management-strategy:goal-progress-watch',   label: 'Goal progress — watch below',     unit: '%',   defaultValue: 60, min: 0, max: 100 },
+      { ruleId: 'management-strategy:priority-backlog-bad',  label: 'Priority backlog — bad above',    unit: 'items',defaultValue: 5,  min: 0, max: 50  },
+      { ruleId: 'management-strategy:repeated-blockers-watch',label:'Repeated blockers — watch above', unit: 'count',defaultValue: 2,  min: 0, max: 20  },
+      { ruleId: 'management-strategy:followthrough-watch',   label: 'Follow-through — watch below',    unit: '%',   defaultValue: 80, min: 0, max: 100 },
+      { ruleId: 'management-strategy:followthrough-bad',     label: 'Follow-through — bad below',      unit: '%',   defaultValue: 60, min: 0, max: 100 },
+    ],
+  },
+]
+
+function ThresholdEditorPanel({ userId }) {
+  const [overrides, setOverrides] = useState({})
+  const [saving, setSaving]       = useState({})
+  const [saved, setSaved]         = useState({})
+  const [open, setOpen]           = useState({})
+
+  useEffect(() => {
+    if (!userId) return
+    async function load() {
+      try {
+        const sb = await initSupabase()
+        const { data: { session: s } } = await sb.auth.getSession()
+        const token = s?.access_token || ''
+        const res = await fetch(`/api/user-rules?userId=${userId}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        })
+        if (!res.ok) return
+        const data = await res.json()
+        const map = {}
+        for (const row of data.overrides ?? []) map[row.rule_id] = row.value
+        setOverrides(map)
+      } catch { /* non-blocking */ }
+    }
+    load()
+  }, [userId])
+
+  const getValue = (ruleId, defaultValue) =>
+    overrides[ruleId] !== undefined ? overrides[ruleId] : defaultValue
+
+  const handleBlur = async (ruleId, areaId, metricKey, value, defaultValue) => {
+    const num = parseFloat(value)
+    if (isNaN(num)) return
+    if (num === defaultValue && overrides[ruleId] === undefined) return
+    setSaving((prev) => ({ ...prev, [ruleId]: true }))
+    try {
+      const sb = await initSupabase()
+      const { data: { session: s } } = await sb.auth.getSession()
+      const token = s?.access_token || ''
+      const res = await fetch('/api/user-rules', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ userId, ruleId, areaId, metricKey, value: num }),
+      })
+      if (res.ok) {
+        setOverrides((prev) => ({ ...prev, [ruleId]: num }))
+        setSaved((prev) => ({ ...prev, [ruleId]: true }))
+        setTimeout(() => setSaved((prev) => ({ ...prev, [ruleId]: false })), 2000)
+      }
+    } catch { /* non-blocking */ }
+    setSaving((prev) => ({ ...prev, [ruleId]: false }))
+  }
+
+  const handleReset = async (ruleId, defaultValue) => {
+    try {
+      const sb = await initSupabase()
+      const { data: { session: s } } = await sb.auth.getSession()
+      const token = s?.access_token || ''
+      await fetch(`/api/user-rules?userId=${userId}&ruleId=${encodeURIComponent(ruleId)}`, {
+        method: 'DELETE',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
+      setOverrides((prev) => { const next = { ...prev }; delete next[ruleId]; return next })
+    } catch { /* non-blocking */ }
+  }
+
+  return (
+    <PanelCard title="your standards">
+      <div style={styles.weeklyDigestPrefsIntro}>
+        These thresholds define what "watch" and "bad" mean for your business. SelfAudit defaults are shown — override any value and the monitoring system uses your number instead.
+      </div>
+      {THRESHOLD_AREAS.map((area) => (
+        <div key={area.id} style={{ marginBottom: 8 }}>
+          <button
+            type="button"
+            onClick={() => setOpen((prev) => ({ ...prev, [area.id]: !prev[area.id] }))}
+            style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'none', border: 'none', padding: '8px 0', cursor: 'pointer', color: 'var(--text)', fontSize: '0.8rem', fontWeight: 500 }}
+          >
+            {area.label}
+            <span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>{open[area.id] ? '▲' : '▼'}</span>
+          </button>
+          {open[area.id] && (
+            <div style={{ borderTop: '0.5px solid var(--border)', paddingTop: 8 }}>
+              {area.rules.map((rule) => {
+                const currentValue = getValue(rule.ruleId, rule.defaultValue)
+                const isOverridden = overrides[rule.ruleId] !== undefined
+                return (
+                  <div key={rule.ruleId} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
+                    <span style={{ flex: 1, fontSize: '0.77rem', color: 'var(--text-soft)', minWidth: 160 }}>{rule.label}</span>
+                    <input
+                      type="number"
+                      min={rule.min}
+                      max={rule.max}
+                      step="any"
+                      defaultValue={currentValue}
+                      key={`${rule.ruleId}-${currentValue}`}
+                      onBlur={(e) => handleBlur(rule.ruleId, area.id, rule.ruleId.split(':')[1] ?? '', e.target.value, rule.defaultValue)}
+                      style={{ width: 72, padding: '4px 6px', borderRadius: 6, border: `1px solid ${isOverridden ? 'var(--accent)' : 'var(--border)'}`, background: 'var(--input-bg, var(--surface))', color: 'var(--text)', fontSize: '0.78rem' }}
+                    />
+                    <span style={{ fontSize: '0.72rem', color: 'var(--muted)', width: 36 }}>{rule.unit}</span>
+                    {saving[rule.ruleId] && <span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>…</span>}
+                    {saved[rule.ruleId]  && <span style={{ fontSize: '0.7rem', color: 'var(--accent)' }}>Saved</span>}
+                    {isOverridden && !saving[rule.ruleId] && !saved[rule.ruleId] && (
+                      <button type="button" onClick={() => handleReset(rule.ruleId, rule.defaultValue)} style={{ fontSize: '0.7rem', color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}>
+                        reset
+                      </button>
+                    )}
+                    {!isOverridden && <span style={{ fontSize: '0.7rem', color: 'var(--muted)', opacity: 0.5 }}>default</span>}
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      ))}
+    </PanelCard>
+  )
+}
+
+function OperationalOversightSection({ intelligenceUnlocked, healthIntel, userId }) {
   if (!intelligenceUnlocked) {
     return (
       <PanelCard title="operational oversight">
@@ -2341,6 +2531,8 @@ function OperationalOversightSection({ intelligenceUnlocked, healthIntel }) {
           </div>
         )}
       </PanelCard>
+
+      <ThresholdEditorPanel userId={userId} />
     </div>
   )
 }
@@ -2775,15 +2967,80 @@ function WeeklyDigestAlertsPanel({
   )
 }
 
-function FounderCheckInPanel({ draft, setDraft, saving, error, reportDate, onToggleArea, onSave, right = null }) {
+const ACTION_FEEDBACK_STATUSES = [
+  { value: 'done',        label: 'Done' },
+  { value: 'in_progress', label: 'In progress' },
+  { value: 'failed',      label: 'Did not work' },
+  { value: 'skipped',     label: 'Skipped' },
+]
+
+function FounderCheckInPanel({ draft, setDraft, saving, error, reportDate, onToggleArea, onSave, priorityActions = [], right = null }) {
+  const topActions = priorityActions.slice(0, 3)
+
+  const getFeedback = (text) => draft.actionFeedback?.find(a => a.text === text) ?? { text, status: 'skipped', outcome: '' }
+
+  const setFeedback = (text, patch) => {
+    setDraft((prev) => {
+      const existing = prev.actionFeedback ?? []
+      const idx = existing.findIndex(a => a.text === text)
+      const updated = idx >= 0
+        ? existing.map((a, i) => i === idx ? { ...a, ...patch } : a)
+        : [...existing, { text, status: 'skipped', outcome: '', ...patch }]
+      return { ...prev, actionFeedback: updated }
+    })
+  }
+
   return (
     <PanelCard title="founder follow-up" right={right}>
       <div style={styles.weeklyDigestPrefsIntro}>
         Give SelfAudit the cleanest signal it can get: what actually changed since your {reportDate} audit. This becomes grounded context for future digests, alerts, and rankings.
       </div>
 
+      {topActions.length > 0 && (
+        <div style={styles.businessHealthSection}>
+          <div style={styles.businessHealthSectionTitle}>what happened with these actions?</div>
+          {topActions.map((action) => {
+            const fb = getFeedback(action)
+            return (
+              <div key={action} style={{ marginBottom: '10px' }}>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text)', marginBottom: '4px', lineHeight: 1.4 }}>{action}</div>
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                  {ACTION_FEEDBACK_STATUSES.map(({ value, label }) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => setFeedback(action, { status: value })}
+                      style={{
+                        padding: '3px 10px',
+                        borderRadius: '20px',
+                        border: `1px solid ${fb.status === value ? 'var(--accent)' : 'var(--border)'}`,
+                        background: fb.status === value ? 'var(--accent)' : 'transparent',
+                        color: fb.status === value ? 'var(--button-text)' : 'var(--muted)',
+                        fontSize: '0.72rem',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                {(fb.status === 'failed' || fb.status === 'in_progress') && (
+                  <input
+                    type="text"
+                    value={fb.outcome}
+                    onChange={(e) => setFeedback(action, { outcome: e.target.value })}
+                    placeholder={fb.status === 'failed' ? 'What blocked it?' : 'Where does it stand?'}
+                    style={{ ...styles.checkInTextarea, marginTop: '4px', padding: '5px 8px', minHeight: 'unset', height: '32px', fontSize: '0.78rem' }}
+                  />
+                )}
+              </div>
+            )
+          })}
+        </div>
+      )}
+
       <div style={styles.weeklyDigestFieldShell}>
-        <span style={styles.businessHealthSectionTitle}>what happened since the last audit?</span>
+        <span style={styles.businessHealthSectionTitle}>what else happened since the last audit?</span>
         <textarea
           value={draft.sinceLast}
           onChange={(event) => setDraft((prev) => ({ ...prev, sinceLast: event.target.value }))}
@@ -2811,21 +3068,6 @@ function FounderCheckInPanel({ draft, setDraft, saving, error, reportDate, onTog
             style={styles.checkInTextarea}
             placeholder="What is still not moving?"
           />
-        </label>
-      </div>
-
-      <div style={styles.weeklyDigestPrefsGrid}>
-        <label style={styles.weeklyDigestFieldShell}>
-          <span style={styles.businessHealthSectionTitle}>action follow-through</span>
-          <select
-            value={draft.actionStatus}
-            onChange={(event) => setDraft((prev) => ({ ...prev, actionStatus: event.target.value }))}
-            style={styles.weeklyDigestSelect}
-          >
-            <option value="done">We executed the key action</option>
-            <option value="partial">We made partial progress</option>
-            <option value="not_started">We have not acted on it yet</option>
-          </select>
         </label>
       </div>
 
