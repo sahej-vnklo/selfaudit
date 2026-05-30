@@ -1,7 +1,92 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { usePostHog } from '@posthog/react'
 import { PRIVACY_POLICY_URL, TERMS_HASH } from '../lib/legal.js'
 import './Landing.css'
+
+// ── Burger menu overlay ───────────────────────────────────────────────────────
+function BurgerMenu({ onClose, onLogoClick }) {
+  return (
+    <div className="sa-land menu-overlay">
+
+      {/* Top bar */}
+      <header className="menu-top">
+        <div className="menu-logo-wrap" onClick={onLogoClick}>
+          <svg width="30" height="30" viewBox="0 0 32 32" fill="none">
+            <g stroke="oklch(0.52 0.18 32)" strokeLinejoin="round" strokeLinecap="round" fill="none">
+              <path d="M16,2 L28.1,9 L28.1,23 L16,30 L3.9,23 L3.9,9 Z" strokeWidth="1.8" />
+              <path d="M16,9.5 L21.6,12.75 L21.6,19.25 L16,22.5 L10.4,19.25 L10.4,12.75 Z" strokeWidth="1.4" />
+              <path d="M16,2 L16,9.5 M28.1,9 L21.6,12.75 M28.1,23 L21.6,19.25 M16,30 L16,22.5 M3.9,23 L10.4,19.25 M3.9,9 L10.4,12.75" strokeWidth="1.2" />
+            </g>
+          </svg>
+          <span className="menu-logo-text">SelfAudit</span>
+        </div>
+        <button className="menu-close-btn" onClick={onClose} aria-label="Close menu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+            <path d="M5 5l14 14M19 5L5 19" />
+          </svg>
+          Close
+        </button>
+      </header>
+
+      {/* Body */}
+      <div className="menu-body">
+
+        {/* LEFT — Explore */}
+        <div className="menu-col left">
+          <div className="menu-eyebrow">Explore</div>
+
+          <div className="menu-group">
+            <button className="menu-cat">Platform</button>
+            <div className="menu-sublist">
+              <button className="menu-sublink">The Intelligence Layer</button>
+              <button className="menu-sublink">The Six Loops</button>
+              <button className="menu-sublink">Integrations</button>
+            </div>
+          </div>
+
+          <div className="menu-group">
+            <button className="menu-cat">Use Cases</button>
+            <div className="menu-sublist">
+              <button className="menu-sublink">Customer Service</button>
+              <button className="menu-sublink">Sales &amp; Marketing</button>
+              <button className="menu-sublink">Finance &amp; Accounting</button>
+              <button className="menu-sublink">Management &amp; Strategy</button>
+            </div>
+          </div>
+
+          <div className="menu-group">
+            <button className="menu-cat">Impact Studies</button>
+          </div>
+        </div>
+
+        {/* RIGHT — Commercial + Company */}
+        <div className="menu-col right">
+          <div className="menu-eyebrow">Commercial</div>
+
+          <div className="menu-group">
+            <button className="menu-cat">Pricing</button>
+            <div className="menu-sublist">
+              <button className="menu-sublink">Professional</button>
+              <button className="menu-sublink">Enterprise</button>
+            </div>
+          </div>
+
+          <div className="menu-divider" />
+
+          <div className="menu-eyebrow">Company</div>
+          <div className="menu-stack">
+            <button className="menu-cat">About</button>
+            <button className="menu-cat">Security</button>
+            <button className="menu-cat">Careers</button>
+            <button className="menu-cat">Contact</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  )
+}
 
 // ── Pillar data ───────────────────────────────────────────────────────────────
 const PILLARS = [
@@ -52,6 +137,7 @@ export default function Landing({ onStart, session }) {
   const [activePillar, setActivePillar] = useState(0)
   const [descVisible,  setDescVisible]  = useState(true)
   const [openFaq,      setOpenFaq]      = useState(null)
+  const [menuOpen,     setMenuOpen]     = useState(false)
 
   const navRef        = useRef(null)
   const heroRef       = useRef(null)
@@ -230,7 +316,7 @@ export default function Landing({ onStart, session }) {
           <button className="nav-cta" onClick={handleStartAudit} style={{ fontSize: 17, height: 43, marginLeft: 18 }}>
             Start Audit
           </button>
-          <button className="nav-burger" aria-label="Open menu">
+          <button className="nav-burger" aria-label="Open menu" onClick={() => setMenuOpen(true)}>
             <span /><span /><span />
           </button>
         </div>
@@ -555,6 +641,15 @@ export default function Landing({ onStart, session }) {
           </button>
         </div>
       </section>
+
+      {/* BURGER MENU — portal to body so position:fixed escapes hero's perspective/transform context */}
+      {menuOpen && createPortal(
+        <BurgerMenu
+          onClose={() => setMenuOpen(false)}
+          onLogoClick={() => { setMenuOpen(false); handleLogoClick() }}
+        />,
+        document.body
+      )}
 
       {/* FOOTER */}
       <footer className="site-footer" id="company">
