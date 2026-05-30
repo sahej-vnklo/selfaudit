@@ -61,6 +61,14 @@ export default function Landing({ onStart, session }) {
   const pillarsRef    = useRef(null)
   const autoTimerRef  = useRef(null)
 
+  const handleLogoClick = useCallback(() => {
+    if (session) {
+      window.location.hash = 'dashboard'
+    } else {
+      window.location.href = '/'
+    }
+  }, [session])
+
   const handleStartAudit = useCallback(() => {
     posthog?.capture('audit_started', { source: 'landing' })
     if (session) {
@@ -197,7 +205,7 @@ export default function Landing({ onStart, session }) {
 
       {/* NAV */}
       <nav className="nav" ref={navRef} style={{ height: 80 }}>
-        <div className="logo">
+        <div className="logo" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
           <div className="logo-mark">
             <svg viewBox="0 0 32 32" fill="none">
               <defs>
