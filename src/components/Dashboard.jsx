@@ -5,6 +5,9 @@ import IntelligenceBrief from './IntelligenceBrief.jsx'
 import ExecutionPanel from './ExecutionPanel.jsx'
 import DashboardWelcomeTour from './DashboardWelcomeTour.jsx'
 import { OPERATIONAL_AREAS } from '../lib/governance/areaRegistry.js'
+import './Dashboard.css'
+// Legacy sharpTheme imports kept for sub-component backward-compatibility
+// (sub-components still reference old color constants in their internal styles)
 import {
   DARK_ACCENT,
   DARK_ACCENT_SOFT,
@@ -89,104 +92,74 @@ import {
   SHARP_TEXT_SOFT,
 } from '../lib/sharpTheme.js'
 
-const THEME_ORDER = ['dark', 'light', 'sharp']
+const THEME_ORDER = ['dark', 'light']
 
 const THEMES = {
+  // ── Dark — ember on near-black ───────────────────────────────────────────
   dark: {
-    bg: DARK_PAGE_BG,
-    surface: DARK_HERO_SURFACE,
-    surface2: DARK_PANEL_SURFACE,
-    surface3: DARK_SOLID_PANEL_ALT,
-    panel: DARK_PANEL_SURFACE,
-    panelAlt: DARK_HERO_SURFACE,
-    border: DARK_BORDER,
-    border2: DARK_BORDER_STRONG,
-    text: DARK_TEXT,
-    textSecondary: DARK_TEXT_SOFT,
-    textMuted: DARK_TEXT_MUTED,
-    textFaint: DARK_TEXT_FAINT,
-    accent: DARK_ACCENT,
-    accentLight: DARK_ACCENT_SOFT,
-    accentText: DARK_ACCENT_TEXT,
-    red: DARK_RED,
-    redBg: DARK_RED_BG,
-    redText: DARK_RED_TEXT,
-    amber: DARK_AMBER,
-    amberBg: DARK_AMBER_BG,
-    amberText: DARK_AMBER_TEXT,
-    green: DARK_GREEN,
-    greenBg: DARK_GREEN_BG,
-    greenText: DARK_GREEN_TEXT,
-    blue: '#7090B0',
-    violet: '#9070A0',
-    sand: '#B79A92',
-    white: DARK_TEXT,
-    overlay: 'rgba(3,0,0,0.7)',
-    overlaySoft: 'rgba(0,0,0,0.4)',
+    bg:            '#0a0707',
+    surface:       '#110b0a',
+    surface2:      '#1a1110',
+    surface3:      '#18120f',
+    panel:         '#18120f',
+    panelAlt:      '#241a16',
+    border:        'rgba(244, 235, 227, 0.08)',
+    border2:       'rgba(244, 235, 227, 0.14)',
+    text:          '#f4ebe3',
+    textSecondary: '#a89a91',
+    textMuted:     '#6b5f58',
+    textFaint:     'rgba(244, 235, 227, 0.32)',
+    accent:        'oklch(0.68 0.18 35)',
+    accentLight:   'oklch(0.68 0.18 35 / 0.12)',
+    accentText:    'oklch(0.78 0.16 40)',
+    red:           'oklch(0.68 0.18 35)',
+    redBg:         'oklch(0.68 0.18 35 / 0.1)',
+    redText:       'oklch(0.78 0.16 40)',
+    amber:         'oklch(0.78 0.15 70)',
+    amberBg:       'oklch(0.78 0.15 70 / 0.1)',
+    amberText:     'oklch(0.78 0.15 70)',
+    green:         'oklch(0.78 0.16 150)',
+    greenBg:       'oklch(0.78 0.16 150 / 0.1)',
+    greenText:     'oklch(0.78 0.16 150)',
+    blue:          'oklch(0.72 0.12 250)',
+    violet:        'oklch(0.7 0.14 290)',
+    sand:          '#a89a91',
+    white:         '#f4ebe3',
+    overlay:       'rgba(10, 7, 7, 0.72)',
+    overlaySoft:   'rgba(10, 7, 7, 0.4)',
   },
+  // ── Light — ember on white paper ─────────────────────────────────────────
   light: {
-    bg: LIGHT_PAGE_BG,
-    surface: LIGHT_HERO_SURFACE,
-    surface2: LIGHT_PANEL_SURFACE,
-    surface3: LIGHT_SOLID_PANEL_ALT,
-    panel: LIGHT_PANEL_SURFACE,
-    panelAlt: LIGHT_HERO_SURFACE,
-    border: LIGHT_BORDER,
-    border2: LIGHT_BORDER_STRONG,
-    text: LIGHT_TEXT,
-    textSecondary: LIGHT_TEXT_SOFT,
-    textMuted: LIGHT_TEXT_MUTED,
-    textFaint: LIGHT_TEXT_FAINT,
-    accent: LIGHT_ACCENT,
-    accentLight: LIGHT_ACCENT_SOFT,
-    accentText: LIGHT_ACCENT_TEXT,
-    red: LIGHT_RED,
-    redBg: LIGHT_RED_BG,
-    redText: LIGHT_RED_TEXT,
-    amber: LIGHT_AMBER,
-    amberBg: LIGHT_AMBER_BG,
-    amberText: LIGHT_AMBER_TEXT,
-    green: LIGHT_GREEN,
-    greenBg: LIGHT_GREEN_BG,
-    greenText: LIGHT_GREEN_TEXT,
-    blue: '#4A7A6A',
-    violet: '#6A7A5A',
-    sand: '#4F6642',
-    white: '#FFFFFF',
-    overlay: 'rgba(0,0,0,0.14)',
-    overlaySoft: 'rgba(0,0,0,0.07)',
-  },
-  sharp: {
-    bg: SHARP_PAGE_BG,
-    surface: SHARP_HERO_SURFACE,
-    surface2: SHARP_PANEL_SURFACE,
-    surface3: SHARP_SOLID_PANEL_ALT,
-    panel: SHARP_PANEL_SURFACE,
-    panelAlt: SHARP_HERO_SURFACE,
-    border: SHARP_BORDER,
-    border2: SHARP_BORDER_STRONG,
-    text: SHARP_TEXT,
-    textSecondary: SHARP_TEXT_SOFT,
-    textMuted: SHARP_TEXT_MUTED,
-    textFaint: SHARP_TEXT_FAINT,
-    accent: SHARP_ACCENT,
-    accentLight: SHARP_ACCENT_SOFT,
-    accentText: SHARP_ACCENT_TEXT,
-    red: SHARP_RED,
-    redBg: SHARP_RED_BG,
-    redText: SHARP_RED_TEXT,
-    amber: SHARP_AMBER,
-    amberBg: SHARP_AMBER_BG,
-    amberText: SHARP_AMBER_TEXT,
-    green: SHARP_GREEN,
-    greenBg: SHARP_GREEN_BG,
-    greenText: SHARP_GREEN_TEXT,
-    blue: SHARP_ACCENT,
-    violet: '#8EA0FF',
-    sand: '#8AABDE',
-    white: SHARP_TEXT,
-    overlay: 'rgba(5,15,30,0.6)',
-    overlaySoft: 'rgba(0,0,0,0.35)',
+    bg:            '#ffffff',
+    surface:       '#f7f4ef',
+    surface2:      '#efeae2',
+    surface3:      '#f1f1f3',
+    panel:         '#f1f1f3',
+    panelAlt:      '#f7f7f9',
+    border:        'rgba(26, 17, 16, 0.1)',
+    border2:       'rgba(26, 17, 16, 0.16)',
+    text:          '#1a1110',
+    textSecondary: '#6b5d54',
+    textMuted:     '#9a8a7f',
+    textFaint:     'rgba(26, 17, 16, 0.35)',
+    accent:        'oklch(0.52 0.18 32)',
+    accentLight:   'oklch(0.52 0.18 32 / 0.1)',
+    accentText:    'oklch(0.5 0.19 33)',
+    red:           'oklch(0.52 0.18 32)',
+    redBg:         'oklch(0.52 0.18 32 / 0.08)',
+    redText:       'oklch(0.5 0.19 33)',
+    amber:         'oklch(0.65 0.15 70)',
+    amberBg:       'oklch(0.65 0.15 70 / 0.08)',
+    amberText:     'oklch(0.65 0.15 70)',
+    green:         'oklch(0.55 0.14 150)',
+    greenBg:       'oklch(0.55 0.14 150 / 0.08)',
+    greenText:     'oklch(0.55 0.14 150)',
+    blue:          'oklch(0.55 0.12 250)',
+    violet:        'oklch(0.55 0.12 290)',
+    sand:          '#9a8a7f',
+    white:         '#ffffff',
+    overlay:       'rgba(255, 255, 255, 0.72)',
+    overlaySoft:   'rgba(255, 255, 255, 0.4)',
   },
 }
 
@@ -224,85 +197,81 @@ const G = {
 }
 
 function getThemeVars(theme) {
-  const C = THEMES[theme] || THEMES.dark
-  const rich =
-    theme === 'sharp'
-      ? {
-          heroSurface: SHARP_HERO_SURFACE,
-          panelSurface: SHARP_PANEL_SURFACE,
-          heroBorder: SHARP_HERO_BORDER,
-          panelBorder: SHARP_PANEL_BORDER,
-          heroInset: SHARP_HERO_INSET,
-          heroShadow: SHARP_HERO_SHADOW,
-          panelShadow: SHARP_PANEL_SHADOW,
-        }
-      : theme === 'dark'
-        ? {
-            heroSurface: DARK_HERO_SURFACE,
-            panelSurface: DARK_PANEL_SURFACE,
-            heroBorder: DARK_HERO_BORDER,
-            panelBorder: DARK_PANEL_BORDER,
-            heroInset: DARK_HERO_INSET,
-            heroShadow: DARK_HERO_SHADOW,
-            panelShadow: DARK_PANEL_SHADOW,
-          }
-        : theme === 'light'
-          ? {
-              heroSurface: LIGHT_HERO_SURFACE,
-              panelSurface: LIGHT_PANEL_SURFACE,
-              heroBorder: LIGHT_HERO_BORDER,
-              panelBorder: LIGHT_PANEL_BORDER,
-              heroInset: LIGHT_HERO_INSET,
-              heroShadow: LIGHT_HERO_SHADOW,
-              panelShadow: LIGHT_PANEL_SHADOW,
-            }
-        : {
-            heroSurface: C.surface,
-            panelSurface: C.surface2,
-            heroBorder: `1px solid ${C.border}`,
-            panelBorder: `1px solid ${C.border}`,
-            heroInset: 'none',
-            heroShadow: 'none',
-            panelShadow: 'none',
-          }
+  const C   = THEMES[theme] || THEMES.dark
+  const dark = theme !== 'light'
+  // Dashboard-specific surface tokens (injected as CSS vars for Dashboard.css)
+  const dSurface    = dark ? '#18120f'                                            : '#f1f1f3'
+  const dRaised     = dark ? '#241a16'                                            : '#f7f7f9'
+  const dBorder     = dark ? 'rgba(244,235,227,0.17)'                             : 'rgba(20,16,15,0.16)'
+  const dBorderStrong = dark ? 'rgba(244,235,227,0.28)'                           : 'rgba(20,16,15,0.26)'
+  const dShadow     = dark
+    ? '0 2px 5px rgba(0,0,0,0.5), 0 18px 40px -20px rgba(0,0,0,0.8)'
+    : '0 1px 2px rgba(20,16,15,0.07), 0 12px 28px -16px rgba(20,16,15,0.24), 0 0 0 1px rgba(20,16,15,0.04)'
+  const dBtnShadow  = dark
+    ? '0 1px 2px rgba(0,0,0,0.45)'
+    : '0 1px 2px rgba(20,16,15,0.08), 0 1px 1px rgba(20,16,15,0.04)'
+  // Kept for sub-component backward-compat (PanelCard, KpiCard etc. use --rich-* vars)
+  const rich = theme === 'light'
+    ? { heroSurface: LIGHT_HERO_SURFACE, panelSurface: LIGHT_PANEL_SURFACE, heroBorder: LIGHT_HERO_BORDER, panelBorder: LIGHT_PANEL_BORDER, heroInset: LIGHT_HERO_INSET, heroShadow: LIGHT_HERO_SHADOW, panelShadow: LIGHT_PANEL_SHADOW }
+    : { heroSurface: DARK_HERO_SURFACE,  panelSurface: DARK_PANEL_SURFACE,  heroBorder: DARK_HERO_BORDER,  panelBorder: DARK_PANEL_BORDER,  heroInset: DARK_HERO_INSET,  heroShadow: DARK_HERO_SHADOW,  panelShadow: DARK_PANEL_SHADOW  }
   return {
-    '--bg': C.bg,
-    '--surface': C.surface,
-    '--surface2': C.surface2,
-    '--surface3': C.surface3,
-    '--panel': C.panel,
-    '--panel-alt': C.panelAlt,
-    '--border': C.border,
-    '--border2': C.border2,
-    '--text': C.text,
+    // ── Semantic tokens (G.xxx aliases) ──────────────────────────────────
+    '--bg':             C.bg,
+    '--surface':        C.surface,
+    '--surface2':       C.surface2,
+    '--surface3':       C.surface3,
+    '--panel':          C.panel,
+    '--panel-alt':      C.panelAlt,
+    '--border':         C.border,
+    '--border2':        C.border2,
+    '--text':           C.text,
     '--text-secondary': C.textSecondary,
-    '--text-muted': C.textMuted,
-    '--text-faint': C.textFaint,
-    '--accent': C.accent,
-    '--accent-light': C.accentLight,
-    '--accent-text': C.accentText,
-    '--red': C.red,
-    '--red-bg': C.redBg,
-    '--red-text': C.redText,
-    '--amber': C.amber,
-    '--amber-bg': C.amberBg,
-    '--amber-text': C.amberText,
-    '--green': C.green,
-    '--green-bg': C.greenBg,
-    '--green-text': C.greenText,
-    '--blue': C.blue,
-    '--violet': C.violet,
-    '--sand': C.sand,
-    '--white': C.white,
-    '--overlay': C.overlay,
-    '--overlay-soft': C.overlaySoft,
-    '--rich-hero-surface': rich.heroSurface,
+    '--text-muted':     C.textMuted,
+    '--text-faint':     C.textFaint,
+    '--accent':         C.accent,
+    '--accent-light':   C.accentLight,
+    '--accent-text':    C.accentText,
+    '--red':            C.red,
+    '--red-bg':         C.redBg,
+    '--red-text':       C.redText,
+    '--amber':          C.amber,
+    '--amber-bg':       C.amberBg,
+    '--amber-text':     C.amberText,
+    '--green':          C.green,
+    '--green-bg':       C.greenBg,
+    '--green-text':     C.greenText,
+    '--blue':           C.blue,
+    '--violet':         C.violet,
+    '--sand':           C.sand,
+    '--white':          C.white,
+    '--overlay':        C.overlay,
+    '--overlay-soft':   C.overlaySoft,
+    // ── New design tokens (used by Dashboard.css) ─────────────────────────
+    '--fg':             C.text,
+    '--fg-dim':         C.textSecondary,
+    '--fg-mute':        C.textMuted,
+    '--ember':          C.accent,
+    '--ember-glow':     C.accentText,
+    '--line':           C.border,
+    '--line-2':         C.border2,
+    '--bg-2':           C.surface,
+    '--bg-3':           C.surface2,
+    '--d-surface':      dSurface,
+    '--d-raised':       dRaised,
+    '--d-border':       dBorder,
+    '--d-border-strong':dBorderStrong,
+    '--d-shadow':       dShadow,
+    '--d-btn-shadow':   dBtnShadow,
+    '--ok':             C.green,
+    '--warn':           C.amber,
+    // ── Sub-component backward-compat ─────────────────────────────────────
+    '--rich-hero-surface':  rich.heroSurface,
     '--rich-panel-surface': rich.panelSurface,
-    '--rich-hero-border': rich.heroBorder,
-    '--rich-panel-border': rich.panelBorder,
-    '--rich-hero-inset': rich.heroInset,
-    '--rich-hero-shadow': rich.heroShadow,
-    '--rich-panel-shadow': rich.panelShadow,
+    '--rich-hero-border':   rich.heroBorder,
+    '--rich-panel-border':  rich.panelBorder,
+    '--rich-hero-inset':    rich.heroInset,
+    '--rich-hero-shadow':   rich.heroShadow,
+    '--rich-panel-shadow':  rich.panelShadow,
   }
 }
 
@@ -770,12 +739,12 @@ function buildAiOpportunityItems(reports, tier) {
 }
 
 export default function Dashboard({ user, onStartAudit, onSignOut }) {
-  const [theme, setTheme] = useState(() => localStorage.getItem('sa-theme') || 'dark')
+  const [theme, setTheme] = useState(() => {
+    const saved = localStorage.getItem('sa-theme')
+    // Migrate away from removed 'sharp' theme
+    return (saved === 'dark' || saved === 'light') ? saved : 'dark'
+  })
   const themeVars = getThemeVars(theme)
-  const sharpThemeActive = theme === 'sharp'
-  const darkThemeActive = theme === 'dark'
-  const lightThemeActive = theme === 'light'
-  const richThemeActive = sharpThemeActive || darkThemeActive || lightThemeActive
   const [profile, setProfile] = useState(null)
   const [businessState, setBusinessState] = useState(null)
   const [businessStateLoading, setBusinessStateLoading] = useState(true)
@@ -1290,7 +1259,12 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
   }
 
   return (
-    <div style={{ ...themeVars, ...styles.shell }} data-theme={theme}>
+    <div
+      className={`sa-dash${sidebarExpanded ? ' rail-open' : ''}`}
+      style={themeVars}
+      data-theme={theme}
+    >
+      {/* ── Modals ────────────────────────────────────────────────────────── */}
       {goalModal && (
         <GoalCaptureModal onClose={() => setGoalModal(false)} onStart={(goalData) => {
           setGoalModal(false)
@@ -1300,10 +1274,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
       {scopeSetupOpen && (
         <AuditScopeSetupModal
           user={user}
-          onClose={() => {
-            setScopeSetupOpen(false)
-            pendingAuditRef.current = null
-          }}
+          onClose={() => { setScopeSetupOpen(false); pendingAuditRef.current = null }}
           onSaved={(scope) => {
             setProfile((prev) => ({ ...(prev || {}), ...scope }))
             setScopeSetupOpen(false)
@@ -1313,241 +1284,228 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
         />
       )}
 
-      <aside
-        style={{
-          ...styles.sidebar,
-          ...(sidebarExpanded ? styles.sidebarExpanded : {}),
-          ...(sharpThemeActive ? styles.sidebarSharp : {}),
-          ...(darkThemeActive ? styles.sidebarDark : {}),
-          ...(lightThemeActive ? styles.sidebarLight : {}),
-        }}
-      >
-        <button
-          type="button"
-          onClick={() => setSidebarExpanded(p => !p)}
-          title={sidebarExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
-          style={{
-            width: 34, height: 34,
-            borderRadius: 8, border: 'none',
-            background: richThemeActive ? 'rgba(255,255,255,0.03)' : 'transparent',
-            color: G.textMuted,
-            cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            flexShrink: 0,
-            marginBottom: 6,
-            alignSelf: sidebarExpanded ? 'flex-end' : 'center',
-            boxShadow: richThemeActive ? 'inset 0 1px 0 rgba(255,255,255,0.03), 0 0 0 1px rgba(255,255,255,0.06)' : 'none',
-          }}
-        >
-          {sidebarExpanded
-            ? <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7L9 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-            : <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 2L10 7L5 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-          }
+      {/* ── Top bar ───────────────────────────────────────────────────────── */}
+      <header className="dash-topbar">
+        <div className="dash-logo" onClick={() => navigateSection('home')}>
+          <span className="logo-mark">
+            <svg viewBox="0 0 32 32" fill="none" width="26" height="26">
+              <g stroke="currentColor" strokeLinejoin="round" strokeLinecap="round" fill="none">
+                <path d="M16,2 L28.1,9 L28.1,23 L16,30 L3.9,23 L3.9,9 Z" strokeWidth="1.8"/>
+                <path d="M16,9.5 L21.6,12.75 L21.6,19.25 L16,22.5 L10.4,19.25 L10.4,12.75 Z" strokeWidth="1.4"/>
+                <path d="M16,2 L16,9.5 M28.1,9 L21.6,12.75 M28.1,23 L21.6,19.25 M16,30 L16,22.5 M3.9,23 L10.4,19.25 M3.9,9 L10.4,12.75" strokeWidth="1.2"/>
+              </g>
+            </svg>
+          </span>
+          <span className="logo-text">SelfAudit</span>
+        </div>
+
+        <button className="dash-status" type="button" onClick={() => navigateSection('oversight')}>
+          <span className="dot" />
+          Results ready
+          <span className="count">{alertsLoading ? '…' : alerts.length > 0 ? alerts.length : '—'}</span>
+          <span className="chev">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M6 9l6 6 6-6"/>
+            </svg>
+          </span>
         </button>
-        <SidebarButton icon={<IconHome />} active={section === 'home'} onClick={() => navigateSection('home')} label="Home" expanded={sidebarExpanded} sharpTheme={richThemeActive} />
-        {intelligenceUnlocked && (
-          <SidebarButton icon={<IconOversight />} active={section === 'oversight'} onClick={() => navigateSection('oversight')} label="Oversight" expanded={sidebarExpanded} sharpTheme={richThemeActive} />
-        )}
-        <SidebarButton icon={<IconReports />} active={section === 'reports'} onClick={() => navigateSection('reports')} label="Reports" expanded={sidebarExpanded} sharpTheme={richThemeActive} />
-        <SidebarButton icon={<IconIntelligence />} active={section === 'intelligence'} onClick={() => navigateSection('intelligence')} label="Intelligence Brief" expanded={sidebarExpanded} sharpTheme={richThemeActive} />
-        <SidebarButton icon={<IconBrain />} active={section === 'business-state'} onClick={() => navigateSection('business-state')} label="What We Know" expanded={sidebarExpanded} sharpTheme={richThemeActive} />
-        {intelligenceUnlocked && (
-          <SidebarButton icon={<IconConnectors />} active={section === 'connectors'} onClick={() => navigateSection('connectors')} label="Connectors" expanded={sidebarExpanded} sharpTheme={richThemeActive} />
-        )}
-        {intelligenceUnlocked && (
-          <SidebarButton icon={<IconAgent />} active={section === 'agent'} onClick={() => navigateSection('agent')} label="Ask SelfAudit" expanded={sidebarExpanded} sharpTheme={richThemeActive} />
-        )}
-        <div style={{ flex: 1 }} />
-        <SidebarButton icon={<IconGear />} active={section === 'billing'} onClick={() => navigateSection('billing')} label="Billing" expanded={sidebarExpanded} />
-        <button
-          type="button"
-          onClick={() => navigateSection('account')}
-          style={{
-            ...styles.avatarButton,
-            ...(sidebarExpanded ? styles.avatarButtonExpanded : {}),
-            ...(section === 'account' ? styles.avatarButtonActive : {}),
-            ...(richThemeActive ? styles.avatarButtonSharp : {}),
-            ...(richThemeActive && section === 'account' ? styles.avatarButtonActiveSharp : {}),
-          }}
-          aria-label="Account"
-          title="Account"
-        >
-          <span style={{ ...styles.avatarChip, ...(section === 'account' ? styles.avatarChipActive : {}) }}>{initials}</span>
-          {sidebarExpanded && <span style={styles.sidebarLabel}>Account</span>}
-        </button>
-      </aside>
 
-      <div style={styles.appFrame}>
-        <header style={{ ...styles.topbar, ...(sharpThemeActive ? styles.topbarSharp : {}), ...(darkThemeActive ? styles.topbarDark : {}), ...(lightThemeActive ? styles.topbarLight : {}) }}>
-          <div style={styles.topbarLeft}>
-            <div style={styles.logo} onClick={() => navigateSection('home')}>
-              self<span style={{ color: G.accentText }}>audit</span>
-            </div>
-            <div style={styles.breadcrumb}>{sectionMeta[section] || '/ command centre'}</div>
+        <div className="dash-top-right">
+          <button className="dash-pill" type="button" onClick={() => navigateSection('oversight')}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>
+            </svg>
+            Oversight
+          </button>
+          <button className="dash-pill" type="button" onClick={() => navigateSection('intelligence')}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 3l1.7 5.1a2 2 0 0 0 1.2 1.2L20 11l-5.1 1.7a2 2 0 0 0-1.2 1.2L12 19l-1.7-5.1a2 2 0 0 0-1.2-1.2L4 11l5.1-1.7a2 2 0 0 0 1.2-1.2z"/>
+            </svg>
+            AI Opportunities
+          </button>
+          <button className="dash-iconbtn" type="button" onClick={toggleTheme} aria-label="Toggle theme" title="Toggle theme">
+            <svg className="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+            </svg>
+            <svg className="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="4.2"/>
+              <path d="M12 2.5v2.4M12 19.1v2.4M4.6 4.6l1.7 1.7M17.7 17.7l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.6 19.4l1.7-1.7M17.7 6.3l1.7-1.7"/>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      {/* ── Body ──────────────────────────────────────────────────────────── */}
+      <div className="dash-body">
+
+        {/* Icon rail sidebar */}
+        <aside className="dash-side">
+          <button
+            className="dash-rail-toggle"
+            type="button"
+            onClick={() => setSidebarExpanded(p => !p)}
+            aria-label={sidebarExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
+            title="Expand / collapse"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+          </button>
+
+          <nav className="dash-nav">
+            <button className={`dash-navbtn${section === 'home' ? ' active' : ''}`} data-label="Command" aria-label="Command" type="button" onClick={() => navigateSection('home')}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3z"/>
+              </svg>
+              <span className="navlabel">Command</span>
+            </button>
+            <button className={`dash-navbtn${section === 'reports' ? ' active' : ''}`} data-label="Sessions" aria-label="Sessions" type="button" onClick={() => navigateSection('reports')}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 19V10M10 19V5M16 19v-7M22 19H2"/>
+              </svg>
+              <span className="navlabel">Sessions</span>
+            </button>
+            <button className={`dash-navbtn${section === 'business-state' ? ' active' : ''}`} data-label="Context" aria-label="Context" type="button" onClick={() => navigateSection('business-state')}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/>
+                <path d="M14 3v5h5M9 13h6M9 17h6"/>
+              </svg>
+              <span className="navlabel">Context</span>
+            </button>
+            <button className={`dash-navbtn${section === 'connectors' ? ' active' : ''}`} data-label="Connectors" aria-label="Connectors" type="button" onClick={() => navigateSection('connectors')}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="6" cy="6" r="2.4"/><circle cx="18" cy="6" r="2.4"/><circle cx="12" cy="18" r="2.4"/>
+                <path d="M6 8.4v3a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-3M12 13.4v2.2"/>
+              </svg>
+              <span className="navlabel">Connectors</span>
+            </button>
+          </nav>
+
+          <div className="dash-side-foot">
+            <button className={`dash-navbtn${section === 'account' ? ' active' : ''}`} data-label="Account" aria-label="Account" type="button" onClick={() => navigateSection('account')}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="8" r="3.6"/><path d="M5 20a7 7 0 0 1 14 0"/>
+              </svg>
+              <span className="navlabel">Account</span>
+            </button>
           </div>
+        </aside>
 
-          <div style={styles.topbarActions}>
-            <button type="button" style={{ ...styles.themeToggleButton, ...(richThemeActive ? styles.themeToggleButtonSharp : {}) }} onClick={toggleTheme} aria-label="Cycle theme">
-              <span style={styles.themeToggleIcon}>◐</span>
-              <span>Theme</span>
-            </button>
-            {tier === 'intelligence' && (
-              <button type="button" style={{ ...styles.ghostButton, ...(richThemeActive ? styles.ghostButtonSharp : {}) }} onClick={() => navigateSection('alerts')}>
-                <span>Alerts</span>
-                <span style={styles.topbarCountBadge}>{alertsLoading ? '…' : alerts.length}</span>
-              </button>
-            )}
-            <button type="button" style={{ ...styles.ghostButton, ...(richThemeActive ? styles.ghostButtonSharp : {}) }} onClick={startAudit}>
-              diagnose a problem
-            </button>
-            <button
-              type="button"
-              style={styles.primaryButton}
-              onClick={() => {
-                if (activationLocked) {
-                  navigateSection('billing')
-                  return
-                }
-                setGoalModal(true)
-              }}
-            >
-              map a goal
-            </button>
-          </div>
-        </header>
+        {/* ── Main content ─────────────────────────────────────────────────── */}
+        <main className="dash-content">
 
-        <main style={{ ...styles.main, ...(sharpThemeActive ? styles.mainSharp : {}), ...(darkThemeActive ? styles.mainDark : {}), ...(lightThemeActive ? styles.mainLight : {}) }}>
+          {/* Command / Home — two agent cards + command bar */}
           {section === 'home' && (
-            <HomeSection
-              user={user}
-              profile={profile}
-              businessState={businessState}
-              businessStateLoading={businessStateLoading}
-              reports={reports}
-              reportsLoading={reportsLoading}
-              onStartAudit={startAudit}
-              onStartGoalAudit={() => setGoalModal(true)}
-              healthIntel={healthIntel}
-              theme={theme}
-              onOpenOversight={() => navigateSection('oversight')}
-            />
-          )}
-
-          {section === 'oversight' && (
-            <PageShell
-              title="Operational oversight"
-              sub="Your four operating lanes, what is drifting, and what SelfAudit thinks needs attention first."
-            >
-              <OperationalOversightSection
-                intelligenceUnlocked={intelligenceUnlocked}
-                healthIntel={healthIntel}
-              />
-            </PageShell>
-          )}
-
-          {section === 'reports' && (
-            <PageShell
-              title="Reports"
-              sub="Your saved audit reports."
-            >
-              {reportsLoading
-                ? <ReportSkeletons />
-                : reports.length > 0
-                  ? <ReportList reports={reports} userId={user?.id} />
-                  : <EmptyReports onStartAudit={startAudit} />}
-            </PageShell>
-          )}
-
-          {section === 'intelligence' && (
-            <PageShell>
-              <IntelligenceBrief
-                user={user}
-                profile={profile}
-                onProfileChange={(updated) => setProfile((prev) => ({ ...prev, ...updated }))}
-              />
-            </PageShell>
-          )}
-
-          {section === 'business-state' && (
-            <PageShell
-              title="What we know"
-              sub="Your current operating picture, compiled from saved audit context and editable when something changes."
-            >
-              <BusinessStateCard user={user} businessState={businessState} loading={businessStateLoading} />
-            </PageShell>
-          )}
-
-          {section === 'alerts' && (
-            <PageShell
-              title="Alerts"
-              sub="Review unresolved monitoring signals, acknowledge what you have seen, and resolve what is actually handled."
-            >
-              <AlertsInboxSection
-                intelligenceUnlocked={tier === 'intelligence'}
-                alerts={alerts}
-                alertsLoading={alertsLoading}
-                alertsError={alertsError}
-                onRefreshAlerts={refreshAlerts}
-                onUpdateAlert={updateAlertStatus}
-                updatingAlertIds={updatingAlertIds}
-              />
-            </PageShell>
-          )}
-
-          {section === 'connectors' && (
-            <ConnectorsSection user={user} />
-          )}
-
-          {section === 'agent' && (
-            <AgentSection user={user} />
-          )}
-
-          {section === 'billing' && (
-            <PageShell
-              title="Subscription"
-              sub={requiresPayment ? 'Choose a plan to activate your account and access the full dashboard.' : 'Your current plan is highlighted. Upgrade or downgrade any time.'}
-            >
-              {requiresPayment && (
-                <div style={{ background: 'var(--amber-bg, #2a1f00)', border: '1px solid var(--amber, #d97706)', borderRadius: 8, padding: '14px 18px', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <span style={{ fontSize: 16 }}>⚠</span>
-                  <span style={{ fontSize: 14, color: 'var(--amber, #d97706)', fontWeight: 500 }}>
-                    Your account isn't active yet. Pick a plan below to get started.
-                  </span>
-                </div>
-              )}
-              {checkoutSyncing && (
-                <div style={{ background: 'var(--accent-soft, rgba(255,255,255,0.04))', border: '1px solid var(--accent, #8b5cf6)', borderRadius: 8, padding: '14px 18px', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <span style={{ fontSize: 16 }}>↻</span>
-                  <span style={{ fontSize: 14, color: 'var(--accent-text, #fff)', fontWeight: 500 }}>
-                    Finalizing your checkout and updating your plan…
-                  </span>
-                </div>
-              )}
-              {tier === 'intelligence' && (
-                <LiveBillingCard
-                  billing={billing}
-                  billingLoading={billingLoading}
-                  billingError={billingError}
-                  onOpenPortal={openPortal}
-                  portalLoading={portalLoading}
-                />
-              )}
-              <div style={styles.tierGrid}>
-                {TIERS.map((item) => (
-                  <TierCard key={item.key} tier={item} currentTier={tier} userId={user?.id} email={user?.email} requiresPayment={requiresPayment} />
-                ))}
+            <>
+              <div className="dash-cards">
+                <section className="dash-card" aria-label="Agent X — Diagnostic engine">
+                  <header className="card-head">
+                    <div className="card-head-text">
+                      <div className="card-eyebrow">Agent X</div>
+                      <h2 className="card-title">Diagnostic engine</h2>
+                    </div>
+                    <div className="card-status">
+                      <span className="cs-dot warn" />
+                      Analyzing
+                    </div>
+                  </header>
+                </section>
+                <section className="dash-card" aria-label="Agent Y — Solution engine">
+                  <header className="card-head">
+                    <div className="card-head-text">
+                      <div className="card-eyebrow">Agent Y</div>
+                      <h2 className="card-title">Solution engine</h2>
+                    </div>
+                    <div className="card-status">
+                      <span className="cs-dot ok" />
+                      Proposing
+                    </div>
+                  </header>
+                </section>
               </div>
-            </PageShell>
+
+              <div className="dash-cmd">
+                <button className="dash-newbtn" type="button" onClick={startAudit}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 5v14M5 12h14"/>
+                  </svg>
+                  New session
+                </button>
+                <span className="dash-cmd-div" />
+                <div className="dash-cmd-status">
+                  <span className="dash-cmd-dots"><i /><i /></span>
+                  <span>both listening</span>
+                </div>
+                <input
+                  className="dash-cmd-input"
+                  type="text"
+                  placeholder="Ask anything about your business, or give a command…"
+                />
+                <button className="dash-cmd-send" type="button" aria-label="Send">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 19V5M5 12l7-7 7 7"/>
+                  </svg>
+                </button>
+              </div>
+            </>
           )}
 
-          {section === 'account' && (
-            <AccountSection
-              user={user}
-              profile={profile}
-              onProfileChange={(updated) => setProfile((prev) => ({ ...prev, ...updated }))}
-              onSignOut={onSignOut}
-            />
+          {/* All other sections — scrollable content */}
+          {section !== 'home' && (
+            <div className="section-scroll">
+              {section === 'oversight' && (
+                <PageShell title="Operational oversight" sub="Your four operating lanes, what is drifting, and what SelfAudit thinks needs attention first.">
+                  <OperationalOversightSection intelligenceUnlocked={intelligenceUnlocked} healthIntel={healthIntel} />
+                </PageShell>
+              )}
+              {section === 'reports' && (
+                <PageShell title="Sessions" sub="Your saved audit reports.">
+                  {reportsLoading ? <ReportSkeletons /> : reports.length > 0 ? <ReportList reports={reports} userId={user?.id} /> : <EmptyReports onStartAudit={startAudit} />}
+                </PageShell>
+              )}
+              {section === 'intelligence' && (
+                <PageShell>
+                  <IntelligenceBrief user={user} profile={profile} onProfileChange={(updated) => setProfile((prev) => ({ ...prev, ...updated }))} />
+                </PageShell>
+              )}
+              {section === 'business-state' && (
+                <PageShell title="Context" sub="Your current operating picture, compiled from saved audit context and editable when something changes.">
+                  <BusinessStateCard user={user} businessState={businessState} loading={businessStateLoading} />
+                </PageShell>
+              )}
+              {section === 'alerts' && (
+                <PageShell title="Alerts" sub="Review unresolved monitoring signals, acknowledge what you have seen, and resolve what is actually handled.">
+                  <AlertsInboxSection intelligenceUnlocked={tier === 'intelligence'} alerts={alerts} alertsLoading={alertsLoading} alertsError={alertsError} onRefreshAlerts={refreshAlerts} onUpdateAlert={updateAlertStatus} updatingAlertIds={updatingAlertIds} />
+                </PageShell>
+              )}
+              {section === 'connectors' && <ConnectorsSection user={user} />}
+              {section === 'agent'      && <AgentSection user={user} />}
+              {section === 'billing' && (
+                <PageShell title="Subscription" sub={requiresPayment ? 'Choose a plan to activate your account.' : 'Your current plan. Upgrade or downgrade any time.'}>
+                  {requiresPayment && (
+                    <div style={{ background: G.amberBg, border: `1px solid ${G.amber}`, borderRadius: 8, padding: '14px 18px', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <span style={{ fontSize: 16 }}>⚠</span>
+                      <span style={{ fontSize: 14, color: G.amberText, fontWeight: 500 }}>Your account isn't active yet. Pick a plan below to get started.</span>
+                    </div>
+                  )}
+                  {checkoutSyncing && (
+                    <div style={{ background: G.accentLight, border: `1px solid ${G.accent}`, borderRadius: 8, padding: '14px 18px', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <span style={{ fontSize: 16 }}>↻</span>
+                      <span style={{ fontSize: 14, color: G.accentText, fontWeight: 500 }}>Finalizing your checkout and updating your plan…</span>
+                    </div>
+                  )}
+                  {tier === 'intelligence' && <LiveBillingCard billing={billing} billingLoading={billingLoading} billingError={billingError} onOpenPortal={openPortal} portalLoading={portalLoading} />}
+                  <div style={styles.tierGrid}>
+                    {TIERS.map((item) => <TierCard key={item.key} tier={item} currentTier={tier} userId={user?.id} email={user?.email} requiresPayment={requiresPayment} />)}
+                  </div>
+                </PageShell>
+              )}
+              {section === 'account' && (
+                <AccountSection user={user} profile={profile} onProfileChange={(updated) => setProfile((prev) => ({ ...prev, ...updated }))} onSignOut={onSignOut} />
+              )}
+            </div>
           )}
+
         </main>
       </div>
     </div>
