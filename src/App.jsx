@@ -10,7 +10,6 @@ import Dashboard from './components/Dashboard.jsx'
 import DashboardWelcomeTour from './components/DashboardWelcomeTour.jsx'
 import AdminDashboard from './pages/AdminDashboard.jsx'
 import TermsPage from './components/TermsPage.jsx'
-import OperationalDebtPage from './components/OperationalDebtPage.jsx'
 
 const PENDING_AUTH_INTENT_KEY = 'sa-auth-intent'
 const PENDING_CHECKOUT_RETURN_KEY = 'sa-checkout-return'
@@ -25,14 +24,13 @@ const SCREENS = {
   TOUR_PREVIEW:        'tour-preview',
   ADMIN:               'admin',
   TERMS:               'terms',
-  OPERATIONAL_DEBT:    'operational-debt',
 }
 
 const HASH_SCREENS = new Set([
   SCREENS.LOGIN, SCREENS.SIGNUP,
   SCREENS.DASHBOARD,
   SCREENS.TOUR_PREVIEW,
-  SCREENS.ADMIN, SCREENS.TERMS, SCREENS.OPERATIONAL_DEBT,
+  SCREENS.ADMIN, SCREENS.TERMS,
 ])
 
 const DASHBOARD_SECTION_HASHES = new Set(['home', 'reports', 'intelligence', 'business-state', 'alerts', 'connectors', 'agent', 'billing', 'account'])
@@ -50,10 +48,6 @@ function syncScreenForAuthenticatedHash(setScreen) {
   }
   if (section === 'terms') {
     setScreen(SCREENS.TERMS)
-    return true
-  }
-  if (section === 'operational-debt') {
-    setScreen(SCREENS.OPERATIONAL_DEBT)
     return true
   }
   if (section === 'dashboard' || DASHBOARD_SECTION_HASHES.has(section)) {
@@ -128,7 +122,6 @@ function screenFromHash(isAuthenticated = false) {
   if (section === 'tour-preview')       return SCREENS.TOUR_PREVIEW
   if (section === 'admin')              return SCREENS.ADMIN
   if (section === 'terms')              return SCREENS.TERMS
-  if (section === 'operational-debt')   return SCREENS.OPERATIONAL_DEBT
   // Dashboard section hashes (#billing, #reports, etc.) must not exit the dashboard
   if (isAuthenticated && DASHBOARD_SECTION_HASHES.has(section)) return SCREENS.DASHBOARD
   return null
@@ -165,6 +158,7 @@ export default function App() {
   const [session,             setSession]             = useState(null)
   const [authLoading,         setAuthLoading]         = useState(true)
   const [authMessage,         setAuthMessage]         = useState('')
+  const [auditJustCompleted,  setAuditJustCompleted]  = useState(false)
   const theme = localStorage.getItem('sa-theme') || 'dark'
   const pendingCheckoutRef = React.useRef(false)
 
@@ -466,6 +460,7 @@ export default function App() {
   const handleReportReady = (history, sessionId, contactInfo) => {
     setConversationHistory(history)
     setAuditSessionId(sessionId ?? null)
+    setAuditJustCompleted(true)
     if (contactInfo?.email) {
       setUserInfo(prev => prev ? {
         ...prev,
@@ -544,16 +539,15 @@ export default function App() {
     return <TermsPage />
   }
 
-  if (screen === SCREENS.OPERATIONAL_DEBT) {
-    return <OperationalDebtPage />
-  }
-
   if (screen === SCREENS.DASHBOARD) {
     if (!session) { navigate(SCREENS.LOGIN); return null }
     return <Dashboard
       user={session.user}
       onSignOut={handleSignOut}
+      auditJustCompleted={auditJustCompleted}
+      onAuditCompletedAck={() => setAuditJustCompleted(false)}
       onStartAudit={(info) => {
+        setAuditJustCompleted(false)
         setUserInfo(info)
         navigate(SCREENS.AUDIT)
       }}
