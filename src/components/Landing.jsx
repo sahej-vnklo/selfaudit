@@ -46,7 +46,7 @@ const FAQS = [
 ]
 
 // ── Component ─────────────────────────────────────────────────────────────────
-export default function Landing({ onStart }) {
+export default function Landing({ onStart, session }) {
   const posthog = usePostHog()
 
   const [activePillar, setActivePillar] = useState(0)
@@ -63,8 +63,12 @@ export default function Landing({ onStart }) {
 
   const handleStartAudit = useCallback(() => {
     posthog?.capture('audit_started', { source: 'landing' })
-    onStart('')
-  }, [posthog, onStart])
+    if (session) {
+      onStart('')
+    } else {
+      window.location.hash = 'login'
+    }
+  }, [posthog, onStart, session])
 
   // Pillar change with brief fade so text transitions smoothly
   const changePillar = useCallback((i) => {
