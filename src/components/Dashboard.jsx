@@ -777,6 +777,27 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
   const activationLocked = requiresPayment || checkoutSyncing
   const shouldShowWelcomeTour = !!profile && !requiresPayment && shouldShowWelcomeTourForProfile(profile)
 
+  // ── Report-derived values (shared across Oversight + AI Opportunities) ──
+  const latestDiagnosticReport = useMemo(() => getLatestDiagnosticReport(reports), [reports])
+  const latestParsedContent    = useMemo(() => latestDiagnosticReport ? parseReportContent(latestDiagnosticReport) : null, [latestDiagnosticReport])
+  const latestDomains          = latestParsedContent?.domains || []
+  const sortedDomains          = useMemo(() => [...latestDomains].sort((a, b) => severityRank(a.status) - severityRank(b.status)), [latestDomains])
+  const flaggedDomains         = sortedDomains.filter(d => d.status === 'critical' || d.status === 'needs_work')
+  const healthScore            = latestDomains.length ? computeHealthScore(latestDomains) : null
+  const goalState              = useMemo(() => extractGoalState(profile, reports, businessState), [profile, reports, businessState])
+  const issueState             = useMemo(() => latestDiagnosticReport ? getOpenIssueStatuses(businessState, latestDiagnosticReport.id) : {}, [businessState, latestDiagnosticReport])
+  const opportunityItems       = useMemo(() => buildAiOpportunityItems(reports, profile?.tier || 'foundation'), [reports, profile?.tier])
+  const shareUserInfo          = useMemo(() => ({
+    name:     profile?.name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'User',
+    email:    user?.email || '',
+    phone:    profile?.phone || '',
+    context:  profile?.context || '',
+    userId:   user?.id || null,
+    tier:     profile?.tier || null,
+    industry: profile?.industry || null,
+    domain:   profile?.domain || null,
+  }), [profile, user])
+
   useEffect(() => {
     localStorage.setItem('sa-theme', theme)
   }, [theme])
@@ -1302,7 +1323,6 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
         <button className="dash-status" type="button" onClick={() => navigateSection('oversight')}>
           <span className="dot" />
           Results ready
-          <span className="count">{alertsLoading ? '…' : alerts.length > 0 ? alerts.length : '—'}</span>
           <span className="chev">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M6 9l6 6 6-6"/>
@@ -1453,26 +1473,65 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
           {/* All other sections — scrollable content */}
           {section !== 'home' && (
             <div className="section-scroll">
+              {/* ── Oversight → Business Health + Open Issues + Oversight lanes ── */}
               {section === 'oversight' && (
-                <PageShell title="Operational oversight" sub="Your four operating lanes, what is drifting, and what SelfAudit thinks needs attention first.">
-                  <OperationalOversightSection intelligenceUnlocked={intelligenceUnlocked} healthIntel={healthIntel} />
+                <PageShell title="Oversight" sub="Business health, open issues, and your four operational lanes.">
+                  <BusinessHealthPanel
+                    latestDomains={latestDomains}
+                    healthIntel={healthIntel}
+                    goalState={goalState}
+                  />
+                  {latestDiagnosticReport && (
+                    <div style={{ marginTop: 24 }}>
+                      <OpenIssuesTracker
+                        report={latestDiagnosticReport}
+                        domains={flaggedDomains}
+                        userId={user?.id}
+                        issueState={issueState}
+                        onIssueStateChange={() => {}}
+                      />
+                    </div>
+                  )}
+                  <div style={{ marginTop: 24 }}>
+                    <OperationalOversightSection intelligenceUnlocked={intelligenceUnlocked} healthIntel={healthIntel} />
+                  </div>
                 </PageShell>
               )}
+
+              {/* ── Sessions → Audit report history ─────────────────────── */}
               {section === 'reports' && (
                 <PageShell title="Sessions" sub="Your saved audit reports.">
                   {reportsLoading ? <ReportSkeletons /> : reports.length > 0 ? <ReportList reports={reports} userId={user?.id} /> : <EmptyReports onStartAudit={startAudit} />}
                 </PageShell>
               )}
+
+              {/* ── AI Opportunities → ranked opportunity items ──────────── */}
               {section === 'intelligence' && (
-                <PageShell>
-                  <IntelligenceBrief user={user} profile={profile} onProfileChange={(updated) => setProfile((prev) => ({ ...prev, ...updated }))} />
+                <PageShell title="AI Opportunities" sub="Ranked opportunities surfaced from your audit findings.">
+                  <AiOpportunitiesDetailPanel
+                    user={user}
+                    userInfo={shareUserInfo}
+                    reports={reports}
+                    items={opportunityItems}
+                    tier={tier}
+                  />
                 </PageShell>
               )}
+
+              {/* ── Context → Intelligence brief + What We Know ──────────── */}
               {section === 'business-state' && (
-                <PageShell title="Context" sub="Your current operating picture, compiled from saved audit context and editable when something changes.">
-                  <BusinessStateCard user={user} businessState={businessState} loading={businessStateLoading} />
+                <PageShell title="Context" sub="Your intelligence brief and operating picture in one place.">
+                  <IntelligenceBrief
+                    user={user}
+                    profile={profile}
+                    onProfileChange={(updated) => setProfile((prev) => ({ ...prev, ...updated }))}
+                  />
+                  <div style={{ marginTop: 32 }}>
+                    <BusinessStateCard user={user} businessState={businessState} loading={businessStateLoading} />
+                  </div>
                 </PageShell>
               )}
+
               {section === 'alerts' && (
                 <PageShell title="Alerts" sub="Review unresolved monitoring signals, acknowledge what you have seen, and resolve what is actually handled.">
                   <AlertsInboxSection intelligenceUnlocked={tier === 'intelligence'} alerts={alerts} alertsLoading={alertsLoading} alertsError={alertsError} onRefreshAlerts={refreshAlerts} onUpdateAlert={updateAlertStatus} updatingAlertIds={updatingAlertIds} />
@@ -1480,28 +1539,35 @@ export default function Dashboard({ user, onStartAudit, onSignOut }) {
               )}
               {section === 'connectors' && <ConnectorsSection user={user} />}
               {section === 'agent'      && <AgentSection user={user} />}
-              {section === 'billing' && (
-                <PageShell title="Subscription" sub={requiresPayment ? 'Choose a plan to activate your account.' : 'Your current plan. Upgrade or downgrade any time.'}>
-                  {requiresPayment && (
-                    <div style={{ background: G.amberBg, border: `1px solid ${G.amber}`, borderRadius: 8, padding: '14px 18px', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
-                      <span style={{ fontSize: 16 }}>⚠</span>
-                      <span style={{ fontSize: 14, color: G.amberText, fontWeight: 500 }}>Your account isn't active yet. Pick a plan below to get started.</span>
-                    </div>
-                  )}
-                  {checkoutSyncing && (
-                    <div style={{ background: G.accentLight, border: `1px solid ${G.accent}`, borderRadius: 8, padding: '14px 18px', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
-                      <span style={{ fontSize: 16 }}>↻</span>
-                      <span style={{ fontSize: 14, color: G.accentText, fontWeight: 500 }}>Finalizing your checkout and updating your plan…</span>
-                    </div>
-                  )}
-                  {tier === 'intelligence' && <LiveBillingCard billing={billing} billingLoading={billingLoading} billingError={billingError} onOpenPortal={openPortal} portalLoading={portalLoading} />}
-                  <div style={styles.tierGrid}>
-                    {TIERS.map((item) => <TierCard key={item.key} tier={item} currentTier={tier} userId={user?.id} email={user?.email} requiresPayment={requiresPayment} />)}
-                  </div>
-                </PageShell>
-              )}
+
+              {/* ── Account → Profile + Billing ─────────────────────────── */}
               {section === 'account' && (
-                <AccountSection user={user} profile={profile} onProfileChange={(updated) => setProfile((prev) => ({ ...prev, ...updated }))} onSignOut={onSignOut} />
+                <>
+                  <AccountSection
+                    user={user}
+                    profile={profile}
+                    onProfileChange={(updated) => setProfile((prev) => ({ ...prev, ...updated }))}
+                    onSignOut={onSignOut}
+                  />
+                  <PageShell title="Subscription" sub={requiresPayment ? 'Choose a plan to activate your account.' : 'Your current plan. Upgrade or downgrade any time.'}>
+                    {requiresPayment && (
+                      <div style={{ background: G.amberBg, border: `1px solid ${G.amber}`, borderRadius: 8, padding: '14px 18px', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <span style={{ fontSize: 16 }}>⚠</span>
+                        <span style={{ fontSize: 14, color: G.amberText, fontWeight: 500 }}>Your account isn't active yet. Pick a plan below to get started.</span>
+                      </div>
+                    )}
+                    {checkoutSyncing && (
+                      <div style={{ background: G.accentLight, border: `1px solid ${G.accent}`, borderRadius: 8, padding: '14px 18px', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <span style={{ fontSize: 16 }}>↻</span>
+                        <span style={{ fontSize: 14, color: G.accentText, fontWeight: 500 }}>Finalizing your checkout and updating your plan…</span>
+                      </div>
+                    )}
+                    {tier === 'intelligence' && <LiveBillingCard billing={billing} billingLoading={billingLoading} billingError={billingError} onOpenPortal={openPortal} portalLoading={portalLoading} />}
+                    <div style={styles.tierGrid}>
+                      {TIERS.map((item) => <TierCard key={item.key} tier={item} currentTier={tier} userId={user?.id} email={user?.email} requiresPayment={requiresPayment} />)}
+                    </div>
+                  </PageShell>
+                </>
               )}
             </div>
           )}
