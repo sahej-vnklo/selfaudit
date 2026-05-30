@@ -334,16 +334,38 @@ export default function Landing({ onStart, session }) {
         <div className="hero-content" />
       </section>
 
+      {/* BRIDGE */}
+      <section className="bridge">
+        <div className="bridge-inner">
+          <p className="bridge-headline">
+            <span>McKinsey sells it.</span>
+            <span>Palantir builds it.</span>
+            <span>Bloomberg rents fragments of it.</span>
+            <em>SelfAudit puts it directly in your hands.</em>
+          </p>
+          <div className="bridge-divider" />
+          <p className="bridge-body">
+            The only AI that watches all four parts of your business simultaneously
+            {' '}— diagnoses what&apos;s breaking, tells you exactly what to do, and gets smarter about your specific operation with every session.
+          </p>
+        </div>
+      </section>
+
       {/* STATEMENT */}
       <section className="statement">
         <p className="statement-heading">
-          Performant software was never a luxury.<br />
-          Strategic intelligence still is.<br />
-          Until now.
+          Every business is carrying debt that doesn&apos;t appear on any balance sheet.<br />
+          Not financial. Not technical. <em>Operational.</em>
         </p>
         <p className="statement-body">
-          SelfAudit is the intelligence layer that never sleeps — autonomous, continuous, surfacing what matters the most.
+          It&apos;s the accumulated weight of decisions deferred, processes normalized, and
+          problems absorbed into the daily rhythm until nobody questions them anymore.
+          It doesn&apos;t trigger an alert. It just quietly compounds — until the business
+          hits a ceiling it can&apos;t explain.
         </p>
+        <a href="#operational-debt" className="statement-link">
+          Read: Operational Debt — The Silent Cost Killing Small Businesses →
+        </a>
       </section>
 
       {/* PILLARS */}
