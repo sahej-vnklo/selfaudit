@@ -1311,10 +1311,11 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
         body: JSON.stringify({
           query:               q,
           userId:              user?.id ?? null,
-          conversationHistory: dualHistory.slice(-6),
+          conversationHistory: dualHistory.slice(-8),
           industry:            profile?.industry ?? null,
           domain:              profile?.domain   ?? null,
-          modeOverride:        parsedMode ?? null,
+          // Use explicit selection, or carry the last active mode, or default to diagnose
+          modeOverride:        parsedMode ?? currentMode?.mode ?? 'diagnose',
         }),
       })
 
@@ -2094,114 +2095,155 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                 })()}
               </div>
 
-              <div className="dash-cmd">
-                <button
-                  className="dash-newbtn"
-                  type="button"
-                  onClick={sessionActive ? resetSession : activateSession}
-                >
-                  {sessionActive ? (
-                    <>
+              {/* ── Command bar — collapsed pill or expanded input ──────── */}
+              {(() => {
+                const isEnginesRunning = agentState === 'planning' || agentState === 'agent_x' || agentState === 'agent_y'
+                const isExpanded       = selectedMode !== null || sessionActive || agentState !== 'idle'
+
+                const PILLS = [
+                  { key: 'diagnose', label: '/diagnose', desc: 'find root causes' },
+                  { key: 'goal',     label: '/goal',     desc: 'map a goal' },
+                  { key: 'scan',     label: '/scan',     desc: 'investigate fast' },
+                ]
+
+                if (!isExpanded) {
+                  // ── Collapsed: centered skill picker ──────────────────────
+                  return (
+                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                      <div style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 2,
+                        padding: '10px 14px',
+                        background: 'var(--d-surface)',
+                        border: '1px solid var(--d-border)',
+                        borderRadius: 40,
+                        boxShadow: 'var(--d-shadow)',
+                      }}>
+                        {PILLS.map(({ key, label, desc }) => (
+                          <button
+                            key={key}
+                            type="button"
+                            onClick={() => {
+                              setSelectedMode(key)
+                              setSessionActive(true)
+                              setTimeout(() => document.querySelector('.dash-cmd-input')?.focus(), 80)
+                            }}
+                            title={desc}
+                            style={{
+                              padding: '6px 14px',
+                              borderRadius: 30,
+                              border: 'none',
+                              background: 'transparent',
+                              color: 'rgba(255,255,255,0.45)',
+                              fontFamily: '"JetBrains Mono", monospace',
+                              fontSize: '0.72rem',
+                              letterSpacing: '0.05em',
+                              cursor: 'pointer',
+                              transition: 'color .15s, background .15s',
+                              whiteSpace: 'nowrap',
+                            }}
+                            onMouseEnter={e => { e.currentTarget.style.color = 'var(--ember)'; e.currentTarget.style.background = 'oklch(0.62 0.18 35 / 0.1)' }}
+                            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.45)'; e.currentTarget.style.background = 'transparent' }}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                }
+
+                // ── Expanded: full input bar ───────────────────────────────
+                return (
+                  <div className="dash-cmd">
+                    {/* End session */}
+                    <button
+                      className="dash-newbtn"
+                      type="button"
+                      onClick={resetSession}
+                    >
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M18 6L6 18M6 6l12 12"/>
                       </svg>
-                      End session
-                    </>
-                  ) : (
-                    <>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M12 5v14M5 12h14"/>
-                      </svg>
-                      New session
-                    </>
-                  )}
-                </button>
-                <span className="dash-cmd-div" />
-                <div className="dash-cmd-status">
-                  <span className="dash-cmd-dots">
-                    <i style={agentState === 'agent_x' || agentState === 'planning' ? { background: 'var(--accent)', animation: 'pulse 1s infinite' } : {}} />
-                    <i style={agentState === 'agent_y' ? { background: '#4CAF50', animation: 'pulse 1s infinite' } : agentState === 'complete' ? { background: '#4CAF50' } : {}} />
-                  </span>
-                  {agentState !== 'idle' && (
-                    <span>
-                      {agentState === 'planning' ? 'routing…'
-                        : agentState === 'agent_x' ? `${currentMode?.xLabel || 'agent x'}…`
-                        : agentState === 'agent_y' ? `${currentMode?.yLabel || 'agent y'}…`
-                        : agentState === 'complete' ? (currentMode?.label ? `${currentMode.label} complete` : 'done')
-                        : agentState === 'error' ? 'error'
-                        : null}
-                    </span>
-                  )}
-                </div>
-                {/* Mode pills — show when idle with no completed turns in this session */}
-                {agentState === 'idle' && sessionLog.length === 0 && [
-                  { key: 'diagnose', label: '/diagnose' },
-                  { key: 'goal',     label: '/goal' },
-                  { key: 'scan',     label: '/scan' },
-                ].map(({ key, label }) => (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => setSelectedMode(selectedMode === key ? null : key)}
-                    style={{
-                      flexShrink: 0,
-                      padding: '3px 8px',
-                      borderRadius: 6,
-                      border: 'none',
-                      background: selectedMode === key ? 'oklch(0.62 0.18 35 / 0.12)' : 'transparent',
-                      color: selectedMode === key ? 'var(--ember)' : 'rgba(255,255,255,0.28)',
-                      fontFamily: '"JetBrains Mono", monospace',
-                      fontSize: '0.68rem',
-                      letterSpacing: '0.04em',
-                      cursor: 'pointer',
-                      transition: 'color .15s, background .15s',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {label}
-                  </button>
-                ))}
+                      End
+                    </button>
+                    <span className="dash-cmd-div" />
 
-                <input
-                  className="dash-cmd-input"
-                  type="text"
-                  value={cmdInput}
-                  onChange={(e) => setCmdInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault()
-                      if (cmdInput.trim()) submitDualAgent()
-                      else if (!sessionActive) activateSession()
-                    }
-                  }}
-                  placeholder={
-                    agentState === 'planning' || agentState === 'agent_x' || agentState === 'agent_y'
-                      ? 'Engines running…'
-                      : dualHistory.length === 0
-                        ? 'Pick a mode above, or just start typing…'
-                        : (currentMode?.mode === 'diagnose' || selectedMode === 'diagnose')
-                          ? 'Reply to Agent X to continue the diagnosis…'
-                          : (currentMode?.mode === 'goal' || selectedMode === 'goal')
-                            ? 'Reply to continue mapping your goal…'
-                            : 'Continue the session…'
-                  }
-                  disabled={agentState === 'planning' || agentState === 'agent_x' || agentState === 'agent_y'}
-                />
-                <button
-                  className="dash-cmd-send"
-                  type="button"
-                  aria-label="Send"
-                  disabled={!cmdInput.trim() || agentState === 'planning' || agentState === 'agent_x' || agentState === 'agent_y'}
-                  onClick={() => {
-                    if (cmdInput.trim()) submitDualAgent()
-                    else if (!sessionActive) activateSession()
-                  }}
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 19V5M5 12l7-7 7 7"/>
-                  </svg>
-                </button>
-              </div>
+                    {/* Mode pills — always visible in expanded state */}
+                    {PILLS.map(({ key, label }) => (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => setSelectedMode(selectedMode === key ? null : key)}
+                        style={{
+                          flexShrink: 0, padding: '3px 8px', borderRadius: 6, border: 'none',
+                          background: selectedMode === key ? 'oklch(0.62 0.18 35 / 0.12)' : 'transparent',
+                          color: selectedMode === key ? 'var(--ember)' : 'rgba(255,255,255,0.22)',
+                          fontFamily: '"JetBrains Mono", monospace', fontSize: '0.65rem',
+                          letterSpacing: '0.04em', cursor: 'pointer',
+                          transition: 'color .15s, background .15s', whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {label}
+                      </button>
+                    ))}
+
+                    {/* Status dots */}
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                      <span style={{ display: 'inline-flex', gap: 4 }}>
+                        <i style={{ width: 6, height: 6, borderRadius: '50%', display: 'block', background: isEnginesRunning ? 'var(--ember)' : 'rgba(255,255,255,0.15)' }} />
+                        <i style={{ width: 6, height: 6, borderRadius: '50%', display: 'block', background: agentState === 'agent_y' || agentState === 'complete' ? '#4CAF50' : 'rgba(255,255,255,0.15)' }} />
+                      </span>
+                      {isEnginesRunning && (
+                        <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'var(--fg-mute)', letterSpacing: '0.03em' }}>
+                          {agentState === 'planning' ? 'thinking…'
+                            : agentState === 'agent_x' ? `${currentMode?.xLabel || 'x'}…`
+                            : `${currentMode?.yLabel || 'y'}…`}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Input */}
+                    <input
+                      className="dash-cmd-input"
+                      type="text"
+                      value={cmdInput}
+                      autoFocus
+                      onChange={(e) => setCmdInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault()
+                          if (cmdInput.trim()) submitDualAgent()
+                        }
+                      }}
+                      placeholder={
+                        isEnginesRunning
+                          ? 'Engines running…'
+                          : selectedMode === 'diagnose'
+                            ? dualHistory.length === 0 ? 'What\'s going on in your business?' : 'Reply to continue the diagnosis…'
+                            : selectedMode === 'goal'
+                              ? dualHistory.length === 0 ? 'What\'s the goal and by when?' : 'Reply to continue mapping your goal…'
+                              : selectedMode === 'scan'
+                                ? 'What do you want to investigate?'
+                                : 'Continue the session…'
+                      }
+                      disabled={isEnginesRunning}
+                    />
+
+                    {/* Send */}
+                    <button
+                      className="dash-cmd-send"
+                      type="button"
+                      aria-label="Send"
+                      disabled={!cmdInput.trim() || isEnginesRunning}
+                      onClick={() => { if (cmdInput.trim()) submitDualAgent() }}
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 19V5M5 12l7-7 7 7"/>
+                      </svg>
+                    </button>
+                  </div>
+                )
+              })()}
             </>
           )}
 
