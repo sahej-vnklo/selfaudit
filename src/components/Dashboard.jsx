@@ -1866,11 +1866,13 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                             const isConversationalMode = currentMode?.mode === 'conversational'
 
                             if (!agentXStream && agentState === 'idle') {
-                              // Idle — show minimal standby
                               return (
-                                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-                                  <div style={{ color: 'rgba(74,222,128,0.2)', fontFamily: '"JetBrains Mono", monospace', fontSize: '0.68rem', textAlign: 'center' }}>
-                                    <div>{'> AGENT_X // STANDBY'}</div>
+                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '20px 24px 20px' }}>
+                                  <div style={{ borderTop: '1px solid var(--d-border)', paddingTop: 14 }}>
+                                    <div style={{ fontSize: '0.72rem', color: 'var(--ember)', fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em', marginBottom: 6 }}>/diagnose</div>
+                                    <div style={{ fontSize: '0.78rem', color: 'var(--fg-dim)', lineHeight: 1.5 }}>Finds what is broken and why. Asks questions, builds a full diagnosis with root causes.</div>
+                                    <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--d-border)', fontSize: '0.72rem', color: 'rgba(74,222,128,0.5)', fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em', marginBottom: 4 }}>/scan</div>
+                                    <div style={{ fontSize: '0.75rem', color: 'var(--fg-dim)', opacity: 0.7 }}>Investigates a specific question and answers with evidence.</div>
                                   </div>
                                 </div>
                               )
@@ -1940,9 +1942,12 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
 
                             if (!agentYStream && agentState === 'idle') {
                               return (
-                                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-                                  <div style={{ color: 'rgba(251,146,60,0.2)', fontFamily: '"JetBrains Mono", monospace', fontSize: '0.68rem', textAlign: 'center' }}>
-                                    <div>{'> AGENT_Y // STANDBY'}</div>
+                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '20px 24px 20px' }}>
+                                  <div style={{ borderTop: '1px solid var(--d-border)', paddingTop: 14 }}>
+                                    <div style={{ fontSize: '0.72rem', color: 'var(--ember)', fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em', marginBottom: 6 }}>/goal</div>
+                                    <div style={{ fontSize: '0.78rem', color: 'var(--fg-dim)', lineHeight: 1.5 }}>Maps the gap between where you are and your target. Sequences the fastest path forward.</div>
+                                    <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--d-border)', fontSize: '0.72rem', color: 'rgba(251,146,60,0.5)', fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em', marginBottom: 4 }}>/scan</div>
+                                    <div style={{ fontSize: '0.75rem', color: 'var(--fg-dim)', opacity: 0.7 }}>Gives 3 quick actions based on the investigation.</div>
                                   </div>
                                 </div>
                               )
@@ -2133,7 +2138,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                               borderRadius: 30,
                               border: 'none',
                               background: 'transparent',
-                              color: 'var(--fg-mute)',
+                              color: 'var(--fg)',
                               fontFamily: '"JetBrains Mono", monospace',
                               fontSize: '0.72rem',
                               letterSpacing: '0.05em',
@@ -2142,7 +2147,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                               whiteSpace: 'nowrap',
                             }}
                             onMouseEnter={e => { e.currentTarget.style.color = 'var(--ember)'; e.currentTarget.style.background = 'oklch(0.62 0.18 35 / 0.1)' }}
-                            onMouseLeave={e => { e.currentTarget.style.color = 'var(--fg-mute)'; e.currentTarget.style.background = 'transparent' }}
+                            onMouseLeave={e => { e.currentTarget.style.color = 'var(--fg)'; e.currentTarget.style.background = 'transparent' }}
                           >
                             {label}
                           </button>
