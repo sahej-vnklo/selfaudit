@@ -61,7 +61,7 @@ function classifyIntent(query, conversationHistory = []) {
   // ── Quick investigation ────────────────────────────────────────────────────
   // Short specific question — wants an answer, not a full diagnosis
   if (words <= 12 && /^(why|what('?s| is| are)|how much|how many|show me|is my|are my|which|when did|what happened|where is)\b/i.test(q)) {
-    return { mode: 'ask', label: 'INVESTIGATING', xLabel: 'INVESTIGATING', yLabel: 'QUICK ACTIONS' }
+    return { mode: 'scan', label: 'INVESTIGATING', xLabel: 'INVESTIGATING', yLabel: 'QUICK ACTIONS' }
   }
 
   // ── Discussion / thinking out loud ─────────────────────────────────────────
@@ -99,7 +99,7 @@ export default async function handler(req, res) {
   const apiKey = process.env.CLAUDE_API_KEY || process.env.VITE_CLAUDE_API_KEY
   if (!apiKey) return res.status(500).json({ error: 'Claude API key not configured' })
 
-  const { query, userId, conversationHistory = [], industry, domain } = req.body || {}
+  const { query, userId, conversationHistory = [], industry, domain, modeOverride } = req.body || {}
   if (!query?.trim()) return res.status(400).json({ error: 'Missing query' })
 
   // Auth check BEFORE flushing SSE headers
@@ -130,8 +130,15 @@ export default async function handler(req, res) {
     return
   }
 
-  // ── Classify intent ───────────────────────────────────────────────────────
-  const { mode, label, xLabel, yLabel } = classifyIntent(query, conversationHistory)
+  // ── Classify intent (explicit override beats auto-detect) ────────────────
+  const OVERRIDE_LABELS = {
+    diagnose: { mode: 'diagnose', label: 'DIAGNOSING',  xLabel: 'DIAGNOSING',   yLabel: 'SOLUTIONS' },
+    goal:     { mode: 'goal',     label: 'GOAL MODE',   xLabel: 'GAP ANALYSIS', yLabel: 'FASTEST PATH' },
+    scan:     { mode: 'scan',     label: 'SCANNING',    xLabel: 'INVESTIGATING',yLabel: 'QUICK ACTIONS' },
+  }
+  const { mode, label, xLabel, yLabel } = modeOverride && OVERRIDE_LABELS[modeOverride]
+    ? OVERRIDE_LABELS[modeOverride]
+    : classifyIntent(query, conversationHistory)
   sse(res, 'mode', { mode, label, xLabel, yLabel })
 
   try {
@@ -196,14 +203,18 @@ export default async function handler(req, res) {
 
     // ── Persist non-blocking ──────────────────────────────────────────────
     if (userId) {
-      supabase.from('agent_findings').insert({
-        user_id:     userId,
-        query,
-        intent:      plan.intent,
-        answer:      agentYOutput,
-        full_result: { agent_x: agentXOutput, agent_y: agentYOutput, plan, mode },
-        confidence:  'medium',
-      }).catch(() => {})
+      ;(async () => {
+        try {
+          await supabase.from('agent_findings').insert({
+            user_id:     userId,
+            query,
+            intent:      plan.intent,
+            answer:      agentYOutput,
+            full_result: { agent_x: agentXOutput, agent_y: agentYOutput, plan, mode },
+            confidence:  'medium',
+          })
+        } catch { /* non-blocking — never fails the session */ }
+      })()
     }
 
     sse(res, 'done', {})

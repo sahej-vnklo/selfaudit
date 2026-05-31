@@ -34,7 +34,7 @@ IMMEDIATE ACTIONS
 [One concrete action per line, ordered by urgency]`
   }
 
-  if (mode === 'ask') {
+  if (mode === 'scan') {
     return `You are Agent Y. Agent X has answered the user's specific question.
 
 Your job: give exactly 3 quick actions the user should take based on that answer. Maximum 2 sentences each. No full solution architecture — just the three most important moves.

@@ -794,6 +794,8 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
   // sessionLog: [{ query, xOutput, yOutput, mode, label, xLabel, yLabel }]
   const [sessionResultCount, setSessionResultCount] = useState(0)
   const [showResultsPanel,   setShowResultsPanel]   = useState(false)
+  const [selectedMode,       setSelectedMode]       = useState(null)
+  // null = auto-detect | 'diagnose' | 'goal' | 'scan'
   const agentXScrollRef  = useRef(null)
   const agentYScrollRef  = useRef(null)
   const agentXFinalRef   = useRef('')  // tracks Agent X full output for history
@@ -1246,8 +1248,21 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
   }
 
   const submitDualAgent = async () => {
-    const q = cmdInput.trim()
-    if (!q || agentState === 'planning' || agentState === 'agent_x' || agentState === 'agent_y') return
+    let rawInput = cmdInput.trim()
+    if (!rawInput || agentState === 'planning' || agentState === 'agent_x' || agentState === 'agent_y') return
+
+    // Parse slash-command prefix and strip it from query
+    let parsedMode = selectedMode
+    const slashMatch = rawInput.match(/^\/(\w+)\s+(.+)/s)
+    if (slashMatch) {
+      const cmd = slashMatch[1].toLowerCase()
+      if (['diagnose', 'goal', 'scan'].includes(cmd)) {
+        parsedMode = cmd
+        rawInput = slashMatch[2].trim()
+      }
+    }
+    const q = rawInput
+    if (!q) return
 
     // Auto-activate session if not active yet
     if (!sessionActive) setSessionActive(true)
@@ -1292,6 +1307,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
           conversationHistory: dualHistory.slice(-6),
           industry:            profile?.industry ?? null,
           domain:              profile?.domain   ?? null,
+          modeOverride:        parsedMode ?? null,
         }),
       })
 
@@ -2079,6 +2095,35 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                       : 'both listening'}
                   </span>
                 </div>
+                {/* Mode pills */}
+                {[
+                  { key: 'diagnose', label: '/diagnose' },
+                  { key: 'goal',     label: '/goal' },
+                  { key: 'scan',     label: '/scan' },
+                ].map(({ key, label }) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setSelectedMode(selectedMode === key ? null : key)}
+                    style={{
+                      flexShrink: 0,
+                      padding: '4px 10px',
+                      borderRadius: 20,
+                      border: `1px solid ${selectedMode === key ? 'var(--ember)' : 'var(--d-border-strong)'}`,
+                      background: selectedMode === key ? 'oklch(0.62 0.18 35 / 0.15)' : 'transparent',
+                      color: selectedMode === key ? 'var(--ember)' : 'var(--fg-mute)',
+                      fontFamily: '"JetBrains Mono", monospace',
+                      fontSize: '0.68rem',
+                      letterSpacing: '0.04em',
+                      cursor: 'pointer',
+                      transition: 'all .15s',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {label}
+                  </button>
+                ))}
+
                 <input
                   className="dash-cmd-input"
                   type="text"
