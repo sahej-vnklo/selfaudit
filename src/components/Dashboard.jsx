@@ -1867,12 +1867,9 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
 
                             if (!agentXStream && agentState === 'idle') {
                               return (
-                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '20px 24px 20px' }}>
-                                  <div style={{ borderTop: '1px solid var(--d-border)', paddingTop: 14 }}>
-                                    <div style={{ fontSize: '0.72rem', color: 'var(--ember)', fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em', marginBottom: 6 }}>/diagnose</div>
-                                    <div style={{ fontSize: '0.78rem', color: 'var(--fg-dim)', lineHeight: 1.5 }}>Finds what is broken and why. Asks questions, builds a full diagnosis with root causes.</div>
-                                    <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--d-border)', fontSize: '0.72rem', color: 'rgba(74,222,128,0.5)', fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em', marginBottom: 4 }}>/scan</div>
-                                    <div style={{ fontSize: '0.75rem', color: 'var(--fg-dim)', opacity: 0.7 }}>Investigates a specific question and answers with evidence.</div>
+                                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+                                  <div style={{ color: 'rgba(74,222,128,0.2)', fontFamily: '"JetBrains Mono", monospace', fontSize: '0.68rem', textAlign: 'center' }}>
+                                    <div>{'> AGENT_X // STANDBY'}</div>
                                   </div>
                                 </div>
                               )
@@ -1942,12 +1939,9 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
 
                             if (!agentYStream && agentState === 'idle') {
                               return (
-                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '20px 24px 20px' }}>
-                                  <div style={{ borderTop: '1px solid var(--d-border)', paddingTop: 14 }}>
-                                    <div style={{ fontSize: '0.72rem', color: 'var(--ember)', fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em', marginBottom: 6 }}>/goal</div>
-                                    <div style={{ fontSize: '0.78rem', color: 'var(--fg-dim)', lineHeight: 1.5 }}>Maps the gap between where you are and your target. Sequences the fastest path forward.</div>
-                                    <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--d-border)', fontSize: '0.72rem', color: 'rgba(251,146,60,0.5)', fontFamily: '"JetBrains Mono", monospace', letterSpacing: '0.04em', marginBottom: 4 }}>/scan</div>
-                                    <div style={{ fontSize: '0.75rem', color: 'var(--fg-dim)', opacity: 0.7 }}>Gives 3 quick actions based on the investigation.</div>
+                                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+                                  <div style={{ color: 'rgba(251,146,60,0.2)', fontFamily: '"JetBrains Mono", monospace', fontSize: '0.68rem', textAlign: 'center' }}>
+                                    <div>{'> AGENT_Y // STANDBY'}</div>
                                   </div>
                                 </div>
                               )
@@ -2024,30 +2018,33 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                             {idleState === 'empty' ? 'Waiting' : idleState === 'connectors' ? 'Monitoring' : 'Ready'}
                           </div>
                         </header>
-                        <div style={{ padding: '16px 20px', flex: 1 }}>
-                          {idleState === 'empty' && (
-                            <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', lineHeight: 1.7 }}>
-                              <p style={{ margin: '0 0 8px', color: 'var(--text-soft)' }}>No sessions yet.</p>
-                              <p style={{ margin: 0 }}>Start your first session — ask anything about your business. The more you share, the sharper the diagnosis becomes over time.</p>
+                        <div style={{ padding: '16px 20px', flex: 1, display: 'flex', flexDirection: 'column', gap: 16 }}>
+                          {/* Capability lines — always shown at top */}
+                          <div style={{ paddingBottom: 14, borderBottom: '1px solid var(--d-border)' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                              <div>
+                                <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '0.68rem', color: 'var(--ember)', letterSpacing: '0.04em', marginRight: 8 }}>/diagnose</span>
+                                <span style={{ fontSize: '0.75rem', color: 'var(--fg-dim)' }}>finds root causes, not symptoms</span>
+                              </div>
+                              <div>
+                                <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '0.68rem', color: 'rgba(74,222,128,0.6)', letterSpacing: '0.04em', marginRight: 8 }}>/scan</span>
+                                <span style={{ fontSize: '0.75rem', color: 'var(--fg-dim)' }}>investigates a specific question with evidence</span>
+                              </div>
                             </div>
-                          )}
+                          </div>
+                          {/* Live / memory content */}
                           {idleState === 'memory' && lastHeadline && (
                             <div>
-                              <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 8 }}>Last finding</div>
-                              <p style={{ margin: '0 0 12px', fontSize: '0.88rem', fontWeight: 500, color: 'var(--text)', lineHeight: 1.5 }}>{lastHeadline}</p>
-                            </div>
-                          )}
-                          {idleState === 'memory' && !lastHeadline && (
-                            <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', lineHeight: 1.7 }}>
-                              Memory loaded. Start a new session to continue diagnosis.
+                              <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 6 }}>Last finding</div>
+                              <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 500, color: 'var(--text)', lineHeight: 1.5 }}>{lastHeadline}</p>
                             </div>
                           )}
                           {idleState === 'connectors' && govSummary && (
                             <div>
-                              <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 8 }}>
-                                Live status{checkedAt ? ` · checked ${checkedAt}` : ''}
+                              <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 6 }}>
+                                Live status{checkedAt ? ` · ${checkedAt}` : ''}
                               </div>
-                              <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text)', lineHeight: 1.6 }}>{govSummary}</p>
+                              <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text)', lineHeight: 1.6 }}>{govSummary}</p>
                             </div>
                           )}
                         </div>
@@ -2064,33 +2061,31 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                             {idleState === 'empty' ? 'Standby' : 'Proposing'}
                           </div>
                         </header>
-                        <div style={{ padding: '16px 20px', flex: 1 }}>
-                          {idleState === 'empty' && (
-                            <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', lineHeight: 1.7 }}>
-                              <p style={{ margin: '0 0 8px', color: 'var(--text-soft)' }}>Both engines are listening.</p>
-                              <p style={{ margin: 0 }}>Once you share what{"'"}s going on, Agent Y proposes fixes ranked by impact, urgency, and cost — grounded in your specific situation.</p>
+                        <div style={{ padding: '16px 20px', flex: 1, display: 'flex', flexDirection: 'column', gap: 16 }}>
+                          {/* Capability lines — always shown at top */}
+                          <div style={{ paddingBottom: 14, borderBottom: '1px solid var(--d-border)' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                              <div>
+                                <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '0.68rem', color: 'var(--ember)', letterSpacing: '0.04em', marginRight: 8 }}>/goal</span>
+                                <span style={{ fontSize: '0.75rem', color: 'var(--fg-dim)' }}>maps the gap and sequences the fastest path</span>
+                              </div>
+                              <div>
+                                <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '0.68rem', color: 'rgba(251,146,60,0.6)', letterSpacing: '0.04em', marginRight: 8 }}>/scan</span>
+                                <span style={{ fontSize: '0.75rem', color: 'var(--fg-dim)' }}>gives 3 quick actions from the investigation</span>
+                              </div>
                             </div>
-                          )}
+                          </div>
+                          {/* Live / memory content */}
                           {idleState === 'memory' && topAction && (
                             <div>
-                              <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 8 }}>Top open action</div>
+                              <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 6 }}>Top open action</div>
                               <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text)', lineHeight: 1.6 }}>{topAction}</p>
-                            </div>
-                          )}
-                          {idleState === 'memory' && !topAction && (
-                            <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
-                              Ready to propose solutions from your next session.
                             </div>
                           )}
                           {idleState === 'connectors' && topAction2 && (
                             <div>
-                              <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 8 }}>Recommended action</div>
+                              <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 6 }}>Recommended action</div>
                               <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text)', lineHeight: 1.6 }}>{topAction2}</p>
-                            </div>
-                          )}
-                          {idleState === 'connectors' && !topAction2 && (
-                            <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
-                              Monitoring live signals. No critical actions flagged right now.
                             </div>
                           )}
                         </div>
