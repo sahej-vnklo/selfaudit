@@ -1378,16 +1378,20 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                   return next
                 })
                 break
-              case 'agent_y_complete':
+              case 'agent_y_complete': {
+                const isGathering = data.output === '__gathering__'
                 setAgentYDone(true)
                 setAgentState('complete')
-                setSelectedMode(null)   // reset after each turn so pills are fresh on next
+                if (!isGathering) setSelectedMode(null)
                 setDualHistory((prev) => [
                   ...prev,
                   { role: 'user',    content: q },
                   { role: 'agent_x', content: agentXFinalRef.current || '' },
-                  { role: 'agent_y', content: data.output || '' },
+                  // store gathering signal so Agent X context carries forward
+                  ...(!isGathering ? [{ role: 'agent_y', content: data.output || '' }] : []),
                 ])
+                break
+              }
                 break
               case 'session_result':
                 if (data.componentCount > 0) {
@@ -1953,7 +1957,15 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                               {(agentState === 'planning' || agentState === 'agent_x') && !agentYStream && (
                                 <div style={{ color: 'rgba(251,146,60,0.3)', fontSize: '0.68rem' }}>
                                   <div>{'> AGENT_Y // SOLUTION_ENGINE'}</div>
-                                  <div style={{ marginTop: 8 }}>{'> waiting for Agent X diagnosis...'}</div>
+                                  <div style={{ marginTop: 8 }}>{'> waiting for Agent X...'}</div>
+                                </div>
+                              )}
+                              {/* Gathering phase — Agent X is still asking questions */}
+                              {agentState === 'complete' && agentYStream === '' && agentYDone && (selectedMode === 'diagnose' || selectedMode === 'goal' || (currentMode?.mode === 'diagnose' || currentMode?.mode === 'goal')) && (
+                                <div style={{ color: 'rgba(251,146,60,0.4)', fontSize: '0.68rem', lineHeight: 1.8 }}>
+                                  <div>{'> AGENT_Y // STANDING BY'}</div>
+                                  <div style={{ marginTop: 8 }}>{'> Agent X is gathering context.'}</div>
+                                  <div style={{ marginTop: 4 }}>{'> Reply to continue the session.'}</div>
                                 </div>
                               )}
                               {agentState === 'agent_y' && agentYStream.length < 10 && (
@@ -2160,7 +2172,11 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                       ? 'Engines running…'
                       : dualHistory.length === 0
                         ? 'Pick a mode above, or just start typing…'
-                        : 'Continue the session…'
+                        : (currentMode?.mode === 'diagnose' || selectedMode === 'diagnose')
+                          ? 'Reply to Agent X to continue the diagnosis…'
+                          : (currentMode?.mode === 'goal' || selectedMode === 'goal')
+                            ? 'Reply to continue mapping your goal…'
+                            : 'Continue the session…'
                   }
                   disabled={agentState === 'planning' || agentState === 'agent_x' || agentState === 'agent_y'}
                 />

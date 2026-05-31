@@ -180,6 +180,22 @@ export default async function handler(req, res) {
     }
     sse(res, 'agent_x_complete', { output: agentXOutput })
 
+    // ── Detect gathering phase (diagnose/goal modes) ───────────────────────
+    // In these modes Agent X asks questions first, diagnoses later.
+    // Skip Agent Y until Agent X has produced an actual diagnosis/analysis.
+    const isConversationalMode  = mode === 'diagnose' || mode === 'goal'
+    const agentXHasDiagnosis    = /DIAGNOSIS|ROOT CAUSE|GOAL GAP ANALYSIS|THE GAP|BLOCKERS/.test(agentXOutput)
+    const agentXIsGathering     = isConversationalMode && !agentXHasDiagnosis
+
+    if (agentXIsGathering) {
+      sse(res, 'agent_y_start',    {})
+      sse(res, 'agent_y_complete', { output: '__gathering__' })
+      sse(res, 'session_result',   { componentCount: 0 })
+      sse(res, 'done', {})
+      res.end()
+      return
+    }
+
     // ── Agent Y ───────────────────────────────────────────────────────────
     sse(res, 'agent_y_start', {})
     let agentYOutput = ''
