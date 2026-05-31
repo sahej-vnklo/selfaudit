@@ -52,24 +52,44 @@ function buildMarketingSalesMetrics({ brief, normalized }) {
   }
 }
 
-function buildFinanceAccountingMetrics({ brief }) {
+function buildFinanceAccountingMetrics({ brief, normalized }) {
   const financial = brief?.financial ?? {}
-  const context = brief?.context ?? {}
-  const ltv = safeNumber(financial.ltv)
-  const cac = safeNumber(financial.cac)
+  const context   = brief?.context   ?? {}
+
+  // Extract Stripe metrics — prefer live connector data over manual brief entries
+  const stripe = {}
+  if (normalized?.metrics) {
+    for (const m of normalized.metrics.filter(m => m.source === 'stripe')) {
+      stripe[m.key] = m.value
+    }
+  }
+
+  const mrr      = stripe.mrr        ?? safeNumber(financial.mrr)
+  const churn    = stripe.churn_rate ?? safeNumber(financial.churn)
+  const ltv      = stripe.ltv        ?? safeNumber(financial.ltv)
+  const cac      = safeNumber(financial.cac)
+  const burnRate = safeNumber(financial.burn_rate)
+  const runway   = safeNumber(financial.runway ?? context.runway)
+
+  const mrrSource   = stripe.mrr        != null ? 'stripe' : 'intelligence_brief'
+  const churnSource = stripe.churn_rate != null ? 'stripe' : 'intelligence_brief'
+  const ltvSource   = stripe.ltv        != null ? 'stripe' : 'intelligence_brief'
 
   const metrics = [
-    metric('mrr', safeNumber(financial.mrr), 'intelligence_brief'),
-    metric('churn_rate', safeNumber(financial.churn), 'intelligence_brief'),
-    metric('burn_rate', safeNumber(financial.burn_rate), 'intelligence_brief'),
-    metric('runway_months', safeNumber(financial.runway ?? context.runway), 'intelligence_brief'),
-    metric('ltv_cac_ratio', ltv != null && cac != null && cac > 0 ? Number((ltv / cac).toFixed(2)) : null, 'derived', { derivedFrom: ['ltv', 'cac'] }),
+    metric('mrr',          mrr,       mrrSource),
+    metric('churn_rate',   churn,     churnSource),
+    metric('burn_rate',    burnRate,  'intelligence_brief'),
+    metric('runway_months',runway,    'intelligence_brief'),
+    metric('ltv_cac_ratio',
+      ltv != null && cac != null && cac > 0 ? Number((ltv / cac).toFixed(2)) : null,
+      'derived', { derivedFrom: [ltvSource, 'intelligence_brief'] }
+    ),
   ].filter(Boolean)
 
   return {
     areaId: 'finance-accounting',
     metrics,
-    sources: [...new Set(metrics.map((item) => item.source === 'derived' ? 'intelligence_brief' : item.source))],
+    sources: [...new Set(metrics.map((item) => item.source === 'derived' ? mrrSource : item.source))],
   }
 }
 

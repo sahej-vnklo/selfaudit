@@ -22,7 +22,7 @@ export const CONNECTOR_REGISTRY = [
     id:          'stripe',
     name:        'Stripe',
     category:    'Revenue',
-    status:      'coming_soon',
+    status:      'available',
     auth_type:   'api_key',
     description: 'Connect revenue, churn, and subscription data for financial health analysis.',
     data_types:  ['mrr', 'churn_rate', 'subscriptions', 'refunds', 'ltv'],

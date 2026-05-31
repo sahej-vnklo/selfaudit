@@ -165,6 +165,64 @@ export function normalizeHubspotData(hubspotData) {
   return out
 }
 
+// Maps Stripe raw result (from fetchStripeBusinessState) → normalized shape.
+export function normalizeStripeData(stripeData) {
+  if (!stripeData) return null
+
+  const out = createNormalizedOutput('stripe')
+  out.fetched_at = stripeData.fetched_at || out.fetched_at
+
+  // ── Metrics ──────────────────────────────────────────────────────────────
+  if (stripeData.mrr != null)              out.metrics.push(metric('mrr',              'MRR',                          stripeData.mrr,              'USD',   'stripe'))
+  if (stripeData.arr != null)              out.metrics.push(metric('arr',              'ARR',                          stripeData.arr,              'USD',   'stripe'))
+  if (stripeData.active_customers != null) out.metrics.push(metric('active_customers', 'Active customers',             stripeData.active_customers, 'count', 'stripe'))
+  if (stripeData.churn_rate != null)       out.metrics.push(metric('churn_rate',       'Monthly churn rate',           stripeData.churn_rate,       '%',     'stripe'))
+  if (stripeData.new_subs_30d != null)     out.metrics.push(metric('new_customers_30d','New subscribers (30d)',        stripeData.new_subs_30d,     'count', 'stripe'))
+  if (stripeData.ltv != null)              out.metrics.push(metric('ltv',              'Estimated customer LTV',       stripeData.ltv,              'USD',   'stripe'))
+
+  // ── Risks ─────────────────────────────────────────────────────────────────
+  if (stripeData.churn_rate > 5) {
+    out.risks.push(signal(
+      'revenue', 'high',
+      'High monthly churn',
+      `Monthly churn at ${stripeData.churn_rate}% — revenue is leaking faster than healthy growth can offset.`,
+      `churn_rate = ${stripeData.churn_rate}% (Stripe)`,
+      'stripe',
+    ))
+  } else if (stripeData.churn_rate > 2) {
+    out.risks.push(signal(
+      'revenue', 'medium',
+      'Elevated churn',
+      `Monthly churn at ${stripeData.churn_rate}% is above a healthy baseline. Compounding effect will drag net revenue growth.`,
+      `churn_rate = ${stripeData.churn_rate}% (Stripe)`,
+      'stripe',
+    ))
+  }
+
+  if (stripeData.mrr === 0 && stripeData.active_customers === 0) {
+    out.risks.push(signal(
+      'revenue', 'high',
+      'No active subscriptions found',
+      'Stripe shows zero active subscriptions. Either the product is pre-revenue or the API key lacks read access.',
+      'active_subscriptions = 0',
+      'stripe',
+    ))
+  }
+
+  // ── Opportunities ─────────────────────────────────────────────────────────
+  if (stripeData.new_subs_30d > 0) {
+    out.opportunities.push(signal(
+      'revenue', 'low',
+      `${stripeData.new_subs_30d} new subscriber${stripeData.new_subs_30d > 1 ? 's' : ''} in the last 30 days`,
+      'New subscription momentum. Focus on onboarding quality to protect early retention.',
+      `new_subs_30d = ${stripeData.new_subs_30d}`,
+      'stripe',
+    ))
+  }
+
+  return out
+}
+
 // Converts a normalized output into a text block for the Claude prompt.
 // Every future connector maps to the same shape and plugs into this formatter.
 export function formatNormalizedForPrompt(normalized) {
@@ -187,6 +245,12 @@ export function formatNormalizedForPrompt(normalized) {
   if (closingSoon.length) {
     lines.push(`Closing soon: ${closingSoon.map((d) => `${d.label} $${d.amount} by ${d.closedate}`).join(', ')}`)
   }
+
+  if (m.mrr?.value)              lines.push(`MRR: $${Number(m.mrr.value).toLocaleString()}`)
+  if (m.arr?.value)              lines.push(`ARR: $${Number(m.arr.value).toLocaleString()}`)
+  if (m.churn_rate?.value != null) lines.push(`Monthly churn: ${m.churn_rate.value}%`)
+  if (m.active_customers?.value != null) lines.push(`Active customers: ${m.active_customers.value}`)
+  if (m.ltv?.value)              lines.push(`Estimated LTV: $${Number(m.ltv.value).toLocaleString()}`)
 
   if (normalized.signals.length) {
     lines.push('Signals:')

@@ -1,7 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
 import { getCompanyBrain } from '../intelligence/company-brain.js'
 import { fetchHubspotBusinessState } from '../connectors/hubspot.js'
-import { normalizeHubspotData } from '../connectors/normalize.js'
+import { fetchStripeBusinessState } from '../connectors/stripe.js'
+import { normalizeHubspotData, normalizeStripeData, mergeNormalized } from '../connectors/normalize.js'
 import { runGovernanceMonitoring } from '../governance/monitoring.js'
 import { buildGovernanceAdvice } from '../governance/advice.js'
 import { enrichGovernanceWithAI } from '../governance/ai-advisor.js'
@@ -505,15 +506,24 @@ export async function runBusinessHealthCheck(userId) {
   if (briefRes.status   === 'fulfilled' && briefRes.value.error)   console.warn('[health-check] brief fetch error:', briefRes.value.error.message)
   if (profileRes.status === 'fulfilled' && profileRes.value.error) console.warn('[health-check] profile fetch error:', profileRes.value.error.message)
 
-  // 5-6: Pull and normalize connector data (HubSpot first; non-blocking)
+  // 5-6: Pull and normalize connector data — non-blocking, failures skip gracefully
   let normalized = null
+
   if (integrations?.hubspot?.access_token) {
     try {
       const raw = await fetchHubspotBusinessState(userId, integrations)
       if (raw) normalized = normalizeHubspotData(raw)
-    } catch {
-      // connector failure is non-blocking — health check continues
-    }
+    } catch { /* non-blocking */ }
+  }
+
+  if (integrations?.stripe?.api_key) {
+    try {
+      const raw = await fetchStripeBusinessState(userId, integrations)
+      if (raw) {
+        const stripeNormalized = normalizeStripeData(raw)
+        normalized = normalized ? mergeNormalized(normalized, stripeNormalized) : stripeNormalized
+      }
+    } catch { /* non-blocking */ }
   }
 
   // 7: Run all analyzers
