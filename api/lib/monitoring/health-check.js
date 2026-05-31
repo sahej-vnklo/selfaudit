@@ -17,6 +17,53 @@ function getSupabase() {
 const SEVERITY_DEDUCTION = { critical: 20, high: 12, medium: 6, low: 2 }
 const SEVERITY_ORDER      = { critical: 0, high: 1, medium: 2, low: 3 }
 
+// Persist governance metric snapshots to area_metric_snapshots table.
+// Non-blocking — failures are swallowed so the health check always completes.
+async function persistMetricSnapshots(userId, snapshots, sb, capturedAt) {
+  if (!userId || !snapshots?.length) return
+  try {
+    const rows = []
+    for (const snapshot of snapshots) {
+      for (const m of snapshot.metrics ?? []) {
+        if (m.value == null) continue
+        rows.push({ area: snapshot.areaId, metric_name: m.key, value: m.value, source: m.source || 'governance' })
+      }
+    }
+    if (!rows.length) return
+
+    // Fetch most recent prior snapshot for each metric to compute delta
+    const { data: recentRows } = await sb
+      .from('area_metric_snapshots')
+      .select('area, metric_name, value')
+      .eq('user_id', userId)
+      .order('captured_at', { ascending: false })
+      .limit(100)
+
+    // First occurrence of each area+metric_name is the most recent prior value
+    const priorMap = {}
+    for (const row of recentRows ?? []) {
+      const key = `${row.area}:${row.metric_name}`
+      if (priorMap[key] == null) priorMap[key] = row.value
+    }
+
+    const insertRows = rows.map((r) => ({
+      user_id:         userId,
+      area:            r.area,
+      metric_name:     r.metric_name,
+      value:           r.value,
+      captured_at:     capturedAt,
+      source:          r.source,
+      delta_from_prior: priorMap[`${r.area}:${r.metric_name}`] != null
+        ? Number((r.value - priorMap[`${r.area}:${r.metric_name}`]).toFixed(4))
+        : null,
+    }))
+
+    await sb.from('area_metric_snapshots').insert(insertRows)
+  } catch (err) {
+    console.warn('[health-check] metric snapshot persist failed:', err?.message)
+  }
+}
+
 function risk(severity, category, title, description, evidence, recommended_action, source) {
   return { severity, category, title, description, evidence, recommended_action, source }
 }
@@ -429,8 +476,8 @@ export async function runBusinessHealthCheck(userId) {
   const sb         = getSupabase()
   const checked_at = new Date().toISOString()
 
-  // 1-4: Load user profile, company brain, intelligence_brief, integrations in parallel
-  const [brainRes, briefRes, profileRes] = await Promise.allSettled([
+  // 1-4: Load user profile, company brain, intelligence_brief, integrations, user overrides in parallel
+  const [brainRes, briefRes, profileRes, overridesRes] = await Promise.allSettled([
     getCompanyBrain(userId),
     sb.from('intelligence_brief')
       .select('financial, operational, context')
@@ -440,11 +487,20 @@ export async function runBusinessHealthCheck(userId) {
       .select('integrations')
       .eq('id', userId)
       .single(),
+    sb.from('user_rule_overrides')
+      .select('rule_id, value, enabled')
+      .eq('user_id', userId),
   ])
 
   const brain        = brainRes.status   === 'fulfilled' ? brainRes.value             : null
   const brief        = briefRes.status   === 'fulfilled' ? briefRes.value.data        : null
   const integrations = profileRes.status === 'fulfilled' ? profileRes.value.data?.integrations : null
+  const overrideRows = overridesRes.status === 'fulfilled' ? (overridesRes.value.data ?? []) : []
+
+  // Build override Map for O(1) lookup in evaluateRulePack
+  const userOverrides = overrideRows.length > 0
+    ? new Map(overrideRows.map((row) => [row.rule_id, { value: row.value, enabled: row.enabled }]))
+    : null
 
   if (briefRes.status   === 'fulfilled' && briefRes.value.error)   console.warn('[health-check] brief fetch error:', briefRes.value.error.message)
   if (profileRes.status === 'fulfilled' && profileRes.value.error) console.warn('[health-check] profile fetch error:', profileRes.value.error.message)
@@ -473,7 +529,11 @@ export async function runBusinessHealthCheck(userId) {
   const health_score        = scoreFromRisks(allRisks)
   const opportunities       = buildOpportunities(brain, normalized)
   const summary             = buildSummary(allRisks, brain)
-  const governanceBase      = runGovernanceMonitoring({ brain, brief, normalized, checkedAt: checked_at })
+  const governanceBase      = runGovernanceMonitoring({ brain, brief, normalized, checkedAt: checked_at, userOverrides })
+
+  // Persist metric snapshots non-blocking — do not await, never blocks health check
+  persistMetricSnapshots(userId, governanceBase.snapshots, sb, checked_at).catch(() => {})
+
   const deterministicGovernanceAdvice = buildGovernanceAdvice(governanceBase)
   const governanceAdvice    = await enrichGovernanceWithAI({
     governance: governanceBase,

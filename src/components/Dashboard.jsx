@@ -748,7 +748,8 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
   const [profile, setProfile] = useState(null)
   const [businessState, setBusinessState] = useState(null)
   const [businessStateLoading, setBusinessStateLoading] = useState(true)
-  const [healthIntel, setHealthIntel] = useState(null)
+  const [healthIntel, setHealthIntel]   = useState(null)
+  const [areaTrends, setAreaTrends]     = useState({})
   const [reports, setReports] = useState([])
   const [reportsLoading, setReportsLoading] = useState(true)
   const [billing, setBilling] = useState(null)
@@ -766,7 +767,10 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
   const [alertsError, setAlertsError] = useState('')
   const [updatingAlertIds, setUpdatingAlertIds] = useState({})
   const [completingOnboarding, setCompletingOnboarding] = useState(false)
-  const pendingAuditRef = useRef(null)
+  const pendingAuditRef        = useRef(null)
+  const pendingAuditParamsRef  = useRef(null)
+  const [decisionLogOpen, setDecisionLogOpen]       = useState(false)
+  const [decisionLogFeedback, setDecisionLogFeedback] = useState([])
 
   const name = profile?.name?.trim() || user?.user_metadata?.name?.trim() || ''
   const email = user?.email || ''
@@ -1048,6 +1052,13 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
             .then(r => r.ok ? r.json() : null)
             .then(d => { if (!cancelled && d) setHealthIntel(d) })
             .catch(() => {})
+
+          fetch(`/api/area-trends?userId=${user.id}`, {
+            headers: _tok ? { Authorization: `Bearer ${_tok}` } : {},
+          })
+            .then(r => r.ok ? r.json() : null)
+            .then(d => { if (!cancelled && d?.trends) setAreaTrends(d.trends) })
+            .catch(() => {})
         }).catch(() => {})
       } catch (error) {
         if (!cancelled) {
@@ -1141,7 +1152,45 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
       navigateSection('billing')
       return
     }
-    ensureScopeThen((scope) => onStartAudit({ ...baseAuditInfo(), ...scope }))
+    ensureScopeThen((scope) => {
+      const params = { ...baseAuditInfo(), ...scope }
+      const priorActions = latestParsedContent?.priority_actions?.slice(0, 3) ?? []
+      if (priorActions.length > 0) {
+        pendingAuditParamsRef.current = params
+        setDecisionLogFeedback(priorActions.map((text) => ({ text, status: '', outcome: '' })))
+        setDecisionLogOpen(true)
+      } else {
+        onStartAudit(params)
+      }
+    })
+  }
+
+  const proceedFromDecisionLog = async (feedback) => {
+    setDecisionLogOpen(false)
+    if (user?.id && latestDiagnosticReport?.id) {
+      const filledFeedback = feedback.filter((f) => f.status)
+      if (filledFeedback.length > 0) {
+        try {
+          const sb = await initSupabase()
+          const { data: { session: s } } = await sb.auth.getSession()
+          const token = s?.access_token || ''
+          fetch('/api/save-dashboard-checkin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+            body: JSON.stringify({
+              userId: user.id,
+              reportId: latestDiagnosticReport.id,
+              sinceLast: 'Action follow-up before new session',
+              actionFeedback: filledFeedback,
+            }),
+          }).catch(() => {})
+        } catch { /* non-blocking */ }
+      }
+    }
+    if (pendingAuditParamsRef.current) {
+      onStartAudit(pendingAuditParamsRef.current)
+      pendingAuditParamsRef.current = null
+    }
   }
 
   const startGoalAudit = (goalData) => {
@@ -1286,6 +1335,20 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
       data-theme={theme}
     >
       {/* ── Modals ────────────────────────────────────────────────────────── */}
+      {decisionLogOpen && (
+        <DecisionLogModal
+          feedback={decisionLogFeedback}
+          setFeedback={setDecisionLogFeedback}
+          onProceed={proceedFromDecisionLog}
+          onSkip={() => {
+            setDecisionLogOpen(false)
+            if (pendingAuditParamsRef.current) {
+              onStartAudit(pendingAuditParamsRef.current)
+              pendingAuditParamsRef.current = null
+            }
+          }}
+        />
+      )}
       {goalModal && (
         <GoalCaptureModal onClose={() => setGoalModal(false)} onStart={(goalData) => {
           setGoalModal(false)
@@ -1435,34 +1498,105 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                       </div>
                     </section>
                   </>
-                ) : (
-                  <>
-                    <section className="dash-card" aria-label="Agent X — Diagnostic engine">
-                      <header className="card-head">
-                        <div className="card-head-text">
-                          <div className="card-eyebrow">Agent X</div>
-                          <h2 className="card-title">Diagnostic engine</h2>
+                ) : (() => {
+                  const hasMemory     = (reports?.length ?? 0) > 0 || !!latestParsedContent?.headline
+                  const hasConnectors = (healthIntel?.governance_areas_with_signals ?? 0) > 0
+                  const idleState     = hasConnectors ? 'connectors' : hasMemory ? 'memory' : 'empty'
+                  const lastHeadline  = latestParsedContent?.headline || null
+                  const topAction     = latestParsedContent?.priority_actions?.[0] || null
+                  const govSummary    = healthIntel?.governance_summary || null
+                  const topAction2    = healthIntel?.health_check_actions?.[0] || null
+                  const checkedAt     = healthIntel?.governance_checked_at
+                    ? new Date(healthIntel.governance_checked_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+                    : null
+
+                  return (
+                    <>
+                      <section className="dash-card" aria-label="Agent X — Diagnostic engine">
+                        <header className="card-head">
+                          <div className="card-head-text">
+                            <div className="card-eyebrow">Agent X</div>
+                            <h2 className="card-title">Diagnostic engine</h2>
+                          </div>
+                          <div className="card-status">
+                            <span className="cs-dot" style={{ background: idleState === 'empty' ? 'var(--muted)' : idleState === 'connectors' ? '#4CAF50' : '#FFC107' }} />
+                            {idleState === 'empty' ? 'Waiting' : idleState === 'connectors' ? 'Monitoring' : 'Ready'}
+                          </div>
+                        </header>
+                        <div style={{ padding: '16px 20px', flex: 1 }}>
+                          {idleState === 'empty' && (
+                            <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', lineHeight: 1.7 }}>
+                              <p style={{ margin: '0 0 8px', color: 'var(--text-soft)' }}>No sessions yet.</p>
+                              <p style={{ margin: 0 }}>Start your first session — ask anything about your business. The more you share, the sharper the diagnosis becomes over time.</p>
+                            </div>
+                          )}
+                          {idleState === 'memory' && lastHeadline && (
+                            <div>
+                              <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 8 }}>Last finding</div>
+                              <p style={{ margin: '0 0 12px', fontSize: '0.88rem', fontWeight: 500, color: 'var(--text)', lineHeight: 1.5 }}>{lastHeadline}</p>
+                            </div>
+                          )}
+                          {idleState === 'memory' && !lastHeadline && (
+                            <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', lineHeight: 1.7 }}>
+                              Memory loaded. Start a new session to continue diagnosis.
+                            </div>
+                          )}
+                          {idleState === 'connectors' && govSummary && (
+                            <div>
+                              <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 8 }}>
+                                Live status{checkedAt ? ` · checked ${checkedAt}` : ''}
+                              </div>
+                              <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text)', lineHeight: 1.6 }}>{govSummary}</p>
+                            </div>
+                          )}
                         </div>
-                        <div className="card-status">
-                          <span className="cs-dot warn" />
-                          Analyzing
+                      </section>
+
+                      <section className="dash-card" aria-label="Agent Y — Solution engine">
+                        <header className="card-head">
+                          <div className="card-head-text">
+                            <div className="card-eyebrow">Agent Y</div>
+                            <h2 className="card-title">Solution engine</h2>
+                          </div>
+                          <div className="card-status">
+                            <span className="cs-dot" style={{ background: idleState === 'empty' ? 'var(--muted)' : '#4CAF50' }} />
+                            {idleState === 'empty' ? 'Standby' : 'Proposing'}
+                          </div>
+                        </header>
+                        <div style={{ padding: '16px 20px', flex: 1 }}>
+                          {idleState === 'empty' && (
+                            <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', lineHeight: 1.7 }}>
+                              <p style={{ margin: '0 0 8px', color: 'var(--text-soft)' }}>Both engines are listening.</p>
+                              <p style={{ margin: 0 }}>Once you share what{"'"}s going on, Agent Y proposes fixes ranked by impact, urgency, and cost — grounded in your specific situation.</p>
+                            </div>
+                          )}
+                          {idleState === 'memory' && topAction && (
+                            <div>
+                              <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 8 }}>Top open action</div>
+                              <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text)', lineHeight: 1.6 }}>{topAction}</p>
+                            </div>
+                          )}
+                          {idleState === 'memory' && !topAction && (
+                            <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+                              Ready to propose solutions from your next session.
+                            </div>
+                          )}
+                          {idleState === 'connectors' && topAction2 && (
+                            <div>
+                              <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 8 }}>Recommended action</div>
+                              <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text)', lineHeight: 1.6 }}>{topAction2}</p>
+                            </div>
+                          )}
+                          {idleState === 'connectors' && !topAction2 && (
+                            <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+                              Monitoring live signals. No critical actions flagged right now.
+                            </div>
+                          )}
                         </div>
-                      </header>
-                    </section>
-                    <section className="dash-card" aria-label="Agent Y — Solution engine">
-                      <header className="card-head">
-                        <div className="card-head-text">
-                          <div className="card-eyebrow">Agent Y</div>
-                          <h2 className="card-title">Solution engine</h2>
-                        </div>
-                        <div className="card-status">
-                          <span className="cs-dot ok" />
-                          Proposing
-                        </div>
-                      </header>
-                    </section>
-                  </>
-                )}
+                      </section>
+                    </>
+                  )
+                })()}
               </div>
 
               <div className="dash-cmd">
@@ -1514,7 +1648,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                     </div>
                   )}
                   <div style={{ marginTop: 24 }}>
-                    <OperationalOversightSection intelligenceUnlocked={intelligenceUnlocked} healthIntel={healthIntel} userId={user?.id} />
+                    <OperationalOversightSection intelligenceUnlocked={intelligenceUnlocked} healthIntel={healthIntel} userId={user?.id} areaTrends={areaTrends} />
                   </div>
                 </PageShell>
               )}
@@ -2460,7 +2594,7 @@ function ThresholdEditorPanel({ userId }) {
   )
 }
 
-function OperationalOversightSection({ intelligenceUnlocked, healthIntel, userId }) {
+function OperationalOversightSection({ intelligenceUnlocked, healthIntel, userId, areaTrends = {} }) {
   if (!intelligenceUnlocked) {
     return (
       <PanelCard title="operational oversight">
@@ -2509,6 +2643,8 @@ function OperationalOversightSection({ intelligenceUnlocked, healthIntel, userId
               const tone = governanceStatusTone(item.status)
               const areaLabel = GOVERNANCE_AREA_LABELS[item.area_id] || item.area_id
               const matchingDiagnosis = topDiagnoses.find((diag) => diag.area_id === item.area_id)
+              const trend = areaTrends[item.area_id]
+              const trendColor = trend?.direction === 'improving' ? '#4CAF50' : trend?.direction === 'worsening' ? '#E57373' : 'var(--text-muted)'
               return (
                 <div key={item.area_id} style={styles.oversightAreaCard}>
                   <div style={styles.oversightAreaTop}>
@@ -2518,9 +2654,16 @@ function OperationalOversightSection({ intelligenceUnlocked, healthIntel, userId
                         {item.coverage > 0 ? `${item.coverage} live signal${item.coverage !== 1 ? 's' : ''}` : 'No live signals yet'}
                       </div>
                     </div>
-                    <span style={{ ...styles.alertPill, background: tone.bg, color: tone.color, borderColor: tone.border }}>
-                      {tone.label}
-                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      {trend && trend.direction !== 'stable' && (
+                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: trendColor }}>
+                          {trend.label}
+                        </span>
+                      )}
+                      <span style={{ ...styles.alertPill, background: tone.bg, color: tone.color, borderColor: tone.border }}>
+                        {tone.label}
+                      </span>
+                    </div>
                   </div>
                   <div style={styles.oversightAreaDiagnosis}>
                     {matchingDiagnosis?.title || 'No major issue flagged right now.'}
@@ -2973,6 +3116,89 @@ const ACTION_FEEDBACK_STATUSES = [
   { value: 'failed',      label: 'Did not work' },
   { value: 'skipped',     label: 'Skipped' },
 ]
+
+const STATUS_OPTIONS = [
+  { value: 'done',        label: 'Done' },
+  { value: 'in_progress', label: 'In progress' },
+  { value: 'failed',      label: "Didn't work" },
+  { value: 'skipped',     label: 'Skipped' },
+]
+
+function DecisionLogModal({ feedback, setFeedback, onProceed, onSkip }) {
+  const updateFeedback = (idx, field, value) => {
+    setFeedback((prev) => prev.map((item, i) => i === idx ? { ...item, [field]: value } : item))
+  }
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: '28px 28px 24px', maxWidth: 520, width: '100%', boxShadow: '0 24px 60px rgba(0,0,0,0.4)' }}>
+        <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--accent)', fontWeight: 600, marginBottom: 8 }}>
+          Before we start
+        </div>
+        <h2 style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--text)', margin: '0 0 6px' }}>
+          What happened with last session?
+        </h2>
+        <p style={{ fontSize: '0.8rem', color: 'var(--text-soft)', margin: '0 0 20px', lineHeight: 1.6 }}>
+          Quick check-in — mark what moved. This sharpens the next diagnosis.
+        </p>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 24 }}>
+          {feedback.map((item, idx) => (
+            <div key={idx} style={{ padding: '12px 14px', background: 'var(--rich-panel-surface, var(--surface))', border: '1px solid var(--border)', borderRadius: 10 }}>
+              <div style={{ fontSize: '0.82rem', color: 'var(--text)', marginBottom: 10, lineHeight: 1.5 }}>
+                {item.text}
+              </div>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: item.status ? 8 : 0 }}>
+                {STATUS_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => updateFeedback(idx, 'status', item.status === opt.value ? '' : opt.value)}
+                    style={{
+                      padding: '4px 10px', borderRadius: 20, fontSize: '0.72rem', fontWeight: 500,
+                      border: `1px solid ${item.status === opt.value ? 'var(--accent)' : 'var(--border)'}`,
+                      background: item.status === opt.value ? 'var(--accent-soft)' : 'transparent',
+                      color: item.status === opt.value ? 'var(--accent)' : 'var(--text-muted)',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+              {item.status && item.status !== 'done' && (
+                <input
+                  type="text"
+                  placeholder="What happened? (optional)"
+                  value={item.outcome}
+                  onChange={(e) => updateFeedback(idx, 'outcome', e.target.value)}
+                  style={{ width: '100%', boxSizing: 'border-box', padding: '6px 10px', borderRadius: 7, border: '1px solid var(--border)', background: 'var(--input-bg, var(--surface))', color: 'var(--text)', fontSize: '0.78rem', marginTop: 4 }}
+                />
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', alignItems: 'center' }}>
+          <button
+            type="button"
+            onClick={onSkip}
+            style={{ padding: '7px 14px', borderRadius: 8, border: 'none', background: 'transparent', color: 'var(--text-muted)', fontSize: '0.8rem', cursor: 'pointer' }}
+          >
+            Skip
+          </button>
+          <button
+            type="button"
+            onClick={() => onProceed(feedback)}
+            style={{ padding: '8px 20px', borderRadius: 8, border: 'none', background: 'var(--accent)', color: 'var(--button-text)', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}
+          >
+            Continue to session →
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 function FounderCheckInPanel({ draft, setDraft, saving, error, reportDate, onToggleArea, onSave, priorityActions = [], right = null }) {
   const topActions = priorityActions.slice(0, 3)
