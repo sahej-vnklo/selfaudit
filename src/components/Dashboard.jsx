@@ -200,16 +200,21 @@ function getThemeVars(theme) {
   const C   = THEMES[theme] || THEMES.dark
   const dark = theme !== 'light'
   // Dashboard-specific surface tokens (injected as CSS vars for Dashboard.css)
-  const dSurface    = dark ? '#18120f'                                            : '#f1f1f3'
-  const dRaised     = dark ? '#241a16'                                            : '#f7f7f9'
-  const dBorder     = dark ? 'rgba(244,235,227,0.17)'                             : 'rgba(20,16,15,0.16)'
-  const dBorderStrong = dark ? 'rgba(244,235,227,0.28)'                           : 'rgba(20,16,15,0.26)'
+  // Glass surface treatment — gradient fill + inset highlight + layered shadow + hairline border
+  const dSurface    = dark
+    ? 'linear-gradient(155deg, #261c17 0%, #16100d 100%)'
+    : 'linear-gradient(155deg, #fcfcfd 0%, #ececee 100%)'
+  const dRaised     = dark
+    ? 'linear-gradient(180deg, #2c221c 0%, #1e1612 100%)'
+    : 'linear-gradient(180deg, #ffffff 0%, #f1f1f3 100%)'
+  const dBorder       = dark ? 'rgba(244,235,227,0.17)' : 'rgba(20,16,15,0.16)'
+  const dBorderStrong = dark ? 'rgba(244,235,227,0.28)' : 'rgba(20,16,15,0.26)'
   const dShadow     = dark
-    ? '0 2px 5px rgba(0,0,0,0.5), 0 18px 40px -20px rgba(0,0,0,0.8)'
-    : '0 1px 2px rgba(20,16,15,0.07), 0 12px 28px -16px rgba(20,16,15,0.24), 0 0 0 1px rgba(20,16,15,0.04)'
+    ? '0 2px 5px rgba(0,0,0,0.5), 0 18px 40px -20px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.07)'
+    : '0 1px 2px rgba(20,16,15,0.07), 0 12px 28px -16px rgba(20,16,15,0.24), 0 0 0 1px rgba(20,16,15,0.04), inset 0 1px 0 rgba(255,255,255,0.9)'
   const dBtnShadow  = dark
-    ? '0 1px 2px rgba(0,0,0,0.45)'
-    : '0 1px 2px rgba(20,16,15,0.08), 0 1px 1px rgba(20,16,15,0.04)'
+    ? '0 1px 2px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.06)'
+    : '0 1px 2px rgba(20,16,15,0.08), 0 1px 1px rgba(20,16,15,0.04), inset 0 1px 0 rgba(255,255,255,0.85)'
   // Kept for sub-component backward-compat (PanelCard, KpiCard etc. use --rich-* vars)
   const rich = theme === 'light'
     ? { heroSurface: LIGHT_HERO_SURFACE, panelSurface: LIGHT_PANEL_SURFACE, heroBorder: LIGHT_HERO_BORDER, panelBorder: LIGHT_PANEL_BORDER, heroInset: LIGHT_HERO_INSET, heroShadow: LIGHT_HERO_SHADOW, panelShadow: LIGHT_PANEL_SHADOW }
