@@ -185,7 +185,7 @@ function CalibrationPanel({ calibration, navigateSection }) {
           <button
             key={area.id}
             type="button"
-            onClick={() => navigateSection?.(`dept-${area.id}`)}
+            onClick={() => navigateSection?.(`dept-${area.id}?view=standards`)}
             style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               gap: 10, padding: '9px 12px',
@@ -528,7 +528,7 @@ export default function CockpitSection({ user, navigateSection }) {
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
           {departments.map(dept => (
-            <DeptCard key={dept.id} dept={dept} onViewDept={(id) => navigateSection?.(`dept-${id}`)} />
+            <DeptCard key={dept.id} dept={dept} onViewDept={(id) => navigateSection?.(`dept-${id}?view=issues`)} />
           ))}
         </div>
       </div>

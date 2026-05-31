@@ -431,7 +431,7 @@ function LoadingSkeleton() {
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
-export default function DepartmentPage({ areaId, user, navigateSection }) {
+export default function DepartmentPage({ areaId, user, navigateSection, view = 'all' }) {
   const [data, setData]     = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError]   = useState(null)
@@ -502,57 +502,61 @@ export default function DepartmentPage({ areaId, user, navigateSection }) {
 
       {!loading && !error && data && (
         <>
-          {/* ── Active Issues ─────────────────────────────────────────────── */}
-          <div>
-            <SectionHeader
-              title="Active Issues"
-              sub={data.issues.length === 0 ? 'No open issues for this department.' : `${data.issues.length} open issue${data.issues.length !== 1 ? 's' : ''} flagged by monitoring.`}
-            />
-            {data.issues.length > 0 ? (
-              <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, overflow: 'hidden', maxHeight: 380, overflowY: 'auto' }}>
-                {data.issues.map((issue, i) => (
-                  <IssueRow key={issue.id} issue={issue} isLast={i === data.issues.length - 1} />
-                ))}
-              </div>
-            ) : (
-              <div style={{ padding: '14px 16px', background: C.greenBg, border: `1px solid var(--green)`, borderRadius: 10, fontSize: 13, color: C.greenText }}>
-                No active issues — this department looks healthy.
-              </div>
-            )}
-          </div>
-
-          {/* ── Metrics & Your Standards ───────────────────────────────────── */}
-          <div>
-            <SectionHeader
-              title="Metrics & Your Standards"
-              sub="These thresholds define what 'watch' and 'concerned' mean for your business. Edit any value — the monitoring system uses your number from the next run."
-            />
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {data.rules.map(rule => (
-                <RuleRow key={rule.ruleId} rule={rule} userId={user?.id} onSaved={fetchData} />
-              ))}
+          {/* ── Active Issues — shown when view is 'issues' or 'all' ────────── */}
+          {(view === 'issues' || view === 'all') && (
+            <div>
+              <SectionHeader
+                title="Active Issues"
+                sub={data.issues.length === 0 ? 'No open issues for this department.' : `${data.issues.length} open issue${data.issues.length !== 1 ? 's' : ''} flagged by monitoring.`}
+              />
+              {data.issues.length > 0 ? (
+                <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, overflow: 'hidden', maxHeight: 380, overflowY: 'auto' }}>
+                  {data.issues.map((issue, i) => (
+                    <IssueRow key={issue.id} issue={issue} isLast={i === data.issues.length - 1} />
+                  ))}
+                </div>
+              ) : (
+                <div style={{ padding: '14px 16px', background: C.greenBg, border: `1px solid var(--green)`, borderRadius: 10, fontSize: 13, color: C.greenText }}>
+                  No active issues — this department looks healthy.
+                </div>
+              )}
             </div>
+          )}
 
-            {!data.has_connector_data && (
-              <div style={{ marginTop: 12, padding: '10px 14px', background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 12, color: C.textMuted, lineHeight: 1.6 }}>
-                <strong style={{ color: C.text }}>No live data connected.</strong> Metric values will appear once you connect a tool (e.g. HubSpot, Stripe) or run a health check with manual context filled in.
+          {/* ── Metrics & Standards + Custom — shown when view is 'standards' or 'all' */}
+          {(view === 'standards' || view === 'all') && (
+            <>
+              <div>
+                <SectionHeader
+                  title="Metrics & Your Standards"
+                  sub="These thresholds define what 'watch' and 'concerned' mean for your business. Edit any value — the monitoring system uses your number from the next run."
+                />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {data.rules.map(rule => (
+                    <RuleRow key={rule.ruleId} rule={rule} userId={user?.id} onSaved={fetchData} />
+                  ))}
+                </div>
+                {!data.has_connector_data && (
+                  <div style={{ marginTop: 12, padding: '10px 14px', background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 12, color: C.textMuted, lineHeight: 1.6 }}>
+                    <strong style={{ color: C.text }}>No live data connected.</strong> Metric values will appear once you connect a tool (e.g. HubSpot, Stripe) or run a health check with manual context filled in.
+                  </div>
+                )}
               </div>
-            )}
-          </div>
 
-          {/* ── Custom Metrics ────────────────────────────────────────────────── */}
-          <div>
-            <SectionHeader
-              title="Your Own Metrics"
-              sub="Track anything that matters to your business. These won't affect monitoring scoring — they're your personal signals."
-            />
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {(data.custom_metrics ?? []).map(m => (
-                <CustomMetricRow key={m.id} metric={m} userId={user?.id} onDeleted={fetchData} />
-              ))}
-              <AddCustomMetricForm userId={user?.id} areaId={areaId} onAdded={fetchData} />
-            </div>
-          </div>
+              <div>
+                <SectionHeader
+                  title="Your Own Metrics"
+                  sub="Track anything that matters to your business. These won't affect monitoring scoring — they're your personal signals."
+                />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {(data.custom_metrics ?? []).map(m => (
+                    <CustomMetricRow key={m.id} metric={m} userId={user?.id} onDeleted={fetchData} />
+                  ))}
+                  <AddCustomMetricForm userId={user?.id} areaId={areaId} onAdded={fetchData} />
+                </div>
+              </div>
+            </>
+          )}
 
           {data.last_checked && (
             <div style={{ fontSize: 11.5, color: C.textFaint }}>

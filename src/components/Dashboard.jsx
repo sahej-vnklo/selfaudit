@@ -766,6 +766,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
   const [checkoutSyncing, setCheckoutSyncing] = useState(false)
   const [portalLoading, setPortalLoading] = useState(false)
   const [section, setSection] = useState(() => getSectionFromHash())
+  const [deptView, setDeptView] = useState('all')
   const [requiresPayment, setRequiresPayment] = useState(false)
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
   const [goalModal, setGoalModal] = useState(false)
@@ -1149,13 +1150,16 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
   }, [tier, user?.id])
 
   const navigateSection = (nextSection) => {
-    if (activationLocked && nextSection !== 'billing' && nextSection !== 'account') {
+    const [sectionName, query = ''] = nextSection.split('?')
+    const view = new URLSearchParams(query).get('view') || 'all'
+    if (activationLocked && sectionName !== 'billing' && sectionName !== 'account') {
       history.pushState({ section: 'billing' }, '', '#billing')
       setSection('billing')
       return
     }
-    history.pushState({ section: nextSection }, '', `#${nextSection}`)
-    setSection(nextSection)
+    history.pushState({ section: sectionName }, '', `#${nextSection}`)
+    setSection(sectionName)
+    setDeptView(view)
   }
 
   const baseAuditInfo = () => ({
@@ -2331,10 +2335,10 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
               {section === 'connectors' && <ConnectorsSection user={user} />}
               {section === 'agent'      && <AgentSection user={user} />}
               {section === 'cockpit'    && <CockpitSection user={user} navigateSection={navigateSection} />}
-              {section === 'dept-customer-service'    && <DepartmentPage areaId="customer-service"    user={user} navigateSection={navigateSection} />}
-              {section === 'dept-marketing-sales'     && <DepartmentPage areaId="marketing-sales"     user={user} navigateSection={navigateSection} />}
-              {section === 'dept-finance-accounting'  && <DepartmentPage areaId="finance-accounting"  user={user} navigateSection={navigateSection} />}
-              {section === 'dept-management-strategy' && <DepartmentPage areaId="management-strategy" user={user} navigateSection={navigateSection} />}
+              {section === 'dept-customer-service'    && <DepartmentPage areaId="customer-service"    user={user} navigateSection={navigateSection} view={deptView} />}
+              {section === 'dept-marketing-sales'     && <DepartmentPage areaId="marketing-sales"     user={user} navigateSection={navigateSection} view={deptView} />}
+              {section === 'dept-finance-accounting'  && <DepartmentPage areaId="finance-accounting"  user={user} navigateSection={navigateSection} view={deptView} />}
+              {section === 'dept-management-strategy' && <DepartmentPage areaId="management-strategy" user={user} navigateSection={navigateSection} view={deptView} />}
 
               {/* ── Account → Profile + Billing ─────────────────────────── */}
               {section === 'account' && (
