@@ -1910,8 +1910,8 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                     return (
                       <>
                         {/* Agent X — Diagnostic terminal */}
-                        <section className="dash-card" aria-label="Agent X — Diagnostic engine" style={{ background: '#0c0c0c', border: '1px solid rgba(74,222,128,0.15)' }}>
-                          <header className="card-head" style={{ borderBottom: '1px solid rgba(74,222,128,0.12)', background: 'transparent' }}>
+                        <section className="dash-card" aria-label="Agent X — Diagnostic engine">
+                          <header className="card-head" style={{ borderBottom: '1px solid rgba(74,222,128,0.12)' }}>
                             <div className="card-head-text">
                               <div className="card-eyebrow" style={{ color: '#4ade80' }}>Agent X</div>
                               <h2 className="card-title">Diagnostic engine</h2>
@@ -1938,7 +1938,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                           <div style={{ flex: 1, padding: '10px 12px 12px', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
                             <div
                               ref={agentXScrollRef}
-                              style={{ flex: 1, overflow: 'auto', minHeight: 0, background: 'rgba(0,0,0,0.35)', border: '1px solid rgba(74,222,128,0.1)', borderRadius: 8, padding: '14px 16px', fontFamily: '"JetBrains Mono", ui-monospace, monospace', fontSize: '0.72rem', lineHeight: 1.85, wordBreak: 'break-word' }}
+                              style={{ flex: 1, overflow: 'auto', minHeight: 0, background: '#111111', border: '1px solid rgba(74,222,128,0.1)', borderRadius: 8, padding: '14px 16px', fontFamily: '"JetBrains Mono", ui-monospace, monospace', fontSize: '0.72rem', lineHeight: 1.85, wordBreak: 'break-word' }}
                             >
                               {/* Past turns — compact history */}
                               {sessionLog.map((turn, i) => (
@@ -1966,8 +1966,8 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                         </section>
 
                         {/* Agent Y — Solution terminal */}
-                        <section className="dash-card" aria-label="Agent Y — Solution engine" style={{ background: '#0c0c0c', border: '1px solid rgba(251,146,60,0.15)' }}>
-                          <header className="card-head" style={{ borderBottom: '1px solid rgba(251,146,60,0.12)', background: 'transparent' }}>
+                        <section className="dash-card" aria-label="Agent Y — Solution engine">
+                          <header className="card-head" style={{ borderBottom: '1px solid rgba(251,146,60,0.12)' }}>
                             <div className="card-head-text">
                               <div className="card-eyebrow" style={{ color: '#fb923c' }}>Agent Y</div>
                               <h2 className="card-title">Solution engine</h2>
@@ -1994,7 +1994,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                           <div style={{ flex: 1, padding: '10px 12px 12px', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
                             <div
                               ref={agentYScrollRef}
-                              style={{ flex: 1, overflow: 'auto', minHeight: 0, background: 'rgba(0,0,0,0.35)', border: '1px solid rgba(251,146,60,0.1)', borderRadius: 8, padding: '14px 16px', fontFamily: '"JetBrains Mono", ui-monospace, monospace', fontSize: '0.72rem', lineHeight: 1.85, wordBreak: 'break-word' }}
+                              style={{ flex: 1, overflow: 'auto', minHeight: 0, background: '#111111', border: '1px solid rgba(251,146,60,0.1)', borderRadius: 8, padding: '14px 16px', fontFamily: '"JetBrains Mono", ui-monospace, monospace', fontSize: '0.72rem', lineHeight: 1.85, wordBreak: 'break-word' }}
                             >
                               {/* Past turns — compact history */}
                               {sessionLog.map((turn, i) => (
