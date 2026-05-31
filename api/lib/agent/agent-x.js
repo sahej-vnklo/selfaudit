@@ -4,7 +4,7 @@
 // Output streams to the left terminal card.
 
 const CLAUDE_API  = 'https://api.anthropic.com/v1/messages'
-const SONNET_MODEL = 'claude-sonnet-4-5-20250514'
+const SONNET_MODEL = 'claude-sonnet-4-20250514'
 
 // ── System prompt ─────────────────────────────────────────────────────────────
 
