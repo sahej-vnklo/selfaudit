@@ -435,6 +435,12 @@
   min-height: 0;
 }
 
+/* ─── Terminal cursor blink ──────────────────────────────────────────────────*/
+@keyframes termBlink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
 /* ─── Responsive ─────────────────────────────────────────────────────────────*/
 @media (max-width: 820px) {
   .sa-dash .dash-cards { grid-template-columns: 1fr; }

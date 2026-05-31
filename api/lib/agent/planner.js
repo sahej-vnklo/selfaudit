@@ -15,26 +15,33 @@ const SOURCE_CATALOG = {
   hubspot_contacts:    'CRM contacts: new leads this month, lifecycle stage breakdown, MQLs, SQLs, customer count',
 }
 
-// Short conversational messages and product questions that should not trigger an investigation
+// Messages that should get a conversational reply, not a full diagnosis
 const CONVERSATIONAL_PATTERNS = [
-  /^(hi|hey|hello|howdy|hiya|yo|sup)\b/i,
-  /^(thanks?|thank you|ty|cheers|cool|ok|okay|got it|nice|great|perfect|sounds good)\b/i,
-  /^(test|testing|ping|check|hello there)\b/i,
-  /^how can (you|u) help/i,
-  /^what can (you|u) do/i,
-  /^what do (you|u) do/i,
-  /^how does this work/i,
-  /^can (you|u) help/i,
-  /^what (is|are) (you|your|selfaudit)/i,
-  /^tell me (about|what|how)/i,
-  /^(who are you|what are you)\b/i,
-  /^(good morning|good afternoon|good evening)\b/i,
+  // Greetings
+  /^(hi|hey|hello|howdy|hiya|yo|sup|good (morning|afternoon|evening))\b/i,
+  // Acknowledgements / short replies
+  /^(thanks?|thank you|ty|cheers|cool|ok|okay|got it|nice|great|perfect|sounds good|awesome|understood|makes sense|alright|sure|yep|nope|yes|no)\b/i,
+  // Tests
+  /^(test|testing|ping|check)\b/i,
+  // Questions about the agents or system
+  /^what does (agent|this|it|selfaudit)/i,
+  /^what (is|are) (agent|this|selfaudit|you|your)/i,
+  /^(who|what) are (you|the agents)/i,
+  /^how (does|do) (agent|this|you|it|selfaudit)/i,
+  /^(tell me about|explain|describe) (agent|this|selfaudit|yourself|how)/i,
+  // Capability questions
+  /^(how can (you|u) help|what can (you|u) do|what do (you|u) do)/i,
+  /^(can (you|u) (help|tell|explain|show))/i,
+  // Meta questions
+  /^(how does this work|how do (you|u) work|what('?s| is) this)/i,
 ]
 
 export function isConversational(query) {
   const q = String(query || '').trim()
   if (CONVERSATIONAL_PATTERNS.some((p) => p.test(q))) return true
-  if (q.length < 15 && q.split(/\s+/).length <= 3) return true
+  // Very short messages with no business keywords are conversational
+  const businessKeywords = /\b(pipeline|revenue|churn|cash|sales|customer|product|team|hire|burn|runway|margin|cac|ltv|mrr|arr|metric|goal|problem|issue|broken|stuck|failing|struggling|growth|conversion)\b/i
+  if (q.length < 30 && !businessKeywords.test(q)) return true
   return false
 }
 

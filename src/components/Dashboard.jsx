@@ -1657,28 +1657,39 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                   </>
                 ) : (() => {
                   // Terminal line renderer — applies color by content type
-                  const renderTerminalLines = (text) => {
+                  const renderTerminalLines = (text, accentColor = '#4ade80') => {
                     if (!text) return null
                     return text.split('\n').map((line, i) => {
-                      let color = 'var(--fg)'
+                      let color = accentColor === '#4ade80' ? 'rgba(200,255,220,0.85)' : 'rgba(255,220,150,0.85)'
                       let fontWeight = 'normal'
                       let opacity = 1
-                      const upper = line.toUpperCase()
+                      let fontSize = '0.73rem'
+                      let marginTop = 0
 
-                      if (/^CRITICAL/.test(line))       { color = '#E57373'; fontWeight = '600' }
-                      else if (/^HIGH/.test(line))      { color = '#FFB74D'; fontWeight = '600' }
-                      else if (/^MEDIUM/.test(line))    { color = '#FFF176'; fontWeight = '500' }
-                      else if (/^LOW/.test(line))       { color = 'var(--fg-dim)'; fontWeight = '400' }
-                      else if (/^(DIAGNOSIS|SOLUTIONS|ROOT CAUSE|WHAT TO STOP|DATA GAPS|STOP DOING|EXECUTION ORDER|CONTINGENT ON|IMMEDIATE|BUILD NEXT)/.test(line)) {
-                        color = 'var(--ember)'; fontWeight = '700'
+                      if (/^CRITICAL/.test(line))  { color = '#ff6b6b'; fontWeight = '700' }
+                      else if (/^HIGH/.test(line)) { color = '#ffa94d'; fontWeight = '700' }
+                      else if (/^MEDIUM/.test(line)){ color = '#ffe066'; fontWeight = '600' }
+                      else if (/^LOW/.test(line))  { color = 'rgba(200,200,200,0.5)' }
+                      else if (/^(DIAGNOSIS|ROOT CAUSE|WHAT TO STOP|DATA GAPS)/.test(line)) {
+                        color = '#fff'; fontWeight = '700'; fontSize = '0.7rem'
+                        marginTop = 12
                       }
-                      else if (/^━+$/.test(line))       { color = 'rgba(255,255,255,0.15)'; }
+                      else if (/^(SOLUTIONS|STOP DOING|EXECUTION ORDER|CONTINGENT ON)/.test(line)) {
+                        color = '#fff'; fontWeight = '700'; fontSize = '0.7rem'
+                        marginTop = 12
+                      }
+                      else if (/^(IMMEDIATE|BUILD NEXT)/.test(line)) {
+                        color = '#4ade80'; fontWeight = '700'
+                      }
+                      else if (/^━+$/.test(line))  {
+                        return <div key={i} style={{ height: 1, background: 'rgba(255,255,255,0.08)', margin: '4px 0 8px' }} />
+                      }
                       else if (/^(Evidence:|Addresses:|Effort:|Owner:|Confidence:)/.test(line)) {
-                        color = 'var(--fg-mute)'; opacity = 0.7
+                        color = 'rgba(180,180,180,0.5)'; fontSize = '0.68rem'
                       }
 
                       return (
-                        <div key={i} style={{ color, fontWeight, opacity, minHeight: line ? undefined : '0.8em' }}>
+                        <div key={i} style={{ color, fontWeight, opacity, fontSize, marginTop, minHeight: line ? undefined : '0.6em', letterSpacing: '0.01em' }}>
                           {line || ''}
                         </div>
                       )
@@ -1695,75 +1706,113 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                     return (
                       <>
                         {/* Agent X — Diagnostic terminal */}
-                        <section className="dash-card" aria-label="Agent X — Diagnostic engine" style={{ fontFamily: 'monospace' }}>
-                          <header className="card-head">
+                        <section className="dash-card" aria-label="Agent X — Diagnostic engine">
+                          <header className="card-head" style={{ borderBottom: '1px solid rgba(74,222,128,0.12)' }}>
                             <div className="card-head-text">
-                              <div className="card-eyebrow">Agent X</div>
+                              <div className="card-eyebrow" style={{ color: '#4ade80' }}>Agent X</div>
                               <h2 className="card-title">Diagnostic engine</h2>
                             </div>
-                            <div className="card-status">
-                              <span className="cs-dot" style={{
-                                background: xActive ? 'var(--accent)' : xComplete ? '#4CAF50' : 'var(--muted)',
-                                animation: xActive ? 'pulse 1s infinite' : 'none',
+                            <div className="card-status" style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11 }}>
+                              <span style={{
+                                width: 7, height: 7, borderRadius: '50%', display: 'inline-block', flexShrink: 0,
+                                background: xActive ? '#4ade80' : xComplete ? '#4ade80' : 'rgba(255,255,255,0.2)',
+                                boxShadow: (xActive || xComplete) ? '0 0 8px #4ade80' : 'none',
                               }} />
-                              {xActive ? 'Analyzing' : xComplete ? 'Done' : 'Standby'}
+                              <span style={{ color: xActive ? '#4ade80' : xComplete ? '#4ade80' : 'rgba(255,255,255,0.3)' }}>
+                                {xActive ? 'SCANNING' : xComplete ? 'DONE' : 'STANDBY'}
+                              </span>
                             </div>
                           </header>
-                          <div
-                            ref={agentXScrollRef}
-                            style={{
-                              flex: 1, overflow: 'auto', padding: '12px 16px',
-                              fontSize: '0.75rem', lineHeight: 1.7,
-                              color: 'var(--fg)',
-                              whiteSpace: 'pre-wrap', wordBreak: 'break-word',
-                            }}
-                          >
-                            {agentState === 'planning' && !agentXStream && (
-                              <span style={{ color: 'var(--fg-mute)' }}>Investigating…▌</span>
-                            )}
-                            {renderTerminalLines(agentXStream)}
-                            {xActive && agentXStream && <span style={{ opacity: 0.5 }}>▌</span>}
-                            {!agentXStream && agentState === 'idle' && (
-                              <span style={{ color: 'var(--fg-mute)', fontSize: '0.72rem' }}>Agent X will diagnose what is broken in your business.</span>
-                            )}
-                            {agentState === 'error' && agentError && (
-                              <span style={{ color: '#E57373' }}>{agentError}</span>
-                            )}
+                          {/* Terminal window */}
+                          <div style={{ flex: 1, padding: '10px 12px 12px', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                            <div
+                              ref={agentXScrollRef}
+                              style={{
+                                flex: 1, overflow: 'auto', minHeight: 0,
+                                background: 'rgba(0,0,0,0.35)',
+                                border: '1px solid rgba(74,222,128,0.1)',
+                                borderRadius: 8,
+                                padding: '14px 16px',
+                                fontFamily: '"JetBrains Mono", ui-monospace, monospace',
+                                fontSize: '0.72rem', lineHeight: 1.85,
+                                wordBreak: 'break-word',
+                              }}
+                            >
+                              {agentState === 'planning' && !agentXStream && (
+                                <div>
+                                  <div style={{ color: 'rgba(74,222,128,0.5)', marginBottom: 6 }}>{'> AGENT_X // DIAGNOSTIC_ENGINE'}</div>
+                                  <div style={{ color: 'rgba(74,222,128,0.4)' }}>{'> loading context'}<span style={{ animation: 'termBlink 1s step-end infinite', color: '#4ade80' }}>█</span></div>
+                                </div>
+                              )}
+                              {agentState === 'agent_x' && agentXStream.length < 10 && (
+                                <div style={{ color: 'rgba(74,222,128,0.5)', marginBottom: 8 }}>{'> AGENT_X // DIAGNOSTIC_ENGINE'}</div>
+                              )}
+                              {renderTerminalLines(agentXStream, '#4ade80')}
+                              {xActive && <span style={{ color: '#4ade80', opacity: 0.8 }}>█</span>}
+                              {!agentXStream && agentState === 'idle' && (
+                                <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.68rem' }}>
+                                  <div>{'> AGENT_X // STANDBY'}</div>
+                                  <div style={{ marginTop: 8 }}>{'> awaiting query...'}</div>
+                                </div>
+                              )}
+                              {agentState === 'error' && agentError && (
+                                <div style={{ color: '#ff6b6b' }}>{'> ERROR: '}{agentError}</div>
+                              )}
+                            </div>
                           </div>
                         </section>
 
                         {/* Agent Y — Solution terminal */}
-                        <section className="dash-card" aria-label="Agent Y — Solution engine" style={{ fontFamily: 'monospace' }}>
-                          <header className="card-head">
+                        <section className="dash-card" aria-label="Agent Y — Solution engine">
+                          <header className="card-head" style={{ borderBottom: '1px solid rgba(251,146,60,0.12)' }}>
                             <div className="card-head-text">
-                              <div className="card-eyebrow">Agent Y</div>
+                              <div className="card-eyebrow" style={{ color: '#fb923c' }}>Agent Y</div>
                               <h2 className="card-title">Solution engine</h2>
                             </div>
-                            <div className="card-status">
-                              <span className="cs-dot" style={{
-                                background: yActive ? '#4CAF50' : yComplete ? '#4CAF50' : 'var(--muted)',
-                                animation: yActive ? 'pulse 1s infinite' : 'none',
+                            <div className="card-status" style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11 }}>
+                              <span style={{
+                                width: 7, height: 7, borderRadius: '50%', display: 'inline-block', flexShrink: 0,
+                                background: yActive ? '#fb923c' : yComplete ? '#fb923c' : 'rgba(255,255,255,0.2)',
+                                boxShadow: (yActive || yComplete) ? '0 0 8px #fb923c' : 'none',
                               }} />
-                              {yActive ? 'Proposing' : yComplete ? 'Done' : xComplete ? 'Starting…' : 'Waiting'}
+                              <span style={{ color: yActive ? '#fb923c' : yComplete ? '#fb923c' : 'rgba(255,255,255,0.3)' }}>
+                                {yActive ? 'PROPOSING' : yComplete ? 'DONE' : xComplete ? 'STARTING' : 'WAITING'}
+                              </span>
                             </div>
                           </header>
-                          <div
-                            ref={agentYScrollRef}
-                            style={{
-                              flex: 1, overflow: 'auto', padding: '12px 16px',
-                              fontSize: '0.75rem', lineHeight: 1.7,
-                              color: 'var(--fg)',
-                              whiteSpace: 'pre-wrap', wordBreak: 'break-word',
-                            }}
-                          >
-                            {(agentState === 'planning' || agentState === 'agent_x') && !agentYStream && (
-                              <span style={{ color: 'var(--fg-mute)', fontSize: '0.72rem' }}>Waiting for Agent X…</span>
-                            )}
-                            {renderTerminalLines(agentYStream)}
-                            {yActive && agentYStream && <span style={{ opacity: 0.5 }}>▌</span>}
-                            {!agentYStream && agentState === 'idle' && (
-                              <span style={{ color: 'var(--fg-mute)', fontSize: '0.72rem' }}>Agent Y will build solutions from Agent X's findings.</span>
-                            )}
+                          {/* Terminal window */}
+                          <div style={{ flex: 1, padding: '10px 12px 12px', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                            <div
+                              ref={agentYScrollRef}
+                              style={{
+                                flex: 1, overflow: 'auto', minHeight: 0,
+                                background: 'rgba(0,0,0,0.35)',
+                                border: '1px solid rgba(251,146,60,0.1)',
+                                borderRadius: 8,
+                                padding: '14px 16px',
+                                fontFamily: '"JetBrains Mono", ui-monospace, monospace',
+                                fontSize: '0.72rem', lineHeight: 1.85,
+                                wordBreak: 'break-word',
+                              }}
+                            >
+                              {(agentState === 'planning' || agentState === 'agent_x') && !agentYStream && (
+                                <div style={{ color: 'rgba(251,146,60,0.3)', fontSize: '0.68rem' }}>
+                                  <div>{'> AGENT_Y // SOLUTION_ENGINE'}</div>
+                                  <div style={{ marginTop: 8 }}>{'> waiting for Agent X diagnosis...'}</div>
+                                </div>
+                              )}
+                              {agentState === 'agent_y' && agentYStream.length < 10 && (
+                                <div style={{ color: 'rgba(251,146,60,0.5)', marginBottom: 8 }}>{'> AGENT_Y // SOLUTION_ENGINE'}</div>
+                              )}
+                              {renderTerminalLines(agentYStream, '#fb923c')}
+                              {yActive && <span style={{ color: '#fb923c', opacity: 0.8 }}>█</span>}
+                              {!agentYStream && agentState === 'idle' && (
+                                <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.68rem' }}>
+                                  <div>{'> AGENT_Y // STANDBY'}</div>
+                                  <div style={{ marginTop: 8 }}>{'> awaiting Agent X...'}</div>
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </section>
                       </>
