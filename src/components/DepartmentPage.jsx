@@ -263,6 +263,159 @@ function RuleRow({ rule, userId, onSaved }) {
   )
 }
 
+function CustomMetricRow({ metric, userId, onDeleted }) {
+  const [deleting, setDeleting] = useState(false)
+
+  const handleDelete = async () => {
+    setDeleting(true)
+    try {
+      const sb    = await initSupabase()
+      const { data: { session: s } } = await sb.auth.getSession()
+      const token = s?.access_token || ''
+      await fetch(`/api/custom-metrics?userId=${userId}&id=${metric.id}`, {
+        method:  'DELETE',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
+      onDeleted?.()
+    } catch { /* non-blocking */ }
+    setDeleting(false)
+  }
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 14px', background: C.surface, border: `1px solid ${C.border}`, borderRadius: 9 }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 12.5, fontWeight: 500, color: C.text }}>{metric.name}</div>
+        <div style={{ fontSize: 11, color: C.textFaint, marginTop: 2 }}>Your metric</div>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ fontSize: 15, fontWeight: 700, color: C.text }}>{metric.value}</span>
+          {metric.unit && <span style={{ fontSize: 11.5, color: C.textMuted }}>{metric.unit}</span>}
+        </div>
+        <button
+          type="button"
+          onClick={handleDelete}
+          disabled={deleting}
+          style={{ fontSize: 10.5, color: C.textFaint, background: 'none', border: 'none', cursor: deleting ? 'not-allowed' : 'pointer', textDecoration: 'underline', padding: 0, opacity: deleting ? 0.5 : 1 }}
+        >
+          {deleting ? 'Removing…' : 'Remove'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function AddCustomMetricForm({ userId, areaId, onAdded }) {
+  const [open, setOpen]     = useState(false)
+  const [name, setName]     = useState('')
+  const [value, setValue]   = useState('')
+  const [unit, setUnit]     = useState('')
+  const [saving, setSaving] = useState(false)
+  const [error, setError]   = useState('')
+
+  const reset = () => { setName(''); setValue(''); setUnit(''); setError(''); setOpen(false) }
+
+  const handleSave = async () => {
+    if (!name.trim()) { setError('Give this metric a name.'); return }
+    if (value === '' || isNaN(Number(value))) { setError('Enter a number.'); return }
+    setSaving(true)
+    setError('')
+    try {
+      const sb    = await initSupabase()
+      const { data: { session: s } } = await sb.auth.getSession()
+      const token = s?.access_token || ''
+      const res   = await fetch('/api/custom-metrics', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body:    JSON.stringify({ userId, area_id: areaId, name: name.trim(), value: Number(value), unit: unit.trim() }),
+      })
+      if (!res.ok) { const j = await res.json(); setError(j.error || 'Failed to save.'); return }
+      reset()
+      onAdded?.()
+    } catch { setError('Something went wrong.') }
+    setSaving(false)
+  }
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: 'transparent', border: `1px dashed ${C.border}`, borderRadius: 9, cursor: 'pointer', color: C.textMuted, fontSize: 12.5, fontWeight: 500, width: '100%', transition: 'border-color 0.15s' }}
+      >
+        <span style={{ fontSize: 16, lineHeight: 1, color: C.textFaint }}>+</span>
+        Add your own metric
+      </button>
+    )
+  }
+
+  return (
+    <div style={{ padding: '14px 16px', background: C.surface, border: `1px solid ${C.accent}`, borderRadius: 9, display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ fontSize: 12, fontWeight: 600, color: C.text }}>New custom metric</div>
+
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+        {/* Name */}
+        <div style={{ flex: '2 1 160px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <label style={{ fontSize: 10.5, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.textFaint }}>Metric name</label>
+          <input
+            type="text"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            placeholder="e.g. Response rate"
+            maxLength={80}
+            style={{ padding: '7px 10px', borderRadius: 7, border: `1px solid ${C.border}`, background: C.surface2, color: C.text, fontSize: 13, fontFamily: 'inherit', outline: 'none' }}
+          />
+        </div>
+
+        {/* Value */}
+        <div style={{ flex: '1 1 90px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <label style={{ fontSize: 10.5, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.textFaint }}>Value</label>
+          <input
+            type="number"
+            value={value}
+            onChange={e => setValue(e.target.value)}
+            placeholder="e.g. 95"
+            style={{ padding: '7px 10px', borderRadius: 7, border: `1px solid ${C.border}`, background: C.surface2, color: C.text, fontSize: 13, fontFamily: 'inherit', outline: 'none', textAlign: 'center' }}
+          />
+        </div>
+
+        {/* Unit */}
+        <div style={{ flex: '1 1 80px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <label style={{ fontSize: 10.5, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.textFaint }}>Unit</label>
+          <input
+            type="text"
+            value={unit}
+            onChange={e => setUnit(e.target.value)}
+            placeholder="%, hrs…"
+            maxLength={20}
+            style={{ padding: '7px 10px', borderRadius: 7, border: `1px solid ${C.border}`, background: C.surface2, color: C.text, fontSize: 13, fontFamily: 'inherit', outline: 'none' }}
+          />
+        </div>
+      </div>
+
+      {error && <div style={{ fontSize: 12, color: C.redText }}>{error}</div>}
+
+      <div style={{ display: 'flex', gap: 8 }}>
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={saving}
+          style={{ padding: '7px 18px', borderRadius: 7, background: C.accentLight, border: `1px solid ${C.accent}`, color: C.accentText, fontSize: 12.5, fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.6 : 1, fontFamily: 'inherit' }}
+        >
+          {saving ? 'Saving…' : 'Save metric'}
+        </button>
+        <button
+          type="button"
+          onClick={reset}
+          style={{ padding: '7px 14px', borderRadius: 7, background: 'none', border: `1px solid ${C.border}`, color: C.textMuted, fontSize: 12.5, cursor: 'pointer', fontFamily: 'inherit' }}
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  )
+}
+
 function LoadingSkeleton() {
   const s = { background: 'var(--surface2)', borderRadius: 8, animation: 'dept-shimmer 1.4s ease-in-out infinite' }
   return (
@@ -385,6 +538,20 @@ export default function DepartmentPage({ areaId, user, navigateSection }) {
                 <strong style={{ color: C.text }}>No live data connected.</strong> Metric values will appear once you connect a tool (e.g. HubSpot, Stripe) or run a health check with manual context filled in.
               </div>
             )}
+          </div>
+
+          {/* ── Custom Metrics ────────────────────────────────────────────────── */}
+          <div>
+            <SectionHeader
+              title="Your Own Metrics"
+              sub="Track anything that matters to your business. These won't affect monitoring scoring — they're your personal signals."
+            />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {(data.custom_metrics ?? []).map(m => (
+                <CustomMetricRow key={m.id} metric={m} userId={user?.id} onDeleted={fetchData} />
+              ))}
+              <AddCustomMetricForm userId={user?.id} areaId={areaId} onAdded={fetchData} />
+            </div>
           </div>
 
           {data.last_checked && (

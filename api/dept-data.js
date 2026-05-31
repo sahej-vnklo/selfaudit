@@ -73,7 +73,7 @@ export default async function handler(req, res) {
     .filter(([, v]) => v === area)
     .map(([k]) => k)
 
-  const [alertsRes, snapshotsRes, overridesRes, hcRes] = await Promise.allSettled([
+  const [alertsRes, snapshotsRes, overridesRes, hcRes, customRes] = await Promise.allSettled([
     // Open risk alerts for this area's categories
     sb.from('risk_alerts')
       .select('id, severity, category, title, description, evidence, recommended_action, created_at')
@@ -104,12 +104,20 @@ export default async function handler(req, res) {
       .order('checked_at', { ascending: false })
       .limit(1)
       .single(),
+
+    // User-defined custom metrics for this area
+    sb.from('user_custom_metrics')
+      .select('id, name, value, unit, created_at')
+      .eq('user_id', userId)
+      .eq('area_id', area)
+      .order('created_at', { ascending: true }),
   ])
 
-  const alerts    = alertsRes.status    === 'fulfilled' ? (alertsRes.value.data    ?? []) : []
-  const snapshots = snapshotsRes.status === 'fulfilled' ? (snapshotsRes.value.data ?? []) : []
-  const overrides = overridesRes.status === 'fulfilled' ? (overridesRes.value.data ?? []) : []
-  const hc        = hcRes.status        === 'fulfilled' ? hcRes.value.data               : null
+  const alerts      = alertsRes.status    === 'fulfilled' ? (alertsRes.value.data    ?? []) : []
+  const snapshots   = snapshotsRes.status === 'fulfilled' ? (snapshotsRes.value.data ?? []) : []
+  const overrides   = overridesRes.status === 'fulfilled' ? (overridesRes.value.data ?? []) : []
+  const hc          = hcRes.status        === 'fulfilled' ? hcRes.value.data               : null
+  const customMetrics = customRes.status  === 'fulfilled' ? (customRes.value.data    ?? []) : []
 
   // Area status from latest health check evidence
   const areaStatuses = hc?.evidence?.governance?.area_statuses ?? []
@@ -160,6 +168,7 @@ export default async function handler(req, res) {
       created_at:       a.created_at,
     })),
     rules,
+    custom_metrics: customMetrics,
     metric_history: metricHistoryForPage,
     has_connector_data: snapshots.some(s => s.source === 'hubspot' || s.source === 'stripe'),
   })
