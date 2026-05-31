@@ -6,6 +6,7 @@ import IntelligenceBrief from './IntelligenceBrief.jsx'
 import ExecutionPanel from './ExecutionPanel.jsx'
 import DashboardWelcomeTour from './DashboardWelcomeTour.jsx'
 import CockpitSection from './Cockpit.jsx'
+import DepartmentPage from './DepartmentPage.jsx'
 import { OPERATIONAL_AREAS } from '../lib/governance/areaRegistry.js'
 import './Dashboard.css'
 // Legacy sharpTheme imports kept for sub-component backward-compatibility
@@ -2330,6 +2331,10 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
               {section === 'connectors' && <ConnectorsSection user={user} />}
               {section === 'agent'      && <AgentSection user={user} />}
               {section === 'cockpit'    && <CockpitSection user={user} navigateSection={navigateSection} />}
+              {section === 'dept-customer-service'    && <DepartmentPage areaId="customer-service"    user={user} navigateSection={navigateSection} />}
+              {section === 'dept-marketing-sales'     && <DepartmentPage areaId="marketing-sales"     user={user} navigateSection={navigateSection} />}
+              {section === 'dept-finance-accounting'  && <DepartmentPage areaId="finance-accounting"  user={user} navigateSection={navigateSection} />}
+              {section === 'dept-management-strategy' && <DepartmentPage areaId="management-strategy" user={user} navigateSection={navigateSection} />}
 
               {/* ── Account → Profile + Billing ─────────────────────────── */}
               {section === 'account' && (

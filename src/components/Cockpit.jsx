@@ -465,7 +465,7 @@ export default function CockpitSection({ user, navigateSection }) {
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
           {departments.map(dept => (
-            <DeptCard key={dept.id} dept={dept} onViewDept={() => navigateSection?.('oversight')} />
+            <DeptCard key={dept.id} dept={dept} onViewDept={(id) => navigateSection?.(`dept-${id}`)} />
           ))}
         </div>
       </div>
