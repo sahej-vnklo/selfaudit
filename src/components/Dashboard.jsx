@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { initSupabase } from '../lib/supabase.js'
+import { generateReport } from '../lib/audit.js'
 import { PRIVACY_POLICY_URL, TERMS_HASH } from '../lib/legal.js'
 import IntelligenceBrief from './IntelligenceBrief.jsx'
 import ExecutionPanel from './ExecutionPanel.jsx'
@@ -1221,6 +1222,80 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
     }
   }
 
+  // ── Save dual-agent session as a report ──────────────────────────────────
+  // Called after a full diagnosis completes. Runs generateReport() in the
+  // background (second Claude call) then saves to reports table.
+  const saveSessionAsReport = async (history, mode) => {
+    if (!user?.id) return
+    try {
+      const sb = await initSupabase()
+      const { data: { session: s } } = await sb.auth.getSession()
+      const token = s?.access_token || ''
+
+      // Convert dual-agent history to AuditChat message format
+      const messages = (history || []).reduce((acc, msg) => {
+        if (msg.role === 'user')    acc.push({ role: 'user',      content: msg.content })
+        if (msg.role === 'agent_x') acc.push({ role: 'assistant', content: msg.content })
+        return acc
+      }, [])
+
+      if (messages.length < 2) return
+
+      // Generate structured report from conversation
+      const report = await generateReport(messages, {
+        industry:     profile?.industry || '',
+        domain:       profile?.domain || '',
+        userId:       user.id,
+        goalMode:     mode === 'goal',
+        goal:         '',
+        goalTimeline: '',
+        goalBaseline: '',
+        token,
+      })
+
+      if (!report) return
+
+      // Save to reports table
+      const saveRes = await fetch('/api/save-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({
+          userId:       user.id,
+          sessionId:    null,
+          report,
+          industry:     profile?.industry || '',
+          domain:       profile?.domain || '',
+          goalMode:     mode === 'goal',
+          goalTimeline: '',
+          goalBaseline: '',
+          userEmail:    user.email || '',
+          userName:     profile?.name || user?.user_metadata?.name || '',
+        }),
+      })
+
+      if (saveRes.ok) {
+        const saved = await saveRes.json()
+        // Prepend to reports state so Sessions tab shows it immediately
+        setReports(prev => [{
+          id:                saved.reportId || crypto.randomUUID(),
+          title:             report.headline,
+          headline:          report.headline,
+          content:           JSON.stringify(report),
+          report_data:       report,
+          industry:          profile?.industry || '',
+          domain:            profile?.domain || '',
+          conversation_mode: report.conversation_mode,
+          status:            'unknown',
+          created_at:        new Date().toISOString(),
+        }, ...prev].slice(0, 24))
+        // Update Results Ready badge
+        setSessionResultCount(prev => prev + 1)
+      }
+    } catch (err) {
+      console.warn('[saveSessionAsReport] failed:', err.message)
+    }
+  }
+
   // ── Dual-agent engine ────────────────────────────────────────────────────
 
   const resetSession = () => {
@@ -1384,13 +1459,17 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                 setAgentYDone(true)
                 setAgentState('complete')
                 if (!isGathering) setSelectedMode(null)
-                setDualHistory((prev) => [
-                  ...prev,
+                const newHistory = [
+                  ...dualHistory,
                   { role: 'user',    content: q },
                   { role: 'agent_x', content: agentXFinalRef.current || '' },
-                  // store gathering signal so Agent X context carries forward
                   ...(!isGathering ? [{ role: 'agent_y', content: data.output || '' }] : []),
-                ])
+                ]
+                setDualHistory(newHistory)
+                // Save as a proper report in the background (non-blocking)
+                if (!isGathering && agentXFinalRef.current) {
+                  saveSessionAsReport(newHistory, parsedMode || 'diagnose').catch(() => {})
+                }
                 break
               }
                 break
@@ -1603,7 +1682,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
         <button
           className="dash-status"
           type="button"
-          onClick={() => sessionResultCount > 0 ? setShowResultsPanel(p => !p) : navigateSection('reports')}
+          onClick={() => setShowResultsPanel(p => !p)}
         >
           <span className="dot" style={sessionResultCount > 0 ? { background: 'var(--ember)', boxShadow: '0 0 10px -1px var(--ember)' } : {}} />
           Results ready
@@ -1643,57 +1722,46 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
       </header>
 
       {/* ── Results panel (slides in below topbar when session has results) ── */}
-      {showResultsPanel && (sessionLog.length > 0 || agentXStream || agentYStream) && (
+      {showResultsPanel && (
         <div style={{
           borderBottom: '1px solid var(--d-border)',
           background: 'var(--d-surface)',
-          maxHeight: '55vh',
+          maxHeight: '70vh',
           overflow: 'auto',
-          padding: '20px 28px',
           boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, letterSpacing: '0.15em', color: 'var(--ember)', textTransform: 'uppercase' }}>
-              Session results — {sessionResultCount} components
+          {/* Header */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 28px', borderBottom: '1px solid var(--d-border)', position: 'sticky', top: 0, background: 'var(--d-surface)', zIndex: 2 }}>
+            <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, letterSpacing: '0.12em', color: 'var(--ember)', textTransform: 'uppercase' }}>
+              Saved Reports{reports.length > 0 ? ` — ${reports.length}` : ''}
             </div>
             <button type="button" onClick={() => setShowResultsPanel(false)} style={{ background: 'none', border: 'none', color: 'var(--fg-mute)', cursor: 'pointer', fontSize: 13 }}>
               Close ×
             </button>
           </div>
-          {/* Show all turns */}
-          {[...sessionLog, agentXStream || agentYStream ? {
-            query: dualHistory[dualHistory.length - 2]?.content || 'Current session',
-            xOutput: agentXStream,
-            yOutput: agentYStream,
-            label: currentMode?.label || 'CURRENT',
-            xLabel: currentMode?.xLabel || 'AGENT X',
-            yLabel: currentMode?.yLabel || 'AGENT Y',
-          } : null].filter(Boolean).map((turn, i) => (
-            <div key={i} style={{ marginBottom: 20, paddingBottom: 20, borderBottom: i < sessionLog.length ? '1px solid var(--d-border)' : 'none' }}>
-              <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, color: 'var(--fg-mute)', marginBottom: 8, letterSpacing: '0.1em' }}>
-                [{turn.label}] — {String(turn.query || '').slice(0, 80)}
+
+          {/* Report list */}
+          <div style={{ padding: '20px 28px' }}>
+            {reports.length === 0 ? (
+              <div style={{ color: 'var(--fg-mute)', fontSize: '0.85rem', textAlign: 'center', padding: '40px 0' }}>
+                No saved reports yet. Complete a /diagnose session to generate one.
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: 8, padding: '10px 14px', fontFamily: '"JetBrains Mono", monospace', fontSize: '0.68rem', lineHeight: 1.7, color: 'rgba(150,255,180,0.8)', whiteSpace: 'pre-wrap', wordBreak: 'break-word', maxHeight: 200, overflow: 'auto' }}>
-                  <div style={{ color: '#4ade80', marginBottom: 6, fontSize: '0.62rem', letterSpacing: '0.1em' }}>{turn.xLabel}</div>
-                  {turn.xOutput || '—'}
-                </div>
-                <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: 8, padding: '10px 14px', fontFamily: '"JetBrains Mono", monospace', fontSize: '0.68rem', lineHeight: 1.7, color: 'rgba(255,200,120,0.8)', whiteSpace: 'pre-wrap', wordBreak: 'break-word', maxHeight: 200, overflow: 'auto' }}>
-                  <div style={{ color: '#fb923c', marginBottom: 6, fontSize: '0.62rem', letterSpacing: '0.1em' }}>{turn.yLabel}</div>
-                  {turn.yOutput || '—'}
-                </div>
-              </div>
-            </div>
-          ))}
-          {/* Execution panel */}
-          <div style={{ marginTop: 8 }}>
-            <ExecutionPanel
-              reports={reports}
-              userInfo={shareUserInfo}
-              variant="dashboard"
-              theme={theme}
-            />
+            ) : (
+              <ReportList reports={reports} userId={user?.id} />
+            )}
           </div>
+
+          {/* Execution panel */}
+          {reports.length > 0 && (
+            <div style={{ padding: '0 28px 28px', borderTop: '1px solid var(--d-border)' }}>
+              <ExecutionPanel
+                reports={reports}
+                userInfo={shareUserInfo}
+                variant="dashboard"
+                theme={theme}
+              />
+            </div>
+          )}
         </div>
       )}
 
