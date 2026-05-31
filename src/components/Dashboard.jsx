@@ -1910,8 +1910,8 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                     return (
                       <>
                         {/* Agent X — Diagnostic terminal */}
-                        <section className="dash-card" aria-label="Agent X — Diagnostic engine">
-                          <header className="card-head" style={{ borderBottom: '1px solid rgba(74,222,128,0.12)' }}>
+                        <section className="dash-card" aria-label="Agent X — Diagnostic engine" style={{ background: '#0c0c0c', border: '1px solid rgba(74,222,128,0.15)' }}>
+                          <header className="card-head" style={{ borderBottom: '1px solid rgba(74,222,128,0.12)', background: 'transparent' }}>
                             <div className="card-head-text">
                               <div className="card-eyebrow" style={{ color: '#4ade80' }}>Agent X</div>
                               <h2 className="card-title">Diagnostic engine</h2>
@@ -1966,8 +1966,8 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                         </section>
 
                         {/* Agent Y — Solution terminal */}
-                        <section className="dash-card" aria-label="Agent Y — Solution engine">
-                          <header className="card-head" style={{ borderBottom: '1px solid rgba(251,146,60,0.12)' }}>
+                        <section className="dash-card" aria-label="Agent Y — Solution engine" style={{ background: '#0c0c0c', border: '1px solid rgba(251,146,60,0.15)' }}>
+                          <header className="card-head" style={{ borderBottom: '1px solid rgba(251,146,60,0.12)', background: 'transparent' }}>
                             <div className="card-head-text">
                               <div className="card-eyebrow" style={{ color: '#fb923c' }}>Agent Y</div>
                               <h2 className="card-title">Solution engine</h2>
@@ -2070,21 +2070,6 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                               </div>
                             </div>
                           </div>
-                          {/* Live / memory content */}
-                          {idleState === 'memory' && lastHeadline && (
-                            <div>
-                              <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 6 }}>Last finding</div>
-                              <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 500, color: 'var(--text)', lineHeight: 1.5 }}>{lastHeadline}</p>
-                            </div>
-                          )}
-                          {idleState === 'connectors' && govSummary && (
-                            <div>
-                              <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 6 }}>
-                                Live status{checkedAt ? ` · ${checkedAt}` : ''}
-                              </div>
-                              <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text)', lineHeight: 1.6 }}>{govSummary}</p>
-                            </div>
-                          )}
                         </div>
                       </section>
 
@@ -2113,19 +2098,6 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                               </div>
                             </div>
                           </div>
-                          {/* Live / memory content */}
-                          {idleState === 'memory' && topAction && (
-                            <div>
-                              <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 6 }}>Top open action</div>
-                              <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text)', lineHeight: 1.6 }}>{topAction}</p>
-                            </div>
-                          )}
-                          {idleState === 'connectors' && topAction2 && (
-                            <div>
-                              <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: 6 }}>Recommended action</div>
-                              <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text)', lineHeight: 1.6 }}>{topAction2}</p>
-                            </div>
-                          )}
                         </div>
                       </section>
                     </>
