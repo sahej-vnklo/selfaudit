@@ -407,30 +407,30 @@
 .sa-dash .dash-newbtn:hover { border-color: var(--ember); background: oklch(0.62 0.18 35 / 0.15); }
 .sa-dash .dash-newbtn svg { width: 16px; height: 16px; flex: none; }
 
-/* Send button (ember filled — brighter gradient to maintain contrast against glass surface) */
+/* Send button — bright ember, high contrast against dark glass surface */
 .sa-dash .dash-cmd-send {
   flex: none;
   width: 44px; height: 44px;
   display: inline-flex; align-items: center; justify-content: center;
-  background: linear-gradient(180deg, oklch(0.64 0.21 34), oklch(0.50 0.20 30));
-  border: 1px solid oklch(0.7 0.22 36);
+  background: linear-gradient(160deg, #e8613a 0%, #b83a1e 100%);
+  border: 1px solid rgba(255,130,80,0.6);
   border-radius: 10px;
-  color: #fff8f0;
+  color: #fff;
   cursor: pointer;
-  box-shadow: 0 1px 0 rgba(255,255,255,0.22) inset,
-              0 8px 24px -8px oklch(0.6 0.22 35 / 0.7);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.25) inset,
+              0 6px 20px -6px rgba(220,80,40,0.7);
   transition: box-shadow .2s, transform .15s, opacity .15s;
 }
 .sa-dash .dash-cmd-send:hover {
   transform: translateY(-1px);
-  box-shadow: 0 1px 0 rgba(255,255,255,0.28) inset,
-              0 12px 30px -8px oklch(0.65 0.24 35 / 0.8);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.3) inset,
+              0 10px 28px -6px rgba(230,90,40,0.85);
 }
-.sa-dash .dash-cmd-send:disabled { opacity: 0.35; cursor: default; transform: none; }
+.sa-dash .dash-cmd-send:disabled { opacity: 0.3; cursor: default; transform: none; }
 .sa-dash[data-theme="light"] .dash-cmd-send {
-  background: linear-gradient(180deg, oklch(0.70 0.17 40), oklch(0.62 0.17 36));
-  border-color: oklch(0.65 0.16 38);
-  box-shadow: 0 1px 0 rgba(255,255,255,0.35) inset, 0 8px 20px -8px oklch(0.65 0.16 38 / 0.5);
+  background: linear-gradient(160deg, #e8613a 0%, #c04020 100%);
+  border-color: rgba(200,80,40,0.5);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.3) inset, 0 6px 18px -6px rgba(200,70,30,0.5);
 }
 .sa-dash .dash-cmd-send svg { width: 18px; height: 18px; }
 

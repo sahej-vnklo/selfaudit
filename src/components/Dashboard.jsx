@@ -1234,8 +1234,11 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
     setCmdInput('')
     setCurrentMode(null)
     setSessionLog([])
+    setDualHistory([])      // reset so pills reappear on next session
+    setSelectedMode(null)   // reset selected mode
     setSessionResultCount(0)
     setShowResultsPanel(false)
+    agentXFinalRef.current = ''
   }
 
   const activateSession = () => {
@@ -1378,6 +1381,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
               case 'agent_y_complete':
                 setAgentYDone(true)
                 setAgentState('complete')
+                setSelectedMode(null)   // reset after each turn so pills are fresh on next
                 setDualHistory((prev) => [
                   ...prev,
                   { role: 'user',    content: q },
@@ -1831,8 +1835,15 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                                 background: xActive ? '#4ade80' : xComplete ? '#4ade80' : 'rgba(255,255,255,0.2)',
                                 boxShadow: (xActive || xComplete) ? '0 0 8px #4ade80' : 'none',
                               }} />
-                              <span style={{ color: xActive ? '#4ade80' : xComplete ? '#4ade80' : 'rgba(255,255,255,0.3)' }}>
-                                {xActive ? (currentMode?.xLabel || 'SCANNING') : xComplete ? (currentMode?.xLabel || 'DONE') : 'STANDBY'}
+                              <span style={{ color: xActive ? '#4ade80' : xComplete ? '#4ade80' : selectedMode ? 'rgba(74,222,128,0.5)' : 'rgba(255,255,255,0.3)' }}>
+                                {xActive
+                                  ? (currentMode?.xLabel || 'SCANNING')
+                                  : xComplete
+                                    ? (currentMode?.xLabel || 'DONE')
+                                    : selectedMode === 'diagnose' ? 'DIAGNOSING'
+                                    : selectedMode === 'goal'     ? 'GOAL MODE'
+                                    : selectedMode === 'scan'     ? 'SCANNING'
+                                    : 'STANDBY'}
                               </span>
                             </div>
                           </header>
@@ -1900,8 +1911,15 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                                 background: yActive ? '#fb923c' : yComplete ? '#fb923c' : 'rgba(255,255,255,0.2)',
                                 boxShadow: (yActive || yComplete) ? '0 0 8px #fb923c' : 'none',
                               }} />
-                              <span style={{ color: yActive ? '#fb923c' : yComplete ? '#fb923c' : 'rgba(255,255,255,0.3)' }}>
-                                {yActive ? (currentMode?.yLabel || 'PROPOSING') : yComplete ? (currentMode?.yLabel || 'DONE') : xComplete ? 'STARTING' : 'WAITING'}
+                              <span style={{ color: yActive ? '#fb923c' : yComplete ? '#fb923c' : selectedMode ? 'rgba(251,146,60,0.5)' : 'rgba(255,255,255,0.3)' }}>
+                                {yActive
+                                  ? (currentMode?.yLabel || 'PROPOSING')
+                                  : yComplete
+                                    ? (currentMode?.yLabel || 'DONE')
+                                    : selectedMode === 'diagnose' ? 'SOLUTIONS'
+                                    : selectedMode === 'goal'     ? 'FASTEST PATH'
+                                    : selectedMode === 'scan'     ? 'QUICK ACTIONS'
+                                    : xComplete ? 'STARTING' : 'WAITING'}
                               </span>
                             </div>
                           </header>
@@ -2096,8 +2114,8 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                     </span>
                   )}
                 </div>
-                {/* Mode pills — hidden after first message sent */}
-                {dualHistory.length === 0 && [
+                {/* Mode pills — show when idle with no completed turns in this session */}
+                {agentState === 'idle' && sessionLog.length === 0 && [
                   { key: 'diagnose', label: '/diagnose' },
                   { key: 'goal',     label: '/goal' },
                   { key: 'scan',     label: '/scan' },
