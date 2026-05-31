@@ -158,6 +158,69 @@ function PriorityItem({ item, index }) {
   )
 }
 
+const AREA_NAME = {
+  'customer-service':    'Support',
+  'marketing-sales':     'Sales & Mktg',
+  'finance-accounting':  'Finance',
+  'management-strategy': 'Strategy & Ops',
+}
+
+function CalibrationPanel({ calibration, navigateSection }) {
+  const customisedCount = calibration.filter(a => a.customised).length
+  const allDone = customisedCount === calibration.length && calibration.length > 0
+
+  return (
+    <div>
+      <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: C.textFaint, marginBottom: 8 }}>
+        Monitoring Standards
+      </div>
+      <div style={{ fontSize: 12, color: C.textMuted, lineHeight: 1.55, marginBottom: 14 }}>
+        {allDone
+          ? 'All areas calibrated. The briefing reflects your business.'
+          : 'Set your own thresholds so the briefing reflects your reality, not generic defaults.'}
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+        {calibration.map(area => (
+          <button
+            key={area.id}
+            type="button"
+            onClick={() => navigateSection?.(`dept-${area.id}`)}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              gap: 10, padding: '9px 12px',
+              background: C.surface2,
+              border: `1px solid ${area.customised ? C.accent : C.border}`,
+              borderRadius: 8, cursor: 'pointer', textAlign: 'left', width: '100%',
+              transition: 'border-color 0.15s',
+            }}
+          >
+            <span style={{ fontSize: 12.5, fontWeight: 500, color: C.text }}>
+              {AREA_NAME[area.id] || area.id}
+            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+              {area.customised ? (
+                <span style={{ fontSize: 10.5, fontWeight: 600, color: C.greenText, background: C.greenBg, padding: '1px 7px', borderRadius: 100, border: `1px solid var(--green)` }}>
+                  Customised ✓
+                </span>
+              ) : (
+                <span style={{ fontSize: 10.5, color: C.textFaint }}>defaults →</span>
+              )}
+            </div>
+          </button>
+        ))}
+      </div>
+
+      {!allDone && (
+        <div style={{ marginTop: 12, fontSize: 11, color: C.textFaint, lineHeight: 1.5 }}>
+          {customisedCount}/{calibration.length} areas customised.
+          Once you add financial data, this column shows your live metrics.
+        </div>
+      )}
+    </div>
+  )
+}
+
 function GlanceRow({ item }) {
   const isGood = item.trend === 'up-good' || item.trend === 'down-good'
   const isBad  = item.trend === 'up-bad'  || item.trend === 'down-bad'
@@ -430,17 +493,17 @@ export default function CockpitSection({ user, navigateSection }) {
             )}
           </div>
 
-          {/* RIGHT — At a glance */}
+          {/* RIGHT — At a Glance (data) or Calibration (no data) */}
           <div style={{ padding: '22px' }}>
-            <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: C.textFaint, marginBottom: 10 }}>At a Glance</div>
             {cos.at_a_glance.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {cos.at_a_glance.map((item, i) => <GlanceRow key={i} item={item} />)}
-              </div>
+              <>
+                <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: C.textFaint, marginBottom: 10 }}>At a Glance</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {cos.at_a_glance.map((item, i) => <GlanceRow key={i} item={item} />)}
+                </div>
+              </>
             ) : (
-              <div style={{ fontSize: 12, color: C.textFaint, lineHeight: 1.5 }}>
-                Add financial data in the Context tab to see your key metrics here.
-              </div>
+              <CalibrationPanel calibration={data.calibration ?? []} navigateSection={navigateSection} />
             )}
           </div>
 

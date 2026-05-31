@@ -46,7 +46,7 @@ export default async function handler(req, res) {
 
   const sb = getSupabase()
 
-  const [hcRes, snapshotsRes, alertsRes, profileRes, briefRes, stateRes] = await Promise.allSettled([
+  const [hcRes, snapshotsRes, alertsRes, profileRes, briefRes, stateRes, overridesRes] = await Promise.allSettled([
     // Latest stored health check
     sb.from('business_health_checks')
       .select('checked_at, health_score, risks, recommended_actions, summary, evidence')
@@ -87,6 +87,11 @@ export default async function handler(req, res) {
       .select('active_goal, goal_score')
       .eq('user_id', userId)
       .single(),
+
+    // User rule overrides — to know which areas are calibrated
+    sb.from('user_rule_overrides')
+      .select('rule_id')
+      .eq('user_id', userId),
   ])
 
   const hc        = hcRes.status        === 'fulfilled' ? hcRes.value.data            : null
@@ -95,6 +100,20 @@ export default async function handler(req, res) {
   const intel     = profileRes.status   === 'fulfilled' ? profileRes.value.data           : null
   const brief     = briefRes.status     === 'fulfilled' ? briefRes.value.data              : null
   const state     = stateRes.status     === 'fulfilled' ? stateRes.value.data              : null
+  const overrideRows = overridesRes.status === 'fulfilled' ? (overridesRes.value.data ?? []) : []
+
+  // Per-area calibration status — count overrides per area prefix
+  const AREA_IDS = ['customer-service', 'marketing-sales', 'finance-accounting', 'management-strategy']
+  const overrideCountByArea = Object.fromEntries(AREA_IDS.map(id => [id, 0]))
+  for (const row of overrideRows) {
+    const areaId = AREA_IDS.find(id => row.rule_id.startsWith(id + ':'))
+    if (areaId) overrideCountByArea[areaId]++
+  }
+  const calibration = AREA_IDS.map(id => ({
+    id:           id,
+    overrides:    overrideCountByArea[id],
+    customised:   overrideCountByArea[id] > 0,
+  }))
 
   // ── Build sparklines and latest metric per area ───────────────────────────
   // Group snapshots: { [area]: { [metric_name]: [values oldest→newest] } }
@@ -210,6 +229,7 @@ export default async function handler(req, res) {
     opportunities:      Array.isArray(intel?.opportunities) ? intel.opportunities.slice(0, 3) : [],
     active_goal:        state?.active_goal ?? null,
     goal_score:         state?.goal_score ?? null,
+    calibration,
     has_data:           !!hc,
   })
 }
