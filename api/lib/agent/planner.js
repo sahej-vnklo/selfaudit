@@ -72,11 +72,12 @@ Rules:
 - Fewer focused sources beat fetching everything
 - company_brain is almost always worth including — it grounds the answer
 - If the query is about revenue/pipeline/deals, include hubspot sources if available
+- Use intent "goal_pursuit" when the user is asking how to achieve a future state, reach a target, or close a gap to a goal ("how do I get to", "hit $X", "reach X by", "want to achieve")
 - Output ONLY valid JSON, no prose
 
 {
   "sources_to_fetch": ["source_name"],
-  "intent": "revenue_stuck | pipeline_issue | churn_issue | hiring_decision | pricing_decision | operations_bottleneck | general_strategy",
+  "intent": "revenue_stuck | pipeline_issue | churn_issue | hiring_decision | pricing_decision | operations_bottleneck | goal_pursuit | general_strategy",
   "focus_areas": ["what specifically to look for in the data"],
   "hypothesis": "One sentence: what you expect the answer to be and why",
   "rationale": "Why these sources and not others"
@@ -90,7 +91,7 @@ Rules:
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
-      model:      'claude-haiku-4-5-20251001',
+      model:      'claude-sonnet-4-5-20250514',
       max_tokens: 500,
       messages:   [{ role: 'user', content: prompt }],
     }),

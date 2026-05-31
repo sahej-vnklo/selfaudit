@@ -769,8 +769,22 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
   const [completingOnboarding, setCompletingOnboarding] = useState(false)
   const pendingAuditRef        = useRef(null)
   const pendingAuditParamsRef  = useRef(null)
-  const [decisionLogOpen, setDecisionLogOpen]       = useState(false)
+  const [decisionLogOpen, setDecisionLogOpen]         = useState(false)
   const [decisionLogFeedback, setDecisionLogFeedback] = useState([])
+
+  // ── Dual-agent engine state ───────────────────────────────────────────────
+  const [cmdInput,        setCmdInput]        = useState('')
+  const [sessionActive,   setSessionActive]   = useState(false)
+  const [agentState,      setAgentState]      = useState('idle')
+  // 'idle' | 'planning' | 'agent_x' | 'agent_y' | 'complete' | 'error'
+  const [agentXStream,    setAgentXStream]    = useState('')
+  const [agentYStream,    setAgentYStream]    = useState('')
+  const [agentXDone,      setAgentXDone]      = useState(false)
+  const [agentYDone,      setAgentYDone]      = useState(false)
+  const [dualHistory,     setDualHistory]     = useState([])
+  const [agentError,      setAgentError]      = useState(null)
+  const agentXScrollRef  = useRef(null)
+  const agentYScrollRef  = useRef(null)
 
   const name = profile?.name?.trim() || user?.user_metadata?.name?.trim() || ''
   const email = user?.email || ''
@@ -1193,12 +1207,148 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
     }
   }
 
-  const startGoalAudit = (goalData) => {
-    if (activationLocked) {
-      navigateSection('billing')
-      return
+  // ── Dual-agent engine ────────────────────────────────────────────────────
+
+  const resetSession = () => {
+    setSessionActive(false)
+    setAgentState('idle')
+    setAgentXStream('')
+    setAgentYStream('')
+    setAgentXDone(false)
+    setAgentYDone(false)
+    setAgentError(null)
+    setCmdInput('')
+  }
+
+  const activateSession = () => {
+    resetSession()
+    setSessionActive(true)
+    setCmdInput('')
+    // Focus the input after a tick
+    setTimeout(() => {
+      document.querySelector('.dash-cmd-input')?.focus()
+    }, 50)
+  }
+
+  const submitDualAgent = async () => {
+    const q = cmdInput.trim()
+    if (!q || agentState === 'planning' || agentState === 'agent_x' || agentState === 'agent_y') return
+
+    setCmdInput('')
+    setAgentState('planning')
+    setAgentXStream('')
+    setAgentYStream('')
+    setAgentXDone(false)
+    setAgentYDone(false)
+    setAgentError(null)
+
+    try {
+      const sb = await initSupabase()
+      const { data: { session: s } } = await sb.auth.getSession()
+      const token = s?.access_token || ''
+
+      const res = await fetch('/api/dual-agent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          query:               q,
+          userId:              user?.id ?? null,
+          conversationHistory: dualHistory.slice(-6),
+          industry:            profile?.industry ?? null,
+          domain:              profile?.domain   ?? null,
+        }),
+      })
+
+      if (!res.ok || !res.body) {
+        setAgentState('error')
+        setAgentError('Could not connect to the engine. Try again.')
+        return
+      }
+
+      const reader  = res.body.getReader()
+      const decoder = new TextDecoder()
+      let   buffer  = ''
+      let   currentEvent = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() ?? ''
+
+        for (const line of lines) {
+          if (line.startsWith('event: ')) {
+            currentEvent = line.slice(7).trim()
+          } else if (line.startsWith('data: ')) {
+            let data
+            try { data = JSON.parse(line.slice(6)) } catch { continue }
+
+            switch (currentEvent) {
+              case 'status':
+                break
+              case 'agent_x_start':
+                setAgentState('agent_x')
+                break
+              case 'agent_x_token':
+                setAgentXStream((prev) => {
+                  const next = prev + (data.token || '')
+                  // Auto-scroll
+                  requestAnimationFrame(() => {
+                    if (agentXScrollRef.current) {
+                      agentXScrollRef.current.scrollTop = agentXScrollRef.current.scrollHeight
+                    }
+                  })
+                  return next
+                })
+                break
+              case 'agent_x_complete':
+                setAgentXDone(true)
+                break
+              case 'agent_y_start':
+                setAgentState('agent_y')
+                break
+              case 'agent_y_token':
+                setAgentYStream((prev) => {
+                  const next = prev + (data.token || '')
+                  requestAnimationFrame(() => {
+                    if (agentYScrollRef.current) {
+                      agentYScrollRef.current.scrollTop = agentYScrollRef.current.scrollHeight
+                    }
+                  })
+                  return next
+                })
+                break
+              case 'agent_y_complete':
+                setAgentYDone(true)
+                setAgentState('complete')
+                setDualHistory((prev) => [
+                  ...prev,
+                  { role: 'user',    content: q },
+                  { role: 'agent_x', content: data.output || '' },
+                ])
+                break
+              case 'error':
+                setAgentState('error')
+                setAgentError(data.message || 'Engine error')
+                break
+              case 'done':
+                if (agentState !== 'complete' && agentState !== 'error') {
+                  setAgentState('complete')
+                }
+                break
+            }
+          }
+        }
+      }
+    } catch (err) {
+      setAgentState('error')
+      setAgentError(err.message || 'Connection failed')
     }
-    ensureScopeThen((scope) => onStartAudit({ ...baseAuditInfo(), ...scope, goalMode: true, ...goalData }))
   }
 
   const openPortal = async () => {
@@ -1499,6 +1649,92 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                     </section>
                   </>
                 ) : (() => {
+                  // When a session is active, show terminal mode
+                  if (sessionActive) {
+                    const xActive   = agentState === 'agent_x' || agentState === 'planning'
+                    const yActive   = agentState === 'agent_y'
+                    const xComplete = agentXDone
+                    const yComplete = agentYDone
+
+                    return (
+                      <>
+                        {/* Agent X — Diagnostic terminal */}
+                        <section className="dash-card" aria-label="Agent X — Diagnostic engine" style={{ fontFamily: 'monospace' }}>
+                          <header className="card-head">
+                            <div className="card-head-text">
+                              <div className="card-eyebrow">Agent X</div>
+                              <h2 className="card-title">Diagnostic engine</h2>
+                            </div>
+                            <div className="card-status">
+                              <span className="cs-dot" style={{
+                                background: xActive ? 'var(--accent)' : xComplete ? '#4CAF50' : 'var(--muted)',
+                                animation: xActive ? 'pulse 1s infinite' : 'none',
+                              }} />
+                              {xActive ? 'Analyzing' : xComplete ? 'Done' : 'Standby'}
+                            </div>
+                          </header>
+                          <div
+                            ref={agentXScrollRef}
+                            style={{
+                              flex: 1, overflow: 'auto', padding: '12px 16px',
+                              fontSize: '0.75rem', lineHeight: 1.7,
+                              color: xComplete ? '#E9EEF5' : 'var(--text-soft)',
+                              whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+                            }}
+                          >
+                            {agentState === 'planning' && !agentXStream && (
+                              <span style={{ color: 'var(--text-muted)' }}>Investigating your business…<span style={{ animation: 'blink 1s infinite' }}>▌</span></span>
+                            )}
+                            {agentXStream}
+                            {xActive && agentXStream && <span style={{ opacity: 0.6 }}>▌</span>}
+                            {!agentXStream && agentState === 'idle' && (
+                              <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>Agent X will diagnose what is broken in your business.</span>
+                            )}
+                            {agentState === 'error' && agentError && (
+                              <span style={{ color: '#E57373' }}>{agentError}</span>
+                            )}
+                          </div>
+                        </section>
+
+                        {/* Agent Y — Solution terminal */}
+                        <section className="dash-card" aria-label="Agent Y — Solution engine" style={{ fontFamily: 'monospace' }}>
+                          <header className="card-head">
+                            <div className="card-head-text">
+                              <div className="card-eyebrow">Agent Y</div>
+                              <h2 className="card-title">Solution engine</h2>
+                            </div>
+                            <div className="card-status">
+                              <span className="cs-dot" style={{
+                                background: yActive ? '#4CAF50' : yComplete ? '#4CAF50' : 'var(--muted)',
+                                animation: yActive ? 'pulse 1s infinite' : 'none',
+                              }} />
+                              {yActive ? 'Proposing' : yComplete ? 'Done' : xComplete ? 'Starting…' : 'Waiting'}
+                            </div>
+                          </header>
+                          <div
+                            ref={agentYScrollRef}
+                            style={{
+                              flex: 1, overflow: 'auto', padding: '12px 16px',
+                              fontSize: '0.75rem', lineHeight: 1.7,
+                              color: yComplete ? '#E9EEF5' : 'var(--text-soft)',
+                              whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+                            }}
+                          >
+                            {(agentState === 'planning' || agentState === 'agent_x') && !agentYStream && (
+                              <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>Waiting for Agent X to complete diagnosis…</span>
+                            )}
+                            {agentYStream}
+                            {yActive && agentYStream && <span style={{ opacity: 0.6 }}>▌</span>}
+                            {!agentYStream && agentState === 'idle' && (
+                              <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>Agent Y will build solutions from Agent X's findings.</span>
+                            )}
+                          </div>
+                        </section>
+                      </>
+                    )
+                  }
+
+                  // Idle state — no active session
                   const hasMemory     = (reports?.length ?? 0) > 0 || !!latestParsedContent?.headline
                   const hasConnectors = (healthIntel?.governance_areas_with_signals ?? 0) > 0
                   const idleState     = hasConnectors ? 'connectors' : hasMemory ? 'memory' : 'empty'
@@ -1600,23 +1836,74 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
               </div>
 
               <div className="dash-cmd">
-                <button className="dash-newbtn" type="button" onClick={startAudit}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 5v14M5 12h14"/>
-                  </svg>
-                  New session
+                <button
+                  className="dash-newbtn"
+                  type="button"
+                  onClick={sessionActive ? resetSession : activateSession}
+                >
+                  {sessionActive ? (
+                    <>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                      </svg>
+                      End session
+                    </>
+                  ) : (
+                    <>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 5v14M5 12h14"/>
+                      </svg>
+                      New session
+                    </>
+                  )}
                 </button>
                 <span className="dash-cmd-div" />
                 <div className="dash-cmd-status">
-                  <span className="dash-cmd-dots"><i /><i /></span>
-                  <span>both listening</span>
+                  <span className="dash-cmd-dots">
+                    <i style={agentState === 'agent_x' || agentState === 'planning' ? { background: 'var(--accent)', animation: 'pulse 1s infinite' } : {}} />
+                    <i style={agentState === 'agent_y' ? { background: '#4CAF50', animation: 'pulse 1s infinite' } : agentState === 'complete' ? { background: '#4CAF50' } : {}} />
+                  </span>
+                  <span>
+                    {agentState === 'planning' ? 'investigating…'
+                      : agentState === 'agent_x' ? 'Agent X diagnosing…'
+                      : agentState === 'agent_y' ? 'Agent Y solving…'
+                      : agentState === 'complete' ? 'session complete'
+                      : agentState === 'error' ? 'error'
+                      : sessionActive ? 'session active'
+                      : 'both listening'}
+                  </span>
                 </div>
                 <input
                   className="dash-cmd-input"
                   type="text"
-                  placeholder="Ask anything about your business, or give a command…"
+                  value={cmdInput}
+                  onChange={(e) => setCmdInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault()
+                      if (!sessionActive) activateSession()
+                      else submitDualAgent()
+                    }
+                  }}
+                  placeholder={
+                    !sessionActive
+                      ? 'Press Enter or click New session to start…'
+                      : agentState === 'planning' || agentState === 'agent_x' || agentState === 'agent_y'
+                        ? 'Engines running…'
+                        : 'Ask anything about your business…'
+                  }
+                  disabled={agentState === 'planning' || agentState === 'agent_x' || agentState === 'agent_y'}
                 />
-                <button className="dash-cmd-send" type="button" aria-label="Send">
+                <button
+                  className="dash-cmd-send"
+                  type="button"
+                  aria-label="Send"
+                  disabled={!cmdInput.trim() || agentState === 'planning' || agentState === 'agent_x' || agentState === 'agent_y'}
+                  onClick={() => {
+                    if (!sessionActive) { activateSession(); return }
+                    submitDualAgent()
+                  }}
+                >
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M12 19V5M5 12l7-7 7 7"/>
                   </svg>

@@ -2,8 +2,6 @@ import React, { useState, useEffect, useCallback, useRef } from 'react'
 import * as Sentry from '@sentry/react'
 import { supabase, initSupabase } from './lib/supabase.js'
 import Landing from './components/Landing.jsx'
-import AuditChat from './components/AuditChat.jsx'
-import Report from './components/Report.jsx'
 import Login from './components/auth/Login.jsx'
 import Signup from './components/auth/Signup.jsx'
 import Dashboard from './components/Dashboard.jsx'
@@ -437,38 +435,14 @@ export default function App() {
     }
   }, [maybeFinishCheckoutReturn, maybeStartPendingCheckout, navigate])
 
-  // ── Existing audit flow handlers ──────────────────────────────────────────
-  const handleAuditStart = (problem) => {
-    const isGoalMode = typeof problem === 'string' && problem.startsWith('Goal:')
-    setUserInfo({
-      name: session?.user?.user_metadata?.name || '',
-      email: '',
-      phone: '',
-      context: problem || '',
-      userId: session?.user?.id || null,
-      tier: null,
-      industry: null,
-      domain: null,
-      goalMode: isGoalMode,
-      goal: isGoalMode ? problem.split('Goal:')[1]?.split('.')[0]?.trim() : '',
-      goalTimeline: isGoalMode ? (problem.match(/in (.+?)\./)?.[1] || '') : '',
-      goalBaseline: '',
-      anonymous: !session,
-    })
-    navigate(SCREENS.AUDIT)
+  // ── Landing CTA handler — redirect to signup or dashboard ────────────────
+  const handleLandingStart = () => {
+    window.location.hash = session ? 'home' : 'signup'
   }
-  const handleReportReady = (history, sessionId, contactInfo) => {
-    setConversationHistory(history)
-    setAuditSessionId(sessionId ?? null)
+  const handleReportReady = () => {
+    // Reports are now accessed via the Sessions tab in the dashboard
     setAuditJustCompleted(true)
-    if (contactInfo?.email) {
-      setUserInfo(prev => prev ? {
-        ...prev,
-        name: contactInfo.name || prev.name || '',
-        email: contactInfo.email || prev.email || '',
-      } : prev)
-    }
-    navigate(SCREENS.REPORT)
+    navigate(SCREENS.DASHBOARD)
   }
   const handleSignOut = () => {
     // Use the client if it's already initialized — don't await initSupabase()
@@ -546,32 +520,21 @@ export default function App() {
       onSignOut={handleSignOut}
       auditJustCompleted={auditJustCompleted}
       onAuditCompletedAck={() => setAuditJustCompleted(false)}
-      onStartAudit={(info) => {
+      onStartAudit={() => {
+        // Dashboard is the product — no navigation to separate chat screen
         setAuditJustCompleted(false)
-        setUserInfo(info)
-        navigate(SCREENS.AUDIT)
       }}
     />
   }
 
-  // ── Existing audit flow ───────────────────────────────────────────────────
+  // ── Landing page (no chat — signup/login CTA only) ───────────────────────
   return (
     <>
-      {screen === SCREENS.LANDING    && <Landing onStart={handleAuditStart} onSignUp={(plan) => { window.location.hash = plan ? `signup?plan=${plan}` : 'signup' }} session={session} />}
-      {screen === SCREENS.AUDIT && userInfo && (
-        <AuditChat
-          theme={theme}
-          userInfo={userInfo}
-          onReportReady={handleReportReady}
-          conversationHistory={conversationHistory}
-          setConversationHistory={setConversationHistory}
-        />
-      )}
-      {screen === SCREENS.REPORT && userInfo && (
-        <Report
-          userInfo={userInfo}
-          conversationHistory={conversationHistory}
-          sessionId={auditSessionId}
+      {screen === SCREENS.LANDING && (
+        <Landing
+          onStart={handleLandingStart}
+          onSignUp={(plan) => { window.location.hash = plan ? `signup?plan=${plan}` : 'signup' }}
+          session={session}
         />
       )}
     </>
