@@ -474,7 +474,7 @@ export default function CockpitSection({ user, navigateSection }) {
       <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', overflow: 'hidden' }}>
 
         {/* Cross-dept insight */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', borderRight: `1px solid ${C.border}`, cursor: 'pointer' }}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', borderRight: `1px solid ${C.border}`, cursor: 'pointer', minWidth: 0 }}
           onClick={() => navigateSection?.('oversight')}>
           <div style={{ width: 26, height: 26, borderRadius: 7, background: C.accentLight, display: 'grid', placeItems: 'center', color: C.accentText, flexShrink: 0 }}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
@@ -493,7 +493,7 @@ export default function CockpitSection({ user, navigateSection }) {
         </div>
 
         {/* Opportunities */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', borderRight: `1px solid ${C.border}`, cursor: 'pointer' }}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', borderRight: `1px solid ${C.border}`, cursor: 'pointer', minWidth: 0 }}
           onClick={() => navigateSection?.('intelligence')}>
           <div style={{ width: 26, height: 26, borderRadius: 7, background: C.greenBg, display: 'grid', placeItems: 'center', color: C.greenText, flexShrink: 0 }}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
@@ -512,7 +512,7 @@ export default function CockpitSection({ user, navigateSection }) {
         </div>
 
         {/* Ask Chief of Staff */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', cursor: 'pointer' }}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', cursor: 'pointer', minWidth: 0 }}
           onClick={() => navigateSection?.('home')}>
           <div style={{ width: 26, height: 26, borderRadius: 7, background: C.accentLight, display: 'grid', placeItems: 'center', color: C.accentText, flexShrink: 0 }}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
@@ -521,7 +521,7 @@ export default function CockpitSection({ user, navigateSection }) {
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 12, fontWeight: 600, color: C.text, marginBottom: 1 }}>Ask Chief of Staff</div>
-            <div style={{ fontSize: 11, color: C.textMuted }}>Ask anything. Backed by all department data.</div>
+            <div style={{ fontSize: 11, color: C.textMuted, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>Ask anything. Backed by all department data.</div>
           </div>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: C.textFaint, flexShrink: 0 }}>
             <path d="M5 12h14M12 5l7 7-7 7"/>
