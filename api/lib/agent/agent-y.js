@@ -8,8 +8,61 @@ const SONNET_MODEL = 'claude-sonnet-4-20250514'
 
 // ── System prompt ─────────────────────────────────────────────────────────────
 
-function buildSystemPrompt(intent) {
-  const goalMode = intent === 'goal_pursuit'
+function buildSystemPrompt(intent, mode = 'diagnose') {
+  if (mode === 'memory') {
+    return `You are Agent Y. Agent X has recalled relevant context from past sessions.
+
+Your job: give 2-4 follow-up actions that are directly relevant to what Agent X surfaced. These should continue from where things left off — not restart from scratch.
+
+Keep it short. No full solution set. Just the highest-leverage next moves given the history.
+
+Output format:
+NEXT MOVES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[2-4 specific actions, one per line]`
+  }
+
+  if (mode === 'news') {
+    return `You are Agent Y. Agent X has analyzed the impact of a recent development.
+
+Your job: give 2-4 immediate actions the founder should take in response to this news. Be specific and time-sensitive. What should happen in the next 24-48 hours?
+
+Output format:
+IMMEDIATE ACTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[TIMEFRAME] — [Action]
+[One concrete action per line, ordered by urgency]`
+  }
+
+  if (mode === 'ask') {
+    return `You are Agent Y. Agent X has answered the user's specific question.
+
+Your job: give exactly 3 quick actions the user should take based on that answer. Maximum 2 sentences each. No full solution architecture — just the three most important moves.
+
+Output format:
+QUICK ACTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. [Action — specific, doable today]
+2. [Action]
+3. [Action]`
+  }
+
+  if (mode === 'discuss') {
+    return `You are Agent Y. Agent X has laid out the key considerations for a decision.
+
+Your job: give your perspective — what would you actually do and why? Then ask one sharp question that would change the decision if answered.
+
+Output format:
+MY RECOMMENDATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[What you would do and the core reason — 2-3 sentences]
+
+THE QUESTION THAT CHANGES EVERYTHING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[One question whose answer would materially change the recommendation]`
+  }
+
+  const goalMode = mode === 'goal' || intent === 'goal_pursuit'
 
   const core = `You are Agent Y — the solution engine inside SelfAudit.
 
@@ -109,7 +162,7 @@ Build the solution set. Follow the output format exactly. Every solution must ma
 // ── Streaming runner ──────────────────────────────────────────────────────────
 
 export async function runAgentY({ query, agentXOutput, plan, contextBlocks, conversationHistory, apiKey, onToken }) {
-  const systemPrompt = buildSystemPrompt(plan.intent)
+  const systemPrompt = buildSystemPrompt(plan.intent, plan.mode || 'diagnose')
   const userMessage  = buildUserMessage(query, agentXOutput, contextBlocks, conversationHistory)
 
   const response = await fetch(CLAUDE_API, {

@@ -788,8 +788,15 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
   const [agentYDone,      setAgentYDone]      = useState(false)
   const [dualHistory,     setDualHistory]     = useState([])
   const [agentError,      setAgentError]      = useState(null)
+  const [currentMode,     setCurrentMode]     = useState(null)
+  // currentMode: { mode, label, xLabel, yLabel }
+  const [sessionLog,      setSessionLog]      = useState([])
+  // sessionLog: [{ query, xOutput, yOutput, mode, label, xLabel, yLabel }]
+  const [sessionResultCount, setSessionResultCount] = useState(0)
+  const [showResultsPanel,   setShowResultsPanel]   = useState(false)
   const agentXScrollRef  = useRef(null)
   const agentYScrollRef  = useRef(null)
+  const agentXFinalRef   = useRef('')  // tracks Agent X full output for history
 
   const name = profile?.name?.trim() || user?.user_metadata?.name?.trim() || ''
   const email = user?.email || ''
@@ -1223,6 +1230,10 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
     setAgentYDone(false)
     setAgentError(null)
     setCmdInput('')
+    setCurrentMode(null)
+    setSessionLog([])
+    setSessionResultCount(0)
+    setShowResultsPanel(false)
   }
 
   const activateSession = () => {
@@ -1241,6 +1252,19 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
     // Auto-activate session if not active yet
     if (!sessionActive) setSessionActive(true)
 
+    // Save the completed turn to session log before starting new one
+    if (agentXStream || agentYStream) {
+      setSessionLog((prev) => [...prev, {
+        query:   dualHistory[dualHistory.length - 2]?.content || q,
+        xOutput: agentXStream,
+        yOutput: agentYStream,
+        mode:    currentMode?.mode || 'diagnose',
+        label:   currentMode?.label || 'DIAGNOSING',
+        xLabel:  currentMode?.xLabel || 'AGENT X',
+        yLabel:  currentMode?.yLabel || 'AGENT Y',
+      }])
+    }
+
     setCmdInput('')
     setAgentState('planning')
     setAgentXStream('')
@@ -1248,6 +1272,8 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
     setAgentXDone(false)
     setAgentYDone(false)
     setAgentError(null)
+    setCurrentMode(null)
+    agentXFinalRef.current = ''
 
     try {
       const sb = await initSupabase()
@@ -1296,15 +1322,18 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
             try { data = JSON.parse(line.slice(6)) } catch { continue }
 
             switch (currentEvent) {
+              case 'mode':
+                setCurrentMode(data)
+                break
               case 'status':
                 break
               case 'agent_x_start':
                 setAgentState('agent_x')
                 break
               case 'agent_x_token':
+                agentXFinalRef.current += (data.token || '')
                 setAgentXStream((prev) => {
                   const next = prev + (data.token || '')
-                  // Auto-scroll
                   requestAnimationFrame(() => {
                     if (agentXScrollRef.current) {
                       agentXScrollRef.current.scrollTop = agentXScrollRef.current.scrollHeight
@@ -1336,8 +1365,14 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                 setDualHistory((prev) => [
                   ...prev,
                   { role: 'user',    content: q },
-                  { role: 'agent_x', content: data.output || '' },
+                  { role: 'agent_x', content: agentXFinalRef.current || '' },
+                  { role: 'agent_y', content: data.output || '' },
                 ])
+                break
+              case 'session_result':
+                if (data.componentCount > 0) {
+                  setSessionResultCount(data.componentCount)
+                }
                 break
               case 'error':
                 setAgentState('error')
@@ -1540,12 +1575,19 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
           <span className="logo-text">SelfAudit</span>
         </div>
 
-        <button className="dash-status" type="button" onClick={() => navigateSection('oversight')}>
-          <span className="dot" />
+        <button
+          className="dash-status"
+          type="button"
+          onClick={() => sessionResultCount > 0 ? setShowResultsPanel(p => !p) : navigateSection('reports')}
+        >
+          <span className="dot" style={sessionResultCount > 0 ? { background: 'var(--ember)', boxShadow: '0 0 10px -1px var(--ember)' } : {}} />
           Results ready
+          {sessionResultCount > 0 && (
+            <span className="count">{sessionResultCount}</span>
+          )}
           <span className="chev">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M6 9l6 6 6-6"/>
+              <path d={showResultsPanel ? 'M18 15l-6-6-6 6' : 'M6 9l6 6 6-6'}/>
             </svg>
           </span>
         </button>
@@ -1574,6 +1616,61 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
           </button>
         </div>
       </header>
+
+      {/* ── Results panel (slides in below topbar when session has results) ── */}
+      {showResultsPanel && (sessionLog.length > 0 || agentXStream || agentYStream) && (
+        <div style={{
+          borderBottom: '1px solid var(--d-border)',
+          background: 'var(--d-surface)',
+          maxHeight: '55vh',
+          overflow: 'auto',
+          padding: '20px 28px',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, letterSpacing: '0.15em', color: 'var(--ember)', textTransform: 'uppercase' }}>
+              Session results — {sessionResultCount} components
+            </div>
+            <button type="button" onClick={() => setShowResultsPanel(false)} style={{ background: 'none', border: 'none', color: 'var(--fg-mute)', cursor: 'pointer', fontSize: 13 }}>
+              Close ×
+            </button>
+          </div>
+          {/* Show all turns */}
+          {[...sessionLog, agentXStream || agentYStream ? {
+            query: dualHistory[dualHistory.length - 2]?.content || 'Current session',
+            xOutput: agentXStream,
+            yOutput: agentYStream,
+            label: currentMode?.label || 'CURRENT',
+            xLabel: currentMode?.xLabel || 'AGENT X',
+            yLabel: currentMode?.yLabel || 'AGENT Y',
+          } : null].filter(Boolean).map((turn, i) => (
+            <div key={i} style={{ marginBottom: 20, paddingBottom: 20, borderBottom: i < sessionLog.length ? '1px solid var(--d-border)' : 'none' }}>
+              <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 10, color: 'var(--fg-mute)', marginBottom: 8, letterSpacing: '0.1em' }}>
+                [{turn.label}] — {String(turn.query || '').slice(0, 80)}
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: 8, padding: '10px 14px', fontFamily: '"JetBrains Mono", monospace', fontSize: '0.68rem', lineHeight: 1.7, color: 'rgba(150,255,180,0.8)', whiteSpace: 'pre-wrap', wordBreak: 'break-word', maxHeight: 200, overflow: 'auto' }}>
+                  <div style={{ color: '#4ade80', marginBottom: 6, fontSize: '0.62rem', letterSpacing: '0.1em' }}>{turn.xLabel}</div>
+                  {turn.xOutput || '—'}
+                </div>
+                <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: 8, padding: '10px 14px', fontFamily: '"JetBrains Mono", monospace', fontSize: '0.68rem', lineHeight: 1.7, color: 'rgba(255,200,120,0.8)', whiteSpace: 'pre-wrap', wordBreak: 'break-word', maxHeight: 200, overflow: 'auto' }}>
+                  <div style={{ color: '#fb923c', marginBottom: 6, fontSize: '0.62rem', letterSpacing: '0.1em' }}>{turn.yLabel}</div>
+                  {turn.yOutput || '—'}
+                </div>
+              </div>
+            </div>
+          ))}
+          {/* Execution panel */}
+          <div style={{ marginTop: 8 }}>
+            <ExecutionPanel
+              reports={reports}
+              userInfo={shareUserInfo}
+              variant="dashboard"
+              theme={theme}
+            />
+          </div>
+        </div>
+      )}
 
       {/* ── Body ──────────────────────────────────────────────────────────── */}
       <div className="dash-body">
@@ -1712,14 +1809,14 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                               <div className="card-eyebrow" style={{ color: '#4ade80' }}>Agent X</div>
                               <h2 className="card-title">Diagnostic engine</h2>
                             </div>
-                            <div className="card-status" style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11 }}>
+                            <div className="card-status" style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, gap: 6 }}>
                               <span style={{
                                 width: 7, height: 7, borderRadius: '50%', display: 'inline-block', flexShrink: 0,
                                 background: xActive ? '#4ade80' : xComplete ? '#4ade80' : 'rgba(255,255,255,0.2)',
                                 boxShadow: (xActive || xComplete) ? '0 0 8px #4ade80' : 'none',
                               }} />
                               <span style={{ color: xActive ? '#4ade80' : xComplete ? '#4ade80' : 'rgba(255,255,255,0.3)' }}>
-                                {xActive ? 'SCANNING' : xComplete ? 'DONE' : 'STANDBY'}
+                                {xActive ? (currentMode?.xLabel || 'SCANNING') : xComplete ? (currentMode?.xLabel || 'DONE') : 'STANDBY'}
                               </span>
                             </div>
                           </header>
@@ -1738,6 +1835,18 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                                 wordBreak: 'break-word',
                               }}
                             >
+                              {/* Past turns — compact history */}
+                              {sessionLog.map((turn, i) => (
+                                <div key={i} style={{ marginBottom: 12, paddingBottom: 12, borderBottom: '1px solid rgba(74,222,128,0.08)' }}>
+                                  <div style={{ color: 'rgba(74,222,128,0.3)', fontSize: '0.62rem', marginBottom: 4, letterSpacing: '0.1em' }}>
+                                    [{turn.label}] {String(turn.query || '').slice(0, 60)}
+                                  </div>
+                                  <div style={{ color: 'rgba(150,255,180,0.4)', fontSize: '0.65rem', lineHeight: 1.5 }}>
+                                    {String(turn.xOutput || '').split('\n').slice(0, 3).join('\n')}
+                                    {(turn.xOutput || '').split('\n').length > 3 ? '\n…' : ''}
+                                  </div>
+                                </div>
+                              ))}
                               {agentState === 'planning' && !agentXStream && (
                                 <div>
                                   <div style={{ color: 'rgba(74,222,128,0.5)', marginBottom: 6 }}>{'> AGENT_X // DIAGNOSTIC_ENGINE'}</div>
@@ -1769,14 +1878,14 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                               <div className="card-eyebrow" style={{ color: '#fb923c' }}>Agent Y</div>
                               <h2 className="card-title">Solution engine</h2>
                             </div>
-                            <div className="card-status" style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11 }}>
+                            <div className="card-status" style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, gap: 6 }}>
                               <span style={{
                                 width: 7, height: 7, borderRadius: '50%', display: 'inline-block', flexShrink: 0,
                                 background: yActive ? '#fb923c' : yComplete ? '#fb923c' : 'rgba(255,255,255,0.2)',
                                 boxShadow: (yActive || yComplete) ? '0 0 8px #fb923c' : 'none',
                               }} />
                               <span style={{ color: yActive ? '#fb923c' : yComplete ? '#fb923c' : 'rgba(255,255,255,0.3)' }}>
-                                {yActive ? 'PROPOSING' : yComplete ? 'DONE' : xComplete ? 'STARTING' : 'WAITING'}
+                                {yActive ? (currentMode?.yLabel || 'PROPOSING') : yComplete ? (currentMode?.yLabel || 'DONE') : xComplete ? 'STARTING' : 'WAITING'}
                               </span>
                             </div>
                           </header>
@@ -1795,6 +1904,18 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                                 wordBreak: 'break-word',
                               }}
                             >
+                              {/* Past turns — compact history */}
+                              {sessionLog.map((turn, i) => (
+                                <div key={i} style={{ marginBottom: 12, paddingBottom: 12, borderBottom: '1px solid rgba(251,146,60,0.08)' }}>
+                                  <div style={{ color: 'rgba(251,146,60,0.3)', fontSize: '0.62rem', marginBottom: 4, letterSpacing: '0.1em' }}>
+                                    [{turn.yLabel}] {String(turn.query || '').slice(0, 60)}
+                                  </div>
+                                  <div style={{ color: 'rgba(255,200,120,0.4)', fontSize: '0.65rem', lineHeight: 1.5 }}>
+                                    {String(turn.yOutput || '').split('\n').slice(0, 3).join('\n')}
+                                    {(turn.yOutput || '').split('\n').length > 3 ? '\n…' : ''}
+                                  </div>
+                                </div>
+                              ))}
                               {(agentState === 'planning' || agentState === 'agent_x') && !agentYStream && (
                                 <div style={{ color: 'rgba(251,146,60,0.3)', fontSize: '0.68rem' }}>
                                   <div>{'> AGENT_Y // SOLUTION_ENGINE'}</div>
@@ -1949,10 +2070,10 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                     <i style={agentState === 'agent_y' ? { background: '#4CAF50', animation: 'pulse 1s infinite' } : agentState === 'complete' ? { background: '#4CAF50' } : {}} />
                   </span>
                   <span>
-                    {agentState === 'planning' ? 'investigating…'
-                      : agentState === 'agent_x' ? 'Agent X diagnosing…'
-                      : agentState === 'agent_y' ? 'Agent Y solving…'
-                      : agentState === 'complete' ? 'session complete'
+                    {agentState === 'planning' ? 'routing…'
+                      : agentState === 'agent_x' ? `${currentMode?.xLabel || 'agent x'}…`
+                      : agentState === 'agent_y' ? `${currentMode?.yLabel || 'agent y'}…`
+                      : agentState === 'complete' ? (currentMode?.label ? `${currentMode.label} complete` : 'session complete')
                       : agentState === 'error' ? 'error'
                       : sessionActive ? 'session active'
                       : 'both listening'}
