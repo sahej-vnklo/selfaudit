@@ -5,6 +5,7 @@ import { PRIVACY_POLICY_URL, TERMS_HASH } from '../lib/legal.js'
 import IntelligenceBrief from './IntelligenceBrief.jsx'
 import ExecutionPanel from './ExecutionPanel.jsx'
 import DashboardWelcomeTour from './DashboardWelcomeTour.jsx'
+import CockpitSection from './Cockpit.jsx'
 import { OPERATIONAL_AREAS } from '../lib/governance/areaRegistry.js'
 import './Dashboard.css'
 // Legacy sharpTheme imports kept for sub-component backward-compatibility
@@ -1783,6 +1784,13 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
           </button>
 
           <nav className="dash-nav">
+            <button className={`dash-navbtn${section === 'cockpit' ? ' active' : ''}`} data-label="Cockpit" aria-label="Cockpit" type="button" onClick={() => navigateSection('cockpit')}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/>
+                <rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/>
+              </svg>
+              <span className="navlabel">Cockpit</span>
+            </button>
             <button className={`dash-navbtn${section === 'home' ? ' active' : ''}`} data-label="Command" aria-label="Command" type="button" onClick={() => navigateSection('home')}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3z"/>
@@ -2321,6 +2329,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
               )}
               {section === 'connectors' && <ConnectorsSection user={user} />}
               {section === 'agent'      && <AgentSection user={user} />}
+              {section === 'cockpit'    && <CockpitSection user={user} navigateSection={navigateSection} />}
 
               {/* ── Account → Profile + Billing ─────────────────────────── */}
               {section === 'account' && (

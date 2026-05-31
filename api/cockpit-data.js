@@ -1,0 +1,215 @@
+// GET /api/cockpit-data?userId=xxx
+// Read-only — surfaces stored health check + metric data for the Cockpit view.
+// Never triggers a new health check run.
+
+import { createClient } from '@supabase/supabase-js'
+import { validateUserToken } from './lib/auth.js'
+
+const AREA_META = {
+  'customer-service':     { name: 'Support',        role: 'Head of Customer Support',  key_metric: 'first_response_time', metric_label: 'Avg. Response Time', unit: 'h' },
+  'marketing-sales':      { name: 'Sales & Mktg',   role: 'Head of Growth',            key_metric: 'open_deals',           metric_label: 'Open Deals',         unit: ''  },
+  'finance-accounting':   { name: 'Finance',         role: 'Chief Financial Officer',   key_metric: 'runway_months',        metric_label: 'Cash Runway',        unit: 'mo' },
+  'management-strategy':  { name: 'Strategy & Ops', role: 'Chief Operating Officer',   key_metric: 'goal_progress',        metric_label: 'Goal Progress',      unit: '%' },
+}
+
+// Map health check risk categories → area ids
+const CATEGORY_TO_AREA = {
+  pipeline:   'marketing-sales',
+  revenue:    'finance-accounting',
+  customer:   'customer-service',
+  execution:  'management-strategy',
+  goal:       'management-strategy',
+  operations: 'management-strategy',
+}
+
+function getSupabase() {
+  return createClient(
+    process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY,
+    { auth: { persistSession: false } }
+  )
+}
+
+function statusLabel(s) {
+  if (s === 'bad')       return 'Concerned'
+  if (s === 'watch')     return 'Watch'
+  if (s === 'good')      return 'Stable'
+  return 'No signal'
+}
+
+export default async function handler(req, res) {
+  if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' })
+
+  const userId = req.query.userId
+  if (!userId) return res.status(400).json({ error: 'Missing userId' })
+  if (!await validateUserToken(req, res, userId)) return
+
+  const sb = getSupabase()
+
+  const [hcRes, snapshotsRes, alertsRes, profileRes, briefRes, stateRes] = await Promise.allSettled([
+    // Latest stored health check
+    sb.from('business_health_checks')
+      .select('checked_at, health_score, risks, recommended_actions, summary, evidence')
+      .eq('user_id', userId)
+      .order('checked_at', { ascending: false })
+      .limit(1)
+      .single(),
+
+    // Last 56 metric snapshots (up to 7 per area × 4 areas × 2 metrics) for sparklines
+    sb.from('area_metric_snapshots')
+      .select('area, metric_name, value, delta_from_prior, captured_at')
+      .eq('user_id', userId)
+      .order('captured_at', { ascending: false })
+      .limit(200),
+
+    // Open risk alerts for per-area top issues
+    sb.from('risk_alerts')
+      .select('severity, category, title, description, recommended_action')
+      .eq('user_id', userId)
+      .eq('status', 'open')
+      .order('created_at', { ascending: false })
+      .limit(50),
+
+    // Intelligence profile for cross-dept insight + opportunities
+    sb.from('intelligence_profiles')
+      .select('summary, top_priorities, watchouts, opportunities, repeated_blockers, last_synthesized_at, confidence_level')
+      .eq('user_id', userId)
+      .single(),
+
+    // Intelligence brief for at-a-glance metrics
+    sb.from('intelligence_brief')
+      .select('financial, operational, context')
+      .eq('user_id', userId)
+      .single(),
+
+    // Business state for user name context
+    sb.from('business_state')
+      .select('active_goal, goal_score')
+      .eq('user_id', userId)
+      .single(),
+  ])
+
+  const hc        = hcRes.status        === 'fulfilled' ? hcRes.value.data            : null
+  const snapshots = snapshotsRes.status === 'fulfilled' ? (snapshotsRes.value.data ?? []) : []
+  const alerts    = alertsRes.status    === 'fulfilled' ? (alertsRes.value.data ?? [])    : []
+  const intel     = profileRes.status   === 'fulfilled' ? profileRes.value.data           : null
+  const brief     = briefRes.status     === 'fulfilled' ? briefRes.value.data              : null
+  const state     = stateRes.status     === 'fulfilled' ? stateRes.value.data              : null
+
+  // ── Build sparklines and latest metric per area ───────────────────────────
+  // Group snapshots: { [area]: { [metric_name]: [values oldest→newest] } }
+  const metricHistory = {}
+  // snapshots are desc by captured_at — reverse to get oldest→newest per metric
+  const reversedSnaps = [...snapshots].reverse()
+  for (const row of reversedSnaps) {
+    if (!metricHistory[row.area]) metricHistory[row.area] = {}
+    if (!metricHistory[row.area][row.metric_name]) metricHistory[row.area][row.metric_name] = []
+    metricHistory[row.area][row.metric_name].push({ value: row.value, delta: row.delta_from_prior, at: row.captured_at })
+  }
+
+  function getMetric(areaId, metricName) {
+    const history = metricHistory[areaId]?.[metricName] ?? []
+    if (!history.length) return null
+    const latest = history[history.length - 1]
+    const sparkline = history.slice(-7).map(h => h.value)
+    return { value: latest.value, delta: latest.delta, sparkline }
+  }
+
+  // ── At-a-glance metrics from brief + snapshots ────────────────────────────
+  const f = brief?.financial || {}
+  const ctx = brief?.context || {}
+  const op = brief?.operational || {}
+
+  const atAGlance = []
+
+  const churnVal = f.churn != null ? Number(f.churn) : getMetric('finance-accounting', 'churn_rate')?.value ?? null
+  const churnDelta = getMetric('finance-accounting', 'churn_rate')?.delta ?? null
+  if (churnVal != null) atAGlance.push({ label: 'Churn', value: `${churnVal}%`, delta: churnDelta, trend: churnDelta > 0 ? 'up-bad' : churnDelta < 0 ? 'down-good' : 'flat', sparkline: getMetric('finance-accounting', 'churn_rate')?.sparkline ?? [] })
+
+  const mrrVal = f.mrr != null ? Number(f.mrr) : null
+  if (mrrVal != null) atAGlance.push({ label: 'MRR', value: `$${mrrVal.toLocaleString()}`, delta: null, trend: 'flat', sparkline: [] })
+
+  const runwayVal = ctx.runway != null ? Number(ctx.runway) : getMetric('finance-accounting', 'runway_months')?.value ?? null
+  const runwayDelta = getMetric('finance-accounting', 'runway_months')?.delta ?? null
+  if (runwayVal != null) atAGlance.push({ label: 'Runway', value: `${runwayVal} mo`, delta: runwayDelta, trend: runwayDelta != null ? (runwayDelta < 0 ? 'down-bad' : 'up-good') : 'flat', sparkline: getMetric('finance-accounting', 'runway_months')?.sparkline ?? [] })
+
+  const csatVal = op.nps != null ? Number(op.nps) : getMetric('customer-service', 'csat')?.value ?? null
+  const csatDelta = getMetric('customer-service', 'csat')?.delta ?? null
+  if (csatVal != null) atAGlance.push({ label: 'CSAT / NPS', value: String(csatVal), delta: csatDelta, trend: csatDelta != null ? (csatDelta < 0 ? 'down-bad' : 'up-good') : 'flat', sparkline: getMetric('customer-service', 'csat')?.sparkline ?? [] })
+
+  // ── Area statuses from stored evidence ───────────────────────────────────
+  const areaStatuses = hc?.evidence?.governance?.area_statuses ?? []
+  const statusByArea = Object.fromEntries(areaStatuses.map(a => [a.area_id, a.status]))
+
+  // ── Per-area top issues from risk_alerts ──────────────────────────────────
+  const issuesByArea = {}
+  for (const alert of alerts) {
+    const areaId = CATEGORY_TO_AREA[alert.category] || null
+    if (!areaId) continue
+    if (!issuesByArea[areaId]) {
+      issuesByArea[areaId] = { title: alert.title, sub: alert.description, action: alert.recommended_action, severity: alert.severity }
+    }
+  }
+
+  // ── Build department cards ────────────────────────────────────────────────
+  const departments = Object.entries(AREA_META).map(([areaId, meta]) => {
+    const status     = statusByArea[areaId] ?? 'no-signal'
+    const topIssue   = issuesByArea[areaId] ?? null
+    const keyMetric  = getMetric(areaId, meta.key_metric)
+
+    return {
+      id:            areaId,
+      name:          meta.name,
+      role:          meta.role,
+      status,
+      status_label:  statusLabel(status),
+      top_issue:     topIssue ? { title: topIssue.title, sub: topIssue.sub?.slice(0, 100) ?? '' } : null,
+      key_metric:    keyMetric ? {
+        label:    meta.metric_label,
+        value:    keyMetric.value,
+        unit:     meta.unit,
+        delta:    keyMetric.delta,
+        sparkline: keyMetric.sparkline,
+      } : null,
+      latest_insight: topIssue?.sub ?? null,
+    }
+  })
+
+  // ── CoS priorities from stored risks ─────────────────────────────────────
+  const risks = Array.isArray(hc?.risks) ? hc.risks : []
+  const priorities = risks.slice(0, 5).map(r => ({
+    title:    r.title,
+    severity: r.severity,
+    impact:   r.evidence || null,
+    action:   r.recommended_action || null,
+  }))
+
+  // ── Recommended move — first recommended action with context ──────────────
+  const actions = Array.isArray(hc?.recommended_actions) ? hc.recommended_actions : []
+  const recommendedMove = actions.length > 0 ? {
+    action:  actions[0],
+    extras:  actions.slice(1, 4),
+  } : null
+
+  // ── Cross-dept insight ────────────────────────────────────────────────────
+  const crossDeptInsight = hc?.evidence?.governance?.advice_summary
+    || intel?.summary
+    || null
+
+  return res.status(200).json({
+    last_checked:       hc?.checked_at ?? null,
+    health_score:       hc?.health_score ?? null,
+    confidence:         intel?.confidence_level ?? null,
+    cos: {
+      priorities,
+      recommended_move: recommendedMove,
+      at_a_glance:      atAGlance,
+    },
+    departments,
+    cross_dept_insight: crossDeptInsight,
+    opportunities:      Array.isArray(intel?.opportunities) ? intel.opportunities.slice(0, 3) : [],
+    active_goal:        state?.active_goal ?? null,
+    goal_score:         state?.goal_score ?? null,
+    has_data:           !!hc,
+  })
+}
