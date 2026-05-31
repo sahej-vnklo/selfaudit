@@ -2314,7 +2314,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                 </PageShell>
               )}
 
-              {/* ── Context → Intelligence brief + What We Know ──────────── */}
+              {/* ── Context → Intelligence brief ─────────────────────────── */}
               {section === 'business-state' && (
                 <PageShell title="Context" sub="Your intelligence brief and operating picture in one place.">
                   <IntelligenceBrief
@@ -2322,9 +2322,6 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                     profile={profile}
                     onProfileChange={(updated) => setProfile((prev) => ({ ...prev, ...updated }))}
                   />
-                  <div style={{ marginTop: 32 }}>
-                    <BusinessStateCard user={user} businessState={businessState} loading={businessStateLoading} />
-                  </div>
                 </PageShell>
               )}
 
