@@ -1685,7 +1685,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                             style={{
                               flex: 1, overflow: 'auto', padding: '12px 16px',
                               fontSize: '0.75rem', lineHeight: 1.7,
-                              color: xComplete ? '#E9EEF5' : 'var(--text-soft)',
+                              color: 'var(--fg)',
                               whiteSpace: 'pre-wrap', wordBreak: 'break-word',
                             }}
                           >
@@ -1723,7 +1723,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                             style={{
                               flex: 1, overflow: 'auto', padding: '12px 16px',
                               fontSize: '0.75rem', lineHeight: 1.7,
-                              color: yComplete ? '#E9EEF5' : 'var(--text-soft)',
+                              color: 'var(--fg)',
                               whiteSpace: 'pre-wrap', wordBreak: 'break-word',
                             }}
                           >
