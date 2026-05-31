@@ -143,7 +143,7 @@ function LoadingSkeleton() {
 function PriorityItem({ item, index }) {
   const sev = SEV_STYLE[item.severity] || SEV_STYLE.medium
   return (
-    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 9, padding: '9px 12px', background: C.surface2, border: `1px solid ${C.border}`, borderRadius: 8 }}>
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 9, padding: '9px 12px', background: 'var(--panel)', border: "1px solid var(--d-border)", borderRadius: 8 }}>
       <div style={{ width: 18, height: 18, borderRadius: '50%', background: C.surface3, display: 'grid', placeItems: 'center', fontSize: 10, fontWeight: 700, color: C.textFaint, flexShrink: 0, marginTop: 1 }}>
         {index + 1}
       </div>
@@ -189,7 +189,7 @@ function CalibrationPanel({ calibration, navigateSection }) {
             style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               gap: 10, padding: '9px 12px',
-              background: C.surface2,
+              background: 'var(--panel)',
               border: `1px solid ${area.customised ? C.accent : C.border}`,
               borderRadius: 8, cursor: 'pointer', textAlign: 'left', width: '100%',
               transition: 'border-color 0.15s',
@@ -230,7 +230,7 @@ function GlanceRow({ item }) {
   const sparkColor = isGood ? 'var(--green)' : isBad ? 'var(--red)' : 'var(--amber)'
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 11px', background: C.surface2, border: `1px solid ${C.border}`, borderRadius: 8 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 11px', background: 'var(--panel)', border: "1px solid var(--d-border)", borderRadius: 8 }}>
       <div style={{ fontSize: 12, color: C.textMuted, flex: 1 }}>{item.label}</div>
       {item.sparkline?.length >= 2 && <Sparkline values={item.sparkline} color={sparkColor} width={44} height={18} />}
       <div style={{ fontSize: 13, fontWeight: 700, color: C.text, flexShrink: 0 }}>{item.value}</div>
@@ -253,11 +253,11 @@ function DeptCard({ dept, onViewDept }) {
     : 'var(--text-secondary)'
 
   return (
-    <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, padding: '15px 16px', display: 'flex', flexDirection: 'column', gap: 12, cursor: 'default' }}>
+    <div style={{ background: 'var(--d-surface)', border: '1px solid var(--d-border)', borderRadius: 10, padding: '15px 16px', display: 'flex', flexDirection: 'column', gap: 12, cursor: 'default', boxShadow: 'var(--d-shadow)' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 30, height: 30, borderRadius: 7, background: C.surface2, border: `1px solid ${C.border}`, display: 'grid', placeItems: 'center', color: C.textMuted, flexShrink: 0 }}>
+          <div style={{ width: 30, height: 30, borderRadius: 7, background: 'var(--panel)', border: "1px solid var(--d-border)", display: 'grid', placeItems: 'center', color: C.textMuted, flexShrink: 0 }}>
             {AREA_ICONS[dept.id]}
           </div>
           <div>
@@ -285,7 +285,7 @@ function DeptCard({ dept, onViewDept }) {
 
       {/* Key Metric */}
       {dept.key_metric ? (
-        <div style={{ background: C.surface2, border: `1px solid ${C.border}`, borderRadius: 7, padding: '8px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        <div style={{ background: 'var(--panel)', border: "1px solid var(--d-border)", borderRadius: 7, padding: '8px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
           <div>
             <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase', color: C.textFaint, marginBottom: 3 }}>{dept.key_metric.label}</div>
             <div>
@@ -302,7 +302,7 @@ function DeptCard({ dept, onViewDept }) {
           )}
         </div>
       ) : (
-        <div style={{ background: C.surface2, border: `1px solid ${C.border}`, borderRadius: 7, padding: '8px 10px' }}>
+        <div style={{ background: 'var(--panel)', border: "1px solid var(--d-border)", borderRadius: 7, padding: '8px 10px' }}>
           <div style={{ fontSize: 11, color: C.textFaint }}>Connect tools or add context to see metrics</div>
         </div>
       )}
@@ -413,10 +413,10 @@ export default function CockpitSection({ user, navigateSection }) {
     <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
 
       {/* ── Chief of Staff Block ─────────────────────────────────────────── */}
-      <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 12, overflow: 'hidden' }}>
+      <div style={{ background: 'var(--d-surface)', border: '1px solid var(--d-border)', borderRadius: 12, overflow: 'hidden', boxShadow: 'var(--d-shadow)' }}>
 
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 18px', borderBottom: `1px solid ${C.border}` }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 18px', borderBottom: '1px solid var(--d-border)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 10.5, fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase', color: C.accentText }}>
             <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--green)', display: 'inline-block', animation: 'cockpit-pulse 2.4s ease-in-out infinite' }} />
             AI Chief of Staff
@@ -428,7 +428,7 @@ export default function CockpitSection({ user, navigateSection }) {
               type="button"
               onClick={runHealthCheck}
               disabled={refreshing}
-              style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 6, background: 'transparent', border: `1px solid ${C.border}`, color: C.textMuted, fontSize: 11.5, fontWeight: 500, cursor: refreshing ? 'not-allowed' : 'pointer', opacity: refreshing ? 0.5 : 1 }}
+              style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 6, background: 'transparent', border: "1px solid var(--d-border)", color: C.textMuted, fontSize: 11.5, fontWeight: 500, cursor: refreshing ? 'not-allowed' : 'pointer', opacity: refreshing ? 0.5 : 1 }}
             >
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ ...(refreshing ? { animation: 'spin 1s linear infinite' } : {})}}>
                 <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
@@ -443,7 +443,7 @@ export default function CockpitSection({ user, navigateSection }) {
         <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr 0.85fr' }}>
 
           {/* LEFT — Greeting + priorities */}
-          <div style={{ padding: '22px 22px', borderRight: `1px solid ${C.border}` }}>
+          <div style={{ padding: '22px 22px', borderRight: '1px solid var(--d-border)' }}>
             <div style={{ fontFamily: '"Cormorant Garamond", "Times New Roman", serif', fontSize: 26, fontWeight: 500, lineHeight: 1.15, marginBottom: 5, color: C.text }}>
               Good morning, {userName}.
             </div>
@@ -461,7 +461,7 @@ export default function CockpitSection({ user, navigateSection }) {
           </div>
 
           {/* MIDDLE — Recommended move */}
-          <div style={{ padding: '22px', borderRight: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ padding: '22px', borderRight: '1px solid var(--d-border)', display: 'flex', flexDirection: 'column' }}>
             <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: C.textFaint, marginBottom: 10 }}>Recommended Move</div>
             {cos.recommended_move ? (
               <>
@@ -511,9 +511,9 @@ export default function CockpitSection({ user, navigateSection }) {
 
         {/* Confidence bar */}
         {data.confidence != null && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 18px', borderTop: `1px solid ${C.border}`, fontSize: 11.5, color: C.textFaint }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 18px', borderTop: '1px solid var(--d-border)', fontSize: 11.5, color: C.textFaint }}>
             <span>Confidence in insights</span>
-            <div style={{ flex: 1, maxWidth: 130, height: 3, background: C.surface2, borderRadius: 100, overflow: 'hidden' }}>
+            <div style={{ flex: 1, maxWidth: 130, height: 3, background: 'var(--panel)', borderRadius: 100, overflow: 'hidden' }}>
               <div style={{ width: `${data.confidence}%`, height: '100%', background: C.accent, borderRadius: 100 }} />
             </div>
             <span>{data.confidence}%</span>
@@ -534,10 +534,10 @@ export default function CockpitSection({ user, navigateSection }) {
       </div>
 
       {/* ── Bottom Bar ──────────────────────────────────────────────────────── */}
-      <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', overflow: 'hidden' }}>
+      <div style={{ background: 'var(--d-surface)', border: '1px solid var(--d-border)', borderRadius: 10, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', overflow: 'hidden', boxShadow: 'var(--d-shadow)' }}>
 
         {/* Cross-dept insight */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', borderRight: `1px solid ${C.border}`, cursor: 'pointer', minWidth: 0 }}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', borderRight: '1px solid var(--d-border)', cursor: 'pointer', minWidth: 0 }}
           onClick={() => navigateSection?.('oversight')}>
           <div style={{ width: 26, height: 26, borderRadius: 7, background: C.accentLight, display: 'grid', placeItems: 'center', color: C.accentText, flexShrink: 0 }}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
@@ -556,7 +556,7 @@ export default function CockpitSection({ user, navigateSection }) {
         </div>
 
         {/* Opportunities */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', borderRight: `1px solid ${C.border}`, cursor: 'pointer', minWidth: 0 }}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', borderRight: '1px solid var(--d-border)', cursor: 'pointer', minWidth: 0 }}
           onClick={() => navigateSection?.('intelligence')}>
           <div style={{ width: 26, height: 26, borderRadius: 7, background: C.greenBg, display: 'grid', placeItems: 'center', color: C.greenText, flexShrink: 0 }}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">

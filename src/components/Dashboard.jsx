@@ -765,8 +765,9 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
   const [billingError, setBillingError] = useState('')
   const [checkoutSyncing, setCheckoutSyncing] = useState(false)
   const [portalLoading, setPortalLoading] = useState(false)
-  const [section, setSection] = useState(() => getSectionFromHash())
-  const [deptView, setDeptView] = useState('all')
+  const [section, setSection]       = useState(() => getSectionFromHash())
+  const [deptView, setDeptView]     = useState('all')
+  const [accountTab, setAccountTab] = useState('profile')
   const [requiresPayment, setRequiresPayment] = useState(false)
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
   const [goalModal, setGoalModal] = useState(false)
@@ -2340,34 +2341,77 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
               {section === 'dept-finance-accounting'  && <DepartmentPage areaId="finance-accounting"  user={user} navigateSection={navigateSection} view={deptView} />}
               {section === 'dept-management-strategy' && <DepartmentPage areaId="management-strategy" user={user} navigateSection={navigateSection} view={deptView} />}
 
-              {/* ── Account → Profile + Billing ─────────────────────────── */}
+              {/* ── Account → tabbed: Profile / Billing / Data ───────── */}
               {section === 'account' && (
-                <>
-                  <AccountSection
-                    user={user}
-                    profile={profile}
-                    onProfileChange={(updated) => setProfile((prev) => ({ ...prev, ...updated }))}
-                    onSignOut={onSignOut}
-                  />
-                  <PageShell title="Subscription" sub={requiresPayment ? 'Choose a plan to activate your account.' : 'Your current plan. Upgrade or downgrade any time.'}>
-                    {requiresPayment && (
-                      <div style={{ background: G.amberBg, border: `1px solid ${G.amber}`, borderRadius: 8, padding: '14px 18px', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <span style={{ fontSize: 16 }}>⚠</span>
-                        <span style={{ fontSize: 14, color: G.amberText, fontWeight: 500 }}>Your account isn't active yet. Pick a plan below to get started.</span>
+                <div>
+                  {/* Tab switcher */}
+                  <div style={{ display: 'flex', gap: 4, padding: '20px 28px 0', borderBottom: `1px solid ${G.border}` }}>
+                    {['profile', 'billing', 'data'].map(tab => (
+                      <button
+                        key={tab}
+                        type="button"
+                        onClick={() => setAccountTab(tab)}
+                        style={{
+                          padding: '8px 18px', borderRadius: '8px 8px 0 0',
+                          border: `1px solid ${accountTab === tab ? G.border2 : 'transparent'}`,
+                          borderBottom: accountTab === tab ? `1px solid ${G.surface}` : 'transparent',
+                          background: accountTab === tab ? G.surface : 'transparent',
+                          color: accountTab === tab ? G.text : G.textMuted,
+                          fontSize: 13, fontWeight: accountTab === tab ? 600 : 500,
+                          cursor: 'pointer', textTransform: 'capitalize',
+                          marginBottom: accountTab === tab ? -1 : 0,
+                          fontFamily: 'inherit',
+                          transition: 'all 0.12s',
+                        }}
+                      >
+                        {tab}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Profile tab */}
+                  {accountTab === 'profile' && (
+                    <AccountSection
+                      user={user}
+                      profile={profile}
+                      onProfileChange={(updated) => setProfile((prev) => ({ ...prev, ...updated }))}
+                      onSignOut={onSignOut}
+                    />
+                  )}
+
+                  {/* Billing tab */}
+                  {accountTab === 'billing' && (
+                    <PageShell title="Subscription" sub={requiresPayment ? 'Choose a plan to activate your account.' : 'Your current plan. Upgrade or downgrade any time.'}>
+                      {requiresPayment && (
+                        <div style={{ background: G.amberBg, border: `1px solid ${G.amber}`, borderRadius: 8, padding: '14px 18px', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
+                          <span style={{ fontSize: 16 }}>⚠</span>
+                          <span style={{ fontSize: 14, color: G.amberText, fontWeight: 500 }}>Your account isn't active yet. Pick a plan below to get started.</span>
+                        </div>
+                      )}
+                      {checkoutSyncing && (
+                        <div style={{ background: G.accentLight, border: `1px solid ${G.accent}`, borderRadius: 8, padding: '14px 18px', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
+                          <span style={{ fontSize: 16 }}>↻</span>
+                          <span style={{ fontSize: 14, color: G.accentText, fontWeight: 500 }}>Finalizing your checkout and updating your plan…</span>
+                        </div>
+                      )}
+                      {tier === 'intelligence' && <LiveBillingCard billing={billing} billingLoading={billingLoading} billingError={billingError} onOpenPortal={openPortal} portalLoading={portalLoading} />}
+                      <div style={styles.tierGrid}>
+                        {TIERS.map((item) => <TierCard key={item.key} tier={item} currentTier={tier} userId={user?.id} email={user?.email} requiresPayment={requiresPayment} />)}
                       </div>
-                    )}
-                    {checkoutSyncing && (
-                      <div style={{ background: G.accentLight, border: `1px solid ${G.accent}`, borderRadius: 8, padding: '14px 18px', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <span style={{ fontSize: 16 }}>↻</span>
-                        <span style={{ fontSize: 14, color: G.accentText, fontWeight: 500 }}>Finalizing your checkout and updating your plan…</span>
-                      </div>
-                    )}
-                    {tier === 'intelligence' && <LiveBillingCard billing={billing} billingLoading={billingLoading} billingError={billingError} onOpenPortal={openPortal} portalLoading={portalLoading} />}
-                    <div style={styles.tierGrid}>
-                      {TIERS.map((item) => <TierCard key={item.key} tier={item} currentTier={tier} userId={user?.id} email={user?.email} requiresPayment={requiresPayment} />)}
-                    </div>
-                  </PageShell>
-                </>
+                    </PageShell>
+                  )}
+
+                  {/* Data tab */}
+                  {accountTab === 'data' && (
+                    <AccountSection
+                      user={user}
+                      profile={profile}
+                      onProfileChange={(updated) => setProfile((prev) => ({ ...prev, ...updated }))}
+                      onSignOut={onSignOut}
+                      dataOnly
+                    />
+                  )}
+                </div>
               )}
             </div>
           )}
@@ -4896,7 +4940,7 @@ const agent = {
   },
 }
 
-function AccountSection({ user, profile, onProfileChange, onSignOut }) {
+function AccountSection({ user, profile, onProfileChange, onSignOut, dataOnly = false }) {
   const email = user?.email || ''
   const [nameVal, setNameVal] = useState('')
   const [nameEditing, setNameEditing] = useState(false)
@@ -5036,8 +5080,35 @@ function AccountSection({ user, profile, onProfileChange, onSignOut }) {
     }
   }
 
+  if (dataOnly) {
+    return (
+      <PageShell title="Your Data" sub="Export or delete your account data.">
+        <div style={account.dataCard}>
+          <div style={account.dataCardTitle}>Your data</div>
+          <div style={account.dataCardText}>
+            Download a JSON export of your saved reports, chats, business context, alerts, and related account data. Connector access tokens are not included in the export.
+          </div>
+          <div style={account.dataCardMeta}>
+            SelfAudit currently keeps your account data until you delete the account. Deletion is permanent.
+          </div>
+          {exportError ? <div style={account.dataCardError}>{exportError}</div> : null}
+          <button type="button" style={account.dataExportBtn} onClick={handleExportData} disabled={exportingData}>
+            {exportingData ? 'Preparing export…' : 'Export my data'}
+          </button>
+        </div>
+        <div style={account.legalRow}>
+          <span style={account.legalLabel}>Legal</span>
+          <div style={account.legalLinks}>
+            <a href={PRIVACY_POLICY_URL} target="_blank" rel="noopener noreferrer" style={account.legalLink}>Privacy Policy</a>
+            <a href={TERMS_HASH} style={account.legalLink}>Terms of Service</a>
+          </div>
+        </div>
+      </PageShell>
+    )
+  }
+
   return (
-    <PageShell title="Account settings" sub="Manage your profile and preferences.">
+    <PageShell title="Profile" sub="Manage your account details.">
       <div style={account.card}>
         <AccountRow
           label="Name"
@@ -5715,7 +5786,7 @@ function ReportCard({ report, userId }) {
     <div style={{ ...styles.reportCard, borderColor: open ? G.accent : G.border }}>
       <div
         onClick={() => setOpen((prev) => !prev)}
-        style={{ ...styles.reportCardHeader, background: open ? G.surface2 : 'transparent' }}
+        style={{ ...styles.reportCardHeader, background: open ? 'var(--panel)' : 'transparent' }}
       >
         <p style={styles.reportCardTitle}>{report.title || '(untitled)'}</p>
         <div style={styles.reportCardActions}>
@@ -7528,10 +7599,11 @@ const styles = {
     textTransform: 'uppercase',
   },
   reportCard: {
-    background: G.surface2,
-    border: `1px solid ${G.border}`,
+    background: 'var(--d-surface)',
+    border: '1px solid var(--d-border)',
     borderRadius: 10,
     overflow: 'hidden',
+    boxShadow: 'var(--d-shadow)',
   },
   reportCardHeader: {
     display: 'flex',
@@ -7767,10 +7839,11 @@ const styles = {
 
 const account = {
   card: {
-    background: G.surface2,
-    border: `0.5px solid ${G.border}`,
+    background: 'var(--d-surface)',
+    border: '1px solid var(--d-border)',
     borderRadius: 12,
     padding: '4px 0',
+    boxShadow: 'var(--d-shadow)',
   },
   row: {
     display: 'flex',
@@ -7834,13 +7907,14 @@ const account = {
   },
   dataCard: {
     marginTop: 22,
-    background: G.surface2,
-    border: `0.5px solid ${G.border}`,
+    background: 'var(--d-surface)',
+    border: '1px solid var(--d-border)',
     borderRadius: 12,
     padding: '16px 18px',
     display: 'flex',
     flexDirection: 'column',
     gap: 10,
+    boxShadow: 'var(--d-shadow)',
   },
   dataCardTitle: {
     fontSize: 13,
