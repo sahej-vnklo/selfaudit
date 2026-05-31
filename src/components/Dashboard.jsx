@@ -1910,11 +1910,11 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                     return (
                       <>
                         {/* Agent X — Diagnostic terminal */}
-                        <section className="dash-card" aria-label="Agent X — Diagnostic engine">
-                          <header className="card-head" style={{ borderBottom: '1px solid rgba(74,222,128,0.12)' }}>
+                        <section className="dash-card" aria-label="Agent X — Diagnostic engine" style={{ background: 'linear-gradient(155deg, #261c17 0%, #16100d 100%)', border: '1px solid rgba(244,235,227,0.14)' }}>
+                          <header className="card-head" style={{ borderBottom: '1px solid rgba(74,222,128,0.12)', background: 'transparent' }}>
                             <div className="card-head-text">
                               <div className="card-eyebrow" style={{ color: '#4ade80' }}>Agent X</div>
-                              <h2 className="card-title">Diagnostic engine</h2>
+                              <h2 className="card-title" style={{ color: '#f4ebe3' }}>Diagnostic engine</h2>
                             </div>
                             <div className="card-status" style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, gap: 6 }}>
                               <span style={{
@@ -1938,7 +1938,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                           <div style={{ flex: 1, padding: '10px 12px 12px', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
                             <div
                               ref={agentXScrollRef}
-                              style={{ flex: 1, overflow: 'auto', minHeight: 0, background: '#111111', border: '1px solid rgba(74,222,128,0.1)', borderRadius: 8, padding: '14px 16px', fontFamily: '"JetBrains Mono", ui-monospace, monospace', fontSize: '0.72rem', lineHeight: 1.85, wordBreak: 'break-word' }}
+                              style={{ flex: 1, overflow: 'auto', minHeight: 0, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(74,222,128,0.08)', borderRadius: 8, padding: '14px 16px', fontFamily: '"JetBrains Mono", ui-monospace, monospace', fontSize: '0.72rem', lineHeight: 1.85, wordBreak: 'break-word' }}
                             >
                               {/* Past turns — compact history */}
                               {sessionLog.map((turn, i) => (
@@ -1966,11 +1966,11 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                         </section>
 
                         {/* Agent Y — Solution terminal */}
-                        <section className="dash-card" aria-label="Agent Y — Solution engine">
-                          <header className="card-head" style={{ borderBottom: '1px solid rgba(251,146,60,0.12)' }}>
+                        <section className="dash-card" aria-label="Agent Y — Solution engine" style={{ background: 'linear-gradient(155deg, #1c1710 0%, #12100a 100%)', border: '1px solid rgba(244,235,227,0.14)' }}>
+                          <header className="card-head" style={{ borderBottom: '1px solid rgba(251,146,60,0.12)', background: 'transparent' }}>
                             <div className="card-head-text">
                               <div className="card-eyebrow" style={{ color: '#fb923c' }}>Agent Y</div>
-                              <h2 className="card-title">Solution engine</h2>
+                              <h2 className="card-title" style={{ color: '#f4ebe3' }}>Solution engine</h2>
                             </div>
                             <div className="card-status" style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, gap: 6 }}>
                               <span style={{
@@ -1994,7 +1994,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                           <div style={{ flex: 1, padding: '10px 12px 12px', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
                             <div
                               ref={agentYScrollRef}
-                              style={{ flex: 1, overflow: 'auto', minHeight: 0, background: '#111111', border: '1px solid rgba(251,146,60,0.1)', borderRadius: 8, padding: '14px 16px', fontFamily: '"JetBrains Mono", ui-monospace, monospace', fontSize: '0.72rem', lineHeight: 1.85, wordBreak: 'break-word' }}
+                              style={{ flex: 1, overflow: 'auto', minHeight: 0, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(251,146,60,0.08)', borderRadius: 8, padding: '14px 16px', fontFamily: '"JetBrains Mono", ui-monospace, monospace', fontSize: '0.72rem', lineHeight: 1.85, wordBreak: 'break-word' }}
                             >
                               {/* Past turns — compact history */}
                               {sessionLog.map((turn, i) => (
