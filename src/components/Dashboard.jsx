@@ -2133,7 +2133,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                               borderRadius: 30,
                               border: 'none',
                               background: 'transparent',
-                              color: 'rgba(255,255,255,0.45)',
+                              color: 'var(--fg-mute)',
                               fontFamily: '"JetBrains Mono", monospace',
                               fontSize: '0.72rem',
                               letterSpacing: '0.05em',
@@ -2142,7 +2142,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                               whiteSpace: 'nowrap',
                             }}
                             onMouseEnter={e => { e.currentTarget.style.color = 'var(--ember)'; e.currentTarget.style.background = 'oklch(0.62 0.18 35 / 0.1)' }}
-                            onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.45)'; e.currentTarget.style.background = 'transparent' }}
+                            onMouseLeave={e => { e.currentTarget.style.color = 'var(--fg-mute)'; e.currentTarget.style.background = 'transparent' }}
                           >
                             {label}
                           </button>
