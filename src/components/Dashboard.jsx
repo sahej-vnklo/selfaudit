@@ -2168,25 +2168,6 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                     </button>
                     <span className="dash-cmd-div" />
 
-                    {/* Mode pills — always visible in expanded state */}
-                    {PILLS.map(({ key, label }) => (
-                      <button
-                        key={key}
-                        type="button"
-                        onClick={() => setSelectedMode(selectedMode === key ? null : key)}
-                        style={{
-                          flexShrink: 0, padding: '3px 8px', borderRadius: 6, border: 'none',
-                          background: selectedMode === key ? 'oklch(0.62 0.18 35 / 0.12)' : 'transparent',
-                          color: selectedMode === key ? 'var(--ember)' : 'rgba(255,255,255,0.22)',
-                          fontFamily: '"JetBrains Mono", monospace', fontSize: '0.65rem',
-                          letterSpacing: '0.04em', cursor: 'pointer',
-                          transition: 'color .15s, background .15s', whiteSpace: 'nowrap',
-                        }}
-                      >
-                        {label}
-                      </button>
-                    ))}
-
                     {/* Status dots */}
                     <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
                       <span style={{ display: 'inline-flex', gap: 4 }}>
