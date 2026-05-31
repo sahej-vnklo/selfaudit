@@ -1270,14 +1270,10 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
     // Auto-activate session if not active yet
     if (!sessionActive) setSessionActive(true)
 
-    // Check if current output is structured (used for session log + render decisions)
-    const checkStructured = (text) =>
-      /DIAGNOSIS|ROOT CAUSE|GOAL GAP ANALYSIS|ANSWER\n|SOLUTIONS\n|IMPACT ASSESSMENT|THE REAL QUESTION|MEMORY CONTEXT|NEXT MOVES|IMMEDIATE ACTIONS|QUICK ACTIONS/.test(text || '')
-    // Save the completed turn to session log only if it has meaningful structured output
-    const wasStructured = checkStructured(agentXStream) || checkStructured(agentYStream)
-    if (wasStructured) {
+    // Save ALL completed turns to session log so history persists between messages
+    if (agentXStream || agentYStream) {
       setSessionLog((prev) => [...prev, {
-        query:   dualHistory[dualHistory.length - 2]?.content || q,
+        query:   q,
         xOutput: agentXStream,
         yOutput: agentYStream,
         mode:    currentMode?.mode || 'diagnose',
@@ -1782,10 +1778,6 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                     </section>
                   </>
                 ) : (() => {
-                  // Detect if output is structured (terminal) vs conversational (plain)
-                  const isStructuredOutput = (text) =>
-                    /DIAGNOSIS|ROOT CAUSE|GOAL GAP ANALYSIS|ANSWER\n|SOLUTIONS\n|IMPACT ASSESSMENT|THE REAL QUESTION|MEMORY CONTEXT|NEXT MOVES|IMMEDIATE ACTIONS|QUICK ACTIONS/.test(text || '')
-
                   // Terminal line renderer — applies color by content type
                   const renderTerminalLines = (text, accentColor = '#4ade80') => {
                     if (!text) return null
@@ -1860,52 +1852,35 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                               </span>
                             </div>
                           </header>
-                          {/* Card body — terminal or plain based on output type */}
-                          {(() => {
-                            const isTerminal = isStructuredOutput(agentXStream)
-                            const isConversationalMode = currentMode?.mode === 'conversational'
-
-                            if (!agentXStream && agentState === 'idle') {
-                              return (
-                                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-                                  <div style={{ color: 'rgba(74,222,128,0.2)', fontFamily: '"JetBrains Mono", monospace', fontSize: '0.68rem', textAlign: 'center' }}>
-                                    <div>{'> AGENT_X // STANDBY'}</div>
-                                  </div>
+                          {/* Agent X terminal — always dark container */}
+                          <div style={{ flex: 1, padding: '10px 12px 12px', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                            <div
+                              ref={agentXScrollRef}
+                              style={{ flex: 1, overflow: 'auto', minHeight: 0, background: 'rgba(0,0,0,0.35)', border: '1px solid rgba(74,222,128,0.1)', borderRadius: 8, padding: '14px 16px', fontFamily: '"JetBrains Mono", ui-monospace, monospace', fontSize: '0.72rem', lineHeight: 1.85, wordBreak: 'break-word' }}
+                            >
+                              {/* Past turns — compact history */}
+                              {sessionLog.map((turn, i) => (
+                                <div key={i} style={{ marginBottom: 10, paddingBottom: 10, borderBottom: '1px solid rgba(74,222,128,0.08)', opacity: 0.5 }}>
+                                  <div style={{ color: 'rgba(74,222,128,0.5)', fontSize: '0.6rem', marginBottom: 4, letterSpacing: '0.08em' }}>[{turn.label}] {String(turn.query || '').slice(0, 60)}</div>
+                                  {renderTerminalLines(String(turn.xOutput || '').split('\n').slice(0, 4).join('\n'), '#4ade80')}
+                                  {(turn.xOutput || '').split('\n').length > 4 && <div style={{ color: 'rgba(74,222,128,0.3)' }}>…</div>}
                                 </div>
-                              )
-                            }
-
-                            if (agentState === 'planning') {
-                              return (
-                                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-                                  <div style={{ color: 'rgba(74,222,128,0.5)', fontFamily: '"JetBrains Mono", monospace', fontSize: '0.72rem' }}>
-                                    {'> routing'}<span style={{ animation: 'termBlink 1s step-end infinite' }}>█</span>
-                                  </div>
-                                </div>
-                              )
-                            }
-
-                            if (isTerminal) {
-                              // Structured output → terminal render
-                              return (
-                                <div style={{ flex: 1, padding: '10px 12px 12px', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-                                  <div ref={agentXScrollRef} style={{ flex: 1, overflow: 'auto', minHeight: 0, background: 'rgba(0,0,0,0.35)', border: '1px solid rgba(74,222,128,0.1)', borderRadius: 8, padding: '14px 16px', fontFamily: '"JetBrains Mono", ui-monospace, monospace', fontSize: '0.72rem', lineHeight: 1.85, wordBreak: 'break-word' }}>
-                                    {renderTerminalLines(agentXStream, '#4ade80')}
-                                    {xActive && <span style={{ color: '#4ade80', opacity: 0.8 }}>█</span>}
-                                    {agentState === 'error' && agentError && <div style={{ color: '#ff6b6b' }}>{'> ERROR: '}{agentError}</div>}
-                                  </div>
-                                </div>
-                              )
-                            }
-
-                            // Conversational / gathering → plain readable text
-                            return (
-                              <div ref={agentXScrollRef} style={{ flex: 1, overflow: 'auto', padding: '20px 24px', fontSize: '0.88rem', lineHeight: 1.75, color: 'var(--fg)', wordBreak: 'break-word' }}>
-                                {agentXStream}
-                                {xActive && <span style={{ opacity: 0.5 }}>▌</span>}
-                              </div>
-                            )
-                          })()}
+                              ))}
+                              {/* Current state */}
+                              {agentState === 'idle' && !agentXStream && (
+                                <div style={{ color: 'rgba(74,222,128,0.2)' }}>{'> AGENT_X // STANDBY'}</div>
+                              )}
+                              {agentState === 'planning' && !agentXStream && (
+                                <div style={{ color: 'rgba(74,222,128,0.5)' }}>{'> routing'}<span style={{ animation: 'termBlink 1s step-end infinite', color: '#4ade80' }}>█</span></div>
+                              )}
+                              {agentXStream.length > 0 && agentState === 'agent_x' && agentXStream.length < 10 && (
+                                <div style={{ color: 'rgba(74,222,128,0.5)', marginBottom: 8 }}>{'> AGENT_X // DIAGNOSTIC_ENGINE'}</div>
+                              )}
+                              {renderTerminalLines(agentXStream, '#4ade80')}
+                              {xActive && agentXStream && <span style={{ color: '#4ade80', opacity: 0.8 }}>█</span>}
+                              {agentState === 'error' && agentError && <div style={{ color: '#ff6b6b' }}>{'> ERROR: '}{agentError}</div>}
+                            </div>
+                          </div>
                         </section>
 
                         {/* Agent Y — Solution terminal */}
@@ -1933,61 +1908,42 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                               </span>
                             </div>
                           </header>
-                          {/* Agent Y body */}
-                          {(() => {
-                            const isTerminalY = isStructuredOutput(agentYStream)
-
-                            if (!agentYStream && agentState === 'idle') {
-                              return (
-                                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-                                  <div style={{ color: 'rgba(251,146,60,0.2)', fontFamily: '"JetBrains Mono", monospace', fontSize: '0.68rem', textAlign: 'center' }}>
-                                    <div>{'> AGENT_Y // STANDBY'}</div>
-                                  </div>
+                          {/* Agent Y terminal — always dark container */}
+                          <div style={{ flex: 1, padding: '10px 12px 12px', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                            <div
+                              ref={agentYScrollRef}
+                              style={{ flex: 1, overflow: 'auto', minHeight: 0, background: 'rgba(0,0,0,0.35)', border: '1px solid rgba(251,146,60,0.1)', borderRadius: 8, padding: '14px 16px', fontFamily: '"JetBrains Mono", ui-monospace, monospace', fontSize: '0.72rem', lineHeight: 1.85, wordBreak: 'break-word' }}
+                            >
+                              {/* Past turns — compact history */}
+                              {sessionLog.map((turn, i) => (
+                                <div key={i} style={{ marginBottom: 10, paddingBottom: 10, borderBottom: '1px solid rgba(251,146,60,0.08)', opacity: 0.5 }}>
+                                  <div style={{ color: 'rgba(251,146,60,0.5)', fontSize: '0.6rem', marginBottom: 4, letterSpacing: '0.08em' }}>[{turn.yLabel}] {String(turn.query || '').slice(0, 60)}</div>
+                                  {turn.yOutput && turn.yOutput !== '__gathering__'
+                                    ? renderTerminalLines(String(turn.yOutput).split('\n').slice(0, 4).join('\n'), '#fb923c')
+                                    : <div style={{ color: 'rgba(251,146,60,0.3)' }}>{'> gathering context...'}</div>}
+                                  {(turn.yOutput || '').split('\n').length > 4 && <div style={{ color: 'rgba(251,146,60,0.3)' }}>…</div>}
                                 </div>
-                              )
-                            }
-
-                            if (agentState === 'planning' || (agentState === 'agent_x' && !agentYStream)) {
-                              return (
-                                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-                                  <div style={{ color: 'rgba(251,146,60,0.3)', fontFamily: '"JetBrains Mono", monospace', fontSize: '0.68rem', textAlign: 'center' }}>
-                                    {'> waiting for Agent X'}
-                                  </div>
+                              ))}
+                              {/* Current state */}
+                              {agentState === 'idle' && !agentYStream && (
+                                <div style={{ color: 'rgba(251,146,60,0.2)' }}>{'> AGENT_Y // STANDBY'}</div>
+                              )}
+                              {(agentState === 'planning' || agentState === 'agent_x') && !agentYStream && (
+                                <div style={{ color: 'rgba(251,146,60,0.3)' }}>{'> waiting for Agent X...'}</div>
+                              )}
+                              {agentState === 'complete' && !agentYStream && agentYDone && (
+                                <div style={{ color: 'rgba(251,146,60,0.4)' }}>
+                                  <div>{'> AGENT_Y // STANDING BY'}</div>
+                                  <div style={{ marginTop: 6, opacity: 0.7 }}>{'> Reply to Agent X to continue'}</div>
                                 </div>
-                              )
-                            }
-
-                            // Gathering phase — Agent X asked a question, Y waiting
-                            if (agentState === 'complete' && !agentYStream && agentYDone) {
-                              return (
-                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24, gap: 8 }}>
-                                  <div style={{ color: 'rgba(251,146,60,0.4)', fontFamily: '"JetBrains Mono", monospace', fontSize: '0.68rem', textAlign: 'center' }}>
-                                    <div>{'> AGENT_Y // STANDING BY'}</div>
-                                    <div style={{ marginTop: 8, opacity: 0.7 }}>{'> Reply to Agent X to continue'}</div>
-                                  </div>
-                                </div>
-                              )
-                            }
-
-                            if (isTerminalY) {
-                              return (
-                                <div style={{ flex: 1, padding: '10px 12px 12px', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-                                  <div ref={agentYScrollRef} style={{ flex: 1, overflow: 'auto', minHeight: 0, background: 'rgba(0,0,0,0.35)', border: '1px solid rgba(251,146,60,0.1)', borderRadius: 8, padding: '14px 16px', fontFamily: '"JetBrains Mono", ui-monospace, monospace', fontSize: '0.72rem', lineHeight: 1.85, wordBreak: 'break-word' }}>
-                                    {renderTerminalLines(agentYStream, '#fb923c')}
-                                    {yActive && <span style={{ color: '#fb923c', opacity: 0.8 }}>█</span>}
-                                  </div>
-                                </div>
-                              )
-                            }
-
-                            // Plain text (conversational reply or short response)
-                            return (
-                              <div ref={agentYScrollRef} style={{ flex: 1, overflow: 'auto', padding: '20px 24px', fontSize: '0.88rem', lineHeight: 1.75, color: 'var(--fg)', wordBreak: 'break-word' }}>
-                                {agentYStream}
-                                {yActive && <span style={{ opacity: 0.5 }}>▌</span>}
-                              </div>
-                            )
-                          })()}
+                              )}
+                              {agentYStream.length > 0 && agentState === 'agent_y' && agentYStream.length < 10 && (
+                                <div style={{ color: 'rgba(251,146,60,0.5)', marginBottom: 8 }}>{'> AGENT_Y // SOLUTION_ENGINE'}</div>
+                              )}
+                              {renderTerminalLines(agentYStream, '#fb923c')}
+                              {yActive && agentYStream && <span style={{ color: '#fb923c', opacity: 0.8 }}>█</span>}
+                            </div>
+                          </div>
                         </section>
                       </>
                     )
