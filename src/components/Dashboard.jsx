@@ -1228,8 +1228,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
   const activateSession = () => {
     resetSession()
     setSessionActive(true)
-    setCmdInput('')
-    // Focus the input after a tick
+    // Do NOT clear cmdInput — user may have typed something already
     setTimeout(() => {
       document.querySelector('.dash-cmd-input')?.focus()
     }, 50)
@@ -1238,6 +1237,9 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
   const submitDualAgent = async () => {
     const q = cmdInput.trim()
     if (!q || agentState === 'planning' || agentState === 'agent_x' || agentState === 'agent_y') return
+
+    // Auto-activate session if not active yet
+    if (!sessionActive) setSessionActive(true)
 
     setCmdInput('')
     setAgentState('planning')
@@ -1654,8 +1656,8 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                     </section>
                   </>
                 ) : (() => {
-                  // When a session is active, show terminal mode
-                  if (sessionActive) {
+                  // Show terminal mode when session is active or engines are running
+                  if (sessionActive || agentState !== 'idle') {
                     const xActive   = agentState === 'agent_x' || agentState === 'planning'
                     const yActive   = agentState === 'agent_y'
                     const xComplete = agentXDone
@@ -1886,8 +1888,8 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault()
-                      if (!sessionActive) activateSession()
-                      else submitDualAgent()
+                      if (cmdInput.trim()) submitDualAgent()
+                      else if (!sessionActive) activateSession()
                     }
                   }}
                   placeholder={
@@ -1905,8 +1907,8 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                   aria-label="Send"
                   disabled={!cmdInput.trim() || agentState === 'planning' || agentState === 'agent_x' || agentState === 'agent_y'}
                   onClick={() => {
-                    if (!sessionActive) { activateSession(); return }
-                    submitDualAgent()
+                    if (cmdInput.trim()) submitDualAgent()
+                    else if (!sessionActive) activateSession()
                   }}
                 >
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
