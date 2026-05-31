@@ -64,7 +64,7 @@ function toMonthlyAmount(sub) {
 }
 
 export async function fetchStripeBusinessState(userId, integrations) {
-  const apiKey = integrations?.stripe?.api_key
+  const apiKey = integrations?.stripe?.access_token
   if (!apiKey) return null
 
   const thirtyDaysAgo = Math.floor((Date.now() - 30 * 24 * 60 * 60 * 1000) / 1000)
@@ -104,6 +104,7 @@ export async function fetchStripeBusinessState(userId, integrations) {
     sb.from('profiles')
       .update({ integrations: { ...integrations, stripe: { ...integrations.stripe, last_synced_at: new Date().toISOString() } } })
       .eq('id', userId)
+      .then(() => {})
       .then(() => {})
       .catch(() => {})
 

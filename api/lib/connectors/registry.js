@@ -23,7 +23,7 @@ export const CONNECTOR_REGISTRY = [
     name:        'Stripe',
     category:    'Revenue',
     status:      'available',
-    auth_type:   'api_key',
+    auth_type:   'oauth',
     description: 'Connect revenue, churn, and subscription data for financial health analysis.',
     data_types:  ['mrr', 'churn_rate', 'subscriptions', 'refunds', 'ltv'],
     intelligence_use_cases: [

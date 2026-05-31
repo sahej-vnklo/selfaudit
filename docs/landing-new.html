@@ -1,0 +1,1808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SelfAudit - Strategic Intelligence for SMBs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --bg-2: #11100f;
+      --panel: rgba(19, 18, 18, 0.72);
+      --panel-strong: rgba(22, 20, 20, 0.92);
+      --line: rgba(255, 255, 255, 0.1);
+      --line-strong: rgba(255, 255, 255, 0.18);
+      --text: #f5f5f0;
+      --text-soft: #cbc7be;
+      --text-muted: #9a968d;
+      --text-faint: #66625b;
+      --accent: #c94d4d;
+      --accent-deep: #9f3f3f;
+      --amber: #cf8a42;
+      --shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+      --serif: "Crimson Pro", Georgia, serif;
+      --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --mono: "JetBrains Mono", "SFMono-Regular", monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--sans);
+      color: var(--text);
+      background:
+        radial-gradient(circle at 50% 20%, rgba(201, 77, 77, 0.14), transparent 26%),
+        radial-gradient(circle at 50% 82%, rgba(201, 77, 77, 0.12), transparent 24%),
+        linear-gradient(180deg, #090909 0%, #0b0b0b 50%, #080808 100%);
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: -3;
+    }
+
+    body::before {
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+      background-size: 72px 72px;
+      opacity: 0.2;
+    }
+
+    body::after {
+      background:
+        radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.04), transparent 28%),
+        radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.03), transparent 24%),
+        radial-gradient(circle at 60% 75%, rgba(201, 77, 77, 0.06), transparent 22%);
+      animation: drift 18s linear infinite alternate;
+      opacity: 0.85;
+    }
+
+    @keyframes drift {
+      from { transform: translate3d(0, 0, 0) scale(1); }
+      to { transform: translate3d(0, -18px, 0) scale(1.02); }
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .wrap {
+      width: min(1240px, calc(100vw - 48px));
+      margin: 0 auto;
+    }
+
+    .wrap.narrow {
+      width: min(900px, calc(100vw - 48px));
+    }
+
+    .eyebrow {
+      font-family: var(--mono);
+      font-size: 11px;
+      line-height: 1.4;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(18px);
+      background: rgba(10, 10, 10, 0.66);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .nav-inner {
+      width: min(1280px, calc(100vw - 40px));
+      margin: 0 auto;
+      padding: 18px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: var(--serif);
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+    }
+
+    .logo-mark {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 20px rgba(201, 77, 77, 0.8);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+    }
+
+    .nav-link {
+      font-size: 13px;
+      color: var(--text-muted);
+      transition: color 180ms ease;
+    }
+
+    .nav-link:hover {
+      color: var(--text);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      border-radius: 999px;
+      padding: 15px 24px;
+      border: 1px solid transparent;
+      transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, color 180ms ease;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: linear-gradient(180deg, #d35c5c 0%, #b94646 100%);
+      color: var(--text);
+      box-shadow: 0 18px 36px rgba(201, 77, 77, 0.22);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      border-color: rgba(255, 255, 255, 0.12);
+      color: var(--text-soft);
+    }
+
+    .btn-secondary:hover {
+      border-color: rgba(255, 255, 255, 0.2);
+      color: var(--text);
+    }
+
+    .btn-ghost {
+      border-color: rgba(201, 77, 77, 0.35);
+      color: var(--text);
+      background: rgba(201, 77, 77, 0.08);
+    }
+
+    .hero-shell {
+      padding: 34px 0 0;
+    }
+
+    .narrative {
+      display: grid;
+      grid-template-columns: minmax(330px, 450px) minmax(520px, 1fr);
+      gap: 40px;
+      align-items: start;
+      min-height: 100vh;
+      padding: 38px 0 120px;
+    }
+
+    .hero-copy {
+      position: sticky;
+      top: 106px;
+      align-self: start;
+    }
+
+    .hero-copy {
+      padding-top: 42px;
+    }
+
+    .hero-copy h1 {
+      font-family: var(--serif);
+      font-size: clamp(54px, 5vw, 92px);
+      line-height: 0.96;
+      letter-spacing: -0.045em;
+      font-weight: 600;
+      margin-top: 18px;
+    }
+
+    .hero-copy h1 + h1 {
+      margin-top: 6px;
+    }
+
+    .hero-copy .accent {
+      color: var(--accent);
+      font-style: italic;
+    }
+
+    .hero-authority {
+      font-family: var(--serif);
+      font-size: clamp(24px, 2vw, 30px);
+      line-height: 1.2;
+      color: var(--text-soft);
+      margin: 32px 0 24px;
+    }
+
+    .hero-description {
+      max-width: 36ch;
+      color: var(--text-muted);
+      font-size: 17px;
+      line-height: 1.75;
+    }
+
+    .hero-cta {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-top: 30px;
+    }
+
+    .hero-footnote {
+      margin-top: 20px;
+      color: var(--text-faint);
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .hero-scroll {
+      margin-top: 70px;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      color: var(--text-faint);
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .scroll-pill {
+      width: 28px;
+      height: 48px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 999px;
+      display: flex;
+      justify-content: center;
+      padding-top: 8px;
+    }
+
+    .scroll-pill::before {
+      content: "";
+      width: 5px;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 16px rgba(201, 77, 77, 0.75);
+      animation: scrollDot 1.6s ease-in-out infinite;
+    }
+
+    @keyframes scrollDot {
+      0%, 100% { transform: translateY(0); opacity: 0.5; }
+      50% { transform: translateY(12px); opacity: 1; }
+    }
+
+    .sticky-stage {
+      position: sticky;
+      top: 92px;
+      height: calc(100vh - 110px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      grid-column: 2;
+      grid-row: 1;
+    }
+
+    .cube-stage {
+      position: relative;
+      width: min(52vw, 700px);
+      aspect-ratio: 1 / 1.02;
+      overflow: hidden;
+      border-radius: 4px;
+    }
+
+    #heroCanvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Palantir CRT scanlines overlay */
+    .cube-stage::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.12) 2px,
+        rgba(0, 0, 0, 0.12) 4px
+      );
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* Vignette */
+    .cube-stage::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(0,0,0,0.55) 100%);
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    .stats-flash {
+      position: absolute;
+      top: 4%;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      display: flex;
+      gap: 18px;
+      padding: 10px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(13, 13, 13, 0.54);
+      border-radius: 999px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+      opacity: 0;
+      transition: opacity 280ms ease;
+      pointer-events: none;
+    }
+
+    .stats-flash.visible {
+      opacity: 1;
+    }
+
+    .stats-flash span {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .cube-shell {
+      position: absolute;
+      inset: 5%;
+      transition: transform 700ms cubic-bezier(0.2, 0.7, 0.2, 1), filter 600ms ease;
+      transform-style: preserve-3d;
+    }
+
+    .cube-glow {
+      position: absolute;
+      inset: 18% 22% 8%;
+      background:
+        radial-gradient(circle at 50% 52%, rgba(201, 77, 77, 0.36), transparent 22%),
+        radial-gradient(circle at 50% 84%, rgba(201, 77, 77, 0.22), transparent 24%);
+      filter: blur(34px);
+      opacity: 0.9;
+    }
+
+    .cube-frame {
+      position: absolute;
+      width: 58%;
+      height: 76%;
+      border: 1px solid rgba(255, 255, 255, 0.24);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 16%, transparent 84%, rgba(255, 255, 255, 0.02)),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02), transparent 12%, transparent 88%, rgba(255, 255, 255, 0.02));
+      box-shadow:
+        inset 0 0 40px rgba(255, 255, 255, 0.02),
+        0 0 34px rgba(201, 77, 77, 0.06);
+      backdrop-filter: blur(2px);
+    }
+
+    .cube-frame.back {
+      top: 8%;
+      left: 23%;
+    }
+
+    .cube-frame.front {
+      top: 18%;
+      left: 11%;
+    }
+
+    .cube-edge {
+      position: absolute;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.08));
+      transform-origin: left center;
+      box-shadow: 0 0 16px rgba(255, 255, 255, 0.04);
+    }
+
+    .edge-tl {
+      top: 18%;
+      left: 11%;
+      width: 16%;
+      transform: rotate(-35deg);
+    }
+
+    .edge-tr {
+      top: 18%;
+      left: 69%;
+      width: 16%;
+      transform: rotate(36deg);
+    }
+
+    .edge-bl {
+      top: 94%;
+      left: 11%;
+      width: 16%;
+      transform: rotate(35deg);
+    }
+
+    .edge-br {
+      top: 94%;
+      left: 69%;
+      width: 16%;
+      transform: rotate(-36deg);
+    }
+
+    .cube-core {
+      position: absolute;
+      left: 50%;
+      top: 15%;
+      width: 2px;
+      height: 68%;
+      transform: translateX(-50%);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(201, 77, 77, 0.92), rgba(255, 255, 255, 0.2));
+      box-shadow: 0 0 28px rgba(201, 77, 77, 0.68);
+      z-index: 4;
+    }
+
+    .cube-core::before,
+    .cube-core::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 20px;
+      height: 20px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.95), rgba(201, 77, 77, 0.9) 42%, rgba(201, 77, 77, 0.12) 72%, transparent 100%);
+      box-shadow: 0 0 32px rgba(201, 77, 77, 0.82);
+    }
+
+    .cube-core::before {
+      top: 43%;
+    }
+
+    .cube-core::after {
+      bottom: 6%;
+    }
+
+    .layer-stack {
+      position: absolute;
+      inset: 0;
+    }
+
+    .cube-layer {
+      position: absolute;
+      width: 48%;
+      height: 8%;
+      left: 16%;
+      border: 1px solid rgba(255, 255, 255, 0.42);
+      border-radius: 6px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.015)),
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.04) 0 1px, transparent 1px 30px),
+        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.04) 0 1px, transparent 1px 26px);
+      box-shadow:
+        inset 0 0 40px rgba(255, 255, 255, 0.025),
+        0 0 24px rgba(255, 255, 255, 0.06);
+      transition:
+        transform 650ms cubic-bezier(0.2, 0.7, 0.2, 1),
+        opacity 400ms ease,
+        filter 450ms ease,
+        box-shadow 450ms ease,
+        border-color 450ms ease;
+      opacity: 0.82;
+      overflow: hidden;
+      transform: skewX(-28deg);
+    }
+
+    .cube-layer::before {
+      content: "";
+      position: absolute;
+      inset: 14% 18%;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow:
+        0 0 20px rgba(201, 77, 77, 0.14),
+        inset 0 0 18px rgba(201, 77, 77, 0.08);
+    }
+
+    .cube-layer::after {
+      content: "";
+      position: absolute;
+      left: 4%;
+      right: -2%;
+      bottom: -18%;
+      height: 26%;
+      transform: skewX(-52deg);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(201, 77, 77, 0.08));
+      opacity: 0.45;
+      transition: opacity 450ms ease;
+    }
+
+    .cube-layer.active {
+      opacity: 1;
+      border-color: rgba(220, 130, 130, 0.88);
+      box-shadow:
+        inset 0 0 52px rgba(201, 77, 77, 0.18),
+        0 0 42px rgba(201, 77, 77, 0.38),
+        0 0 100px rgba(201, 77, 77, 0.15);
+      filter: saturate(1.18);
+      animation: pulse 2.8s ease-in-out infinite;
+    }
+
+    .cube-layer.dimmed {
+      opacity: 0.42;
+      filter: blur(0.2px);
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: skewX(-28deg) scale(1); }
+      50% { transform: skewX(-28deg) scale(1.015); }
+    }
+
+    .layer-1 { top: 20%; left: 22%; }
+    .layer-2 { top: 30%; left: 20%; }
+    .layer-3 { top: 40%; left: 18%; }
+    .layer-4 { top: 50%; left: 16%; }
+    .layer-5 { top: 60%; left: 14%; }
+    .layer-6 { top: 70%; left: 12%; }
+
+    .layer-labels {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .layer-label {
+      position: absolute;
+      left: 70%;
+      transform: translateX(28px);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      opacity: 0;
+      transition: opacity 300ms ease;
+    }
+
+    .layer-label.visible {
+      opacity: 1;
+    }
+
+    .layer-label::before {
+      content: "";
+      width: 30px;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .label-chip {
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: rgba(15, 15, 15, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+      box-shadow: var(--shadow);
+      white-space: nowrap;
+    }
+
+    .label-1 { top: 21%; }
+    .label-2 { top: 31%; }
+    .label-3 { top: 41%; }
+    .label-4 { top: 51%; }
+    .label-5 { top: 61%; }
+    .label-6 { top: 71%; }
+
+    .cube-floor {
+      position: absolute;
+      bottom: -4%;
+      left: 6%;
+      width: 88%;
+      height: 18%;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at center, rgba(201, 77, 77, 0.34), transparent 32%),
+        radial-gradient(circle at center, rgba(201, 77, 77, 0.1), transparent 56%);
+      filter: blur(12px);
+      opacity: 0.9;
+    }
+
+    .particles {
+      position: absolute;
+      inset: 12%;
+      overflow: hidden;
+    }
+
+    .particles span {
+      position: absolute;
+      width: 3px;
+      height: 3px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.72);
+      box-shadow: 0 0 12px rgba(201, 77, 77, 0.56);
+      animation: floatUp linear infinite;
+    }
+
+    .particles span:nth-child(3n) {
+      background: rgba(201, 77, 77, 0.88);
+    }
+
+    @keyframes floatUp {
+      from {
+        transform: translate3d(0, 40px, 0) scale(0.6);
+        opacity: 0;
+      }
+      20% { opacity: 0.8; }
+      100% {
+        transform: translate3d(0, -220px, 0) scale(1);
+        opacity: 0;
+      }
+    }
+
+    .scene-track {
+      display: grid;
+      gap: 56vh;
+      padding-top: 8vh;
+      padding-bottom: 24vh;
+      grid-column: 1 / -1;
+      pointer-events: none;
+    }
+
+    .scene-marker {
+      min-height: 52vh;
+      opacity: 0;
+    }
+
+    .section {
+      position: relative;
+      padding: 120px 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .section-header {
+      margin-bottom: 48px;
+    }
+
+    .section-title {
+      font-family: var(--serif);
+      font-size: clamp(40px, 5vw, 74px);
+      line-height: 0.98;
+      letter-spacing: -0.045em;
+      margin-top: 16px;
+    }
+
+    .section-title .accent {
+      color: var(--accent);
+      font-style: italic;
+    }
+
+    .section-sub {
+      margin-top: 18px;
+      max-width: 720px;
+      color: var(--text-muted);
+      font-size: 18px;
+      line-height: 1.75;
+    }
+
+    .compound-grid {
+      display: grid;
+      grid-template-columns: 0.95fr 1.2fr;
+      gap: 40px;
+      align-items: end;
+    }
+
+    .compound-notes {
+      display: grid;
+      gap: 18px;
+    }
+
+    .note-card {
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 18px;
+      padding: 22px 22px 20px;
+      background: rgba(15, 15, 15, 0.58);
+    }
+
+    .note-card .note-day {
+      color: var(--accent);
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .note-card p {
+      color: var(--text-soft);
+      font-size: 16px;
+      line-height: 1.7;
+    }
+
+    .chart-panel {
+      position: relative;
+      min-height: 420px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 28px;
+      overflow: hidden;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0)),
+        rgba(15, 15, 15, 0.64);
+    }
+
+    .chart-grid {
+      position: absolute;
+      inset: 24px;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+      background-size: calc(100% / 4) calc(100% / 4);
+      opacity: 0.35;
+    }
+
+    .chart-svg {
+      position: absolute;
+      inset: 28px 24px 44px;
+      width: calc(100% - 48px);
+      height: calc(100% - 72px);
+    }
+
+    .chart-labels {
+      position: absolute;
+      left: 24px;
+      right: 24px;
+      bottom: 18px;
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-faint);
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+    }
+
+    .comparison-card {
+      padding: 28px 24px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(14, 14, 14, 0.7);
+      min-height: 240px;
+    }
+
+    .comparison-card.highlight {
+      border-color: rgba(201, 77, 77, 0.35);
+      background:
+        linear-gradient(180deg, rgba(201, 77, 77, 0.14), rgba(201, 77, 77, 0.04)),
+        rgba(18, 14, 14, 0.86);
+      box-shadow: 0 24px 60px rgba(201, 77, 77, 0.15);
+    }
+
+    .comparison-card .label,
+    .diag-card .meta,
+    .faq-q,
+    .price-kicker,
+    .lane-kicker {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .comparison-card .label {
+      color: var(--text-faint);
+      margin-bottom: 18px;
+    }
+
+    .comparison-card .price {
+      font-family: var(--serif);
+      font-size: 54px;
+      line-height: 0.95;
+      letter-spacing: -0.04em;
+      margin-bottom: 14px;
+    }
+
+    .comparison-card p {
+      color: var(--text-muted);
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    .comparison-card.highlight .price,
+    .comparison-card.highlight .label {
+      color: var(--accent);
+    }
+
+    .diagnoses-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+    }
+
+    .diag-card {
+      padding: 26px 22px 22px;
+      border-radius: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(15, 15, 15, 0.72);
+      min-height: 300px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .diag-card .meta {
+      color: var(--text-faint);
+      margin-bottom: 18px;
+    }
+
+    .diag-card .meta span {
+      color: var(--accent);
+    }
+
+    .diag-card blockquote {
+      font-family: var(--serif);
+      font-size: 31px;
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+      margin-bottom: 22px;
+    }
+
+    .diag-card p {
+      margin-top: auto;
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1.75;
+    }
+
+    .diag-card p strong {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .faq-list {
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .faq-item {
+      padding: 28px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .faq-q {
+      color: var(--text-soft);
+      margin-bottom: 12px;
+    }
+
+    .faq-item h3 {
+      font-family: var(--serif);
+      font-size: 28px;
+      letter-spacing: -0.03em;
+      margin-bottom: 10px;
+    }
+
+    .faq-item p {
+      max-width: 760px;
+      color: var(--text-muted);
+      font-size: 16px;
+      line-height: 1.8;
+    }
+
+    .security-line {
+      margin-top: 20px;
+      padding: 18px 20px;
+      border-radius: 16px;
+      border: 1px solid rgba(201, 77, 77, 0.18);
+      background: rgba(201, 77, 77, 0.05);
+      color: var(--text-soft);
+      font-size: 15px;
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      align-items: stretch;
+    }
+
+    .price-card {
+      border-radius: 26px;
+      padding: 34px 30px 30px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(14, 14, 14, 0.72);
+      display: flex;
+      flex-direction: column;
+      min-height: 520px;
+    }
+
+    .price-card.featured {
+      background:
+        linear-gradient(180deg, rgba(201, 77, 77, 0.12), rgba(201, 77, 77, 0.03)),
+        rgba(15, 15, 15, 0.88);
+      border-color: rgba(201, 77, 77, 0.24);
+      box-shadow: 0 28px 60px rgba(201, 77, 77, 0.12);
+    }
+
+    .price-kicker {
+      color: var(--accent);
+      margin-bottom: 14px;
+    }
+
+    .price-card h3 {
+      font-family: var(--serif);
+      font-size: 44px;
+      letter-spacing: -0.04em;
+      margin-bottom: 8px;
+    }
+
+    .price-main {
+      font-family: var(--serif);
+      font-size: 68px;
+      letter-spacing: -0.05em;
+      line-height: 0.95;
+      margin-bottom: 16px;
+    }
+
+    .price-main span {
+      font-size: 20px;
+      color: var(--text-muted);
+    }
+
+    .price-card p {
+      color: var(--text-soft);
+      font-size: 16px;
+      line-height: 1.75;
+    }
+
+    .price-list {
+      list-style: none;
+      display: grid;
+      gap: 12px;
+      margin: 26px 0 30px;
+    }
+
+    .price-list li {
+      color: var(--text-muted);
+      padding-left: 20px;
+      position: relative;
+      font-size: 15px;
+    }
+
+    .price-list li::before {
+      content: "·";
+      position: absolute;
+      left: 6px;
+      color: var(--accent);
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .price-meta {
+      margin-top: auto;
+      color: var(--text-faint);
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .terrain {
+      position: relative;
+      min-height: 420px;
+      overflow: hidden;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      background:
+        radial-gradient(circle at 50% 88%, rgba(201, 77, 77, 0.32), transparent 18%),
+        linear-gradient(180deg, rgba(10, 10, 10, 0), rgba(10, 10, 10, 0.88));
+    }
+
+    .terrain::before,
+    .terrain::after {
+      content: "";
+      position: absolute;
+      bottom: -16%;
+      width: 68%;
+      height: 72%;
+      border-radius: 46% 54% 0 0 / 62% 58% 0 0;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.015)),
+        radial-gradient(circle at 50% 10%, rgba(201, 77, 77, 0.28), transparent 36%);
+      border-top: 1px solid rgba(255, 255, 255, 0.09);
+      filter: blur(0.4px);
+    }
+
+    .terrain::before {
+      left: -10%;
+      transform: rotate(-7deg);
+    }
+
+    .terrain::after {
+      right: -12%;
+      transform: rotate(7deg);
+    }
+
+    .terrain-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(201, 77, 77, 0.18) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(201, 77, 77, 0.14) 1px, transparent 1px);
+      background-size: 34px 18px;
+      mask-image: linear-gradient(180deg, transparent 10%, white 60%, white 100%);
+      opacity: 0.22;
+    }
+
+    .final-cta {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      padding: 120px 0 110px;
+    }
+
+    .final-cta h2 {
+      font-family: var(--serif);
+      font-size: clamp(52px, 6vw, 94px);
+      letter-spacing: -0.05em;
+      line-height: 0.96;
+      margin-bottom: 18px;
+    }
+
+    .final-cta p {
+      color: var(--text-soft);
+      font-size: 20px;
+      margin-bottom: 26px;
+    }
+
+    .footer {
+      padding: 42px 0 56px;
+    }
+
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .footer-meta {
+      color: var(--text-faint);
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 22px;
+      flex-wrap: wrap;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    .mobile-stage {
+      display: none;
+    }
+
+    @media (max-width: 1200px) {
+      .narrative {
+        grid-template-columns: 1fr;
+        gap: 30px;
+      }
+
+      .hero-copy,
+      .sticky-stage {
+        position: relative;
+        top: auto;
+      }
+
+      .hero-copy {
+        padding-top: 0;
+      }
+
+      .scene-track {
+        display: none;
+      }
+
+      .sticky-stage {
+        height: auto;
+        min-height: 660px;
+      }
+
+      .cube-stage {
+        width: min(78vw, 620px);
+      }
+
+      .mobile-stage {
+        display: block;
+      }
+
+      .compound-grid,
+      .comparison-grid,
+      .diagnoses-grid,
+      .pricing-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 820px) {
+      .nav-links .nav-link:nth-child(-n+3) {
+        display: none;
+      }
+
+      .wrap,
+      .wrap.narrow,
+      .nav-inner {
+        width: min(100vw - 28px, 1280px);
+      }
+
+      .hero-copy h1,
+      .section-title,
+      .final-cta h2 {
+        text-wrap: balance;
+      }
+
+      .hero-authority {
+        font-size: 22px;
+      }
+
+      .hero-description,
+      .section-sub,
+      .panel-description {
+        font-size: 16px;
+      }
+
+      .compound-grid,
+      .comparison-grid,
+      .diagnoses-grid,
+      .pricing-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .comparison-card,
+      .diag-card,
+      .price-card {
+        min-height: auto;
+      }
+
+      .cube-shell {
+        inset: 8%;
+      }
+
+      .layer-label {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="nav">
+    <div class="nav-inner">
+      <a class="logo" href="#top">
+        <span class="logo-mark"></span>
+        <span>SelfAudit</span>
+      </a>
+      <div class="nav-links">
+        <a class="nav-link" href="#product">Product</a>
+        <a class="nav-link" href="#how-it-works">How It Works</a>
+        <a class="nav-link" href="#pricing">Pricing</a>
+        <a class="nav-link" href="#signin">Sign In</a>
+        <a class="btn btn-primary" href="#begin">Begin the operation &rarr;</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero-shell" id="product">
+      <div class="wrap">
+        <div class="narrative">
+          <div class="hero-copy">
+            <div class="eyebrow">Strategic Intelligence for SMBs</div>
+            <h1>We kill your operational debt.</h1>
+            <h1><span class="accent">We engineer</span> your growth.</h1>
+            <p class="hero-authority">The first with the audacity to claim both. The first with the architecture to deliver it.</p>
+            <p class="hero-description">Six analytical loops, running inside your business, 24/7. What McKinsey, Palantir, and Bloomberg do for the Fortune 500 — embedded in every founder's business.</p>
+            <div class="hero-cta">
+              <a class="btn btn-primary" href="#begin">Begin the operation &rarr;</a>
+              <a class="btn btn-secondary" href="#how-it-works">See it think</a>
+            </div>
+            <div class="hero-footnote">Free first conversation · No account · Brutally honest</div>
+            <div class="hero-scroll">
+              <span>Scroll to descend</span>
+              <div class="scroll-pill"></div>
+            </div>
+          </div>
+
+          <div class="sticky-stage">
+            <div class="cube-stage" id="cubeStage">
+              <div class="stats-flash" id="statsFlash">
+                <span>6 loops</span>
+                <span>running in parallel</span>
+                <span>24/7</span>
+              </div>
+              <canvas id="heroCanvas"></canvas>
+              <div class="layer-labels">
+                <div class="layer-label label-1"><span class="label-chip">01 Reconnaissance</span></div>
+                <div class="layer-label label-2"><span class="label-chip">02 Diagnostic</span></div>
+                <div class="layer-label label-3"><span class="label-chip">03 Investigative</span></div>
+                <div class="layer-label label-4"><span class="label-chip">04 Synthesis</span></div>
+                <div class="layer-label label-5"><span class="label-chip">05 Memory</span></div>
+                <div class="layer-label label-6"><span class="label-chip">06 Feedback</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="scene-track" aria-hidden="true">
+            <div class="scene-marker" data-scene="1"></div>
+            <div class="scene-marker" data-scene="2"></div>
+            <div class="scene-marker" data-scene="3"></div>
+            <div class="scene-marker" data-scene="4"></div>
+            <div class="scene-marker" data-scene="5"></div>
+            <div class="scene-marker" data-scene="6"></div>
+            <div class="scene-marker" data-scene="7"></div>
+            <div class="scene-marker" data-scene="8"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="how-it-works">
+      <div class="wrap">
+        <div class="section-header">
+          <div class="eyebrow">Scene 09 - Compounding Clarity</div>
+          <h2 class="section-title">The longer it runs, the more <span class="accent">dangerous</span> the clarity gets.</h2>
+          <p class="section-sub">The cube recomposes. All six layers pulse in concert. Then the story shifts from architecture to compounding advantage: context today becomes leverage tomorrow.</p>
+        </div>
+        <div class="compound-grid">
+          <div class="compound-notes">
+            <div class="note-card">
+              <div class="note-day">Day 0</div>
+              <p>Free first audit names the obvious drag: where operational debt is already taxing momentum.</p>
+            </div>
+            <div class="note-card">
+              <div class="note-day">Day 30</div>
+              <p>Catches a margin leak your founder brain had normalized as seasonality.</p>
+            </div>
+            <div class="note-card">
+              <div class="note-day">Day 60</div>
+              <p>Questions a senior hire before the offer goes out. The role was compensating for an unresolved systems problem.</p>
+            </div>
+            <div class="note-card">
+              <div class="note-day">Day 90</div>
+              <p>Tells you what to do before you have finished framing the question. This is where compounding context starts to feel unfair.</p>
+            </div>
+          </div>
+          <div class="chart-panel">
+            <div class="chart-grid"></div>
+            <svg class="chart-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Compounding clarity chart">
+              <defs>
+                <linearGradient id="clarityFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="rgba(201,77,77,0.48)" />
+                  <stop offset="100%" stop-color="rgba(201,77,77,0.02)" />
+                </linearGradient>
+              </defs>
+              <path d="M 4 86 L 26 66 L 52 54 L 76 34 L 96 12 L 96 100 L 4 100 Z" fill="url(#clarityFill)"></path>
+              <path d="M 4 86 L 26 66 L 52 54 L 76 34 L 96 12" fill="none" stroke="#cf5d5d" stroke-width="1.6"></path>
+              <circle cx="4" cy="86" r="2.6" fill="#f5f5f0"></circle>
+              <circle cx="26" cy="66" r="2.6" fill="#f5f5f0"></circle>
+              <circle cx="52" cy="54" r="2.6" fill="#f5f5f0"></circle>
+              <circle cx="76" cy="34" r="2.6" fill="#f5f5f0"></circle>
+              <circle cx="96" cy="12" r="3.2" fill="#f5f5f0"></circle>
+            </svg>
+            <div class="chart-labels">
+              <span>Day 0</span>
+              <span>Day 30</span>
+              <span>Day 60</span>
+              <span>Day 90</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <div class="section-header">
+          <div class="eyebrow">Scene 10 - Price Weapon</div>
+          <h2 class="section-title">Strategic intelligence used to belong to the <span class="accent">Fortune 500</span>.</h2>
+          <p class="section-sub">McKinsey sells it in seven-figure engagements. Bloomberg rents part of it. Fractional operators approximate it with calendar time. SelfAudit puts the same category inside an SMB operating budget.</p>
+        </div>
+        <div class="comparison-grid">
+          <div class="comparison-card">
+            <div class="label">McKinsey</div>
+            <div class="price">$500K-$5M</div>
+            <p>Periodic strategic intelligence. Brilliant, expensive, and gone the moment the engagement ends.</p>
+          </div>
+          <div class="comparison-card">
+            <div class="label">Bloomberg</div>
+            <div class="price">$30K<span style="font-size:18px;color:var(--text-faint);">/yr</span></div>
+            <p>World-class market intelligence. It still does not know your customers, pipeline, margins, or stalled priorities.</p>
+          </div>
+          <div class="comparison-card">
+            <div class="label">Fractional COO</div>
+            <div class="price">$60K-$180K<span style="font-size:18px;color:var(--text-faint);">/yr</span></div>
+            <p>Human pattern recognition on a part-time schedule. Helpful, but bounded by hours, memory, and access.</p>
+          </div>
+          <div class="comparison-card highlight">
+            <div class="label">SelfAudit Cloud</div>
+            <div class="price">$1,188<span style="font-size:18px;color:var(--text);">/yr</span></div>
+            <p>Continuous strategic intelligence operation for SMBs. Always watching. Always diagnosing. Always getting sharper.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <div class="section-header">
+          <div class="eyebrow">Scene 11 - Real Diagnoses</div>
+          <h2 class="section-title">Not testimonials. <span class="accent">Verdicts.</span></h2>
+          <p class="section-sub">The point is not to flatter the founder. The point is to surface the sentence they needed and did not want.</p>
+        </div>
+        <div class="diagnoses-grid">
+          <article class="diag-card">
+            <div class="meta"><span>Critical</span> - Pipeline</div>
+            <blockquote>"You're burning $8,600/mo to maintain the illusion of pipeline activity."</blockquote>
+            <p><strong>Cancelled the agency.</strong> Conversion moved from 1.4% to 11.2% in 30 days.</p>
+          </article>
+          <article class="diag-card">
+            <div class="meta"><span>Critical</span> - Strategy</div>
+            <blockquote>"You built a SaaS no one asked for. Funding won't fix that. Revenue might."</blockquote>
+            <p><strong>20 discovery calls. 6 paid pilots.</strong> The business re-entered the market with evidence instead of hope.</p>
+          </article>
+          <article class="diag-card">
+            <div class="meta"><span>High</span> - Strategic Health</div>
+            <blockquote>"Your team isn't underperforming. They're solving last quarter's strategy."</blockquote>
+            <p><strong>OKRs rewritten in 48 hours.</strong> One re-anchor meeting put effort back on the right problem.</p>
+          </article>
+          <article class="diag-card">
+            <div class="meta"><span>High</span> - Pipeline Health</div>
+            <blockquote>"You don't have a sales problem. You have a positioning problem dressed up as one."</blockquote>
+            <p><strong>Inbound up 41% in 19 days.</strong> The fix was messaging, not more top-of-funnel noise.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <div class="section-header">
+          <div class="eyebrow">Operational Lanes</div>
+          <h2 class="section-title">Four lanes. One <span class="accent">brain.</span></h2>
+          <p class="section-sub">The six loops watch the same four parts of the business at all times. No handoff gaps. No organizational blind spots hiding between teams.</p>
+        </div>
+        <div class="comparison-grid">
+          <div class="comparison-card">
+            <div class="lane-kicker" style="color: var(--accent); margin-bottom: 14px;">Customer Health</div>
+            <p>Keep customers happy and supported. Watches ticket volume, resolution time, backlog, CSAT, repeat complaints, and churn-risk customers.</p>
+          </div>
+          <div class="comparison-card">
+            <div class="lane-kicker" style="color: var(--accent); margin-bottom: 14px;">Pipeline Health</div>
+            <p>Build pipeline that converts. Watches open deals, leads, conversion rate, deal velocity, sales cycle, and CAC.</p>
+          </div>
+          <div class="comparison-card">
+            <div class="lane-kicker" style="color: var(--accent); margin-bottom: 14px;">Financial Health</div>
+            <p>Protect cash, margins, and unit economics. Watches MRR, churn, burn, runway, LTV:CAC, and gross margin.</p>
+          </div>
+          <div class="comparison-card">
+            <div class="lane-kicker" style="color: var(--accent); margin-bottom: 14px;">Strategic Health</div>
+            <p>Move the company forward against goals. Watches goal progress, priority backlog, repeated blockers, and follow-through rate.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap narrow">
+        <div class="section-header">
+          <div class="eyebrow">Scene 12 - FAQ and Security</div>
+          <h2 class="section-title">The obvious questions, answered <span class="accent">without softening them.</span></h2>
+        </div>
+        <div class="faq-list">
+          <div class="faq-item">
+            <div class="faq-q">Question 01</div>
+            <h3>What makes this different from a chatbot?</h3>
+            <p>Chatbots wait for prompts. SelfAudit watches continuously, forms hypotheses, checks evidence, remembers context, and tells the founder what to do next.</p>
+          </div>
+          <div class="faq-item">
+            <div class="faq-q">Question 02</div>
+            <h3>Do I need connectors before it becomes useful?</h3>
+            <p>No. The free first audit starts with founder context. Connectors deepen the system over time, but the operation does not wait for perfect data hygiene to begin diagnosing.</p>
+          </div>
+          <div class="faq-item">
+            <div class="faq-q">Question 03</div>
+            <h3>Why only one cloud plan?</h3>
+            <p>Because the product is the operation. We are not gating the intelligence behind artificial tiers. Cloud is one complete system at one clear price.</p>
+          </div>
+          <div class="faq-item">
+            <div class="faq-q">Question 04</div>
+            <h3>When should someone buy Embedded instead?</h3>
+            <p>When the same engine must run inside their own network, satisfy regulated deployment requirements, or support custom integrations across a more complex estate.</p>
+          </div>
+          <div class="faq-item">
+            <div class="faq-q">Question 05</div>
+            <h3>Can I leave anytime?</h3>
+            <p>Yes. Cloud is month to month. Start with the free first audit, continue only if the operation earns the right to stay.</p>
+          </div>
+        </div>
+        <div class="security-line">Your data stays yours. SOC 2 in progress.</div>
+      </div>
+    </section>
+
+    <section class="section" id="pricing">
+      <div class="wrap">
+        <div class="section-header">
+          <div class="eyebrow">Scene 13 - Pricing</div>
+          <h2 class="section-title">Two ways in. One system. <span class="accent">No decoy tiers.</span></h2>
+          <p class="section-sub">Free first audit is the front door. Then the choice is simple: cloud for SMBs, embedded for environments where the same intelligence must live inside the customer's walls.</p>
+        </div>
+        <div class="pricing-grid">
+          <article class="price-card featured">
+            <div class="price-kicker">SelfAudit Cloud</div>
+            <h3>The full operation.</h3>
+            <div class="price-main">$99<span>/month</span></div>
+            <p>Everything included: unlimited audits, live connectors, compounding memory, weekly governance, Ask SelfAudit on-demand investigator, goal tracking, and execution outputs.</p>
+            <ul class="price-list">
+              <li>Unlimited audits</li>
+              <li>Live connectors</li>
+              <li>Compounding memory</li>
+              <li>Weekly governance</li>
+              <li>Ask SelfAudit investigator</li>
+              <li>Execution outputs and goal tracking</li>
+            </ul>
+            <a class="btn btn-primary" href="#begin">Begin the operation &rarr;</a>
+            <div class="price-meta">Cancel anytime · No card to start</div>
+          </article>
+          <article class="price-card">
+            <div class="price-kicker">SelfAudit Embedded</div>
+            <h3>The same engine, inside your network.</h3>
+            <div class="price-main">Call<span> for pricing</span></div>
+            <p>Air-gappable, compliance-ready, and built for regulated industries, multinationals, and PE portfolios that need the operation deployed on their own infrastructure.</p>
+            <ul class="price-list">
+              <li>Installed inside customer environment</li>
+              <li>Air-gappable deployment path</li>
+              <li>Compliance-ready architecture</li>
+              <li>Custom integrations</li>
+              <li>Designed for larger estates</li>
+            </ul>
+            <a class="btn btn-ghost" href="#embedded">Book a demo &rarr;</a>
+            <div class="price-meta">Free first audit still applies</div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="terrain" id="begin">
+      <div class="terrain-grid"></div>
+      <div class="wrap narrow">
+        <div class="final-cta">
+          <div class="eyebrow">Scene 14 - Final CTA</div>
+          <h2>Stop guessing. Start knowing.</h2>
+          <p>The business is already emitting the truth. The operation is whether you can hear it in time.</p>
+          <a class="btn btn-primary" href="#">Begin the operation &rarr;</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <div class="footer-inner">
+        <div>
+          <div class="logo" style="font-size: 21px;">
+            <span class="logo-mark"></span>
+            <span>SelfAudit</span>
+          </div>
+          <div class="footer-meta" style="margin-top: 10px;">Strategic intelligence for SMBs.</div>
+        </div>
+        <div class="footer-links">
+          <a href="#product">Product</a>
+          <a href="#how-it-works">How It Works</a>
+          <a href="#pricing">Pricing</a>
+          <a id="signin" href="#">Sign In</a>
+          <a id="embedded" href="#">Embedded</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module">
+  import * as THREE from '/three.module.min.js';
+  (function () {
+    const canvas = document.getElementById("heroCanvas");
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setClearColor(0x000000, 0);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 200);
+    camera.position.set(2.6, 3.6, 6.8);
+    camera.lookAt(-0.3, 0.0, 0);
+
+    // Lights
+    scene.add(new THREE.AmbientLight(0xffffff, 0.22));
+    const redLight = new THREE.PointLight(0xd35c5c, 6.0, 10);
+    redLight.position.set(0, 0.5, 0);
+    scene.add(redLight);
+    // Fill light from upper-right
+    const fillLight = new THREE.DirectionalLight(0xffffff, 0.18);
+    fillLight.position.set(4, 6, 5);
+    scene.add(fillLight);
+
+    // ── Layer stack ───────────────────────────────────────────
+    const LC = 6, LW = 4.0, LH = 0.10, LD = 3.0, GAP = 0.56, XSTEP = -0.11;
+    const layerGroup = new THREE.Group();
+    scene.add(layerGroup);
+
+    const layers = [];
+
+    function makeGridLines(w, h, d) {
+      const grp = new THREE.Group();
+      const mat = new THREE.LineBasicMaterial({ color: 0x663a3a, transparent: true, opacity: 0.9 });
+      const COLS = 6, ROWS = 3;
+      for (let c = 0; c <= COLS; c++) {
+        const x = -w / 2 + c * (w / COLS);
+        const g = new THREE.BufferGeometry().setFromPoints([
+          new THREE.Vector3(x, h / 2 + 0.002, -d / 2),
+          new THREE.Vector3(x, h / 2 + 0.002,  d / 2)
+        ]);
+        grp.add(new THREE.Line(g, mat));
+      }
+      for (let r = 0; r <= ROWS; r++) {
+        const z = -d / 2 + r * (d / ROWS);
+        const g = new THREE.BufferGeometry().setFromPoints([
+          new THREE.Vector3(-w / 2, h / 2 + 0.002, z),
+          new THREE.Vector3( w / 2, h / 2 + 0.002, z)
+        ]);
+        grp.add(new THREE.Line(g, mat));
+      }
+      return grp;
+    }
+
+    function makeCorners(w, h, d) {
+      const grp = new THREE.Group();
+      const mat = new THREE.MeshBasicMaterial({ color: 0x9a5050 });
+      const geo = new THREE.SphereGeometry(0.038, 6, 4);
+      [[-1,-1],[-1,1],[1,-1],[1,1]].forEach(([sx, sz]) => {
+        const m = new THREE.Mesh(geo, mat);
+        m.position.set(sx * w / 2, h / 2, sz * d / 2);
+        grp.add(m);
+      });
+      return grp;
+    }
+
+    for (let i = 0; i < LC; i++) {
+      const g = new THREE.Group();
+      g.position.set(
+        (LC / 2 - i - 0.5) * XSTEP,
+        (LC / 2 - i - 0.5) * GAP,
+        0
+      );
+
+      const boxGeo = new THREE.BoxGeometry(LW, LH, LD);
+      const fillMat = new THREE.MeshPhongMaterial({
+        color: 0x160c0c, transparent: true, opacity: 0.78, shininess: 60, specular: 0x331111
+      });
+      g.add(new THREE.Mesh(boxGeo, fillMat));
+
+      const edgeGeo = new THREE.EdgesGeometry(boxGeo);
+      const edgeMat = new THREE.LineBasicMaterial({ color: 0xaa7070, transparent: true, opacity: 0.95 });
+      const edges = new THREE.LineSegments(edgeGeo, edgeMat);
+      g.add(edges);
+
+      const glowMat = new THREE.LineBasicMaterial({ color: 0xd35c5c, transparent: true, opacity: 0 });
+      const glow = new THREE.LineSegments(edgeGeo.clone(), glowMat);
+      g.add(glow);
+
+      g.add(makeGridLines(LW, LH, LD));
+      g.add(makeCorners(LW, LH, LD));
+
+      layerGroup.add(g);
+      layers.push({ g, fillMat, edgeMat, glowMat });
+    }
+
+    // ── Core spine ────────────────────────────────────────────
+    const spineH = LC * GAP + 1.3;
+    const spineMat = new THREE.MeshBasicMaterial({ color: 0xc94d4d, transparent: true, opacity: 0.92 });
+    layerGroup.add(new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.016, spineH, 8), spineMat));
+
+    const glowSpineMat = new THREE.MeshBasicMaterial({ color: 0xc94d4d, transparent: true, opacity: 0.11 });
+    layerGroup.add(new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, spineH, 8), glowSpineMat));
+
+    // ── Scan nodes ────────────────────────────────────────────
+    const nodeGeo = new THREE.SphereGeometry(0.07, 10, 8);
+    const nodeMatA = new THREE.MeshBasicMaterial({ color: 0xfff0f0 });
+    const nodeMatB = new THREE.MeshBasicMaterial({ color: 0xfff0f0 });
+    const nodeA = new THREE.Mesh(nodeGeo, nodeMatA);
+    const nodeB = new THREE.Mesh(nodeGeo, nodeMatB);
+    nodeA.position.y = (LC / 2 - 1) * GAP;
+    nodeB.position.y = -(LC / 2 - 2) * GAP;
+    layerGroup.add(nodeA);
+    layerGroup.add(nodeB);
+
+    function halo(pos) {
+      const mat = new THREE.MeshBasicMaterial({ color: 0xd35c5c, transparent: true, opacity: 0.13 });
+      const m = new THREE.Mesh(new THREE.SphereGeometry(0.22, 14, 10), mat);
+      m.position.copy(pos);
+      layerGroup.add(m);
+      return m;
+    }
+    const haloA = halo(nodeA.position);
+    const haloB = halo(nodeB.position);
+
+    // ── Floor grid ────────────────────────────────────────────
+    const floor = new THREE.GridHelper(14, 18, 0x2c0e0e, 0x180808);
+    floor.position.y = -(LC * GAP / 2) - 0.9;
+    floor.material.transparent = true;
+    floor.material.opacity = 0.55;
+    scene.add(floor);
+
+    // ── Particles ─────────────────────────────────────────────
+    const N = 280;
+    const pPos = new Float32Array(N * 3);
+    const pCol = new Float32Array(N * 3);
+    for (let i = 0; i < N; i++) {
+      pPos[i * 3]     = (Math.random() - 0.5) * 11;
+      pPos[i * 3 + 1] = (Math.random() - 0.5) *  8;
+      pPos[i * 3 + 2] = (Math.random() - 0.5) *  9;
+      const r = Math.random() < 0.28;
+      pCol[i * 3]     = r ? 0.82 : 1.0;
+      pCol[i * 3 + 1] = r ? 0.30 : 1.0;
+      pCol[i * 3 + 2] = r ? 0.30 : 1.0;
+    }
+    const pGeo = new THREE.BufferGeometry();
+    pGeo.setAttribute("position", new THREE.BufferAttribute(pPos, 3));
+    pGeo.setAttribute("color",    new THREE.BufferAttribute(pCol, 3));
+    const pMat = new THREE.PointsMaterial({ vertexColors: true, size: 0.022, transparent: true, opacity: 0.5, sizeAttenuation: true });
+    const particles = new THREE.Points(pGeo, pMat);
+    scene.add(particles);
+
+    // ── Sweep plane (scanner) ─────────────────────────────────
+    const sweepMat = new THREE.MeshBasicMaterial({ color: 0xd35c5c, transparent: true, opacity: 0.08, side: THREE.DoubleSide });
+    const sweepPlane = new THREE.Mesh(new THREE.PlaneGeometry(LW + 0.6, LD + 0.6), sweepMat);
+    sweepPlane.rotation.x = -Math.PI / 2;
+    layerGroup.add(sweepPlane);
+
+    // ── Resize ────────────────────────────────────────────────
+    function resize() {
+      const w = canvas.offsetWidth;
+      const h = canvas.offsetHeight;
+      if (!w || !h) return;
+      renderer.setSize(w, h);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+    resize();
+    window.addEventListener("resize", resize);
+
+    // ── Scene states ──────────────────────────────────────────
+    const STATES = [
+      { ry: -0.40, rx: 0.16, active: -1 },
+      { ry: -0.28, rx: 0.12, active: -1 },
+      { ry: -0.20, rx: 0.09, active:  0 },
+      { ry: -0.16, rx: 0.07, active:  1 },
+      { ry: -0.12, rx: 0.04, active:  2 },
+      { ry: -0.10, rx: 0.02, active:  3 },
+      { ry: -0.13, rx: 0.05, active:  4 },
+      { ry: -0.20, rx: 0.09, active:  5 },
+    ];
+    let tRY = STATES[0].ry, tRX = STATES[0].rx;
+    let cRY = STATES[0].ry, cRX = STATES[0].rx;
+    let activeLayer = -1;
+
+    function setScene(i) {
+      const s = STATES[i] || STATES[0];
+      tRY = s.ry; tRX = s.rx; activeLayer = s.active;
+    }
+
+    // ── Animate ───────────────────────────────────────────────
+    let t = 0;
+    function tick() {
+      requestAnimationFrame(tick);
+      t += 0.016;
+
+      cRY += (tRY - cRY) * 0.05;
+      cRX += (tRX - cRX) * 0.05;
+      layerGroup.rotation.y = cRY + Math.sin(t * 0.14) * 0.005;
+      layerGroup.rotation.x = cRX;
+
+      // Scanner sweep
+      const sw = (Math.sin(t * 0.62) + 1) / 2;
+      sweepPlane.position.y = -LC * GAP / 2 + sw * LC * GAP + 0.28;
+      sweepMat.opacity = 0.04 + sw * (1 - sw) * 0.28;
+
+      // Node pulse
+      const pa = 1 + Math.sin(t * 2.1) * 0.18;
+      nodeA.scale.setScalar(pa); haloA.scale.setScalar(pa * 0.88);
+      const pb = 1 + Math.sin(t * 1.7 + 1.2) * 0.18;
+      nodeB.scale.setScalar(pb); haloB.scale.setScalar(pb * 0.88);
+
+      // Layer materials
+      layers.forEach((ld, i) => {
+        const isActive = activeLayer === i;
+        const isDim    = activeLayer !== -1 && !isActive;
+        const tEdge    = isDim ? 0.15 : 0.85;
+        const tGlow    = isActive ? (0.92 + Math.sin(t * 3.2) * 0.08) : 0;
+        const tFill    = isDim ? 0.92 : (isActive ? 0.38 : 0.78);
+        ld.edgeMat.opacity += (tEdge - ld.edgeMat.opacity) * 0.09;
+        ld.glowMat.opacity += (tGlow - ld.glowMat.opacity) * 0.09;
+        ld.fillMat.opacity += (tFill - ld.fillMat.opacity) * 0.09;
+        if (isActive) {
+          ld.fillMat.color.setRGB(0.09 + Math.sin(t * 3.2) * 0.02, 0.035, 0.035);
+          redLight.position.y = ld.g.position.y;
+        }
+      });
+
+      particles.rotation.y += 0.0004;
+      particles.rotation.x += 0.00015;
+
+      renderer.render(scene, camera);
+    }
+    tick();
+
+    // ── Scroll wiring ─────────────────────────────────────────
+    const statsFlash = document.getElementById("statsFlash");
+    const labelEls   = Array.from(document.querySelectorAll(".layer-label"));
+    const sceneEls   = Array.from(document.querySelectorAll(".scene-marker"));
+
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (!e.isIntersecting) return;
+        const idx = Number(e.target.dataset.scene) - 1;
+        setScene(idx);
+        statsFlash.classList.toggle("visible", idx === 1);
+        labelEls.forEach((el) => el.classList.toggle("visible", idx > 0));
+      });
+    }, { threshold: 0.55 });
+
+    sceneEls.forEach((el) => obs.observe(el));
+    setScene(0);
+  })();
+  </script>
+</body>
+</html>

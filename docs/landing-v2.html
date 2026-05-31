@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SelfAudit Hero Match</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #050505;
+      --text: #f2ede7;
+      --muted: rgba(242, 237, 231, 0.58);
+      --glass: rgba(255, 238, 225, 0.06);
+      --glass-strong: rgba(255, 238, 225, 0.12);
+      --edge: rgba(255, 231, 215, 0.34);
+      --edge-soft: rgba(255, 231, 215, 0.14);
+      --orange: #b54223;
+      --orange-bright: #ff7440;
+      --orange-deep: #70220f;
+      --shadow: rgba(0, 0, 0, 0.45);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      overflow: hidden;
+      background: #040404;
+      color: var(--text);
+      font-family: "Inter", sans-serif;
+    }
+
+    body {
+      background:
+        radial-gradient(circle at 50% 74%, rgba(255, 110, 60, 0.16), transparent 16%),
+        radial-gradient(circle at 50% 35%, rgba(255, 248, 241, 0.07), transparent 22%),
+        radial-gradient(circle at 14% 92%, rgba(188, 66, 28, 0.14), transparent 13%),
+        radial-gradient(circle at 86% 92%, rgba(188, 66, 28, 0.14), transparent 13%),
+        linear-gradient(180deg, #050505 0%, #090909 100%);
+    }
+
+    .hero {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      left: -8%;
+      right: -8%;
+      bottom: -8%;
+      height: 34%;
+      background:
+        repeating-linear-gradient(
+          90deg,
+          rgba(255,255,255,0.045) 0 1px,
+          transparent 1px 84px
+        ),
+        repeating-linear-gradient(
+          0deg,
+          rgba(255,255,255,0.03) 0 1px,
+          transparent 1px 54px
+        ),
+        linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.42) 40%, rgba(0,0,0,0.84) 100%);
+      transform-origin: center bottom;
+      transform: perspective(1200px) rotateX(78deg);
+      opacity: 0.8;
+      z-index: 0;
+      filter: blur(0.2px);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 50% 54%, transparent 0%, transparent 40%, rgba(0,0,0,0.28) 74%, rgba(0,0,0,0.68) 100%),
+        radial-gradient(circle at 50% 15%, rgba(255,255,255,0.025), transparent 22%);
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    .nav {
+      position: absolute;
+      top: 52px;
+      left: 70px;
+      right: 86px;
+      z-index: 8;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .brand svg {
+      width: 38px;
+      height: 38px;
+      flex: 0 0 auto;
+    }
+
+    .brand-name {
+      font-family: "Instrument Serif", serif;
+      font-size: 3rem;
+      line-height: 1;
+      letter-spacing: -0.04em;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 34px;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 44px;
+    }
+
+    .nav-links a {
+      color: rgba(255,255,255,0.92);
+      text-decoration: none;
+      font-size: 1rem;
+      font-weight: 400;
+    }
+
+    .cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 18px;
+      padding: 19px 26px;
+      border-radius: 6px;
+      color: #fff7f1;
+      text-decoration: none;
+      font-size: 1rem;
+      font-weight: 500;
+      background: linear-gradient(180deg, #b34525 0%, #a0391d 100%);
+      box-shadow: 0 18px 40px rgba(94, 24, 9, 0.32);
+    }
+
+    .cta span {
+      font-size: 1.2rem;
+      line-height: 1;
+    }
+
+    .scene {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+    }
+
+    .stack {
+      position: absolute;
+      left: 50%;
+      top: 54%;
+      width: min(1060px, 78vw);
+      height: min(680px, 62vh);
+      transform: translate(-50%, -50%);
+      transform-style: preserve-3d;
+      perspective: 2000px;
+    }
+
+    .cube {
+      position: absolute;
+      inset: 0;
+      transform-style: preserve-3d;
+      transform: rotateX(10deg) rotateY(-20deg);
+    }
+
+    .lid {
+      position: absolute;
+      left: 2%;
+      right: 2%;
+      top: -6%;
+      height: 22%;
+      border: 1px solid var(--edge);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.16), rgba(255,255,255,0.04)),
+        rgba(255,245,236,0.04);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.14),
+        0 0 32px rgba(255,240,230,0.05);
+      transform: skewY(-1.5deg);
+    }
+
+    .lid::before,
+    .lid::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.13) 39%, transparent 54%, rgba(255,255,255,0.06) 80%, transparent 100%);
+      opacity: 0.55;
+      pointer-events: none;
+    }
+
+    .slab {
+      position: absolute;
+      left: 2%;
+      right: 2%;
+      height: 16.2%;
+      border: 1px solid var(--edge-soft);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.015)),
+        linear-gradient(90deg, rgba(255,255,255,0.03), transparent 30%, rgba(255,105,58,0.04) 60%, rgba(255,255,255,0.02) 100%),
+        rgba(255,242,232,0.018);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.06),
+        inset 0 -1px 0 rgba(255,255,255,0.03),
+        0 0 24px rgba(255,255,255,0.02);
+      backdrop-filter: blur(1.5px);
+      overflow: hidden;
+    }
+
+    .slab::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        repeating-linear-gradient(
+          90deg,
+          rgba(255,255,255,0.06) 0 1px,
+          transparent 1px 86px
+        ),
+        repeating-linear-gradient(
+          0deg,
+          rgba(255,255,255,0.04) 0 1px,
+          transparent 1px 42px
+        );
+      opacity: 0.18;
+    }
+
+    .slab::after {
+      content: "";
+      position: absolute;
+      inset: auto 4% 14% 4%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,210,180,0.6), transparent);
+      opacity: 0.36;
+    }
+
+    .slab-1 { top: 17%; }
+    .slab-2 { top: 34.5%; }
+    .slab-3 { top: 52%; }
+    .slab-4 { top: 69.5%; }
+
+    .interior {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+
+    .interior::before,
+    .interior::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .interior::before {
+      background:
+        radial-gradient(circle at 50% 34%, rgba(255,248,244,0.42), transparent 11%),
+        radial-gradient(circle at 50% 84%, rgba(255,95,40,0.52), transparent 16%),
+        radial-gradient(circle at 14% 40%, rgba(255,105,58,0.34), transparent 2%),
+        radial-gradient(circle at 86% 54%, rgba(255,105,58,0.36), transparent 2%),
+        radial-gradient(circle at 18% 84%, rgba(255,105,58,0.28), transparent 1.6%),
+        radial-gradient(circle at 82% 86%, rgba(255,105,58,0.28), transparent 1.6%);
+      filter: blur(6px);
+      opacity: 0.9;
+    }
+
+    .interior::after {
+      background:
+        linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.14) 41%, transparent 50%, rgba(255,255,255,0.06) 70%, transparent 100%),
+        linear-gradient(0deg, transparent 0%, rgba(255,255,255,0.04) 18%, transparent 26%, rgba(255,97,42,0.06) 82%, transparent 100%);
+      opacity: 0.45;
+    }
+
+    .core {
+      position: absolute;
+      left: 18%;
+      right: 18%;
+      bottom: 8%;
+      height: 13%;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at center, rgba(255,160,120,0.95) 0%, rgba(255,108,57,0.84) 18%, rgba(224,76,32,0.6) 36%, rgba(224,76,32,0.14) 58%, transparent 74%);
+      filter: blur(4px);
+      opacity: 0.95;
+    }
+
+    .core-reflection {
+      position: absolute;
+      left: 10%;
+      right: 10%;
+      bottom: -8%;
+      height: 12%;
+      background: radial-gradient(circle at center, rgba(255,102,48,0.44), transparent 58%);
+      filter: blur(18px);
+      opacity: 0.7;
+    }
+
+    .spark {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: rgba(255,133,87,0.95);
+      box-shadow: 0 0 10px rgba(255,133,87,0.85);
+    }
+
+    .spark.a { left: 10%; top: 36%; }
+    .spark.b { right: 11%; top: 44%; }
+    .spark.c { left: 15%; bottom: 13%; }
+    .spark.d { right: 7%; bottom: 12%; }
+
+    .headline {
+      position: absolute;
+      left: 50%;
+      top: 57%;
+      transform: translate(-50%, -50%);
+      width: min(980px, 66vw);
+      z-index: 4;
+      text-align: center;
+      pointer-events: none;
+    }
+
+    .headline h1 {
+      font-family: "Instrument Serif", serif;
+      font-size: clamp(5rem, 7.2vw, 7.8rem);
+      font-weight: 400;
+      line-height: 0.91;
+      letter-spacing: -0.055em;
+      color: #f7f0ea;
+      text-shadow: 0 0 18px rgba(255,245,236,0.05);
+    }
+
+    .labels {
+      position: absolute;
+      left: calc(50% - min(1060px, 78vw) / 2 + 8px);
+      top: 50%;
+      transform: translateY(-28%);
+      width: 148px;
+      z-index: 4;
+    }
+
+    .label {
+      min-height: 87px;
+      padding: 14px 12px 12px 16px;
+      border-left: 1px solid rgba(255,231,215,0.22);
+      border-top: 1px solid rgba(255,231,215,0.1);
+      border-bottom: 1px solid rgba(255,231,215,0.1);
+      background: linear-gradient(90deg, rgba(255,248,242,0.06), rgba(255,248,242,0.02));
+      margin-bottom: 8px;
+    }
+
+    .label-name {
+      font-size: 0.8rem;
+      letter-spacing: 0.04em;
+      font-weight: 500;
+      color: rgba(247,241,235,0.92);
+      margin-bottom: 7px;
+    }
+
+    .label-copy {
+      font-size: 0.72rem;
+      line-height: 1.42;
+      color: var(--muted);
+    }
+
+    @media (max-width: 1200px) {
+      .nav {
+        left: 28px;
+        right: 28px;
+        top: 28px;
+      }
+
+      .nav-right {
+        gap: 20px;
+      }
+
+      .nav-links {
+        gap: 24px;
+      }
+
+      .labels {
+        left: 6%;
+      }
+
+      .headline {
+        width: min(900px, 76vw);
+      }
+    }
+
+    @media (max-width: 860px) {
+      html, body {
+        overflow: auto;
+      }
+
+      .nav {
+        display: grid;
+        gap: 16px;
+      }
+
+      .nav-right {
+        justify-content: space-between;
+      }
+
+      .nav-links {
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+
+      .stack {
+        width: 92vw;
+        height: 58vh;
+        top: 56%;
+      }
+
+      .labels {
+        display: none;
+      }
+
+      .headline {
+        width: 90vw;
+      }
+
+      .headline h1 {
+        font-size: clamp(3.5rem, 12vw, 5.5rem);
+      }
+    }
+  </style>
+</head>
+<body>
+  <section class="hero">
+    <nav class="nav">
+      <a href="#" class="brand">
+        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M20 4L33.8564 12V28L20 36L6.14359 28V12L20 4Z" stroke="#E84C24" stroke-width="1.6"/>
+          <path d="M20 4V20M33.8564 12L20 20M6.14359 12L20 20M20 20V36" stroke="#E84C24" stroke-width="1.3"/>
+          <path d="M13 8L26.8 16V31.8" stroke="#E84C24" stroke-width="1" opacity="0.6"/>
+          <path d="M27 8L13.2 16V31.8" stroke="#E84C24" stroke-width="1" opacity="0.6"/>
+        </svg>
+        <span class="brand-name">SelfAudit</span>
+      </a>
+
+      <div class="nav-right">
+        <div class="nav-links">
+          <a href="#">Platform</a>
+          <a href="#">Solutions</a>
+          <a href="#">Resources</a>
+          <a href="#">Company</a>
+        </div>
+        <a class="cta" href="#">Get a Demo <span>↗</span></a>
+      </div>
+    </nav>
+
+    <div class="scene">
+      <div class="stack">
+        <div class="cube">
+          <div class="lid"></div>
+          <div class="slab slab-1"></div>
+          <div class="slab slab-2"></div>
+          <div class="slab slab-3"></div>
+          <div class="slab slab-4"></div>
+
+          <div class="interior"></div>
+          <div class="core"></div>
+          <div class="core-reflection"></div>
+          <div class="spark a"></div>
+          <div class="spark b"></div>
+          <div class="spark c"></div>
+          <div class="spark d"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="labels">
+      <div class="label">
+        <div class="label-name">DETECT</div>
+        <div class="label-copy">Continuous Signal<br>Intelligence</div>
+      </div>
+      <div class="label">
+        <div class="label-name">ANALYZE</div>
+        <div class="label-copy">Contextual AI<br>Correlation</div>
+      </div>
+      <div class="label">
+        <div class="label-name">PRIORITIZE</div>
+        <div class="label-copy">Risk &amp; Impact<br>Modeling</div>
+      </div>
+      <div class="label">
+        <div class="label-name">AUTOMATE</div>
+        <div class="label-copy">Policy to Action<br>Execution</div>
+      </div>
+      <div class="label">
+        <div class="label-name">MONITOR</div>
+        <div class="label-copy">Continuous<br>Assurance</div>
+      </div>
+    </div>
+
+    <div class="headline">
+      <h1>AI-Native<br>Operations Intelligence<br>for Every Company</h1>
+    </div>
+  </section>
+</body>
+</html>

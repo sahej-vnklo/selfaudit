@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SelfAudit — Cockpit Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&family=Cormorant+Garamond:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Dark (agents mode) */
+:root {
+  --black: #0A0A0A;
+  --surface: #111111;
+  --surface-2: #161616;
+  --surface-3: #1C1C1C;
+  --border: #222222;
+  --border-2: #2A2A2A;
+  --fg: #E8E4DC;
+  --fg-mute: #888888;
+  --fg-faint: #444444;
+  --accent: #6B5CE7;
+  --accent-bg: #1A1630;
+  --accent-text: #9D8FF0;
+  --ember: #C8622A;
+  --red: #C05050;
+  --red-bg: #1A0A0A;
+  --red-border: #2A1010;
+  --amber: #C9A040;
+  --amber-bg: #1A1508;
+  --amber-border: #2A2008;
+  --green: #4A9E6B;
+  --green-bg: #0A1A10;
+  --green-border: #0A2818;
+  --sidebar-w: 52px;
+  --topbar-h: 58px;
+}
+
+/* Light overrides — applied to .cockpit + shared chrome when cockpit active */
+.light-chrome {
+  --black: #FAFAF8;
+  --surface: #F4F3EF;
+  --surface-2: #EDEAE4;
+  --surface-3: #E4E0D8;
+  --border: #DDD9D2;
+  --border-2: #CBC6BE;
+  --fg: #1E1D1B;
+  --fg-mute: #6B6860;
+  --fg-faint: #A8A49C;
+  --accent: #5548D9;
+  --accent-bg: #EDEAFF;
+  --accent-text: #4B3EC7;
+  --ember: #C8622A;
+  --red: #B83030;
+  --red-bg: #FFF0EF;
+  --red-border: #FFCBC8;
+  --amber: #A06010;
+  --amber-bg: #FFF7E6;
+  --amber-border: #FFD98A;
+  --green: #1E7A48;
+  --green-bg: #EAF6EF;
+  --green-border: #9DD4B8;
+  background: var(--black);
+  color: var(--fg);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  font-family: 'Manrope', -apple-system, system-ui, sans-serif;
+  background: var(--black);
+  color: var(--fg);
+  -webkit-font-smoothing: antialiased;
+  font-size: 14px;
+}
+button { font-family: inherit; cursor: pointer; border: none; outline: none; }
+svg { display: block; }
+
+/* ─── SHELL ─── */
+.shell { display: flex; flex-direction: column; height: 100vh; }
+
+/* ─── TOPBAR ─── */
+.topbar {
+  height: var(--topbar-h);
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px;
+  background: var(--black);
+  border-bottom: 1px solid var(--border);
+  z-index: 20;
+  gap: 16px;
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex: none;
+}
+.logo-text {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--fg);
+}
+.mode-toggle {
+  display: flex;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 3px;
+  gap: 2px;
+}
+.mode-btn {
+  padding: 6px 18px;
+  border-radius: 7px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--fg-mute);
+  background: transparent;
+  transition: all 0.15s;
+  letter-spacing: 0.01em;
+}
+.mode-btn.active {
+  background: var(--surface-3);
+  color: var(--fg);
+  border: 1px solid var(--border-2);
+}
+.topbar-right { display: flex; align-items: center; gap: 10px; flex: none; }
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 12px;
+  font-size: 12.5px;
+  color: var(--fg-faint);
+  width: 230px;
+  cursor: text;
+}
+.search-box:hover { border-color: var(--border-2); }
+.kbd {
+  margin-left: auto;
+  font-size: 10.5px;
+  padding: 2px 5px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
+  border-radius: 4px;
+  color: var(--fg-faint);
+  letter-spacing: 0;
+}
+.avatar {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: var(--accent-bg);
+  border: 1px solid var(--accent);
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent-text);
+}
+
+/* ─── BODY ─── */
+.body { display: flex; flex: 1; overflow: hidden; }
+
+/* ─── SIDEBAR ─── */
+.sidebar {
+  width: var(--sidebar-w);
+  flex: none;
+  background: var(--black);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 0;
+  gap: 2px;
+}
+.nav-item {
+  width: 38px; height: 38px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  color: var(--fg-faint);
+  transition: all 0.15s;
+}
+.nav-item:hover { background: var(--surface); color: var(--fg-mute); }
+.nav-item.active { background: var(--surface-2); color: var(--ember); }
+.nav-spacer { flex: 1; }
+
+/* ─── CONTENT ─── */
+.content { flex: 1; overflow-y: auto; overflow-x: hidden; }
+.content::-webkit-scrollbar { width: 3px; }
+.content::-webkit-scrollbar-track { background: transparent; }
+.content::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 3px; }
+
+/* ─── VIEWS ─── */
+.view { display: none; flex-direction: column; }
+.view.active { display: flex; }
+
+/* ══════════════════════════════════════════════════
+   MODE 2 — COCKPIT
+══════════════════════════════════════════════════ */
+.cockpit {
+  padding: 20px 22px;
+  gap: 16px;
+  min-height: 100%;
+}
+
+/* CoS Block */
+.cos-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.cos-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border);
+}
+.cos-badge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--accent-text);
+}
+.live-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: blink 2.4s ease-in-out infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.35} }
+.cos-meta { font-size: 11.5px; color: var(--fg-faint); }
+
+.cos-body {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr 0.9fr;
+}
+
+/* Left — greeting + priorities */
+.cos-left {
+  padding: 22px 22px 22px 22px;
+  border-right: 1px solid var(--border);
+}
+.greeting {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 27px;
+  font-weight: 500;
+  line-height: 1.15;
+  margin-bottom: 5px;
+}
+.greeting-sub {
+  font-size: 12.5px;
+  color: var(--fg-mute);
+  line-height: 1.5;
+  margin-bottom: 18px;
+}
+.priority-list { display: flex; flex-direction: column; gap: 7px; }
+.p-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 9px 11px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.12s;
+}
+.p-item:hover { border-color: var(--border-2); }
+.p-num {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--surface-3);
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--fg-faint);
+  flex: none;
+  margin-top: 1px;
+}
+.p-body { flex: 1; }
+.p-title { font-size: 12.5px; font-weight: 500; color: var(--fg); line-height: 1.3; margin-bottom: 1px; }
+.p-impact { font-size: 11px; color: var(--fg-mute); }
+.sev-pill {
+  padding: 2px 7px;
+  border-radius: 100px;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  flex: none;
+  margin-top: 1px;
+}
+.sev-high { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); }
+.sev-med  { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-border); }
+.sev-low  { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+
+/* Middle — recommended move */
+.cos-mid {
+  padding: 22px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+}
+.section-tag {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-faint);
+  margin-bottom: 10px;
+}
+.rec-title {
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--fg);
+  line-height: 1.2;
+  margin-bottom: 14px;
+}
+.rec-checks { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+.rec-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--fg-mute);
+  line-height: 1.4;
+}
+.check-dot {
+  width: 15px; height: 15px;
+  border-radius: 50%;
+  background: var(--green-bg);
+  border: 1px solid var(--green);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.impact-row { display: flex; gap: 8px; margin-bottom: 14px; }
+.impact-card {
+  flex: 1;
+  padding: 8px 9px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  text-align: center;
+}
+.impact-val {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--green);
+  margin-bottom: 2px;
+}
+.impact-lbl { font-size: 9.5px; color: var(--fg-mute); line-height: 1.3; }
+.analysis-btn {
+  width: 100%;
+  padding: 9px 14px;
+  background: var(--accent-bg);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  color: var(--accent-text);
+  font-size: 12.5px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: background 0.14s;
+  margin-top: auto;
+}
+.analysis-btn:hover { background: #221b44; }
+
+/* Right — at a glance */
+.cos-right { padding: 22px; }
+.glance-list { display: flex; flex-direction: column; gap: 8px; margin-top: 2px; }
+.glance-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 11px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.glance-lbl { font-size: 12px; color: var(--fg-mute); flex: 1; }
+.glance-val { font-size: 13px; font-weight: 700; color: var(--fg); }
+.delta {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+.d-bad  { color: var(--red);   background: var(--red-bg); }
+.d-warn { color: var(--amber); background: var(--amber-bg); }
+.d-good { color: var(--green); background: var(--green-bg); }
+
+/* Confidence bar */
+.conf-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  border-top: 1px solid var(--border);
+  font-size: 11.5px;
+  color: var(--fg-faint);
+}
+.conf-track {
+  flex: 1; max-width: 140px;
+  height: 3px;
+  background: var(--surface-3);
+  border-radius: 100px;
+  overflow: hidden;
+}
+.conf-fill { height: 100%; width: 87%; background: var(--accent); border-radius: 100px; }
+
+/* Department section */
+.dept-section { display: flex; flex-direction: column; gap: 10px; }
+.dept-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.dept-section-lbl {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-faint);
+}
+.dept-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+.dept-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  cursor: pointer;
+  transition: border-color 0.14s;
+}
+.dept-card:hover { border-color: var(--border-2); }
+.dc-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6px;
+}
+.dc-icon-name { display: flex; align-items: center; gap: 8px; }
+.dc-icon {
+  width: 30px; height: 30px;
+  border-radius: 7px;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.dc-name {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--fg);
+}
+.dc-role { font-size: 10.5px; color: var(--fg-faint); }
+.status-pill {
+  padding: 2px 7px;
+  border-radius: 100px;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  flex: none;
+}
+.sp-concerned { background: var(--red-bg);   color: var(--red);   border: 1px solid var(--red-border); }
+.sp-stable    { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+.sp-watch     { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-border); }
+
+.dc-issue-lbl  { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--fg-faint); margin-bottom: 3px; }
+.dc-issue-title{ font-size: 12.5px; font-weight: 600; color: var(--fg); line-height: 1.3; margin-bottom: 2px; }
+.dc-issue-sub  { font-size: 11px; color: var(--fg-mute); }
+
+.dc-metric {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.dc-metric-key { font-size: 9px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--fg-faint); margin-bottom: 3px; }
+.dc-metric-val { font-size: 19px; font-weight: 700; color: var(--fg); line-height: 1; }
+.dc-metric-delta { font-size: 11px; font-weight: 600; margin-left: 5px; }
+.dc-metric-sub { font-size: 10px; color: var(--fg-faint); margin-top: 2px; }
+
+.dc-insight-lbl  { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--fg-faint); margin-bottom: 3px; }
+.dc-insight-text { font-size: 11.5px; color: var(--fg-mute); line-height: 1.5; }
+
+.dc-link {
+  font-size: 11.5px;
+  color: var(--accent-text);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: auto;
+  cursor: pointer;
+}
+
+/* Bottom bar */
+.bottom-bar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  overflow: hidden;
+}
+.bb-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 16px;
+  cursor: pointer;
+  border-right: 1px solid var(--border);
+  transition: background 0.13s;
+}
+.bb-item:last-child { border-right: none; }
+.bb-item:hover { background: var(--surface-2); }
+.bb-icon {
+  width: 26px; height: 26px;
+  border-radius: 7px;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.bb-text { flex: 1; }
+.bb-title { font-size: 12px; font-weight: 600; color: var(--fg); margin-bottom: 1px; }
+.bb-sub   { font-size: 11px; color: var(--fg-mute); }
+
+/* ══════════════════════════════════════════════════
+   MODE 1 — AGENTS
+══════════════════════════════════════════════════ */
+.agents-view {
+  padding: 22px;
+  gap: 14px;
+  height: calc(100vh - var(--topbar-h));
+}
+.agents-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  flex: 1;
+  min-height: 0;
+}
+.agent-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+}
+.agent-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+.agent-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fg-faint);
+}
+.agent-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--green);
+}
+.agent-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 26px;
+  font-weight: 500;
+  color: var(--fg);
+  margin-bottom: 18px;
+}
+.agent-div { height: 1px; background: var(--border); margin: 0 -24px 16px; }
+.agent-caps { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+.agent-cap { display: flex; align-items: baseline; gap: 8px; font-size: 13px; color: var(--fg-mute); }
+.cap-cmd { font-family: 'SFMono-Regular', 'Consolas', monospace; font-size: 12px; color: var(--ember); font-weight: 600; }
+.agent-status-lbl { font-size: 9.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--fg-faint); margin-bottom: 5px; }
+.agent-status-txt { font-size: 13px; color: var(--fg-mute); line-height: 1.55; }
+.agent-spacer { flex: 1; }
+.cmd-bar { display: flex; justify-content: center; flex: none; }
+.cmd-pill {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  padding: 4px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+.cmd-btn {
+  padding: 8px 20px;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fg-mute);
+  background: transparent;
+  letter-spacing: 0.01em;
+  transition: all 0.14s;
+}
+.cmd-btn:hover { color: var(--fg); background: var(--surface-3); }
+
+/* ─── ANNOTATION BANNER ─── */
+.anno {
+  background: var(--accent-bg);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  padding: 9px 14px;
+  font-size: 11.5px;
+  color: var(--accent-text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+}
+</style>
+</head>
+<body>
+<div class="shell light-chrome" id="shell">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="logo">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style="color:var(--ember)">
+        <path d="M12 2L21.5 7.5V16.5L12 22L2.5 16.5V7.5L12 2Z" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M12 7.5L17 10.25V15.75L12 18.5L7 15.75V10.25L12 7.5Z" fill="currentColor" opacity="0.25"/>
+      </svg>
+      <span class="logo-text">SelfAudit</span>
+    </div>
+
+    <div class="mode-toggle">
+      <button class="mode-btn" id="btn1" onclick="setMode(1)">Agents</button>
+      <button class="mode-btn active" id="btn2" onclick="setMode(2)">Cockpit</button>
+    </div>
+
+    <div class="topbar-right">
+      <div class="search-box">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="5" stroke="var(--fg-faint)" stroke-width="1.5"/><path d="M10.5 10.5L14 14" stroke="var(--fg-faint)" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Ask anything about your business...
+        <span class="kbd">⌘K</span>
+      </div>
+      <div class="avatar">SS</div>
+    </div>
+  </header>
+
+  <!-- BODY -->
+  <div class="body">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="nav-item active" title="Cockpit" id="nav-cockpit">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.5"/></svg>
+      </div>
+      <div class="nav-item" title="Agents" id="nav-agents">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2L21.5 7.5V16.5L12 22L2.5 16.5V7.5L12 2Z" stroke="currentColor" stroke-width="1.5"/></svg>
+      </div>
+      <div class="nav-item" title="Reports">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M14 2H6C5 3 4 3 4 4V20C4 21 5 22 6 22H18C19 22 20 21 20 20V8L14 2Z" stroke="currentColor" stroke-width="1.5"/><path d="M14 2V8H20M8 13H16M8 17H12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <div class="nav-item" title="Alerts">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <div class="nav-spacer"></div>
+      <div class="nav-item" title="Connectors">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <div class="nav-item" title="Settings">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+    </aside>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+      <!-- ════════ MODE 2: COCKPIT ════════ -->
+      <div class="view cockpit active" id="view2">
+
+        <!-- CoS Block -->
+        <div class="cos-block">
+          <div class="cos-topbar">
+            <div class="cos-badge">
+              <div class="live-dot"></div>
+              AI Chief of Staff
+            </div>
+            <div class="cos-meta">Last updated 5 min ago · Confidence 87%</div>
+          </div>
+
+          <div class="cos-body">
+
+            <!-- LEFT: Greeting + Priorities -->
+            <div class="cos-left">
+              <div class="greeting">Good morning, Sahej.</div>
+              <div class="greeting-sub">After reviewing all departments, I found<br>3 issues and 2 high-impact opportunities.</div>
+              <div class="priority-list">
+                <div class="p-item">
+                  <div class="p-num">1</div>
+                  <div class="p-body">
+                    <div class="p-title">Churn is rising because support is understaffed</div>
+                    <div class="p-impact">Impact: $82K ARR at risk</div>
+                  </div>
+                  <div class="sev-pill sev-high">High</div>
+                </div>
+                <div class="p-item">
+                  <div class="p-num">2</div>
+                  <div class="p-body">
+                    <div class="p-title">Cash preservation is slowing growth</div>
+                    <div class="p-impact">Impact: Runway reduced by 2.4 months</div>
+                  </div>
+                  <div class="sev-pill sev-med">Medium</div>
+                </div>
+                <div class="p-item">
+                  <div class="p-num">3</div>
+                  <div class="p-body">
+                    <div class="p-title">Lead qualification should be automated</div>
+                    <div class="p-impact">Impact: Save $63K/year and 41 hrs/month</div>
+                  </div>
+                  <div class="sev-pill sev-med">Medium</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- MIDDLE: Recommended Move -->
+            <div class="cos-mid">
+              <div class="section-tag">Recommended Move</div>
+              <div class="rec-title">Hire 2 support agents</div>
+              <div class="rec-checks">
+                <div class="rec-check">
+                  <div class="check-dot"><svg width="7" height="7" viewBox="0 0 10 10"><path d="M2 5l2.5 2.5L8 3" stroke="var(--green)" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg></div>
+                  Reduce response times by 27%
+                </div>
+                <div class="rec-check">
+                  <div class="check-dot"><svg width="7" height="7" viewBox="0 0 10 10"><path d="M2 5l2.5 2.5L8 3" stroke="var(--green)" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg></div>
+                  Improve customer satisfaction score
+                </div>
+                <div class="rec-check">
+                  <div class="check-dot"><svg width="7" height="7" viewBox="0 0 10 10"><path d="M2 5l2.5 2.5L8 3" stroke="var(--green)" stroke-width="1.5" stroke-linecap="round" fill="none"/></svg></div>
+                  Prevent $82K ARR churn risk
+                </div>
+              </div>
+              <div class="section-tag">Expected Impact</div>
+              <div class="impact-row">
+                <div class="impact-card"><div class="impact-val">↓ 27%</div><div class="impact-lbl">Churn risk</div></div>
+                <div class="impact-card"><div class="impact-val">↑ 23%</div><div class="impact-lbl">CSAT Score</div></div>
+                <div class="impact-card"><div class="impact-val">↑ $82K</div><div class="impact-lbl">ARR protected</div></div>
+              </div>
+              <button class="analysis-btn">View full analysis →</button>
+            </div>
+
+            <!-- RIGHT: At a Glance -->
+            <div class="cos-right">
+              <div class="section-tag">At a Glance</div>
+              <div class="glance-list">
+                <div class="glance-row">
+                  <div class="glance-lbl">Churn risk</div>
+                  <svg width="44" height="18" viewBox="0 0 44 18"><polyline points="0,13 7,11 14,14 21,9 28,12 35,7 44,5" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linejoin="round" opacity="0.85"/></svg>
+                  <div class="glance-val">4.2%</div>
+                  <div class="delta d-bad">↑ 27%</div>
+                </div>
+                <div class="glance-row">
+                  <div class="glance-lbl">CSAT Score</div>
+                  <svg width="44" height="18" viewBox="0 0 44 18"><polyline points="0,5 7,7 14,5 21,9 28,7 35,11 44,13" fill="none" stroke="var(--amber)" stroke-width="1.5" stroke-linejoin="round" opacity="0.85"/></svg>
+                  <div class="glance-val">74</div>
+                  <div class="delta d-warn">↓ 8%</div>
+                </div>
+                <div class="glance-row">
+                  <div class="glance-lbl">MRR</div>
+                  <svg width="44" height="18" viewBox="0 0 44 18"><polyline points="0,13 7,11 14,9 21,10 28,7 35,6 44,4" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linejoin="round" opacity="0.85"/></svg>
+                  <div class="glance-val">$18.4K</div>
+                  <div class="delta d-good">↑ 12%</div>
+                </div>
+                <div class="glance-row">
+                  <div class="glance-lbl">Runway</div>
+                  <svg width="44" height="18" viewBox="0 0 44 18"><polyline points="0,4 7,5 14,7 21,6 28,9 35,11 44,13" fill="none" stroke="var(--amber)" stroke-width="1.5" stroke-linejoin="round" opacity="0.85"/></svg>
+                  <div class="glance-val">5.1 mo</div>
+                  <div class="delta d-warn">↓ 0.8</div>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /cos-body -->
+
+          <div class="conf-bar">
+            <span>Confidence in insights</span>
+            <div class="conf-track"><div class="conf-fill"></div></div>
+            <span>87%</span>
+          </div>
+        </div><!-- /cos-block -->
+
+        <!-- DEPT SECTION -->
+        <div class="dept-section">
+          <div class="dept-header">
+            <div class="dept-section-lbl">Department Briefing</div>
+          </div>
+          <div class="dept-grid">
+
+            <!-- Support -->
+            <div class="dept-card">
+              <div class="dc-head">
+                <div class="dc-icon-name">
+                  <div class="dc-icon" style="background:var(--red-bg);color:var(--red)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="1.5"/></svg>
+                  </div>
+                  <div><div class="dc-name">Support</div><div class="dc-role">Head of Customer Support</div></div>
+                </div>
+                <div class="status-pill sp-concerned">Concerned</div>
+              </div>
+              <div><div class="dc-issue-lbl">Top Issue</div><div class="dc-issue-title">Response times are rising</div><div class="dc-issue-sub">23% increase in last 7 days</div></div>
+              <div class="dc-metric">
+                <div><div class="dc-metric-key">Avg. Response Time</div><div><span class="dc-metric-val">8.6h</span><span class="dc-metric-delta" style="color:var(--red)">↑ 23%</span></div><div class="dc-metric-sub">vs last 7 days</div></div>
+                <svg width="52" height="26" viewBox="0 0 52 26"><polyline points="0,19 8,17 17,21 26,13 35,17 44,10 52,8" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linejoin="round" opacity="0.8"/></svg>
+              </div>
+              <div><div class="dc-insight-lbl">Latest Insight</div><div class="dc-insight-text">Backlog increased due to staffing reduction and high ticket volume.</div></div>
+              <div class="dc-link">View department <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+            </div>
+
+            <!-- Finance -->
+            <div class="dept-card">
+              <div class="dc-head">
+                <div class="dc-icon-name">
+                  <div class="dc-icon" style="background:var(--green-bg);color:var(--green)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                  </div>
+                  <div><div class="dc-name">Finance</div><div class="dc-role">Chief Financial Officer</div></div>
+                </div>
+                <div class="status-pill sp-stable">Stable</div>
+              </div>
+              <div><div class="dc-issue-lbl">Top Issue</div><div class="dc-issue-title">Runway has decreased</div><div class="dc-issue-sub">Hiring freeze is impacting growth</div></div>
+              <div class="dc-metric">
+                <div><div class="dc-metric-key">Cash Runway</div><div><span class="dc-metric-val">5.1</span><span class="dc-metric-delta" style="color:var(--amber)">↓ 0.8 mo</span></div><div class="dc-metric-sub">vs last month</div></div>
+                <svg width="52" height="26" viewBox="0 0 52 26"><polyline points="0,7 8,8 17,7 26,10 35,12 44,15 52,17" fill="none" stroke="var(--amber)" stroke-width="1.5" stroke-linejoin="round" opacity="0.8"/></svg>
+              </div>
+              <div><div class="dc-insight-lbl">Latest Insight</div><div class="dc-insight-text">Operating expenses down 12%, but growth investments are paused.</div></div>
+              <div class="dc-link">View department <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+            </div>
+
+            <!-- Sales -->
+            <div class="dept-card">
+              <div class="dc-head">
+                <div class="dc-icon-name">
+                  <div class="dc-icon" style="background:var(--red-bg);color:var(--red)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><polyline points="16 7 22 7 22 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                  </div>
+                  <div><div class="dc-name">Sales & Mktg</div><div class="dc-role">Head of Growth</div></div>
+                </div>
+                <div class="status-pill sp-concerned">Concerned</div>
+              </div>
+              <div><div class="dc-issue-lbl">Top Issue</div><div class="dc-issue-title">Enterprise churn is increasing</div><div class="dc-issue-sub">3 accounts at high risk</div></div>
+              <div class="dc-metric">
+                <div><div class="dc-metric-key">Churn Risk (ARR)</div><div><span class="dc-metric-val">$82K</span><span class="dc-metric-delta" style="color:var(--red)">↑ 27%</span></div><div class="dc-metric-sub">vs last 30 days</div></div>
+                <svg width="52" height="26" viewBox="0 0 52 26"><polyline points="0,17 8,15 17,19 26,11 35,14 44,8 52,6" fill="none" stroke="var(--red)" stroke-width="1.5" stroke-linejoin="round" opacity="0.8"/></svg>
+              </div>
+              <div><div class="dc-insight-lbl">Latest Insight</div><div class="dc-insight-text">Low engagement and poor onboarding driving churn in enterprise segment.</div></div>
+              <div class="dc-link">View department <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+            </div>
+
+            <!-- Strategy -->
+            <div class="dept-card">
+              <div class="dc-head">
+                <div class="dc-icon-name">
+                  <div class="dc-icon" style="background:var(--amber-bg);color:var(--amber)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+                  </div>
+                  <div><div class="dc-name">Strategy & Ops</div><div class="dc-role">Chief Operating Officer</div></div>
+                </div>
+                <div class="status-pill sp-watch">Watch</div>
+              </div>
+              <div><div class="dc-issue-lbl">Top Issue</div><div class="dc-issue-title">Execution bottlenecks detected</div><div class="dc-issue-sub">Projects are behind schedule</div></div>
+              <div class="dc-metric">
+                <div><div class="dc-metric-key">Projects On Track</div><div><span class="dc-metric-val">62%</span><span class="dc-metric-delta" style="color:var(--amber)">↓ 11%</span></div><div class="dc-metric-sub">vs last month</div></div>
+                <svg width="52" height="26" viewBox="0 0 52 26"><polyline points="0,9 8,7 17,7 26,10 35,12 44,15 52,16" fill="none" stroke="var(--amber)" stroke-width="1.5" stroke-linejoin="round" opacity="0.8"/></svg>
+              </div>
+              <div><div class="dc-insight-lbl">Latest Insight</div><div class="dc-insight-text">Resource constraints and unclear priorities causing execution delays.</div></div>
+              <div class="dc-link">View department <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+            </div>
+
+          </div><!-- /dept-grid -->
+        </div><!-- /dept-section -->
+
+        <!-- BOTTOM BAR -->
+        <div class="bottom-bar">
+          <div class="bb-item">
+            <div class="bb-icon" style="background:var(--accent-bg);color:var(--accent-text)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="2" fill="currentColor"/><path d="M12 5V3M12 21v-2M5 12H3M21 12h-2M7.05 7.05L5.64 5.64M18.36 18.36l-1.41-1.41M7.05 16.95l-1.41 1.41M18.36 5.64l-1.41 1.41" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </div>
+            <div class="bb-text">
+              <div class="bb-title">Cross-department insight</div>
+              <div class="bb-sub">Support staffing is the root cause behind rising churn and slower growth.</div>
+            </div>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" style="color:var(--fg-faint)"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </div>
+          <div class="bb-item">
+            <div class="bb-icon" style="background:var(--green-bg);color:var(--green)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </div>
+            <div class="bb-text">
+              <div class="bb-title">High impact opportunities</div>
+              <div class="bb-sub">2 opportunities identified across departments.</div>
+            </div>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" style="color:var(--fg-faint)"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </div>
+          <div class="bb-item">
+            <div class="bb-icon" style="background:var(--accent-bg);color:var(--accent-text)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="1.5"/></svg>
+            </div>
+            <div class="bb-text">
+              <div class="bb-title">Ask Chief of Staff</div>
+              <div class="bb-sub">Ask anything. Get answers backed by all department data.</div>
+            </div>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" style="color:var(--fg-faint)"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </div>
+        </div>
+
+      </div><!-- /cockpit -->
+
+
+      <!-- ════════ MODE 1: AGENTS ════════ -->
+      <div class="view agents-view" id="view1">
+
+        <div class="anno">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/><path d="M12 8v4M12 16h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Mode 1 — the existing agent interface. No changes proposed here except adding the mode toggle above.
+        </div>
+
+        <div class="agents-grid">
+          <!-- Agent X -->
+          <div class="agent-card">
+            <div class="agent-top">
+              <div class="agent-label">Agent X</div>
+              <div class="agent-status"><div class="live-dot"></div>Monitoring</div>
+            </div>
+            <div class="agent-title">Diagnostic engine</div>
+            <div class="agent-div"></div>
+            <div class="agent-caps">
+              <div class="agent-cap"><span class="cap-cmd">/diagnose</span> finds root causes, not symptoms</div>
+              <div class="agent-cap"><span class="cap-cmd">/scan</span> investigates a specific question with evidence</div>
+            </div>
+            <div class="agent-div"></div>
+            <div class="agent-status-lbl">Live Status · May 31, 08:14 AM</div>
+            <div class="agent-status-txt">Analysis paralysis is preventing execution — zero pipeline activity despite clear strategy and positioning.</div>
+            <div class="agent-spacer"></div>
+          </div>
+          <!-- Agent Y -->
+          <div class="agent-card">
+            <div class="agent-top">
+              <div class="agent-label">Agent Y</div>
+              <div class="agent-status"><div class="live-dot"></div>Proposing</div>
+            </div>
+            <div class="agent-title">Solution engine</div>
+            <div class="agent-div"></div>
+            <div class="agent-caps">
+              <div class="agent-cap"><span class="cap-cmd">/goal</span> maps the gap and sequences the fastest path</div>
+              <div class="agent-cap"><span class="cap-cmd">/scan</span> gives 3 quick actions from the investigation</div>
+            </div>
+            <div class="agent-div"></div>
+            <div class="agent-status-lbl">Recommended Action</div>
+            <div class="agent-status-txt">Run an outbound sprint immediately. Review lead sources and qualification rate.</div>
+            <div class="agent-spacer"></div>
+          </div>
+        </div>
+
+        <div class="cmd-bar">
+          <div class="cmd-pill">
+            <button class="cmd-btn">/diagnose</button>
+            <button class="cmd-btn">/goal</button>
+            <button class="cmd-btn">/scan</button>
+          </div>
+        </div>
+
+      </div><!-- /agents -->
+
+    </div><!-- /content -->
+  </div><!-- /body -->
+</div><!-- /shell -->
+
+<script>
+function setMode(n) {
+  document.getElementById('btn1').classList.toggle('active', n===1);
+  document.getElementById('btn2').classList.toggle('active', n===2);
+  document.getElementById('nav-cockpit').classList.toggle('active', n===2);
+  document.getElementById('nav-agents').classList.toggle('active', n===1);
+  document.getElementById('view1').classList.toggle('active', n===1);
+  document.getElementById('view2').classList.toggle('active', n===2);
+  document.getElementById('shell').classList.toggle('light-chrome', n===2);
+}
+</script>
+</body>
+</html>

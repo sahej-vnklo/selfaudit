@@ -4326,9 +4326,6 @@ function ConnectorsSection({ user }) {
   const [disconnecting, setDisconnecting] = useState('')
   const [toast, setToast] = useState('')
   const [preview, setPreview] = useState(null)
-  const [apiKeyInput, setApiKeyInput] = useState({})   // { [connectorId]: string }
-  const [apiKeySaving, setApiKeySaving] = useState({}) // { [connectorId]: bool }
-  const [apiKeyError, setApiKeyError]   = useState({}) // { [connectorId]: string }
 
   const getSessionToken = async () => {
     const sb = await initSupabase()
@@ -4409,27 +4406,6 @@ function ConnectorsSection({ user }) {
     setPreview(null)
   }, [hubspot?.connected, hubspot?.last_synced_at, user?.id])
 
-  const connectWithApiKey = async (connectorId) => {
-    const key = (apiKeyInput[connectorId] || '').trim()
-    if (!key) { setApiKeyError(p => ({ ...p, [connectorId]: 'Paste your API key first.' })); return }
-    setApiKeySaving(p => ({ ...p, [connectorId]: true }))
-    setApiKeyError(p => ({ ...p, [connectorId]: '' }))
-    try {
-      const token = await getSessionToken()
-      const res   = await fetch(`/api/connect/${connectorId}/save`, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body:    JSON.stringify({ userId: user.id, apiKey: key }),
-      })
-      const data = await res.json().catch(() => ({}))
-      if (!res.ok) { setApiKeyError(p => ({ ...p, [connectorId]: data.error || 'Could not save key.' })); return }
-      setApiKeyInput(p => ({ ...p, [connectorId]: '' }))
-      setToast(`${data.account_name || connectorId} connected.`)
-      await loadConnectors()
-    } catch { setApiKeyError(p => ({ ...p, [connectorId]: 'Something went wrong.' })) }
-    setApiKeySaving(p => ({ ...p, [connectorId]: false }))
-  }
-
   const disconnect = async (provider) => {
     if (!user?.id) return
     setDisconnecting(provider)
@@ -4491,27 +4467,6 @@ function ConnectorsSection({ user }) {
                   <button type="button" style={styles.connectorDisconnectBtn} onClick={() => disconnect(connector.id)} disabled={busy}>
                     {busy ? 'Disconnecting…' : 'Disconnect'}
                   </button>
-                ) : connector.auth_type === 'api_key' ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    <input
-                      type="password"
-                      placeholder={`Paste your ${connector.name} API key`}
-                      value={apiKeyInput[connector.id] || ''}
-                      onChange={e => setApiKeyInput(p => ({ ...p, [connector.id]: e.target.value }))}
-                      style={{ padding: '7px 10px', borderRadius: 7, border: `1px solid var(--border)`, background: 'var(--surface2)', color: 'var(--text)', fontSize: 12.5, fontFamily: 'inherit', outline: 'none', width: '100%' }}
-                    />
-                    {apiKeyError[connector.id] && (
-                      <div style={{ fontSize: 11.5, color: 'var(--red-text)' }}>{apiKeyError[connector.id]}</div>
-                    )}
-                    <button
-                      type="button"
-                      style={styles.connectorConnectBtn}
-                      disabled={apiKeySaving[connector.id]}
-                      onClick={() => connectWithApiKey(connector.id)}
-                    >
-                      {apiKeySaving[connector.id] ? 'Verifying…' : `Connect ${connector.name}`}
-                    </button>
-                  </div>
                 ) : (
                   <button
                     type="button"
