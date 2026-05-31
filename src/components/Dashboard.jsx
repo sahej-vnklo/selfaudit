@@ -2085,18 +2085,19 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                     <i style={agentState === 'agent_x' || agentState === 'planning' ? { background: 'var(--accent)', animation: 'pulse 1s infinite' } : {}} />
                     <i style={agentState === 'agent_y' ? { background: '#4CAF50', animation: 'pulse 1s infinite' } : agentState === 'complete' ? { background: '#4CAF50' } : {}} />
                   </span>
-                  <span>
-                    {agentState === 'planning' ? 'routing…'
-                      : agentState === 'agent_x' ? `${currentMode?.xLabel || 'agent x'}…`
-                      : agentState === 'agent_y' ? `${currentMode?.yLabel || 'agent y'}…`
-                      : agentState === 'complete' ? (currentMode?.label ? `${currentMode.label} complete` : 'session complete')
-                      : agentState === 'error' ? 'error'
-                      : sessionActive ? 'session active'
-                      : 'both listening'}
-                  </span>
+                  {agentState !== 'idle' && (
+                    <span>
+                      {agentState === 'planning' ? 'routing…'
+                        : agentState === 'agent_x' ? `${currentMode?.xLabel || 'agent x'}…`
+                        : agentState === 'agent_y' ? `${currentMode?.yLabel || 'agent y'}…`
+                        : agentState === 'complete' ? (currentMode?.label ? `${currentMode.label} complete` : 'done')
+                        : agentState === 'error' ? 'error'
+                        : null}
+                    </span>
+                  )}
                 </div>
-                {/* Mode pills */}
-                {[
+                {/* Mode pills — hidden after first message sent */}
+                {dualHistory.length === 0 && [
                   { key: 'diagnose', label: '/diagnose' },
                   { key: 'goal',     label: '/goal' },
                   { key: 'scan',     label: '/scan' },
@@ -2107,16 +2108,16 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                     onClick={() => setSelectedMode(selectedMode === key ? null : key)}
                     style={{
                       flexShrink: 0,
-                      padding: '4px 10px',
-                      borderRadius: 20,
-                      border: `1px solid ${selectedMode === key ? 'var(--ember)' : 'var(--d-border-strong)'}`,
-                      background: selectedMode === key ? 'oklch(0.62 0.18 35 / 0.15)' : 'transparent',
-                      color: selectedMode === key ? 'var(--ember)' : 'var(--fg-mute)',
+                      padding: '3px 8px',
+                      borderRadius: 6,
+                      border: 'none',
+                      background: selectedMode === key ? 'oklch(0.62 0.18 35 / 0.12)' : 'transparent',
+                      color: selectedMode === key ? 'var(--ember)' : 'rgba(255,255,255,0.28)',
                       fontFamily: '"JetBrains Mono", monospace',
                       fontSize: '0.68rem',
                       letterSpacing: '0.04em',
                       cursor: 'pointer',
-                      transition: 'all .15s',
+                      transition: 'color .15s, background .15s',
                       whiteSpace: 'nowrap',
                     }}
                   >
@@ -2137,11 +2138,11 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                     }
                   }}
                   placeholder={
-                    !sessionActive
-                      ? 'Press Enter or click New session to start…'
-                      : agentState === 'planning' || agentState === 'agent_x' || agentState === 'agent_y'
-                        ? 'Engines running…'
-                        : 'Ask anything about your business…'
+                    agentState === 'planning' || agentState === 'agent_x' || agentState === 'agent_y'
+                      ? 'Engines running…'
+                      : dualHistory.length === 0
+                        ? 'Pick a mode above, or just start typing…'
+                        : 'Continue the session…'
                   }
                   disabled={agentState === 'planning' || agentState === 'agent_x' || agentState === 'agent_y'}
                 />

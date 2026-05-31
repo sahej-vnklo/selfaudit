@@ -384,8 +384,11 @@
   font-family: "Manrope", -apple-system, system-ui, sans-serif;
   font-size: 16px;
   outline: none;
+  -webkit-appearance: none;
 }
 .sa-dash .dash-cmd-input::placeholder { color: var(--fg-mute); }
+.sa-dash .dash-cmd-input:focus        { outline: none; box-shadow: none; border: none; }
+.sa-dash .dash-cmd:focus-within       { outline: none; }
 
 /* New session button (ember outline) */
 .sa-dash .dash-newbtn {
@@ -404,27 +407,30 @@
 .sa-dash .dash-newbtn:hover { border-color: var(--ember); background: oklch(0.62 0.18 35 / 0.15); }
 .sa-dash .dash-newbtn svg { width: 16px; height: 16px; flex: none; }
 
-/* Send button (ember filled) */
+/* Send button (ember filled — brighter gradient to maintain contrast against glass surface) */
 .sa-dash .dash-cmd-send {
   flex: none;
   width: 44px; height: 44px;
   display: inline-flex; align-items: center; justify-content: center;
-  background: linear-gradient(180deg, oklch(0.55 0.18 32), oklch(0.42 0.16 28));
-  border: 1px solid oklch(0.6 0.18 35);
+  background: linear-gradient(180deg, oklch(0.64 0.21 34), oklch(0.50 0.20 30));
+  border: 1px solid oklch(0.7 0.22 36);
   border-radius: 10px;
-  color: #fdf6ee;
+  color: #fff8f0;
   cursor: pointer;
-  box-shadow: 0 1px 0 rgba(255,255,255,0.15) inset, 0 8px 20px -10px oklch(0.55 0.2 35);
-  transition: box-shadow .2s, transform .15s;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.22) inset,
+              0 8px 24px -8px oklch(0.6 0.22 35 / 0.7);
+  transition: box-shadow .2s, transform .15s, opacity .15s;
 }
 .sa-dash .dash-cmd-send:hover {
   transform: translateY(-1px);
-  box-shadow: 0 1px 0 rgba(255,255,255,0.2) inset, 0 12px 26px -10px oklch(0.6 0.22 35);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.28) inset,
+              0 12px 30px -8px oklch(0.65 0.24 35 / 0.8);
 }
+.sa-dash .dash-cmd-send:disabled { opacity: 0.35; cursor: default; transform: none; }
 .sa-dash[data-theme="light"] .dash-cmd-send {
-  background: linear-gradient(180deg, oklch(0.66 0.145 42), oklch(0.59 0.15 37));
-  border-color: oklch(0.6 0.14 40);
-  box-shadow: 0 1px 0 rgba(255,255,255,0.28) inset, 0 8px 20px -10px oklch(0.62 0.15 40 / 0.5);
+  background: linear-gradient(180deg, oklch(0.70 0.17 40), oklch(0.62 0.17 36));
+  border-color: oklch(0.65 0.16 38);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.35) inset, 0 8px 20px -8px oklch(0.65 0.16 38 / 0.5);
 }
 .sa-dash .dash-cmd-send svg { width: 18px; height: 18px; }
 
