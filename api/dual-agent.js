@@ -117,15 +117,15 @@ export default async function handler(req, res) {
 
   // ── Conversational short-circuit ──────────────────────────────────────────
   if (isConversational(query)) {
-    const reply = `I diagnose business problems and build the solution plan.\n\nTell me what is not working — pipeline dry, churn spiking, cash running short, team not executing, goal not moving — and I will run a full analysis.\n\nOr share any update, ask a specific question, or tell me what you are trying to achieve.`
-    sse(res, 'mode',           { mode: 'conversational', label: 'LISTENING', xLabel: 'AGENT X', yLabel: 'AGENT Y' })
-    sse(res, 'agent_x_start',  {})
-    sse(res, 'agent_x_token',  { token: reply })
-    sse(res, 'agent_x_complete', { output: reply })
-    sse(res, 'agent_y_start',  {})
-    sse(res, 'agent_y_complete', { output: '' })
-    sse(res, 'session_result', { componentCount: 0 })
-    sse(res, 'done',           {})
+    const reply = `What's going on in your business?\n\nTell me what isn't working, share an update, or pick a mode:\n\n/diagnose — find what's broken and why\n/goal — map the path to your target\n/scan — investigate a specific question`
+    sse(res, 'mode',             { mode: 'conversational', label: 'LISTENING', xLabel: 'AGENT X', yLabel: 'AGENT Y' })
+    sse(res, 'agent_x_start',   {})
+    sse(res, 'agent_x_token',   { token: reply })
+    sse(res, 'agent_x_complete',{ output: reply })
+    sse(res, 'agent_y_start',   {})
+    sse(res, 'agent_y_complete',{ output: '' })
+    sse(res, 'session_result',  { componentCount: 0 })
+    sse(res, 'done',            {})
     res.end()
     return
   }
