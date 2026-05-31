@@ -104,29 +104,29 @@ function SectionHeader({ title, sub }) {
   )
 }
 
-function IssueCard({ issue }) {
+function IssueRow({ issue, isLast }) {
   const sev = SEV_STYLE[issue.severity] || SEV_STYLE.medium
   return (
-    <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
-        <div style={{ fontSize: 14, fontWeight: 600, color: C.text, lineHeight: 1.35, flex: 1 }}>{issue.title}</div>
-        <div style={{ padding: '3px 8px', borderRadius: 100, fontSize: 10, fontWeight: 700, letterSpacing: '0.04em', color: sev.color, background: sev.bg, border: `1px solid ${sev.border}`, flexShrink: 0 }}>
+    <div style={{ padding: '13px 16px', borderBottom: isLast ? 'none' : `1px solid ${C.border}` }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, marginBottom: issue.description ? 6 : 0 }}>
+        <div style={{ fontSize: 13.5, fontWeight: 600, color: C.text, lineHeight: 1.3, flex: 1 }}>{issue.title}</div>
+        <div style={{ padding: '2px 8px', borderRadius: 100, fontSize: 10, fontWeight: 700, letterSpacing: '0.04em', color: sev.color, background: sev.bg, border: `1px solid ${sev.border}`, flexShrink: 0 }}>
           {sev.label}
         </div>
       </div>
       {issue.description && (
-        <div style={{ fontSize: 12.5, color: C.textMuted, lineHeight: 1.6 }}>{issue.description}</div>
+        <div style={{ fontSize: 12, color: C.textMuted, lineHeight: 1.55, marginBottom: issue.recommended ? 8 : 4 }}>{issue.description}</div>
       )}
       {issue.recommended && (
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, padding: '9px 12px', background: C.surface2, borderRadius: 7, border: `1px solid ${C.border}` }}>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{ color: C.accentText, flexShrink: 0, marginTop: 1 }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 7, padding: '7px 10px', background: C.surface2, borderRadius: 6 }}>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{ color: C.accentText, flexShrink: 0, marginTop: 2 }}>
             <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
           </svg>
-          <div style={{ fontSize: 12, color: C.textSecondary, lineHeight: 1.55 }}>{issue.recommended}</div>
+          <div style={{ fontSize: 11.5, color: C.textSecondary, lineHeight: 1.5 }}>{issue.recommended}</div>
         </div>
       )}
       {issue.created_at && (
-        <div style={{ fontSize: 11, color: C.textFaint }}>Flagged {timeAgo(issue.created_at)}</div>
+        <div style={{ fontSize: 10.5, color: C.textFaint, marginTop: 6 }}>Flagged {timeAgo(issue.created_at)}</div>
       )}
     </div>
   )
@@ -346,8 +346,10 @@ export default function DepartmentPage({ areaId, user, navigateSection }) {
               sub={data.issues.length === 0 ? 'No open issues for this department.' : `${data.issues.length} open issue${data.issues.length !== 1 ? 's' : ''} flagged by monitoring.`}
             />
             {data.issues.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {data.issues.map(issue => <IssueCard key={issue.id} issue={issue} />)}
+              <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 10, overflow: 'hidden', maxHeight: 380, overflowY: 'auto' }}>
+                {data.issues.map((issue, i) => (
+                  <IssueRow key={issue.id} issue={issue} isLast={i === data.issues.length - 1} />
+                ))}
               </div>
             ) : (
               <div style={{ padding: '14px 16px', background: C.greenBg, border: `1px solid var(--green)`, borderRadius: 10, fontSize: 13, color: C.greenText }}>
