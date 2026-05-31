@@ -133,18 +133,24 @@ function IssueRow({ issue, isLast }) {
 }
 
 function RuleRow({ rule, userId, onSaved }) {
-  const [localValue, setLocalValue] = useState(
-    rule.isOverridden ? rule.userValue : rule.defaultValue
-  )
-  const [saving, setSaving] = useState(false)
+  // Empty string = no override (suggestion state). User's value = override state.
+  const [localValue, setLocalValue] = useState(rule.isOverridden ? String(rule.userValue) : '')
+  const [saving, setSaving]         = useState(false)
   const [savedFlash, setSavedFlash] = useState(false)
 
-  const isOverridden = localValue !== rule.defaultValue
+  const isSet = localValue !== ''
 
   const handleBlur = async () => {
+    if (localValue === '') {
+      // User cleared the field — delete any existing override
+      if (rule.isOverridden) await deleteOverride()
+      return
+    }
     const num = parseFloat(localValue)
-    if (isNaN(num)) { setLocalValue(rule.isOverridden ? rule.userValue : rule.defaultValue); return }
-    if (num === rule.defaultValue && !rule.isOverridden) return
+    if (isNaN(num) || num < rule.min || num > rule.max) {
+      setLocalValue(rule.isOverridden ? String(rule.userValue) : '')
+      return
+    }
     setSaving(true)
     try {
       const sb    = await initSupabase()
@@ -156,7 +162,6 @@ function RuleRow({ rule, userId, onSaved }) {
         body:    JSON.stringify({ userId, ruleId: rule.ruleId, areaId: rule.ruleId.split(':')[0], metricKey: rule.metricKey, value: num }),
       })
       if (res.ok) {
-        setLocalValue(num)
         setSavedFlash(true)
         setTimeout(() => setSavedFlash(false), 2000)
         onSaved?.()
@@ -165,7 +170,7 @@ function RuleRow({ rule, userId, onSaved }) {
     setSaving(false)
   }
 
-  const handleReset = async () => {
+  const deleteOverride = async () => {
     try {
       const sb    = await initSupabase()
       const { data: { session: s } } = await sb.auth.getSession()
@@ -174,81 +179,86 @@ function RuleRow({ rule, userId, onSaved }) {
         method:  'DELETE',
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       })
-      setLocalValue(rule.defaultValue)
+      setLocalValue('')
+      onSaved?.()
     } catch { /* non-blocking */ }
   }
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 14px', background: C.surface, border: `1px solid ${isOverridden ? C.accent : C.border}`, borderRadius: 9, transition: 'border-color 0.15s' }}>
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 12, padding: '11px 14px',
+      background: C.surface,
+      border: `1px solid ${isSet ? C.accent : C.border}`,
+      borderRadius: 9, transition: 'border-color 0.15s',
+    }}>
 
-      {/* Label + current value */}
+      {/* Label + live value */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 12.5, fontWeight: 500, color: C.text, marginBottom: 3 }}>{rule.label}</div>
-        {rule.currentValue != null && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 12, color: C.textMuted }}>
-              Now: <strong style={{ color: C.text }}>{rule.currentValue}{rule.unit}</strong>
-            </span>
-            {rule.currentDelta != null && (
-              <span style={{ fontSize: 11, color: rule.currentDelta > 0 ? C.redText : C.greenText }}>
-                {rule.currentDelta > 0 ? '↑' : '↓'} {Math.abs(rule.currentDelta).toFixed(1)}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {rule.currentValue != null ? (
+            <>
+              <span style={{ fontSize: 12, color: C.textMuted }}>
+                Now: <strong style={{ color: C.text }}>{rule.currentValue}{rule.unit}</strong>
               </span>
-            )}
-            {rule.sparkline?.length >= 2 && (
-              <Sparkline values={rule.sparkline} color={rule.currentDelta > 0 ? 'var(--red)' : 'var(--green)'} width={64} height={22} />
-            )}
-          </div>
-        )}
-        {rule.currentValue == null && (
-          <div style={{ fontSize: 11, color: C.textFaint }}>No data yet</div>
-        )}
+              {rule.currentDelta != null && (
+                <span style={{ fontSize: 11, color: rule.currentDelta > 0 ? C.redText : C.greenText }}>
+                  {rule.currentDelta > 0 ? '↑' : '↓'} {Math.abs(rule.currentDelta).toFixed(1)}
+                </span>
+              )}
+              {rule.sparkline?.length >= 2 && (
+                <Sparkline values={rule.sparkline} color={rule.currentDelta > 0 ? 'var(--red)' : 'var(--green)'} width={64} height={22} />
+              )}
+            </>
+          ) : (
+            <span style={{ fontSize: 11, color: C.textFaint }}>No data yet</span>
+          )}
+        </div>
       </div>
 
-      {/* Threshold input */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-        <span style={{ fontSize: 11, color: C.textFaint, whiteSpace: 'nowrap' }}>Threshold:</span>
-        <input
-          type="number"
-          min={rule.min}
-          max={rule.max}
-          step="any"
-          value={localValue}
-          onChange={e => setLocalValue(e.target.value)}
-          onBlur={handleBlur}
-          style={{
-            width: 68,
-            padding: '5px 8px',
-            borderRadius: 7,
-            border: `1px solid ${isOverridden ? C.accent : C.border}`,
-            background: C.surface2,
-            color: C.text,
-            fontSize: 13,
-            fontWeight: 600,
-            textAlign: 'center',
-            fontFamily: 'inherit',
-            outline: 'none',
-          }}
-        />
-        <span style={{ fontSize: 11.5, color: C.textMuted, minWidth: 32 }}>{rule.unit}</span>
+      {/* Threshold input + suggestion label */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <input
+            type="number"
+            min={rule.min}
+            max={rule.max}
+            step="any"
+            value={localValue}
+            placeholder={String(rule.defaultValue)}
+            onChange={e => setLocalValue(e.target.value)}
+            onBlur={handleBlur}
+            style={{
+              width: 72,
+              padding: '5px 8px',
+              borderRadius: 7,
+              border: `1px solid ${isSet ? C.accent : C.border}`,
+              background: isSet ? C.surface2 : 'transparent',
+              color: isSet ? C.text : C.textFaint,
+              fontSize: 13,
+              fontWeight: isSet ? 600 : 400,
+              textAlign: 'center',
+              fontFamily: 'inherit',
+              outline: 'none',
+            }}
+          />
+          <span style={{ fontSize: 11.5, color: C.textMuted, minWidth: 32 }}>{rule.unit}</span>
+        </div>
+        <div style={{ fontSize: 10.5, textAlign: 'right', minHeight: 14 }}>
+          {saving && <span style={{ color: C.textFaint }}>Saving…</span>}
+          {savedFlash && !saving && <span style={{ color: C.greenText }}>Saved ✓</span>}
+          {isSet && !saving && !savedFlash && (
+            <button type="button" onClick={deleteOverride}
+              style={{ color: C.textFaint, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0, fontSize: 10.5 }}>
+              Clear
+            </button>
+          )}
+          {!isSet && !saving && !savedFlash && (
+            <span style={{ color: C.textFaint, opacity: 0.6 }}>Suggested: {rule.defaultValue} {rule.unit}</span>
+          )}
+        </div>
       </div>
 
-      {/* Status indicators */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, minWidth: 80 }}>
-        {saving && <span style={{ fontSize: 11, color: C.textFaint }}>Saving…</span>}
-        {savedFlash && !saving && <span style={{ fontSize: 11, color: C.greenText }}>Saved ✓</span>}
-        {isOverridden && !saving && !savedFlash && (
-          <button
-            type="button"
-            onClick={handleReset}
-            style={{ fontSize: 11, color: C.textFaint, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
-          >
-            Reset to default ({rule.defaultValue}{rule.unit})
-          </button>
-        )}
-        {!isOverridden && !saving && !savedFlash && (
-          <span style={{ fontSize: 11, color: C.textFaint, opacity: 0.5 }}>default</span>
-        )}
-      </div>
     </div>
   )
 }
