@@ -1656,6 +1656,35 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                     </section>
                   </>
                 ) : (() => {
+                  // Terminal line renderer — applies color by content type
+                  const renderTerminalLines = (text) => {
+                    if (!text) return null
+                    return text.split('\n').map((line, i) => {
+                      let color = 'var(--fg)'
+                      let fontWeight = 'normal'
+                      let opacity = 1
+                      const upper = line.toUpperCase()
+
+                      if (/^CRITICAL/.test(line))       { color = '#E57373'; fontWeight = '600' }
+                      else if (/^HIGH/.test(line))      { color = '#FFB74D'; fontWeight = '600' }
+                      else if (/^MEDIUM/.test(line))    { color = '#FFF176'; fontWeight = '500' }
+                      else if (/^LOW/.test(line))       { color = 'var(--fg-dim)'; fontWeight = '400' }
+                      else if (/^(DIAGNOSIS|SOLUTIONS|ROOT CAUSE|WHAT TO STOP|DATA GAPS|STOP DOING|EXECUTION ORDER|CONTINGENT ON|IMMEDIATE|BUILD NEXT)/.test(line)) {
+                        color = 'var(--ember)'; fontWeight = '700'
+                      }
+                      else if (/^━+$/.test(line))       { color = 'rgba(255,255,255,0.15)'; }
+                      else if (/^(Evidence:|Addresses:|Effort:|Owner:|Confidence:)/.test(line)) {
+                        color = 'var(--fg-mute)'; opacity = 0.7
+                      }
+
+                      return (
+                        <div key={i} style={{ color, fontWeight, opacity, minHeight: line ? undefined : '0.8em' }}>
+                          {line || ''}
+                        </div>
+                      )
+                    })
+                  }
+
                   // Show terminal mode when session is active or engines are running
                   if (sessionActive || agentState !== 'idle') {
                     const xActive   = agentState === 'agent_x' || agentState === 'planning'
@@ -1690,12 +1719,12 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                             }}
                           >
                             {agentState === 'planning' && !agentXStream && (
-                              <span style={{ color: 'var(--text-muted)' }}>Investigating your business…<span style={{ animation: 'blink 1s infinite' }}>▌</span></span>
+                              <span style={{ color: 'var(--fg-mute)' }}>Investigating…▌</span>
                             )}
-                            {agentXStream}
-                            {xActive && agentXStream && <span style={{ opacity: 0.6 }}>▌</span>}
+                            {renderTerminalLines(agentXStream)}
+                            {xActive && agentXStream && <span style={{ opacity: 0.5 }}>▌</span>}
                             {!agentXStream && agentState === 'idle' && (
-                              <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>Agent X will diagnose what is broken in your business.</span>
+                              <span style={{ color: 'var(--fg-mute)', fontSize: '0.72rem' }}>Agent X will diagnose what is broken in your business.</span>
                             )}
                             {agentState === 'error' && agentError && (
                               <span style={{ color: '#E57373' }}>{agentError}</span>
@@ -1728,12 +1757,12 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                             }}
                           >
                             {(agentState === 'planning' || agentState === 'agent_x') && !agentYStream && (
-                              <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>Waiting for Agent X to complete diagnosis…</span>
+                              <span style={{ color: 'var(--fg-mute)', fontSize: '0.72rem' }}>Waiting for Agent X…</span>
                             )}
-                            {agentYStream}
-                            {yActive && agentYStream && <span style={{ opacity: 0.6 }}>▌</span>}
+                            {renderTerminalLines(agentYStream)}
+                            {yActive && agentYStream && <span style={{ opacity: 0.5 }}>▌</span>}
                             {!agentYStream && agentState === 'idle' && (
-                              <span style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>Agent Y will build solutions from Agent X's findings.</span>
+                              <span style={{ color: 'var(--fg-mute)', fontSize: '0.72rem' }}>Agent Y will build solutions from Agent X's findings.</span>
                             )}
                           </div>
                         </section>

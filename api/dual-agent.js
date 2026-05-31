@@ -56,9 +56,10 @@ export default async function handler(req, res) {
 
   // Short-circuit conversational messages
   if (isConversational(query)) {
+    const intro = `I diagnose what is broken in your business and build the fix plan.\n\nTell me what is not working — pipeline dry, churn spiking, cash running short, team not executing, goal not moving — and I will run a full analysis.\n\nAgent X will diagnose the root cause. Agent Y will build the solution.`
     sse(res, 'agent_x_start',    {})
-    sse(res, 'agent_x_token',    { token: 'Ask me something specific about your business.' })
-    sse(res, 'agent_x_complete', { output: 'Ask me something specific about your business.' })
+    sse(res, 'agent_x_token',    { token: intro })
+    sse(res, 'agent_x_complete', { output: intro })
     sse(res, 'agent_y_start',    {})
     sse(res, 'agent_y_complete', { output: '' })
     sse(res, 'done',             {})

@@ -15,17 +15,26 @@ const SOURCE_CATALOG = {
   hubspot_contacts:    'CRM contacts: new leads this month, lifecycle stage breakdown, MQLs, SQLs, customer count',
 }
 
-// Short conversational messages that should not trigger an investigation
+// Short conversational messages and product questions that should not trigger an investigation
 const CONVERSATIONAL_PATTERNS = [
   /^(hi|hey|hello|howdy|hiya|yo|sup)\b/i,
   /^(thanks?|thank you|ty|cheers|cool|ok|okay|got it|nice|great|perfect|sounds good)\b/i,
   /^(test|testing|ping|check|hello there)\b/i,
+  /^how can (you|u) help/i,
+  /^what can (you|u) do/i,
+  /^what do (you|u) do/i,
+  /^how does this work/i,
+  /^can (you|u) help/i,
+  /^what (is|are) (you|your|selfaudit)/i,
+  /^tell me (about|what|how)/i,
+  /^(who are you|what are you)\b/i,
+  /^(good morning|good afternoon|good evening)\b/i,
 ]
 
 export function isConversational(query) {
   const q = String(query || '').trim()
-  if (q.length < 15 && CONVERSATIONAL_PATTERNS.some((p) => p.test(q))) return true
-  if (q.split(/\s+/).length <= 2 && CONVERSATIONAL_PATTERNS.some((p) => p.test(q))) return true
+  if (CONVERSATIONAL_PATTERNS.some((p) => p.test(q))) return true
+  if (q.length < 15 && q.split(/\s+/).length <= 3) return true
   return false
 }
 
