@@ -1686,19 +1686,24 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
           <span className="logo-text">SelfAudit</span>
         </div>
 
-        <button
-          className="dash-status"
-          type="button"
-          onClick={() => setShowResultsPanel(p => !p)}
-        >
-          <span className="dot" style={reports.length > 0 ? { background: 'var(--ember)', boxShadow: '0 0 10px -1px var(--ember)' } : {}} />
-          Execution Panel
-          <span className="chev">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d={showResultsPanel ? 'M18 15l-6-6-6 6' : 'M6 9l6 6 6-6'}/>
-            </svg>
-          </span>
-        </button>
+        {(() => {
+          const hasNewResults = agentYDone && sessionActive
+          return (
+            <button
+              className="dash-status"
+              type="button"
+              onClick={() => setShowResultsPanel(p => !p)}
+            >
+              <span className="dot" style={hasNewResults ? { background: 'var(--ember)', boxShadow: '0 0 10px -1px var(--ember)' } : {}} />
+              {hasNewResults ? 'Results ready' : 'Execution Panel'}
+              <span className="chev">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d={showResultsPanel ? 'M18 15l-6-6-6 6' : 'M6 9l6 6 6-6'}/>
+                </svg>
+              </span>
+            </button>
+          )
+        })()}
 
         <div className="dash-top-right">
           <button className="dash-pill" type="button" onClick={() => navigateSection('oversight')}>
