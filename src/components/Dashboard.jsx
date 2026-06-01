@@ -1710,7 +1710,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
             <button
               className="dash-status"
               type="button"
-              onClick={() => setShowResultsPanel(p => { if (!p) refreshReports(); return !p })}
+              onClick={() => setShowResultsPanel(p => !p)}
             >
               <span className="dot" style={hasNewResults ? { background: 'var(--green)', boxShadow: '0 0 10px -1px var(--green)' } : {}} />
               {hasNewResults ? 'Results ready' : 'Execution Panel'}
