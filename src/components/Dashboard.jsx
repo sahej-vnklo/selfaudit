@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { initSupabase } from '../lib/supabase.js'
 import { generateReport } from '../lib/audit.js'
 import { PRIVACY_POLICY_URL, TERMS_HASH } from '../lib/legal.js'
