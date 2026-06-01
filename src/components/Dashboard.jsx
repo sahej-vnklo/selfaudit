@@ -1919,10 +1919,10 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                             <div className="card-status" style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, gap: 6 }}>
                               <span style={{
                                 width: 7, height: 7, borderRadius: '50%', display: 'inline-block', flexShrink: 0,
-                                background: xActive ? '#4ade80' : xComplete ? '#4ade80' : 'rgba(255,255,255,0.2)',
+                                background: xActive ? '#4ade80' : xComplete ? '#4ade80' : 'var(--d-border2)',
                                 boxShadow: (xActive || xComplete) ? '0 0 8px #4ade80' : 'none',
                               }} />
-                              <span style={{ color: xActive ? '#4ade80' : xComplete ? '#4ade80' : selectedMode ? 'rgba(74,222,128,0.5)' : 'rgba(255,255,255,0.3)' }}>
+                              <span style={{ color: xActive ? '#4ade80' : xComplete ? '#4ade80' : 'var(--text-muted)' }}>
                                 {xActive
                                   ? (currentMode?.xLabel || 'SCANNING')
                                   : xComplete
@@ -1938,7 +1938,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                           <div style={{ flex: 1, padding: '10px 12px 12px', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
                             <div
                               ref={agentXScrollRef}
-                              style={{ flex: 1, overflow: 'auto', minHeight: 0, background: '#0c0c0c', border: '1px solid rgba(74,222,128,0.15)', borderRadius: 8, padding: '14px 16px', fontFamily: '"JetBrains Mono", ui-monospace, monospace', fontSize: '0.72rem', lineHeight: 1.85, wordBreak: 'break-word' }}
+                              style={{ flex: 1, overflow: 'auto', minHeight: 0, border: '1px solid var(--d-border)', borderRadius: 8, padding: '14px 16px', fontFamily: '"JetBrains Mono", ui-monospace, monospace', fontSize: '0.72rem', lineHeight: 1.85, wordBreak: 'break-word' }}
                             >
                               {/* Past turns — compact history */}
                               {sessionLog.map((turn, i) => (
@@ -1950,13 +1950,13 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                               ))}
                               {/* Current state */}
                               {agentState === 'idle' && !agentXStream && (
-                                <div style={{ color: 'rgba(74,222,128,0.2)' }}>{'> AGENT_X // STANDBY'}</div>
+                                <div style={{ color: 'var(--text-faint)' }}>{'> AGENT_X // STANDBY'}</div>
                               )}
                               {agentState === 'planning' && !agentXStream && (
                                 <div style={{ color: 'rgba(74,222,128,0.5)' }}>{'> routing'}<span style={{ animation: 'termBlink 1s step-end infinite', color: '#4ade80' }}>█</span></div>
                               )}
                               {agentXStream.length > 0 && agentState === 'agent_x' && agentXStream.length < 10 && (
-                                <div style={{ color: 'rgba(74,222,128,0.5)', marginBottom: 8 }}>{'> AGENT_X // DIAGNOSTIC_ENGINE'}</div>
+                                <div style={{ color: 'var(--text-muted)', marginBottom: 8 }}>{'> AGENT_X // DIAGNOSTIC_ENGINE'}</div>
                               )}
                               {renderTerminalLines(agentXStream, '#4ade80')}
                               {xActive && agentXStream && <span style={{ color: '#4ade80', opacity: 0.8 }}>█</span>}
@@ -1975,10 +1975,10 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                             <div className="card-status" style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, gap: 6 }}>
                               <span style={{
                                 width: 7, height: 7, borderRadius: '50%', display: 'inline-block', flexShrink: 0,
-                                background: yActive ? '#fb923c' : yComplete ? '#fb923c' : 'rgba(255,255,255,0.2)',
+                                background: yActive ? '#fb923c' : yComplete ? '#fb923c' : 'var(--d-border2)',
                                 boxShadow: (yActive || yComplete) ? '0 0 8px #fb923c' : 'none',
                               }} />
-                              <span style={{ color: yActive ? '#fb923c' : yComplete ? '#fb923c' : selectedMode ? 'rgba(251,146,60,0.5)' : 'rgba(255,255,255,0.3)' }}>
+                              <span style={{ color: yActive ? '#fb923c' : yComplete ? '#fb923c' : 'var(--text-muted)' }}>
                                 {yActive
                                   ? (currentMode?.yLabel || 'PROPOSING')
                                   : yComplete
@@ -1994,7 +1994,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                           <div style={{ flex: 1, padding: '10px 12px 12px', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
                             <div
                               ref={agentYScrollRef}
-                              style={{ flex: 1, overflow: 'auto', minHeight: 0, background: '#0c0c0c', border: '1px solid rgba(251,146,60,0.15)', borderRadius: 8, padding: '14px 16px', fontFamily: '"JetBrains Mono", ui-monospace, monospace', fontSize: '0.72rem', lineHeight: 1.85, wordBreak: 'break-word' }}
+                              style={{ flex: 1, overflow: 'auto', minHeight: 0, border: '1px solid var(--d-border)', borderRadius: 8, padding: '14px 16px', fontFamily: '"JetBrains Mono", ui-monospace, monospace', fontSize: '0.72rem', lineHeight: 1.85, wordBreak: 'break-word' }}
                             >
                               {/* Past turns — compact history */}
                               {sessionLog.map((turn, i) => (
@@ -2008,7 +2008,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                               ))}
                               {/* Current state */}
                               {agentState === 'idle' && !agentYStream && (
-                                <div style={{ color: 'rgba(251,146,60,0.2)' }}>{'> AGENT_Y // STANDBY'}</div>
+                                <div style={{ color: 'var(--text-faint)' }}>{'> AGENT_Y // STANDBY'}</div>
                               )}
                               {(agentState === 'planning' || agentState === 'agent_x') && !agentYStream && (
                                 <div style={{ color: 'rgba(251,146,60,0.3)' }}>{'> waiting for Agent X...'}</div>
