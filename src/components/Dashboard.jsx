@@ -1730,7 +1730,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
         <div style={{
           borderBottom: '1px solid var(--d-border)',
           background: 'var(--d-surface)',
-          maxHeight: '70vh',
+          maxHeight: 'calc(100vh - 60px)',
           overflow: 'auto',
           boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
         }}>
