@@ -1739,13 +1739,6 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
           boxShadow: '-4px 0 24px rgba(0,0,0,0.08)',
           zIndex: 200,
         }}>
-          {/* Close button */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '12px 28px', position: 'sticky', top: 0, background: 'var(--d-surface)', zIndex: 2, borderBottom: '1px solid var(--d-border)' }}>
-            <button type="button" onClick={() => setShowResultsPanel(false)} style={{ background: 'none', border: 'none', color: 'var(--fg-mute)', cursor: 'pointer', fontSize: 13 }}>
-              Close ×
-            </button>
-          </div>
-
           {/* Execution panel only */}
           {reports.length > 0 ? (
             <div style={{ padding: '0 28px 28px' }}>
