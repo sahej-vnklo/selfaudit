@@ -1725,14 +1725,19 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
         </div>
       </header>
 
-      {/* ── Execution Panel (slides in below topbar) ── */}
+      {/* ── Execution Panel (fixed overlay — doesn't push content, doesn't cover sidebar) ── */}
       {showResultsPanel && (
         <div style={{
-          borderBottom: '1px solid var(--d-border)',
-          background: 'var(--d-surface)',
-          maxHeight: 'calc(100vh - 60px)',
+          position: 'fixed',
+          top: 68,
+          left: sidebarExpanded ? 214 : 66,
+          right: 0,
+          height: 'calc(100vh - 68px)',
+          background: 'var(--bg)',
+          borderLeft: '1px solid var(--d-border)',
           overflow: 'auto',
-          boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+          boxShadow: '-4px 0 24px rgba(0,0,0,0.08)',
+          zIndex: 200,
         }}>
           {/* Close button */}
           <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '12px 28px', position: 'sticky', top: 0, background: 'var(--d-surface)', zIndex: 2, borderBottom: '1px solid var(--d-border)' }}>
