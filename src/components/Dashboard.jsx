@@ -1694,7 +1694,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
               type="button"
               onClick={() => setShowResultsPanel(p => !p)}
             >
-              <span className="dot" style={hasNewResults ? { background: 'var(--ember)', boxShadow: '0 0 10px -1px var(--ember)' } : {}} />
+              <span className="dot" style={hasNewResults ? { background: 'var(--green)', boxShadow: '0 0 10px -1px var(--green)' } : {}} />
               {hasNewResults ? 'Results ready' : 'Execution Panel'}
               <span className="chev">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
