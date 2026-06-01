@@ -1762,15 +1762,16 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
           boxShadow: '-4px 0 24px rgba(0,0,0,0.08)',
           zIndex: 200,
         }}>
-          {/* Generating state — agents done but report still being structured + saved */}
-          {agentYDone && !sessionSaved ? (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60%', gap: 12, color: 'var(--fg-mute)' }}>
-              <svg style={{ animation: 'spin 1s linear infinite', opacity: 0.5 }} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+          {/* Generating banner — shown while new report is being structured */}
+          {agentYDone && !sessionSaved && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 28px', borderBottom: '1px solid var(--d-border)', fontSize: 12, color: 'var(--fg-mute)' }}>
+              <svg style={{ animation: 'spin 1s linear infinite', flexShrink: 0 }} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
               </svg>
-              <span style={{ fontSize: 13 }}>Structuring your execution plan…</span>
+              Structuring your latest execution plan — panel will update automatically
             </div>
-          ) : reports.length > 0 ? (
+          )}
+          {reports.length > 0 ? (
             <div style={{ padding: '28px 28px 28px' }}>
               <ExecutionPanel
                 key={reports[0]?.id ?? 'empty'}
