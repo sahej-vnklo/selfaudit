@@ -123,13 +123,13 @@ function getThemeVars(theme) {
           }
         : theme === 'light'
           ? {
-              heroSurface: LIGHT_HERO_SURFACE,
-              panelSurface: LIGHT_PANEL_SURFACE,
-              heroBorder: LIGHT_HERO_BORDER,
-              panelBorder: LIGHT_PANEL_BORDER,
-              heroInset: LIGHT_HERO_INSET,
-              heroShadow: LIGHT_HERO_SHADOW,
-              panelShadow: LIGHT_PANEL_SHADOW,
+              heroSurface: 'linear-gradient(155deg, #fcfcfd 0%, #ececee 100%)',
+              panelSurface: '#f1f1f3',
+              heroBorder: '1px solid rgba(20,16,15,0.12)',
+              panelBorder: '1px solid rgba(20,16,15,0.10)',
+              heroInset: 'inset 0 1px 0 rgba(255,255,255,0.9)',
+              heroShadow: '0 1px 2px rgba(20,16,15,0.07), 0 8px 20px -12px rgba(20,16,15,0.18)',
+              panelShadow: '0 1px 2px rgba(20,16,15,0.06)',
             }
         : {
             heroSurface: C.surface,
@@ -921,8 +921,8 @@ const ep = {
     width: 32,
     height: 32,
     borderRadius: 999,
-    border: '1px solid rgba(255,255,255,0.12)',
-    background: 'rgba(255,255,255,0.03)',
+    border: '1px solid var(--border)',
+    background: 'var(--surface)',
     color: 'var(--text-soft)',
     cursor: 'pointer',
     flexShrink: 0,
@@ -930,8 +930,8 @@ const ep = {
   auditSelector: {
     minWidth: 240,
     maxWidth: '100%',
-    background: 'rgba(255,255,255,0.04)',
-    border: '0.5px solid rgba(255,255,255,0.12)',
+    background: 'var(--surface)',
+    border: '0.5px solid var(--border)',
     color: 'var(--text)',
     borderRadius: 999,
     padding: '8px 14px',
@@ -939,8 +939,8 @@ const ep = {
     fontFamily: 'inherit',
   },
   auditSelectorStatic: {
-    background: 'rgba(255,255,255,0.04)',
-    border: '0.5px solid rgba(255,255,255,0.12)',
+    background: 'var(--surface)',
+    border: '0.5px solid var(--border)',
     color: 'var(--text-soft)',
     borderRadius: 999,
     padding: '8px 14px',
@@ -953,7 +953,7 @@ const ep = {
     fontWeight: 600,
     maxWidth: 840,
     marginBottom: 10,
-    fontFamily: 'Georgia, Times New Roman, serif',
+    fontFamily: '"Cormorant Garamond", "Times New Roman", serif',
   },
   recommendedBody: {
     fontSize: 14,
@@ -978,7 +978,7 @@ const ep = {
     width: 40,
     height: 40,
     borderRadius: 999,
-    border: '1px solid rgba(255,255,255,0.22)',
+    border: '1px solid var(--border)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -1095,7 +1095,7 @@ const ep = {
     justifyContent: 'center',
     fontSize: 15,
     flexShrink: 0,
-    background: 'rgba(255,255,255,0.02)',
+    background: 'var(--surface)',
   },
   outputCardBody: {
     minWidth: 0,
