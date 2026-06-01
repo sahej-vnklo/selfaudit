@@ -1691,11 +1691,8 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
           type="button"
           onClick={() => setShowResultsPanel(p => !p)}
         >
-          <span className="dot" style={sessionResultCount > 0 ? { background: 'var(--ember)', boxShadow: '0 0 10px -1px var(--ember)' } : {}} />
-          Results ready
-          {sessionResultCount > 0 && (
-            <span className="count">{sessionResultCount}</span>
-          )}
+          <span className="dot" style={reports.length > 0 ? { background: 'var(--ember)', boxShadow: '0 0 10px -1px var(--ember)' } : {}} />
+          Execution Panel
           <span className="chev">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d={showResultsPanel ? 'M18 15l-6-6-6 6' : 'M6 9l6 6 6-6'}/>
@@ -1728,7 +1725,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
         </div>
       </header>
 
-      {/* ── Results panel (slides in below topbar when session has results) ── */}
+      {/* ── Execution Panel (slides in below topbar) ── */}
       {showResultsPanel && (
         <div style={{
           borderBottom: '1px solid var(--d-border)',
@@ -1737,36 +1734,26 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
           overflow: 'auto',
           boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
         }}>
-          {/* Header */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 28px', borderBottom: '1px solid var(--d-border)', position: 'sticky', top: 0, background: 'var(--d-surface)', zIndex: 2 }}>
-            <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, letterSpacing: '0.12em', color: 'var(--ember)', textTransform: 'uppercase' }}>
-              Saved Reports{reports.length > 0 ? ` — ${reports.length}` : ''}
-            </div>
+          {/* Close button */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '12px 28px', position: 'sticky', top: 0, background: 'var(--d-surface)', zIndex: 2, borderBottom: '1px solid var(--d-border)' }}>
             <button type="button" onClick={() => setShowResultsPanel(false)} style={{ background: 'none', border: 'none', color: 'var(--fg-mute)', cursor: 'pointer', fontSize: 13 }}>
               Close ×
             </button>
           </div>
 
-          {/* Report list */}
-          <div style={{ padding: '20px 28px' }}>
-            {reports.length === 0 ? (
-              <div style={{ color: 'var(--fg-mute)', fontSize: '0.85rem', textAlign: 'center', padding: '40px 0' }}>
-                No saved reports yet. Complete a /diagnose session to generate one.
-              </div>
-            ) : (
-              <ReportList reports={reports} userId={user?.id} />
-            )}
-          </div>
-
-          {/* Execution panel */}
-          {reports.length > 0 && (
-            <div style={{ padding: '0 28px 28px', borderTop: '1px solid var(--d-border)' }}>
+          {/* Execution panel only */}
+          {reports.length > 0 ? (
+            <div style={{ padding: '0 28px 28px' }}>
               <ExecutionPanel
                 reports={reports}
                 userInfo={shareUserInfo}
                 variant="dashboard"
                 theme={theme}
               />
+            </div>
+          ) : (
+            <div style={{ color: 'var(--fg-mute)', fontSize: '0.85rem', textAlign: 'center', padding: '48px 0' }}>
+              Complete a /diagnose session to generate your execution panel.
             </div>
           )}
         </div>
