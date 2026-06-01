@@ -1766,6 +1766,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
           {reports.length > 0 ? (
             <div style={{ padding: '28px 28px 28px' }}>
               <ExecutionPanel
+                key={reports[0]?.id ?? 'empty'}
                 reports={reports}
                 userInfo={shareUserInfo}
                 variant="dashboard"
