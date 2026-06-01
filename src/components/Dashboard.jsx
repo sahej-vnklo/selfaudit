@@ -791,6 +791,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
   const [agentYStream,    setAgentYStream]    = useState('')
   const [agentXDone,      setAgentXDone]      = useState(false)
   const [agentYDone,      setAgentYDone]      = useState(false)
+  const [sessionSaved,    setSessionSaved]    = useState(false)
   const [dualHistory,     setDualHistory]     = useState([])
   const [agentError,      setAgentError]      = useState(null)
   const [currentMode,     setCurrentMode]     = useState(null)
@@ -1310,7 +1311,8 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
           status:            'unknown',
           created_at:        new Date().toISOString(),
         }, ...prev].slice(0, 24))
-        // Update Results Ready badge
+        // Signal that the new report is in state — button can now say "Results ready"
+        setSessionSaved(true)
         setSessionResultCount(prev => prev + 1)
       }
     } catch (err) {
@@ -1334,6 +1336,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
     setDualHistory([])      // reset so pills reappear on next session
     setSelectedMode(null)   // reset selected mode
     setSessionResultCount(0)
+    setSessionSaved(false)
     setShowResultsPanel(false)
     agentXFinalRef.current = ''
   }
@@ -1702,7 +1705,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
         </div>
 
         {(() => {
-          const hasNewResults = agentYDone && sessionActive
+          const hasNewResults = sessionSaved
           return (
             <button
               className="dash-status"
