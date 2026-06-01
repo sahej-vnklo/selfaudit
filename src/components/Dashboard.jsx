@@ -946,6 +946,28 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
     } catch { /* non-blocking */ }
   }, [user?.id])
 
+  // Poll DB for new report when panel is open after a session and save hasn't completed yet
+  useEffect(() => {
+    if (!showResultsPanel || !agentYDone || sessionSaved || !user?.id) return
+    const knownFirstId = reports[0]?.id ?? null
+    const interval = setInterval(async () => {
+      try {
+        const sb = await initSupabase()
+        const { data } = await sb
+          .from('reports')
+          .select('id, title, content, headline, industry, domain, conversation_mode, status, created_at')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(24)
+        if (data && data[0]?.id && data[0].id !== knownFirstId) {
+          setReports(data)
+          setSessionSaved(true)
+        }
+      } catch { /* non-blocking */ }
+    }, 6000)
+    return () => clearInterval(interval)
+  }, [showResultsPanel, agentYDone, sessionSaved, user?.id])
+
   useEffect(() => {
     if (section !== 'billing') return
     if (!profile?.stripe_customer_id || !profile?.stripe_subscription_id) return
