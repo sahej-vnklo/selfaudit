@@ -930,6 +930,21 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
     }
   }, [user])
 
+  // Refresh reports from DB — called when Execution Panel opens so it always shows the latest session
+  const refreshReports = useCallback(async () => {
+    if (!user?.id) return
+    try {
+      const sb = await initSupabase()
+      const { data } = await sb
+        .from('reports')
+        .select('id, title, content, headline, industry, domain, conversation_mode, status, created_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(24)
+      if (data) setReports(data)
+    } catch { /* non-blocking */ }
+  }, [user?.id])
+
   useEffect(() => {
     if (section !== 'billing') return
     if (!profile?.stripe_customer_id || !profile?.stripe_subscription_id) return
@@ -1692,7 +1707,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
             <button
               className="dash-status"
               type="button"
-              onClick={() => setShowResultsPanel(p => !p)}
+              onClick={() => setShowResultsPanel(p => { if (!p) refreshReports(); return !p })}
             >
               <span className="dot" style={hasNewResults ? { background: 'var(--green)', boxShadow: '0 0 10px -1px var(--green)' } : {}} />
               {hasNewResults ? 'Results ready' : 'Execution Panel'}
