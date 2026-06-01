@@ -1938,7 +1938,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                           <div style={{ flex: 1, padding: '10px 12px 12px', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
                             <div
                               ref={agentXScrollRef}
-                              style={{ flex: 1, overflow: 'auto', minHeight: 0, background: 'var(--d-surface)', border: '1px solid rgba(74,222,128,0.15)', borderRadius: 8, padding: '14px 16px', fontFamily: '"JetBrains Mono", ui-monospace, monospace', fontSize: '0.72rem', lineHeight: 1.85, wordBreak: 'break-word' }}
+                              style={{ flex: 1, overflow: 'auto', minHeight: 0, background: '#0c0c0c', border: '1px solid rgba(74,222,128,0.15)', borderRadius: 8, padding: '14px 16px', fontFamily: '"JetBrains Mono", ui-monospace, monospace', fontSize: '0.72rem', lineHeight: 1.85, wordBreak: 'break-word' }}
                             >
                               {/* Past turns — compact history */}
                               {sessionLog.map((turn, i) => (
@@ -1994,7 +1994,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                           <div style={{ flex: 1, padding: '10px 12px 12px', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
                             <div
                               ref={agentYScrollRef}
-                              style={{ flex: 1, overflow: 'auto', minHeight: 0, background: 'var(--d-surface)', border: '1px solid rgba(251,146,60,0.15)', borderRadius: 8, padding: '14px 16px', fontFamily: '"JetBrains Mono", ui-monospace, monospace', fontSize: '0.72rem', lineHeight: 1.85, wordBreak: 'break-word' }}
+                              style={{ flex: 1, overflow: 'auto', minHeight: 0, background: '#0c0c0c', border: '1px solid rgba(251,146,60,0.15)', borderRadius: 8, padding: '14px 16px', fontFamily: '"JetBrains Mono", ui-monospace, monospace', fontSize: '0.72rem', lineHeight: 1.85, wordBreak: 'break-word' }}
                             >
                               {/* Past turns — compact history */}
                               {sessionLog.map((turn, i) => (
