@@ -1864,32 +1864,32 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                   const renderTerminalLines = (text, accentColor = '#4ade80') => {
                     if (!text) return null
                     return text.split('\n').map((line, i) => {
-                      let color = accentColor === '#4ade80' ? 'rgba(200,255,220,0.85)' : 'rgba(255,220,150,0.85)'
+                      let color = 'var(--text)'
                       let fontWeight = 'normal'
                       let opacity = 1
                       let fontSize = '0.73rem'
                       let marginTop = 0
 
-                      if (/^CRITICAL/.test(line))  { color = '#ff6b6b'; fontWeight = '700' }
-                      else if (/^HIGH/.test(line)) { color = '#ffa94d'; fontWeight = '700' }
-                      else if (/^MEDIUM/.test(line)){ color = '#ffe066'; fontWeight = '600' }
-                      else if (/^LOW/.test(line))  { color = 'rgba(200,200,200,0.5)' }
+                      if (/^CRITICAL/.test(line))  { color = 'var(--red-text)'; fontWeight = '700' }
+                      else if (/^HIGH/.test(line)) { color = 'var(--amber-text)'; fontWeight = '700' }
+                      else if (/^MEDIUM/.test(line)){ color = 'var(--amber-text)'; fontWeight = '600' }
+                      else if (/^LOW/.test(line))  { color = 'var(--text-muted)' }
                       else if (/^(DIAGNOSIS|ROOT CAUSE|WHAT TO STOP|DATA GAPS)/.test(line)) {
-                        color = '#fff'; fontWeight = '700'; fontSize = '0.7rem'
+                        color = 'var(--text)'; fontWeight = '700'; fontSize = '0.7rem'
                         marginTop = 12
                       }
                       else if (/^(SOLUTIONS|STOP DOING|EXECUTION ORDER|CONTINGENT ON)/.test(line)) {
-                        color = '#fff'; fontWeight = '700'; fontSize = '0.7rem'
+                        color = 'var(--text)'; fontWeight = '700'; fontSize = '0.7rem'
                         marginTop = 12
                       }
                       else if (/^(IMMEDIATE|BUILD NEXT)/.test(line)) {
-                        color = '#4ade80'; fontWeight = '700'
+                        color = 'var(--accent-text)'; fontWeight = '700'
                       }
                       else if (/^━+$/.test(line))  {
-                        return <div key={i} style={{ height: 1, background: 'rgba(255,255,255,0.08)', margin: '4px 0 8px' }} />
+                        return <div key={i} style={{ height: 1, background: 'var(--border)', margin: '4px 0 8px' }} />
                       }
                       else if (/^(Evidence:|Addresses:|Effort:|Owner:|Confidence:)/.test(line)) {
-                        color = 'rgba(180,180,180,0.5)'; fontSize = '0.68rem'
+                        color = 'var(--text-muted)'; fontSize = '0.68rem'
                       }
 
                       return (
