@@ -2299,17 +2299,6 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                     healthIntel={healthIntel}
                     goalState={goalState}
                   />
-                  {latestDiagnosticReport && (
-                    <div style={{ marginTop: 24 }}>
-                      <OpenIssuesTracker
-                        report={latestDiagnosticReport}
-                        domains={flaggedDomains}
-                        userId={user?.id}
-                        issueState={issueState}
-                        onIssueStateChange={() => {}}
-                      />
-                    </div>
-                  )}
                   <div style={{ marginTop: 24 }}>
                     <OperationalOversightSection intelligenceUnlocked={intelligenceUnlocked} healthIntel={healthIntel} userId={user?.id} areaTrends={areaTrends} />
                   </div>
