@@ -1058,28 +1058,36 @@ function MetricCard({ label, value, delta }) {
   )
 }
 
-function ConversionFunnel({ steps }) {
-  const total = steps[0]?.count || 0
+function UserActivityPanel({ users }) {
+  const now = Date.now()
+  const sevenDaysAgo  = now - 7  * 24 * 60 * 60 * 1000
+  const thirtyDaysAgo = now - 30 * 24 * 60 * 60 * 1000
+
+  const paying      = users.filter(u => normTier(u.tier) === 'intelligence')
+  const activeRecent = paying.filter(u => u.last_health_check_at && new Date(u.last_health_check_at).getTime() >= sevenDaysAgo)
+  const churnRisk   = paying.filter(u => !u.last_health_check_at || new Date(u.last_health_check_at).getTime() < thirtyDaysAgo)
+  const newThisMonth = users.filter(u => u.created_at && new Date(u.created_at).getTime() >= thirtyDaysAgo)
+
+  const tiles = [
+    { label: 'Paying users',         value: paying.length,       tone: 'accent', note: 'active subscriptions' },
+    { label: 'Active last 7 days',   value: activeRecent.length, tone: 'green',  note: 'ran health check recently' },
+    { label: 'Churn risk (30d idle)',value: churnRisk.length,    tone: churnRisk.length > 0 ? 'red' : 'default', note: 'paid but inactive 30+ days' },
+    { label: 'New this month',       value: newThisMonth.length, tone: 'default', note: 'signed up last 30 days' },
+  ]
+
+  const toneColor = { accent: G.accentText, green: G.greenText, red: G.redText, default: G.textMuted }
 
   return (
     <div style={{ ...panelStyle({ padding: '16px 18px' }) }}>
-      <div style={{ color: G.text, fontSize: 13, marginBottom: 14 }}>Conversion funnel</div>
+      <div style={{ color: G.text, fontSize: 13, marginBottom: 14 }}>User activity</div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 12 }}>
-        {steps.map((step, index) => {
-          const pct = total > 0 ? Math.round((step.count / total) * 100) : 0
-          const prev = steps[index - 1]
-          const drop = prev && prev.count > 0 ? Math.max(0, Math.round(((prev.count - step.count) / prev.count) * 100)) : 0
-          return (
-            <div key={step.label} style={{ ...panelStyle({ background: G.surface2, padding: '14px 12px' }) }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 12 }}>
-                <div style={{ color: G.textMuted, fontSize: 11, lineHeight: 1.4 }}>{step.label}</div>
-                {index > 0 ? <Badge tone="red" mono>{drop}% drop</Badge> : <Badge mono>base</Badge>}
-              </div>
-              <div style={{ color: G.text, fontSize: 24, lineHeight: 1, marginBottom: 6, ...monoStyle() }}>{step.count}</div>
-              <div style={{ color: G.accentText, fontSize: 11, ...monoStyle() }}>{pct}% of signups</div>
-            </div>
-          )
-        })}
+        {tiles.map(tile => (
+          <div key={tile.label} style={{ ...panelStyle({ background: G.surface2, padding: '14px 12px' }) }}>
+            <div style={{ color: G.textMuted, fontSize: 11, lineHeight: 1.4, marginBottom: 12 }}>{tile.label}</div>
+            <div style={{ color: toneColor[tile.tone], fontSize: 28, lineHeight: 1, marginBottom: 6, ...monoStyle() }}>{tile.value}</div>
+            <div style={{ color: G.textFaint, fontSize: 11 }}>{tile.note}</div>
+          </div>
+        ))}
       </div>
     </div>
   )
@@ -2062,17 +2070,6 @@ export default function AdminDashboard({ session, onUnauthorized }) {
 
   if (!session || session.user?.email !== ADMIN_EMAIL) return null
 
-  const sharedCount = users.reduce((count, user) => {
-    const shared = detailCache[user.email]?.profile?.shared_with_vnklo
-    return count + (shared ? 1 : 0)
-  }, 0)
-
-  const startedAuditCount = users.reduce((count, user) => {
-    const detail = detailCache[user.email]
-    const started = (detail?.chat_sessions?.length ?? 0) > 0 || (user.report_count ?? 0) > 0 || user.industry || user.domain
-    return count + (started ? 1 : 0)
-  }, 0)
-
   const tierCounts = users.reduce((acc, user) => {
     const tier = normTier(user.tier)
     acc[tier] = (acc[tier] || 0) + 1
@@ -2084,8 +2081,8 @@ export default function AdminDashboard({ session, onUnauthorized }) {
 
   const kpis = [
     {
-      label: 'total users',
-      value: stats?.total_users ?? users.length,
+      label: 'paying users',
+      value: tierCounts.intelligence,
       delta: `+${stats?.signups_this_week ?? 0} this week`,
     },
     {
@@ -2094,22 +2091,15 @@ export default function AdminDashboard({ session, onUnauthorized }) {
       delta: `+${stats?.reports_today ?? 0} today`,
     },
     {
-      label: 'chat → report rate',
-      value: `${stats?.total_chat_sessions ? Math.round(((stats.total_reports ?? 0) / stats.total_chat_sessions) * 100) : 0}%`,
-      delta: `${stats?.total_chat_sessions ?? 0} sessions`,
+      label: 'health checks run',
+      value: stats?.health_checks_last_day ?? '—',
+      delta: 'last 24h',
     },
     {
       label: 'mrr',
       value: `$${mrr}`,
       delta: `${tierCounts.intelligence} active / ${tierCounts.foundation} unpaid`,
     },
-  ]
-
-  const funnelSteps = [
-    { label: 'Signed up', count: stats?.total_users ?? users.length },
-    { label: 'Started audit', count: startedAuditCount },
-    { label: 'Got report', count: stats?.total_reports ? users.filter(user => (user.report_count ?? 0) > 0).length : users.filter(user => (user.report_count ?? 0) > 0).length },
-    { label: 'Shared with VNKLO', count: sharedCount },
   ]
 
   const handleSelectUser = async (user) => {
@@ -2201,7 +2191,7 @@ export default function AdminDashboard({ session, onUnauthorized }) {
                     ))}
                   </div>
 
-                  <ConversionFunnel steps={funnelSteps} />
+                  <UserActivityPanel users={users} />
 
                   <UsersTable users={users} detailCache={detailCache} onSelectUser={handleSelectUser} title="User table" />
                 </div>
