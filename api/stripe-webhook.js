@@ -21,9 +21,7 @@ async function getRawBody(req) {
 
 function tierFromPriceId(priceId) {
   if (!priceId) return null
-  const foundationPrice  = process.env.STRIPE_PRICE_FOUNDATION  || process.env.STRIPE_PRICE_ESSENTIAL
   const intelligencePrice = process.env.STRIPE_PRICE_INTELLIGENCE || process.env.STRIPE_PRICE_BUSINESS
-  if (priceId === foundationPrice)   return 'foundation'
   if (priceId === intelligencePrice) return 'intelligence'
   return null
 }

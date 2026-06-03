@@ -1,22 +1,21 @@
 import Stripe from 'stripe'
 import { validateUserToken } from './lib/auth.js'
-import { getCheckoutCancelUrl, getCheckoutPriceId, getCheckoutSuccessUrl, normalizeCheckoutTier } from './lib/checkout.js'
+import { getCheckoutCancelUrl, getCheckoutPriceId, getCheckoutSuccessUrl } from './lib/checkout.js'
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { tier, userId, email } = req.body
-  if (!tier || !userId || !email) {
-    return res.status(400).json({ error: 'Missing tier, userId, or email' })
+  const { userId, email } = req.body
+  if (!userId || !email) {
+    return res.status(400).json({ error: 'Missing userId or email' })
   }
   if (!await validateUserToken(req, res, userId)) return
 
-  const normalizedTier = normalizeCheckoutTier(tier)
-  const priceId = getCheckoutPriceId(tier)
+  const priceId = getCheckoutPriceId()
   if (!priceId) {
-    return res.status(400).json({ error: `Unknown or unconfigured tier: ${tier}` })
+    return res.status(500).json({ error: 'Stripe price not configured' })
   }
 
   const secretKey = process.env.STRIPE_SECRET_KEY
@@ -32,9 +31,9 @@ export default async function handler(req, res) {
       line_items: [{ price: priceId, quantity: 1 }],
       customer_email: email,
       client_reference_id: userId,
-      success_url: getCheckoutSuccessUrl(normalizedTier || tier),
-      cancel_url:  getCheckoutCancelUrl(normalizedTier || tier),
-      metadata: { userId, tier: normalizedTier || tier, priceId },
+      success_url: getCheckoutSuccessUrl(),
+      cancel_url:  getCheckoutCancelUrl(),
+      metadata: { userId, tier: 'intelligence', priceId },
     })
 
     return res.status(200).json({ url: session.url })

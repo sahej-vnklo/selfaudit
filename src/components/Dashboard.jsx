@@ -322,23 +322,13 @@ const TIER_BADGE = {
 
 const TIERS = [
   {
-    key: 'foundation',
-    name: 'Foundation',
-    price: '$29',
-    desc: 'The truth about your business.',
-    features: ['Full drill-down audit', 'Complete written report', 'Root cause diagnosis', 'Fix-first priority list', 'Email delivery'],
-  },
-  {
     key: 'intelligence',
-    name: 'Intelligence',
+    name: 'SelfAudit',
     price: '$99',
-    popular: true,
-    desc: 'Persistent intelligence embedded into the business.',
-    features: ['Everything in Foundation', 'AI opportunity breakdown', 'Re-audit anytime', 'Track progress'],
+    desc: 'Persistent intelligence embedded into your business.',
+    features: ['Full drill-down audit', 'Complete written report', 'Root cause diagnosis', 'Fix-first priority list', 'AI opportunity breakdown', 'Re-audit anytime', 'Track progress over time', 'Email delivery'],
   },
 ]
-
-const TIER_ORDER = { foundation: 0, intelligence: 1 }
 const NOTIFICATION_AREAS = [
   { key: 'goal_progress', label: 'Goal progress' },
   { key: 'pipeline_revenue', label: 'Pipeline & revenue' },
@@ -367,8 +357,7 @@ const INTELLIGENCE_ONLY_SECTIONS = new Set(['oversight', 'alerts', 'connectors',
 const WELCOME_TOUR_ROLLOUT_AT = Date.parse('2026-05-24T00:30:00-04:00')
 
 function normalizeTier(raw) {
-  if (raw === 'intelligence') return 'intelligence'
-  return 'foundation'
+  return 'intelligence'
 }
 
 function profileRequiresPayment(profile) {
@@ -2389,7 +2378,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
 
                   {/* Billing tab */}
                   {accountTab === 'billing' && (
-                    <PageShell title="Subscription" sub={requiresPayment ? 'Choose a plan to activate your account.' : 'Your current plan. Upgrade or downgrade any time.'}>
+                    <PageShell title="Subscription" sub={requiresPayment ? 'Activate your account to get started.' : 'Your current plan.'}>
                       {requiresPayment && (
                         <div style={{ background: G.amberBg, border: `1px solid ${G.amber}`, borderRadius: 8, padding: '14px 18px', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
                           <span style={{ fontSize: 16 }}>⚠</span>
@@ -5883,8 +5872,6 @@ function BillingMetric({ label, value, sub, accent }) {
 function TierCard({ tier, currentTier, userId, email, requiresPayment = false }) {
   const [loading, setLoading] = useState(false)
   const current = !requiresPayment && tier.key === currentTier
-  const isUpgrade = !requiresPayment && (TIER_ORDER[tier.key] ?? 0) > (TIER_ORDER[currentTier] ?? 0)
-  const isDowngrade = !requiresPayment && (TIER_ORDER[tier.key] ?? 0) < (TIER_ORDER[currentTier] ?? 0)
 
   const handleCheckout = async () => {
     if (!userId || !email) return
@@ -5912,7 +5899,6 @@ function TierCard({ tier, currentTier, userId, email, requiresPayment = false })
   return (
     <div style={{ ...styles.tierCard, borderColor: current ? G.accent : G.border, background: current ? G.surface2 : G.surface }}>
       {current && <div style={styles.tierRibbon}>Current plan</div>}
-      {tier.popular && !current && <div style={styles.tierRibbonAlt}>Most popular</div>}
       <div style={styles.tierName}>{tier.name}</div>
       <div style={styles.tierPrice}>
         {tier.price}
@@ -5930,17 +5916,7 @@ function TierCard({ tier, currentTier, userId, email, requiresPayment = false })
       {current && <div style={styles.activePlan}>Active plan</div>}
       {requiresPayment && (
         <button type="button" onClick={handleCheckout} disabled={loading} style={styles.tierUpgradeBtn}>
-          {loading ? 'Redirecting…' : `Choose ${tier.name}`}
-        </button>
-      )}
-      {isUpgrade && (
-        <button type="button" onClick={handleCheckout} disabled={loading} style={styles.tierUpgradeBtn}>
-          {loading ? 'Redirecting…' : `Upgrade to ${tier.name}`}
-        </button>
-      )}
-      {isDowngrade && (
-        <button type="button" onClick={handleCheckout} disabled={loading} style={styles.tierDowngradeBtn}>
-          {loading ? 'Redirecting…' : `Downgrade to ${tier.name}`}
+          {loading ? 'Redirecting…' : 'Get started — $99/mo'}
         </button>
       )}
     </div>
