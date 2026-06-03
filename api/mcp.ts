@@ -104,10 +104,14 @@ function buildServer() {
       if (error) throw new Error(error.message);
       const users = data ?? []
 
-      // Fetch engagement signals in parallel — non-critical, don't throw on failure
-      const [healthCheckRows, connectorRows] = await Promise.all([
+      // Fetch engagement + pilot signals in parallel — non-critical, don't throw on failure
+      const userIds = users.map((u: any) => u.id)
+      const [healthCheckRows, connectorRows, pilotRows] = await Promise.all([
         safeRows(sb.from("business_health_checks").select("user_id, checked_at, health_score").order("checked_at", { ascending: false })),
         safeRows(sb.from("connector_sync_logs").select("user_id, provider").eq("status", "success")),
+        userIds.length > 0
+          ? safeRows(sb.from("profiles").select("id, is_pilot, access_expires_at").in("id", userIds))
+          : Promise.resolve([]),
       ])
 
       // Build lookup: latest health check per user
@@ -126,11 +130,22 @@ function buildServer() {
         connectorSets[uid].add((row as any).provider)
       }
 
+      // Build lookup: pilot info per user
+      const pilotMap: Record<string, { is_pilot: boolean; access_expires_at: string | null }> = {}
+      for (const row of pilotRows) {
+        pilotMap[(row as any).id] = {
+          is_pilot:          (row as any).is_pilot ?? false,
+          access_expires_at: (row as any).access_expires_at ?? null,
+        }
+      }
+
       const enriched = users.map((u: any) => ({
         ...u,
         last_health_check_at: latestHC[u.id]?.checked_at ?? null,
         last_health_score:    latestHC[u.id]?.health_score ?? null,
         connector_count:      connectorSets[u.id]?.size ?? 0,
+        is_pilot:             pilotMap[u.id]?.is_pilot ?? false,
+        access_expires_at:    pilotMap[u.id]?.access_expires_at ?? null,
       }))
 
       return ok(enriched)

@@ -207,8 +207,9 @@ const NAV_ITEMS = [
 ]
 
 const TIER_STYLES = {
-  foundation: { bg: G.accentLight, color: G.accentText, border: G.accent },
-  intelligence: { bg: G.surface3, color: G.blue, border: G.border2 },
+  foundation:   { bg: G.accentLight, color: G.accentText,  border: G.accent  },
+  intelligence: { bg: G.surface3,    color: G.blue,        border: G.border2  },
+  pilot:        { bg: G.greenBg,     color: G.greenText,   border: G.green    },
 }
 
 function normTier(tier) {
@@ -219,6 +220,18 @@ function normTier(tier) {
 function displayTierLabel(tier) {
   if (normTier(tier) === 'intelligence') return 'Professional'
   return 'Unpaid'
+}
+
+// Use this for displaying plan label per user — checks is_pilot first
+function userPlanLabel(user) {
+  if (user?.is_pilot) return 'Pilot'
+  if (normTier(user?.tier) === 'intelligence') return 'Professional'
+  return 'Unpaid'
+}
+
+function userPlanStyle(user) {
+  if (user?.is_pilot) return TIER_STYLES.pilot
+  return TIER_STYLES[normTier(user?.tier)] || TIER_STYLES.foundation
 }
 
 function fmtDate(iso) {
@@ -1101,7 +1114,9 @@ function UsersTable({ users, detailCache, onSelectUser, title = 'Users' }) {
       const matchesSearch = !query || [user.name, user.email, user.industry, user.domain]
         .filter(Boolean)
         .some(value => String(value).toLowerCase().includes(query))
-      const matchesTier = tierFilter === 'all' || normTier(user.tier) === tierFilter
+      const matchesTier = tierFilter === 'all'
+        || (tierFilter === 'pilot'        && user.is_pilot)
+        || (tierFilter === 'intelligence' && !user.is_pilot && normTier(user.tier) === 'intelligence')
       return matchesSearch && matchesTier
     })
   }, [search, tierFilter, users])
@@ -1132,6 +1147,28 @@ function UsersTable({ users, detailCache, onSelectUser, title = 'Users' }) {
             fontFamily: SANS,
           }}
         />
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          {[
+            { key: 'all',          label: 'All' },
+            { key: 'intelligence', label: 'Professional' },
+            { key: 'pilot',        label: 'Pilot' },
+          ].map(f => (
+            <button
+              key={f.key}
+              onClick={() => setTierFilter(f.key)}
+              style={{
+                padding: '7px 10px', borderRadius: 4,
+                border: `0.5px solid ${tierFilter === f.key ? G.accent : G.border2}`,
+                background: tierFilter === f.key ? G.accentLight : G.surface2,
+                color: tierFilter === f.key ? G.accentText : G.textMuted,
+                cursor: 'pointer', fontSize: 11, textTransform: 'uppercase',
+                letterSpacing: '0.06em', fontFamily: SANS,
+              }}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div style={{ maxHeight: 400, overflow: 'auto', border: `0.5px solid ${G.border}`, borderRadius: 6 }}>
@@ -1170,7 +1207,7 @@ function UsersTable({ users, detailCache, onSelectUser, title = 'Users' }) {
               const lastAudit = detail?.reports?.[0]?.created_at || null
               const hasStarted = (detail?.chat_sessions?.length ?? 0) > 0 || user.industry || user.domain
               const dotColor = user.report_count > 0 ? G.greenText : hasStarted ? G.amberText : G.textFaint
-              const tierStyle = TIER_STYLES[normTier(user.tier)] || TIER_STYLES.foundation
+              const tierStyle = userPlanStyle(user)
 
               return (
                 <tr
@@ -1192,7 +1229,7 @@ function UsersTable({ users, detailCache, onSelectUser, title = 'Users' }) {
                       fontSize: 11,
                       textTransform: 'uppercase',
                     }}>
-                      {displayTierLabel(user.tier)}
+                      {userPlanLabel(user)}
                     </span>
                   </td>
                   <td style={{ padding: '12px', color: G.textMuted, fontSize: 12 }}>{user.industry || '—'}</td>
@@ -1229,10 +1266,14 @@ function RightRail({ stats, users, detailCache, reliability }) {
   const signupsThisWeek = stats?.signups_this_week ?? 0
 
   const tierCounts = users.reduce((acc, user) => {
-    const tier = normTier(user.tier)
-    acc[tier] = (acc[tier] || 0) + 1
+    if (user.is_pilot) {
+      acc.pilot = (acc.pilot || 0) + 1
+    } else {
+      const tier = normTier(user.tier)
+      acc[tier] = (acc[tier] || 0) + 1
+    }
     return acc
-  }, { foundation: 0, intelligence: 0 })
+  }, { foundation: 0, intelligence: 0, pilot: 0 })
 
   const mrr = tierCounts.intelligence * 99
 
@@ -1265,18 +1306,21 @@ function RightRail({ stats, users, detailCache, reliability }) {
           <div style={{ color: G.accentText, fontSize: 13, ...monoStyle() }}>${mrr}/mo</div>
         </div>
         {[
-          ['intelligence', 99],
-        ].map(([tier, price]) => {
-          const count = tierCounts[tier] || 0
+          { key: 'intelligence', label: 'Professional', price: 99,  color: G.accentText },
+          { key: 'pilot',        label: 'Pilot',        price: 0,   color: G.greenText  },
+        ].map(row => {
+          const count = tierCounts[row.key] || 0
           const width = totalUsers > 0 ? (count / totalUsers) * 100 : 0
           return (
-            <div key={tier} style={{ marginBottom: 12 }}>
+            <div key={row.key} style={{ marginBottom: 12 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                <div style={{ color: G.textMuted, fontSize: 11 }}>{displayTierLabel(tier)}</div>
-                <div style={{ color: G.text, fontSize: 11, ...monoStyle() }}>{count} · ${count * price}</div>
+                <div style={{ color: G.textMuted, fontSize: 11 }}>{row.label}</div>
+                <div style={{ color: G.text, fontSize: 11, ...monoStyle() }}>
+                  {count}{row.price > 0 ? ` · $${count * row.price}` : ' · free'}
+                </div>
               </div>
               <div style={{ height: 8, borderRadius: 4, border: `0.5px solid ${G.border2}`, background: G.surface2, overflow: 'hidden' }}>
-                <div style={{ width: `${width}%`, height: '100%', background: tier === 'intelligence' ? G.accentText : G.textMuted }} />
+                <div style={{ width: `${width}%`, height: '100%', background: row.color }} />
               </div>
             </div>
           )
@@ -1814,7 +1858,16 @@ function UserDetailView({ user, detail, onBack, onTierChange, tierSaving, sessio
         <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 10 }}>
           <div style={{ ...panelStyle({ background: G.surface2, padding: '10px 12px' }) }}>
             <div style={{ color: G.textFaint, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>plan</div>
-            <div style={{ color: G.text, fontSize: 12, fontWeight: 500 }}>{detail?.plan_name ? detail.plan_name.charAt(0).toUpperCase() + detail.plan_name.slice(1) : '—'}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ color: G.text, fontSize: 12, fontWeight: 500 }}>
+                {user.is_pilot ? 'Pilot' : detail?.plan_name ? detail.plan_name.charAt(0).toUpperCase() + detail.plan_name.slice(1) : '—'}
+              </div>
+              {user.is_pilot && user.access_expires_at && (
+                <span style={{ fontSize: 11, color: G.greenText }}>
+                  free until {new Date(user.access_expires_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                </span>
+              )}
+            </div>
           </div>
           <div style={{ ...panelStyle({ background: G.surface2, padding: '10px 12px' }) }}>
             <div style={{ color: G.textFaint, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>stripe customer id</div>
@@ -2166,10 +2219,14 @@ export default function AdminDashboard({ session, onUnauthorized }) {
   if (!session || session.user?.email !== ADMIN_EMAIL) return null
 
   const tierCounts = users.reduce((acc, user) => {
-    const tier = normTier(user.tier)
-    acc[tier] = (acc[tier] || 0) + 1
+    if (user.is_pilot) {
+      acc.pilot = (acc.pilot || 0) + 1
+    } else {
+      const tier = normTier(user.tier)
+      acc[tier] = (acc[tier] || 0) + 1
+    }
     return acc
-  }, { foundation: 0, intelligence: 0 })
+  }, { foundation: 0, intelligence: 0, pilot: 0 })
 
   const mrr = tierCounts.intelligence * 99
   const sectionName = selectedUser ? 'user detail' : navSection
@@ -2178,7 +2235,7 @@ export default function AdminDashboard({ session, onUnauthorized }) {
     {
       label: 'paying users',
       value: tierCounts.intelligence,
-      delta: `+${stats?.signups_this_week ?? 0} this week`,
+      delta: `${tierCounts.pilot} pilot${tierCounts.pilot !== 1 ? 's' : ''} · +${stats?.signups_this_week ?? 0} this week`,
     },
     {
       label: 'reports generated',
@@ -2193,7 +2250,7 @@ export default function AdminDashboard({ session, onUnauthorized }) {
     {
       label: 'mrr',
       value: `$${mrr}`,
-      delta: `${tierCounts.intelligence} active / ${tierCounts.foundation} unpaid`,
+      delta: `${tierCounts.intelligence} paying · ${tierCounts.pilot} pilot`,
     },
   ]
 
