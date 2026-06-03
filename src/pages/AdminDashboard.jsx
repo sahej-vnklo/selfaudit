@@ -217,8 +217,8 @@ function normTier(tier) {
 }
 
 function displayTierLabel(tier) {
-  if (normTier(tier) === 'intelligence') return 'Intelligence'
-  return 'Foundation'
+  if (normTier(tier) === 'intelligence') return 'Professional'
+  return 'Unpaid'
 }
 
 function fmtDate(iso) {
@@ -1127,7 +1127,7 @@ function UsersTable({ users, detailCache, onSelectUser, title = 'Users' }) {
           }}
         />
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          {['all', 'foundation', 'intelligence'].map(tier => (
+          {['all', 'intelligence', 'foundation'].map(tier => (
             <button
               key={tier}
               onClick={() => setTierFilter(tier)}
@@ -1240,7 +1240,7 @@ function RightRail({ stats, users, detailCache, reliability }) {
     return acc
   }, { foundation: 0, intelligence: 0 })
 
-  const mrr = tierCounts.foundation * 29 + tierCounts.intelligence * 99
+  const mrr = tierCounts.intelligence * 99
 
   return (
     <div style={{ width: 280, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 14, position: 'sticky', top: 20 }}>
@@ -1271,7 +1271,6 @@ function RightRail({ stats, users, detailCache, reliability }) {
           <div style={{ color: G.accentText, fontSize: 13, ...monoStyle() }}>${mrr}/mo</div>
         </div>
         {[
-          ['foundation', 29],
           ['intelligence', 99],
         ].map(([tier, price]) => {
           const count = tierCounts[tier] || 0
@@ -1386,7 +1385,7 @@ function TierEditor({ email, tier, onChange, saving }) {
           zIndex: 10,
           ...panelStyle({ padding: 6 }),
         }}>
-          {['foundation', 'intelligence'].map(nextTier => (
+          {['intelligence', 'foundation'].map(nextTier => (
             <button
               key={nextTier}
               disabled={saving}
@@ -1761,7 +1760,7 @@ function UserDetailView({ user, detail, onBack, onTierChange, tierSaving, sessio
       <div style={{ ...panelStyle({ padding: '16px 18px' }) }}>
         <div style={{ color: G.text, fontSize: 13, marginBottom: 14 }}>Plan management</div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
-          {['foundation', 'intelligence'].map(tier => (
+          {['intelligence', 'foundation'].map(tier => (
             <button
               key={tier}
               disabled={tierSaving}
@@ -1900,7 +1899,7 @@ export default function AdminDashboard({ session, onUnauthorized }) {
     return acc
   }, { foundation: 0, intelligence: 0 })
 
-  const mrr = tierCounts.foundation * 29 + tierCounts.intelligence * 99
+  const mrr = tierCounts.intelligence * 99
   const sectionName = selectedUser ? 'user detail' : navSection
 
   const kpis = [
@@ -1922,7 +1921,7 @@ export default function AdminDashboard({ session, onUnauthorized }) {
     {
       label: 'mrr',
       value: `$${mrr}`,
-      delta: `${tierCounts.foundation}/${tierCounts.intelligence}`,
+      delta: `${tierCounts.intelligence} active / ${tierCounts.foundation} unpaid`,
     },
   ]
 
