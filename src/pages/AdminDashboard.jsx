@@ -1786,6 +1786,10 @@ function UserDetailView({ user, detail, onBack, onTierChange, tierSaving, sessio
         <SectionLabel>Billing identifiers</SectionLabel>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 10 }}>
           <div style={{ ...panelStyle({ background: G.surface2, padding: '10px 12px' }) }}>
+            <div style={{ color: G.textFaint, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>plan</div>
+            <div style={{ color: G.text, fontSize: 12, fontWeight: 500 }}>{detail?.plan_name ? detail.plan_name.charAt(0).toUpperCase() + detail.plan_name.slice(1) : '—'}</div>
+          </div>
+          <div style={{ ...panelStyle({ background: G.surface2, padding: '10px 12px' }) }}>
             <div style={{ color: G.textFaint, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>stripe customer id</div>
             <div style={{ color: G.textMuted, fontSize: 12, ...monoStyle() }}>{stripeCustomerId}</div>
           </div>
@@ -1794,7 +1798,83 @@ function UserDetailView({ user, detail, onBack, onTierChange, tierSaving, sessio
             <div style={{ color: G.textMuted, fontSize: 12, ...monoStyle() }}>{stripeSubscriptionId}</div>
           </div>
         </div>
+        <div style={{ marginTop: 12, padding: '10px 12px', background: G.amberBg, border: `0.5px solid ${G.amber}`, borderRadius: 6, fontSize: 11, color: G.amberText, lineHeight: 1.5 }}>
+          ⚠ Changing plan here updates the database only. Cancel the Stripe subscription separately if needed.
+        </div>
       </div>
+
+      {/* ── Alert history ─────────────────────────────────────────────────── */}
+      {detail?.alerts?.length > 0 && (
+        <div style={{ ...panelStyle({ padding: '16px 18px' }) }}>
+          <div style={{ color: G.text, fontSize: 13, marginBottom: 14 }}>Alert history</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {detail.alerts.map((alert) => {
+              const sevTone = alert.severity === 'critical' || alert.severity === 'high' ? 'red' : alert.severity === 'medium' ? 'amber' : 'default'
+              const statusTone = alert.status === 'resolved' ? 'green' : alert.status === 'acknowledged' ? 'amber' : 'red'
+              return (
+                <div key={alert.id} style={{ ...panelStyle({ background: G.surface2, padding: '10px 14px' }) }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, marginBottom: 4 }}>
+                    <div style={{ color: G.text, fontSize: 12, fontWeight: 500, flex: 1 }}>{alert.title}</div>
+                    <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                      <Badge tone={sevTone}>{alert.severity}</Badge>
+                      <Badge tone={statusTone}>{alert.status}</Badge>
+                    </div>
+                  </div>
+                  {alert.description && <div style={{ color: G.textMuted, fontSize: 11, lineHeight: 1.5, marginBottom: 4 }}>{alert.description}</div>}
+                  <div style={{ color: G.textFaint, fontSize: 10, ...monoStyle() }}>{fmtDate(alert.created_at)}</div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── Health check history ───────────────────────────────────────────── */}
+      {detail?.health_checks?.length > 0 && (
+        <div style={{ ...panelStyle({ padding: '16px 18px' }) }}>
+          <div style={{ color: G.text, fontSize: 13, marginBottom: 14 }}>Health check history</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {detail.health_checks.map((hc) => {
+              const score = hc.health_score ?? 0
+              const tone = score >= 70 ? 'green' : score >= 45 ? 'amber' : 'red'
+              return (
+                <div key={hc.id} style={{ ...panelStyle({ background: G.surface2, padding: '10px 14px' }) }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                    <div style={{ color: G.textMuted, fontSize: 11, ...monoStyle() }}>{fmtDate(hc.checked_at)}</div>
+                    <Badge tone={tone}>{score}/100</Badge>
+                  </div>
+                  {hc.summary && <div style={{ color: G.textMuted, fontSize: 12, lineHeight: 1.5 }}>{hc.summary}</div>}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── Connector activity ─────────────────────────────────────────────── */}
+      {detail?.connectors?.length > 0 && (
+        <div style={{ ...panelStyle({ padding: '16px 18px' }) }}>
+          <div style={{ color: G.text, fontSize: 13, marginBottom: 14 }}>Connector activity</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {detail.connectors.map((c, i) => {
+              const tone = c.status === 'success' ? 'green' : c.status === 'error' ? 'red' : 'amber'
+              return (
+                <div key={i} style={{ ...panelStyle({ background: G.surface2, padding: '10px 14px' }) }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, marginBottom: c.error_message ? 6 : 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <div style={{ color: G.text, fontSize: 12, fontWeight: 500 }}>{c.provider}</div>
+                      <Badge tone={tone}>{c.status}</Badge>
+                      {c.records_fetched > 0 && <span style={{ color: G.textFaint, fontSize: 11, ...monoStyle() }}>{c.records_fetched} records</span>}
+                    </div>
+                    <div style={{ color: G.textFaint, fontSize: 11, ...monoStyle() }}>{fmtDate(c.synced_at)}</div>
+                  </div>
+                  {c.error_message && <div style={{ color: G.redText, fontSize: 11, lineHeight: 1.5 }}>{c.error_message}</div>}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

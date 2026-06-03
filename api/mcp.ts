@@ -121,11 +121,19 @@ function buildServer() {
         { data: chatRows, error: cErr },
         { data: bsData },
         { data: intelData },
+        alerts,
+        healthChecks,
+        connectorLogs,
+        profileExtra,
       ] = await Promise.all([
         sb.from("reports").select("id, title, content, created_at, conversation_mode").eq("user_id", profile.id).order("created_at", { ascending: false }),
         sb.from("chats").select("id, session_id, role, message, created_at").eq("user_id", profile.id).order("created_at", { ascending: true }),
         sb.from("business_state").select("core_offer, target_customer, active_goal, goal_score, operational_blockers, assumptions_unverified, funnel_stages, revenue_streams, last_audit_headline, conversion_bottlenecks, current_constraints, pricing_structure").eq("user_id", profile.id).single(),
         sb.from("intelligence_profiles").select("summary, top_priorities, watchouts, repeated_blockers, opportunities, domains_audited, confidence").eq("user_id", profile.id).single(),
+        safeRows(sb.from("risk_alerts").select("id, severity, category, title, description, status, created_at, resolved_at").eq("user_id", profile.id).order("created_at", { ascending: false }).limit(10)),
+        safeRows(sb.from("business_health_checks").select("id, checked_at, health_score, summary, recommended_actions").eq("user_id", profile.id).order("checked_at", { ascending: false }).limit(5)),
+        safeRows(sb.from("connector_sync_logs").select("provider, status, records_fetched, error_message, synced_at").eq("user_id", profile.id).order("synced_at", { ascending: false }).limit(10)),
+        safeSingle(sb.from("profiles").select("stripe_price_id").eq("id", profile.id).maybeSingle()),
       ]);
 
       if (rErr) throw new Error(rErr.message);
@@ -172,7 +180,17 @@ function buildServer() {
         confidence:             intelData?.confidence          ?? null,
       };
 
-      return ok({ profile, reports: reports ?? [], chat_sessions, brain });
+      // Derive plan name from stored price ID
+      const priceId = (profileExtra as any)?.stripe_price_id ?? null
+      const professionalPrice = process.env.STRIPE_PRICE_PROFESSIONAL || process.env.STRIPE_PRICE_INTELLIGENCE || process.env.STRIPE_PRICE_BUSINESS || null
+      const enterprisePrice   = process.env.STRIPE_PRICE_ENTERPRISE || null
+      const plan_name = priceId && enterprisePrice && priceId === enterprisePrice
+        ? 'enterprise'
+        : priceId && professionalPrice && priceId === professionalPrice
+          ? 'professional'
+          : null
+
+      return ok({ profile, reports: reports ?? [], chat_sessions, brain, alerts, health_checks: healthChecks, connectors: connectorLogs, plan_name, stripe_price_id: priceId });
     },
   );
 
