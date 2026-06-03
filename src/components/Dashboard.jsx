@@ -4136,10 +4136,10 @@ function AiOpportunitiesDetailPanel({ user, userInfo, reports, items, tier, init
 
           <div style={styles.aiCtaWrap}>
             {shared ? (
-              <div style={styles.aiSuccessText}>Already shared with VNKLO. We&apos;ll review the strongest opportunity and follow up.</div>
+              <div style={styles.aiSuccessText}>Founder review requested. We&apos;ll be in touch within 24 hours.</div>
             ) : (
               <button type="button" style={styles.aiShareButton} onClick={handleShare} disabled={sharing || !sourceReport || !sourcePayload}>
-                {sharing ? 'Sharing…' : 'Share strongest opportunity with VNKLO'}
+                {sharing ? 'Requesting…' : 'Get founder review'}
               </button>
             )}
             {error && <div style={styles.aiErrorText}>{error}</div>}
