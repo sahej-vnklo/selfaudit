@@ -58,7 +58,7 @@ function syncScreenForAuthenticatedHash(setScreen) {
 function readPendingCheckoutIntent() {
   try {
     const intent = JSON.parse(localStorage.getItem(PENDING_AUTH_INTENT_KEY) || 'null')
-    if (intent?.plan && ['foundation', 'intelligence'].includes(intent.plan)) {
+    if (intent?.plan && ['professional', 'enterprise'].includes(intent.plan)) {
       return intent
     }
   } catch (_) {}
@@ -105,7 +105,7 @@ function captureCheckoutReturnFromHash() {
 
   const payload = {
     sessionId,
-    plan: plan === 'intelligence' ? 'intelligence' : 'foundation',
+    plan: ['professional', 'enterprise'].includes(plan) ? plan : 'professional',
     at: Date.now(),
   }
   writePendingCheckoutReturn(payload)

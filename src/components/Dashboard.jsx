@@ -321,11 +321,19 @@ const TIER_BADGE = {
 
 const TIERS = [
   {
-    key: 'intelligence',
-    name: 'SelfAudit',
+    key: 'professional',
+    name: 'Professional',
     price: '$99',
+    popular: true,
     desc: 'Persistent intelligence embedded into your business.',
     features: ['Full drill-down audit', 'Complete written report', 'Root cause diagnosis', 'Fix-first priority list', 'AI opportunity breakdown', 'Re-audit anytime', 'Track progress over time', 'Email delivery'],
+  },
+  {
+    key: 'enterprise',
+    name: 'Enterprise',
+    price: '$999',
+    desc: 'Everything in Professional, for larger teams.',
+    features: ['Everything in Professional', 'Priority support', 'Dedicated onboarding'],
   },
 ]
 const NOTIFICATION_AREAS = [

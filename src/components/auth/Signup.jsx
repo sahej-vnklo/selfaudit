@@ -20,8 +20,8 @@ const C = {
 const PENDING_AUTH_INTENT_KEY = 'sa-auth-intent'
 
 const SIGNUP_PLANS = [
-  { key: 'foundation',   name: 'Foundation',   price: '$29' },
-  { key: 'intelligence', name: 'Intelligence',  price: '$99', popular: true },
+  { key: 'professional', name: 'Professional', price: '$99',  popular: true },
+  { key: 'enterprise',   name: 'Enterprise',   price: '$999' },
 ]
 
 export default function Signup({ onLogin }) {
@@ -36,9 +36,9 @@ function SignupForm({ onLogin }) {
     const hash = window.location.hash.replace(/^#\/?/, '')
     if (hash.startsWith('signup?plan=')) {
       const plan = hash.split('plan=')[1]
-      if (['foundation', 'intelligence'].includes(plan)) return plan
+      if (['professional', 'enterprise'].includes(plan)) return plan
     }
-    return 'foundation'
+    return 'professional'
   })
   const [loading,  setLoading]  = useState(false)
   const [error,    setError]    = useState(null)
@@ -106,7 +106,7 @@ function SignupForm({ onLogin }) {
               <h2 style={s.cardTitle}>Enter your code</h2>
               <p style={s.cardSub}>
                 We sent a code to <strong style={{ color: C.fg }}>{email}</strong>.
-                Enter it here to create your account, then we'll take you into checkout for the {selectedPlan === 'intelligence' ? 'Intelligence' : 'Foundation'} plan.
+                Enter it here to create your account, then we'll take you into checkout for the {selectedPlan === 'enterprise' ? 'Enterprise' : 'Professional'} plan.
               </p>
               <input
                 style={{ ...s.input, marginTop: 8, textAlign: 'center', fontSize: 24, letterSpacing: '0.35em', fontVariantNumeric: 'tabular-nums' }}

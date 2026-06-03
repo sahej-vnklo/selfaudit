@@ -7,15 +7,16 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { userId, email } = req.body
+  const { tier, userId, email } = req.body
   if (!userId || !email) {
     return res.status(400).json({ error: 'Missing userId or email' })
   }
   if (!await validateUserToken(req, res, userId)) return
 
-  const priceId = getCheckoutPriceId()
+  const plan = ['professional', 'enterprise'].includes(tier) ? tier : 'professional'
+  const priceId = getCheckoutPriceId(plan)
   if (!priceId) {
-    return res.status(500).json({ error: 'Stripe price not configured' })
+    return res.status(500).json({ error: `Stripe price not configured for plan: ${plan}` })
   }
 
   const secretKey = process.env.STRIPE_SECRET_KEY
@@ -31,9 +32,9 @@ export default async function handler(req, res) {
       line_items: [{ price: priceId, quantity: 1 }],
       customer_email: email,
       client_reference_id: userId,
-      success_url: getCheckoutSuccessUrl(),
-      cancel_url:  getCheckoutCancelUrl(),
-      metadata: { userId, tier: 'intelligence', priceId },
+      success_url: getCheckoutSuccessUrl(plan),
+      cancel_url:  getCheckoutCancelUrl(plan),
+      metadata: { userId, tier: 'intelligence', plan, priceId },
     })
 
     return res.status(200).json({ url: session.url })
