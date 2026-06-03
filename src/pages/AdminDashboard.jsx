@@ -1132,28 +1132,6 @@ function UsersTable({ users, detailCache, onSelectUser, title = 'Users' }) {
             fontFamily: SANS,
           }}
         />
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          {['all', 'intelligence', 'foundation'].map(tier => (
-            <button
-              key={tier}
-              onClick={() => setTierFilter(tier)}
-              style={{
-                padding: '7px 10px',
-                borderRadius: 4,
-                border: `0.5px solid ${tierFilter === tier ? G.accent : G.border2}`,
-                background: tierFilter === tier ? G.accentLight : G.surface2,
-                color: tierFilter === tier ? G.accentText : G.textMuted,
-                cursor: 'pointer',
-                fontSize: 11,
-                textTransform: 'uppercase',
-                letterSpacing: '0.06em',
-                fontFamily: SANS,
-              }}
-            >
-              {tier === 'all' ? 'All plans' : displayTierLabel(tier)}
-            </button>
-          ))}
-        </div>
       </div>
 
       <div style={{ maxHeight: 400, overflow: 'auto', border: `0.5px solid ${G.border}`, borderRadius: 6 }}>
