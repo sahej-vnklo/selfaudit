@@ -1746,13 +1746,13 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
         })()}
 
         <div className="dash-top-right">
-          <button className="dash-pill" type="button" onClick={() => navigateSection('oversight')}>
+          <button className="dash-pill" type="button" onClick={() => navigateSection(section === 'oversight' ? 'home' : 'oversight')}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
               <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>
             </svg>
             Oversight
           </button>
-          <button className="dash-pill" type="button" onClick={() => navigateSection('intelligence')}>
+          <button className="dash-pill" type="button" onClick={() => navigateSection(section === 'intelligence' ? 'home' : 'intelligence')}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 3l1.7 5.1a2 2 0 0 0 1.2 1.2L20 11l-5.1 1.7a2 2 0 0 0-1.2 1.2L12 19l-1.7-5.1a2 2 0 0 0-1.2-1.2L4 11l5.1-1.7a2 2 0 0 0 1.2-1.2z"/>
             </svg>
