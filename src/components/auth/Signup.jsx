@@ -45,8 +45,17 @@ function SignupForm({ onLogin }) {
   const [codeSent, setCodeSent] = useState(false)
   const [otpType,  setOtpType]  = useState('signup')
 
+  // Read invite ref silently from URL — user never sees or types this
+  const inviteRef = (() => {
+    const hash = window.location.hash.replace(/^#\/?/, '')
+    const match = hash.match(/[?&]ref=([^&]+)/)
+    return match ? match[1] : null
+  })()
+
   const rememberPlanIntent = () => {
-    localStorage.setItem(PENDING_AUTH_INTENT_KEY, JSON.stringify({ plan: selectedPlan, at: Date.now() }))
+    const intent = { plan: selectedPlan, at: Date.now() }
+    if (inviteRef) intent.ref = inviteRef
+    localStorage.setItem(PENDING_AUTH_INTENT_KEY, JSON.stringify(intent))
   }
 
   const handleSendCode = async () => {

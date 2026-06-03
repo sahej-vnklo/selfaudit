@@ -182,6 +182,30 @@ export default function App() {
 
     pendingCheckoutRef.current = true
     try {
+      // ── Invite path — redeem code, skip Stripe entirely ──────────────────
+      if (intent.ref) {
+        try {
+          const inviteRes = await fetch('/api/invite-redeem', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+            body: JSON.stringify({ code: intent.ref, userId: session.user.id }),
+          })
+          const inviteData = await inviteRes.json()
+          if (inviteRes.ok && inviteData?.success) {
+            clearPendingCheckoutIntent()
+            window.location.hash = 'home'
+            return 'redirected'
+          }
+          console.warn('[auth] invite redeem failed:', inviteData?.error || 'unknown error')
+        } catch (inviteErr) {
+          console.warn('[auth] invite redeem threw:', inviteErr?.message ?? inviteErr)
+        }
+        // If invite fails, clear intent and let them hit the billing page
+        clearPendingCheckoutIntent()
+        return 'failed'
+      }
+
+      // ── Normal Stripe checkout path ───────────────────────────────────────
       const response = await fetch('/api/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },

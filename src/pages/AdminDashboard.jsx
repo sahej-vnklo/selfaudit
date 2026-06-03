@@ -1963,6 +1963,125 @@ function UserDetailView({ user, detail, onBack, onTierChange, tierSaving, sessio
   )
 }
 
+function InvitePanel({ session }) {
+  const [invite, setInvite]       = useState(null)
+  const [loading, setLoading]     = useState(true)
+  const [working, setWorking]     = useState(false)
+  const [cap, setCap]             = useState(10)
+  const [copied, setCopied]       = useState(false)
+  const [message, setMessage]     = useState('')
+
+  const loadStatus = async () => {
+    setLoading(true)
+    try {
+      const data = await callAdminTool('tsa_get_invite_status', {}, session?.access_token)
+      setInvite(data?.has_active_invite ? data.invite : null)
+    } catch { setMessage('Could not load invite status.') }
+    finally { setLoading(false) }
+  }
+
+  useEffect(() => { loadStatus() }, [])
+
+  const handleGenerate = async () => {
+    setWorking(true)
+    setMessage('')
+    try {
+      const data = await callAdminTool('tsa_create_invite', { cap }, session?.access_token)
+      setInvite(data?.invite || null)
+      setMessage('New invite link generated.')
+    } catch { setMessage('Could not generate invite link.') }
+    finally { setWorking(false) }
+  }
+
+  const handleExpire = async () => {
+    setWorking(true)
+    setMessage('')
+    try {
+      await callAdminTool('tsa_expire_invite', {}, session?.access_token)
+      setInvite(null)
+      setMessage('Invite link expired.')
+    } catch { setMessage('Could not expire invite link.') }
+    finally { setWorking(false) }
+  }
+
+  const inviteUrl = invite ? `${window.location.origin}/#signup?ref=${invite.code}` : null
+
+  const handleCopy = () => {
+    if (!inviteUrl) return
+    navigator.clipboard.writeText(inviteUrl)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <div style={{ ...panelStyle({ padding: '16px 18px' }) }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+        <div style={{ color: G.text, fontSize: 13 }}>Pilot invite link</div>
+        {invite && (
+          <Badge tone="green">
+            {invite.used_count} / {invite.cap} used
+          </Badge>
+        )}
+      </div>
+
+      {loading ? (
+        <div style={{ color: G.textFaint, fontSize: 12 }}>Loading…</div>
+      ) : invite ? (
+        <>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+            <div style={{ flex: 1, padding: '8px 12px', background: G.surface2, border: `0.5px solid ${G.border2}`, borderRadius: 6, fontSize: 11, color: G.textMuted, ...monoStyle(), overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {inviteUrl}
+            </div>
+            <button
+              onClick={handleCopy}
+              style={{ padding: '8px 14px', borderRadius: 6, border: `0.5px solid ${G.accent}`, background: G.accentLight, color: G.accentText, fontSize: 11, fontWeight: 600, cursor: 'pointer', flexShrink: 0, fontFamily: SANS }}
+            >
+              {copied ? 'Copied ✓' : 'Copy'}
+            </button>
+          </div>
+          <div style={{ marginBottom: 8 }}>
+            <ProgressBar value={invite.cap > 0 ? (invite.used_count / invite.cap) * 100 : 0} tone={invite.used_count >= invite.cap ? 'red' : 'green'} />
+            <div style={{ marginTop: 4, fontSize: 11, color: G.textFaint }}>{invite.cap - invite.used_count} spots remaining</div>
+          </div>
+          <button
+            onClick={handleExpire}
+            disabled={working}
+            style={{ padding: '7px 14px', borderRadius: 6, border: `0.5px solid ${G.red}`, background: G.redBg, color: G.redText, fontSize: 11, fontWeight: 500, cursor: working ? 'not-allowed' : 'pointer', opacity: working ? 0.6 : 1, fontFamily: SANS }}
+          >
+            {working ? 'Working…' : 'Expire link now'}
+          </button>
+        </>
+      ) : (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 12, color: G.textMuted }}>Max signups:</span>
+            <input
+              type="number"
+              min={1}
+              max={1000}
+              value={cap}
+              onChange={e => setCap(Math.max(1, parseInt(e.target.value) || 10))}
+              style={{ width: 64, padding: '5px 8px', borderRadius: 6, border: `0.5px solid ${G.border2}`, background: G.surface2, color: G.text, fontSize: 12, fontFamily: SANS }}
+            />
+          </div>
+          <button
+            onClick={handleGenerate}
+            disabled={working}
+            style={{ padding: '7px 14px', borderRadius: 6, border: `0.5px solid ${G.accent}`, background: G.accentLight, color: G.accentText, fontSize: 12, fontWeight: 500, cursor: working ? 'not-allowed' : 'pointer', opacity: working ? 0.6 : 1, fontFamily: SANS }}
+          >
+            {working ? 'Generating…' : 'Generate invite link'}
+          </button>
+          <div style={{ fontSize: 12, color: G.textFaint }}>No active invite link.</div>
+        </div>
+      )}
+
+      {message && (
+        <div style={{ marginTop: 10, fontSize: 11, color: G.textMuted }}>{message}</div>
+      )}
+    </div>
+  )
+}
+
 export default function AdminDashboard({ session, onUnauthorized }) {
   const [theme, setTheme] = useState(() => localStorage.getItem('sa-theme') || 'light')
   const [navSection, setNavSection] = useState('dashboard')
@@ -2168,6 +2287,8 @@ export default function AdminDashboard({ session, onUnauthorized }) {
                   </div>
 
                   <UserActivityPanel users={users} stats={stats} />
+
+                  <InvitePanel session={session} />
 
                   <UsersTable users={users} detailCache={detailCache} onSelectUser={handleSelectUser} title="User table" />
                 </div>

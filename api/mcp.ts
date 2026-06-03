@@ -406,6 +406,56 @@ function buildServer() {
     },
   );
 
+  // ── tsa_get_invite_status ─────────────────────────────────────────────────
+  server.tool(
+    "tsa_get_invite_status",
+    "Returns the current active invite code status: code, active, cap, used_count, created_at.",
+    {},
+    async () => {
+      const invite = await safeSingle(
+        sb.from("invite_codes").select("code, active, cap, used_count, created_at").eq("active", true).order("created_at", { ascending: false }).limit(1).maybeSingle()
+      )
+      if (!invite) return ok({ has_active_invite: false, invite: null })
+      return ok({ has_active_invite: true, invite })
+    },
+  );
+
+  // ── tsa_create_invite ─────────────────────────────────────────────────────
+  server.tool(
+    "tsa_create_invite",
+    "Deactivates all existing invite codes and creates a fresh one. Returns the new code.",
+    { cap: z.number().int().min(1).max(1000).default(10).describe("Max number of signups allowed") },
+    async ({ cap }) => {
+      // Deactivate all existing codes first
+      await sb.from("invite_codes").update({ active: false }).eq("active", true)
+
+      // Generate a new random code
+      const code = Math.random().toString(36).slice(2, 10).toUpperCase() +
+                   Math.random().toString(36).slice(2, 10).toUpperCase()
+
+      const { data, error } = await sb
+        .from("invite_codes")
+        .insert({ code, active: true, cap, used_count: 0 })
+        .select("code, active, cap, used_count, created_at")
+        .single()
+
+      if (error) throw new Error(error.message)
+      return ok({ success: true, invite: data })
+    },
+  );
+
+  // ── tsa_expire_invite ─────────────────────────────────────────────────────
+  server.tool(
+    "tsa_expire_invite",
+    "Immediately deactivates all active invite codes. No new signups can use them.",
+    {},
+    async () => {
+      const { error } = await sb.from("invite_codes").update({ active: false }).eq("active", true)
+      if (error) throw new Error(error.message)
+      return ok({ success: true, message: "All invite codes deactivated." })
+    },
+  );
+
   return server;
 }
 

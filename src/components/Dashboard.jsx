@@ -368,6 +368,10 @@ function normalizeTier(raw) {
 }
 
 function profileRequiresPayment(profile) {
+  // Pilot users with unexpired access don't need to pay
+  if (profile?.is_pilot && profile?.access_expires_at) {
+    if (new Date(profile.access_expires_at) > new Date()) return false
+  }
   return !profile?.stripe_subscription_id
 }
 
@@ -867,7 +871,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
 
         const { data, error } = await sb
           .from('profiles')
-          .select('tier, industry, domain, context, name, phone, onboarding_complete, created_at, stripe_customer_id, stripe_subscription_id, intelligence_docs, intelligence_complete, shared_with_vnklo, shared_report_id, notification_email, last_digest_sent_at, last_digest_summary')
+          .select('tier, industry, domain, context, name, phone, onboarding_complete, created_at, stripe_customer_id, stripe_subscription_id, intelligence_docs, intelligence_complete, shared_with_vnklo, shared_report_id, notification_email, last_digest_sent_at, last_digest_summary, is_pilot, access_expires_at')
           .eq('id', user.id)
           .single()
 
@@ -892,7 +896,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
           await new Promise((resolve) => setTimeout(resolve, 800))
           const retry = await sb
             .from('profiles')
-            .select('tier, industry, domain, context, name, phone, onboarding_complete, created_at, stripe_customer_id, stripe_subscription_id, intelligence_docs, intelligence_complete, shared_with_vnklo, shared_report_id, notification_email, last_digest_sent_at, last_digest_summary')
+            .select('tier, industry, domain, context, name, phone, onboarding_complete, created_at, stripe_customer_id, stripe_subscription_id, intelligence_docs, intelligence_complete, shared_with_vnklo, shared_report_id, notification_email, last_digest_sent_at, last_digest_summary, is_pilot, access_expires_at')
             .eq('id', user.id)
             .single()
           if (!cancelled && retry.data) {
