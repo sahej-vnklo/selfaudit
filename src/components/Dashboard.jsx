@@ -7239,7 +7239,7 @@ const styles = {
   aiOpportunityRow: {
     display: 'flex',
     gap: 10,
-    background: G.surface,
+    background: G.panel,
     border: `0.5px solid ${G.border}`,
     borderRadius: 8,
     padding: '12px 10px',
