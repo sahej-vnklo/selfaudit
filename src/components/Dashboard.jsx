@@ -5904,7 +5904,7 @@ function TierCard({ tier, currentTier, userId, email, requiresPayment = false })
   }
 
   return (
-    <div style={{ ...styles.tierCard, borderColor: current ? G.accent : G.border, background: current ? G.surface2 : G.surface }}>
+    <div style={{ ...styles.tierCard, borderColor: current ? G.accent : G.border, background: current ? G.panel : G.panel }}>
       {current && <div style={styles.tierRibbon}>Current plan</div>}
       <div style={styles.tierName}>{tier.name}</div>
       <div style={styles.tierPrice}>
@@ -7656,7 +7656,7 @@ const styles = {
     borderTop: `0.5px solid ${G.border}`,
   },
   billingCard: {
-    background: G.surface2,
+    background: G.panel,
     border: `0.5px solid ${G.border}`,
     borderRadius: 12,
     overflow: 'hidden',
