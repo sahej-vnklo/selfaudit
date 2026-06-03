@@ -252,7 +252,7 @@
 
 /* ─── Expanded rail ──────────────────────────────────────────────────────────*/
 .sa-dash.rail-open .dash-side {
-  width: 214px;
+  width: 180px;
   align-items: stretch;
   padding: 16px 12px;
 }
