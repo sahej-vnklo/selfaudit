@@ -316,8 +316,7 @@ const BUSINESS_OPTIONS = [
 ]
 
 const TIER_BADGE = {
-  foundation:  { bg: 'var(--accent-light)', color: 'var(--accent-text)', label: 'Foundation' },
-  intelligence: { bg: 'var(--surface3)', color: 'var(--blue)', label: 'Intelligence' },
+  intelligence: { bg: 'var(--surface3)', color: 'var(--blue)', label: 'SelfAudit' },
 }
 
 const TIERS = [
@@ -799,7 +798,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
   const email = user?.email || ''
   const initials = getInitials(name, email)
   const tier = normalizeTier(profile?.tier)
-  const badge = TIER_BADGE[tier] || TIER_BADGE.foundation
+  const badge = TIER_BADGE[tier] || TIER_BADGE.intelligence
   const intelligenceUnlocked = tier === 'intelligence'
   const activationLocked = requiresPayment || checkoutSyncing
   const shouldShowWelcomeTour = !!profile && !requiresPayment && shouldShowWelcomeTourForProfile(profile)
@@ -813,7 +812,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
   const healthScore            = latestDomains.length ? computeHealthScore(latestDomains) : null
   const goalState              = useMemo(() => extractGoalState(profile, reports, businessState), [profile, reports, businessState])
   const issueState             = useMemo(() => latestDiagnosticReport ? getOpenIssueStatuses(businessState, latestDiagnosticReport.id) : {}, [businessState, latestDiagnosticReport])
-  const opportunityItems       = useMemo(() => buildAiOpportunityItems(reports, profile?.tier || 'foundation'), [reports, profile?.tier])
+  const opportunityItems       = useMemo(() => buildAiOpportunityItems(reports, profile?.tier || 'intelligence'), [reports, profile?.tier])
   const shareUserInfo          = useMemo(() => ({
     name:     profile?.name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'User',
     email:    user?.email || '',
@@ -2495,7 +2494,7 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
     ? `tsa_alert_dismissed_${latestDiagnosticReport.id}_${alertDomain.name}`
     : null
   const [alertDismissed, setAlertDismissed] = useState(false)
-  const opportunityItems = buildAiOpportunityItems(reports, profile?.tier || 'foundation')
+  const opportunityItems = buildAiOpportunityItems(reports, profile?.tier || 'intelligence')
   const shareUserInfo = {
     name: profile?.name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'User',
     email: user?.email || '',
@@ -2965,7 +2964,7 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
               userInfo={shareUserInfo}
               reports={reports}
               items={opportunityItems}
-              tier={profile?.tier || 'foundation'}
+              tier={profile?.tier || 'intelligence'}
               initialShared={!!profile?.shared_with_vnklo}
               right={(
                 <button
