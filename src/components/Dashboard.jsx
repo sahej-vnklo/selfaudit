@@ -6637,7 +6637,7 @@ const styles = {
     border: `0.5px solid ${G.border}`,
     borderRadius: 10,
     padding: 12,
-    background: G.surface2,
+    background: G.panel,
   },
   oversightAreaTop: {
     display: 'flex',
