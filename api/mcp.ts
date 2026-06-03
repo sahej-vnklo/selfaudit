@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
+import Stripe from "stripe";
 
 function getSupabase() {
   return createClient(
@@ -89,7 +90,7 @@ function buildServer() {
   // ── tsa_list_users ─────────────────────────────────────────────────────────
   server.tool(
     "tsa_list_users",
-    "Returns all users from admin_user_overview: id, email, name, tier, industry, domain, report_count, created_at.",
+    "Returns all users enriched with last health check date, health score, and connector count.",
     {},
     async () => {
       const { data, error } = await sb
@@ -98,7 +99,38 @@ function buildServer() {
         .order("created_at", { ascending: false });
 
       if (error) throw new Error(error.message);
-      return ok(data);
+      const users = data ?? []
+
+      // Fetch engagement signals in parallel — non-critical, don't throw on failure
+      const [healthCheckRows, connectorRows] = await Promise.all([
+        safeRows(sb.from("business_health_checks").select("user_id, checked_at, health_score").order("checked_at", { ascending: false })),
+        safeRows(sb.from("connector_sync_logs").select("user_id, provider").eq("status", "success")),
+      ])
+
+      // Build lookup: latest health check per user
+      const latestHC: Record<string, { checked_at: string; health_score: number | null }> = {}
+      for (const row of healthCheckRows) {
+        if (!latestHC[(row as any).user_id]) {
+          latestHC[(row as any).user_id] = { checked_at: (row as any).checked_at, health_score: (row as any).health_score }
+        }
+      }
+
+      // Build lookup: distinct connector count per user
+      const connectorSets: Record<string, Set<string>> = {}
+      for (const row of connectorRows) {
+        const uid = (row as any).user_id
+        if (!connectorSets[uid]) connectorSets[uid] = new Set()
+        connectorSets[uid].add((row as any).provider)
+      }
+
+      const enriched = users.map((u: any) => ({
+        ...u,
+        last_health_check_at: latestHC[u.id]?.checked_at ?? null,
+        last_health_score:    latestHC[u.id]?.health_score ?? null,
+        connector_count:      connectorSets[u.id]?.size ?? 0,
+      }))
+
+      return ok(enriched)
     },
   );
 
@@ -306,6 +338,44 @@ function buildServer() {
         failing_syncs: failingSyncs,
         recent_alerts: recentAlerts,
       });
+    },
+  );
+
+  // ── tsa_get_stripe_status ──────────────────────────────────────────────────
+  server.tool(
+    "tsa_get_stripe_status",
+    "Returns live Stripe subscription status for a user: status, next billing date, amount, card details.",
+    { email: z.string().email().describe("User email address") },
+    async ({ email }) => {
+      const profile = await safeSingle(
+        sb.from("profiles").select("stripe_subscription_id, stripe_customer_id").eq("email", email).maybeSingle()
+      )
+      const subId = (profile as any)?.stripe_subscription_id ?? null
+      if (!subId) return ok({ status: 'no_subscription', subscription: null })
+
+      const secretKey = process.env.STRIPE_SECRET_KEY
+      if (!secretKey) return ok({ status: 'error', error: 'Stripe not configured' })
+
+      try {
+        const stripe = new Stripe(secretKey, { apiVersion: '2023-10-16' })
+        const sub = await stripe.subscriptions.retrieve(subId, { expand: ['default_payment_method'] })
+        const pm = sub.default_payment_method as Stripe.PaymentMethod | null
+        const item = sub.items.data[0]
+
+        return ok({
+          status:              sub.status,
+          current_period_end:  sub.current_period_end,
+          cancel_at_period_end: sub.cancel_at_period_end,
+          amount:              item?.price?.unit_amount ?? null,
+          currency:            item?.price?.currency ?? null,
+          card_last4:          pm?.card?.last4 ?? null,
+          card_brand:          pm?.card?.brand ?? null,
+          card_exp_month:      pm?.card?.exp_month ?? null,
+          card_exp_year:       pm?.card?.exp_year ?? null,
+        })
+      } catch (err: any) {
+        return ok({ status: 'error', error: err.message })
+      }
     },
   );
 

@@ -1154,7 +1154,7 @@ function UsersTable({ users, detailCache, onSelectUser, title = 'Users' }) {
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead style={{ position: 'sticky', top: 0, background: G.surface, zIndex: 1 }}>
             <tr>
-              {['', 'Name', 'Email', 'Plan', 'Industry', 'Domain', 'Reports', 'Joined', 'Last audit'].map(label => (
+              {['', 'Name', 'Email', 'Plan', 'Industry', 'Domain', 'Reports', 'Joined', 'Last audit', 'Last check', 'Connectors'].map(label => (
                 <th
                   key={label || 'status'}
                   style={{
@@ -1177,7 +1177,7 @@ function UsersTable({ users, detailCache, onSelectUser, title = 'Users' }) {
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={9} style={{ padding: '24px 12px', color: G.textMuted, textAlign: 'center', fontStyle: 'italic' }}>
+                <td colSpan={11} style={{ padding: '24px 12px', color: G.textMuted, textAlign: 'center', fontStyle: 'italic' }}>
                   no users found
                 </td>
               </tr>
@@ -1216,6 +1216,16 @@ function UsersTable({ users, detailCache, onSelectUser, title = 'Users' }) {
                   <td style={{ padding: '12px', color: G.text, fontSize: 12, ...monoStyle() }}>{user.report_count ?? 0}</td>
                   <td style={{ padding: '12px', color: G.textMuted, fontSize: 12, ...monoStyle() }}>{fmtDate(user.created_at)}</td>
                   <td style={{ padding: '12px', color: G.textMuted, fontSize: 12, ...monoStyle() }}>{fmtDate(lastAudit)}</td>
+                  <td style={{ padding: '12px', fontSize: 12, ...monoStyle() }}>
+                    {user.last_health_check_at ? (
+                      <span style={{ color: user.last_health_score >= 70 ? G.greenText : user.last_health_score >= 45 ? G.amberText : G.redText }}>
+                        {user.last_health_score ?? '—'} · {fmtDate(user.last_health_check_at)}
+                      </span>
+                    ) : <span style={{ color: G.textFaint }}>—</span>}
+                  </td>
+                  <td style={{ padding: '12px', color: user.connector_count > 0 ? G.greenText : G.textFaint, fontSize: 12, ...monoStyle() }}>
+                    {user.connector_count > 0 ? `${user.connector_count} connected` : '—'}
+                  </td>
                 </tr>
               )
             })}
@@ -1421,6 +1431,10 @@ function UserDetailView({ user, detail, onBack, onTierChange, tierSaving, sessio
   const [expandedSessions, setExpandedSessions] = useState(new Set())
   const [reportDetails, setReportDetails] = useState({})
   const [reportError, setReportError] = useState('')
+  const [stripeStatus, setStripeStatus] = useState(null)
+  const [stripeLoading, setStripeLoading] = useState(false)
+  const [hcTriggering, setHcTriggering] = useState(false)
+  const [hcMessage, setHcMessage] = useState('')
 
   useEffect(() => {
     setExpandedReports(new Set())
@@ -1428,7 +1442,36 @@ function UserDetailView({ user, detail, onBack, onTierChange, tierSaving, sessio
     setShowAllReports(false)
     setReportDetails({})
     setReportError('')
+    setStripeStatus(null)
+    setHcMessage('')
   }, [user?.email])
+
+  const loadStripeStatus = async () => {
+    if (stripeLoading || stripeStatus) return
+    setStripeLoading(true)
+    try {
+      const data = await callAdminTool('tsa_get_stripe_status', { email: user.email }, session?.access_token)
+      setStripeStatus(data)
+    } catch { setStripeStatus({ status: 'error', error: 'Could not load' }) }
+    finally { setStripeLoading(false) }
+  }
+
+  const triggerHealthCheck = async () => {
+    if (hcTriggering) return
+    setHcTriggering(true)
+    setHcMessage('')
+    try {
+      const res = await fetch('/api/admin-trigger-health-check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ userId: user.id }),
+      })
+      const data = await res.json()
+      if (res.ok) setHcMessage(`✓ Done — health score: ${data.health_score ?? '?'}`)
+      else setHcMessage(`✗ ${data.error || 'Failed'}`)
+    } catch { setHcMessage('✗ Request failed') }
+    finally { setHcTriggering(false) }
+  }
 
   const profile = detail?.profile || user
   const reports = detail?.reports || []
@@ -1875,6 +1918,63 @@ function UserDetailView({ user, detail, onBack, onTierChange, tierSaving, sessio
           </div>
         </div>
       )}
+
+      {/* ── Stripe subscription status ─────────────────────────────────────── */}
+      <div style={{ ...panelStyle({ padding: '16px 18px' }) }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+          <div style={{ color: G.text, fontSize: 13 }}>Stripe subscription</div>
+          {!stripeStatus && (
+            <button
+              onClick={loadStripeStatus}
+              disabled={stripeLoading}
+              style={{ padding: '5px 10px', borderRadius: 4, border: `0.5px solid ${G.border2}`, background: G.surface2, color: G.textMuted, fontSize: 11, cursor: 'pointer', fontFamily: SANS }}
+            >
+              {stripeLoading ? 'Loading…' : 'Load status'}
+            </button>
+          )}
+        </div>
+        {!stripeStatus && !stripeLoading && (
+          <div style={{ color: G.textFaint, fontSize: 12, fontStyle: 'italic' }}>Click "Load status" to fetch live data from Stripe.</div>
+        )}
+        {stripeStatus && stripeStatus.status !== 'error' && stripeStatus.status !== 'no_subscription' && (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10 }}>
+            {[
+              ['Status', stripeStatus.status],
+              ['Next billing', stripeStatus.current_period_end ? new Date(stripeStatus.current_period_end * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'],
+              ['Amount', stripeStatus.amount ? `$${(stripeStatus.amount / 100).toFixed(0)}/${stripeStatus.currency}` : '—'],
+              ['Card', stripeStatus.card_last4 ? `${stripeStatus.card_brand} ···· ${stripeStatus.card_last4}` : '—'],
+              ['Expires', stripeStatus.card_exp_month ? `${stripeStatus.card_exp_month}/${String(stripeStatus.card_exp_year).slice(-2)}` : '—'],
+              ['Cancel at period end', stripeStatus.cancel_at_period_end ? 'Yes' : 'No'],
+            ].map(([label, value]) => (
+              <div key={label} style={{ ...panelStyle({ background: G.surface2, padding: '10px 12px' }) }}>
+                <div style={{ color: G.textFaint, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>{label}</div>
+                <div style={{ color: G.text, fontSize: 12, ...monoStyle() }}>{value}</div>
+              </div>
+            ))}
+          </div>
+        )}
+        {stripeStatus?.status === 'no_subscription' && (
+          <div style={{ color: G.textMuted, fontSize: 12 }}>No active subscription found.</div>
+        )}
+        {stripeStatus?.status === 'error' && (
+          <div style={{ color: G.redText, fontSize: 12 }}>{stripeStatus.error}</div>
+        )}
+      </div>
+
+      {/* ── Trigger health check ───────────────────────────────────────────── */}
+      <div style={{ ...panelStyle({ padding: '16px 18px' }) }}>
+        <div style={{ color: G.text, fontSize: 13, marginBottom: 10 }}>Actions</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <button
+            onClick={triggerHealthCheck}
+            disabled={hcTriggering}
+            style={{ padding: '8px 14px', borderRadius: 6, border: `0.5px solid ${G.accent}`, background: G.accentLight, color: G.accentText, fontSize: 12, fontWeight: 500, cursor: hcTriggering ? 'not-allowed' : 'pointer', opacity: hcTriggering ? 0.6 : 1, fontFamily: SANS }}
+          >
+            {hcTriggering ? 'Running…' : 'Run health check'}
+          </button>
+          {hcMessage && <span style={{ fontSize: 12, color: hcMessage.startsWith('✓') ? G.greenText : G.redText }}>{hcMessage}</span>}
+        </div>
+      </div>
     </div>
   )
 }
