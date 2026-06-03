@@ -67,6 +67,7 @@ function buildServer() {
         { count: signupsToday },
         { count: signupsWeek },
         { count: reportsToday },
+        { count: reportsWeek },
       ] = await Promise.all([
         sb.from("profiles").select("*", { count: "exact", head: true }),
         sb.from("reports").select("*", { count: "exact", head: true }),
@@ -74,6 +75,7 @@ function buildServer() {
         sb.from("profiles").select("*", { count: "exact", head: true }).gte("created_at", today.toISOString()),
         sb.from("profiles").select("*", { count: "exact", head: true }).gte("created_at", weekAgo.toISOString()),
         sb.from("reports").select("*", { count: "exact", head: true }).gte("created_at", today.toISOString()),
+        sb.from("reports").select("*", { count: "exact", head: true }).gte("created_at", weekAgo.toISOString()),
       ]);
 
       return ok({
@@ -83,6 +85,7 @@ function buildServer() {
         signups_today: signupsToday ?? 0,
         signups_this_week: signupsWeek ?? 0,
         reports_today: reportsToday ?? 0,
+        reports_this_week: reportsWeek ?? 0,
       });
     },
   );

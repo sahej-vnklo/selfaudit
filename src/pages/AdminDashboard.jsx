@@ -1058,21 +1058,19 @@ function MetricCard({ label, value, delta }) {
   )
 }
 
-function UserActivityPanel({ users }) {
+function UserActivityPanel({ users, stats }) {
   const now = Date.now()
-  const sevenDaysAgo  = now - 7  * 24 * 60 * 60 * 1000
   const thirtyDaysAgo = now - 30 * 24 * 60 * 60 * 1000
 
   const paying      = users.filter(u => normTier(u.tier) === 'intelligence')
-  const activeRecent = paying.filter(u => u.last_health_check_at && new Date(u.last_health_check_at).getTime() >= sevenDaysAgo)
   const churnRisk   = paying.filter(u => !u.last_health_check_at || new Date(u.last_health_check_at).getTime() < thirtyDaysAgo)
   const newThisMonth = users.filter(u => u.created_at && new Date(u.created_at).getTime() >= thirtyDaysAgo)
 
   const tiles = [
-    { label: 'Paying users',         value: paying.length,       tone: 'accent', note: 'active subscriptions' },
-    { label: 'Active last 7 days',   value: activeRecent.length, tone: 'green',  note: 'ran health check recently' },
-    { label: 'Churn risk (30d idle)',value: churnRisk.length,    tone: churnRisk.length > 0 ? 'red' : 'default', note: 'paid but inactive 30+ days' },
-    { label: 'New this month',       value: newThisMonth.length, tone: 'default', note: 'signed up last 30 days' },
+    { label: 'Paying users',         value: paying.length,                   tone: 'accent', note: 'active subscriptions' },
+    { label: 'Audits this week',     value: stats?.reports_this_week ?? '—', tone: 'green',  note: 'reports generated last 7 days' },
+    { label: 'Churn risk (30d idle)',value: churnRisk.length,                tone: churnRisk.length > 0 ? 'red' : 'default', note: 'paid but inactive 30+ days' },
+    { label: 'New this month',       value: newThisMonth.length,             tone: 'default', note: 'signed up last 30 days' },
   ]
 
   const toneColor = { accent: G.accentText, green: G.greenText, red: G.redText, default: G.textMuted }
@@ -2191,7 +2189,7 @@ export default function AdminDashboard({ session, onUnauthorized }) {
                     ))}
                   </div>
 
-                  <UserActivityPanel users={users} />
+                  <UserActivityPanel users={users} stats={stats} />
 
                   <UsersTable users={users} detailCache={detailCache} onSelectUser={handleSelectUser} title="User table" />
                 </div>
