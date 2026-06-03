@@ -3306,7 +3306,8 @@ function OperationalOversightSection({ intelligenceUnlocked, healthIntel, userId
 
   return (
     <div style={styles.oversightGrid}>
-      <PanelCard title="founder view">
+      <PanelCard title="founder view" style={{ display: 'flex', flexDirection: 'column' }}>
+        <div style={{ overflowY: 'auto', flex: 1 }}>
         <div style={styles.oversightFounderSummary}>
           <div style={styles.oversightFounderHeadline}>
             {healthIntel?.governance_summary || 'No governance summary yet.'}
@@ -3329,13 +3330,14 @@ function OperationalOversightSection({ intelligenceUnlocked, healthIntel, userId
         ) : (
           <EmptyPanel message="Run monitoring again to populate recommended actions." />
         )}
+        </div>
       </PanelCard>
 
-      <PanelCard title="area workspaces">
+      <PanelCard title="area workspaces" style={{ display: 'flex', flexDirection: 'column' }}>
         {statuses.length === 0 ? (
           <EmptyPanel message="No area-level monitoring signals yet." />
         ) : (
-          <div style={styles.oversightAreaList}>
+          <div style={{ ...styles.oversightAreaList, overflowY: 'auto', flex: 1 }}>
             {statuses.map((item) => {
               const tone = governanceStatusTone(item.status)
               const areaLabel = GOVERNANCE_AREA_LABELS[item.area_id] || item.area_id
@@ -4342,9 +4344,9 @@ function BusinessStateEditor({ label, value, onChange }) {
   )
 }
 
-function PanelCard({ title, right, children }) {
+function PanelCard({ title, right, children, style }) {
   return (
-    <div style={styles.panelCard}>
+    <div style={{ ...styles.panelCard, ...style }}>
       <div style={styles.panelHeader}>
         <div style={styles.panelTitle}>{title}</div>
         {right}
@@ -6581,7 +6583,7 @@ const styles = {
     display: 'grid',
     gridTemplateColumns: 'minmax(0, 1.15fr) minmax(0, 1fr)',
     gap: 12,
-    alignItems: 'start',
+    alignItems: 'stretch',
   },
   oversightFounderSummary: {
     display: 'flex',
