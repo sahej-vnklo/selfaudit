@@ -3383,7 +3383,6 @@ function OperationalOversightSection({ intelligenceUnlocked, healthIntel, userId
         )}
       </PanelCard>
 
-      <ThresholdEditorPanel userId={userId} />
     </div>
   )
 }
