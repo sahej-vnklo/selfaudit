@@ -6,6 +6,42 @@ import './Landing.css'
 
 // ── Burger menu overlay ───────────────────────────────────────────────────────
 function BurgerMenu({ onClose, onLogoClick, onNav }) {
+  const [showContact,   setShowContact]   = useState(false)
+  const [contactEmail,  setContactEmail]  = useState('')
+  const [contactMsg,    setContactMsg]    = useState('')
+  const [contactLoading, setContactLoading] = useState(false)
+  const [contactDone,   setContactDone]   = useState(false)
+  const [contactError,  setContactError]  = useState(null)
+
+  const handleContact = async () => {
+    setContactError(null)
+    if (!contactEmail.trim()) { setContactError('Enter your email.'); return }
+    if (!contactMsg.trim())   { setContactError('Write a message first.'); return }
+    setContactLoading(true)
+    try {
+      const res  = await fetch('/api/contact', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ email: contactEmail.trim(), message: contactMsg.trim() }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setContactError(data?.error || 'Something went wrong.'); return }
+      setContactDone(true)
+    } catch {
+      setContactError('Something went wrong. Try again.')
+    } finally {
+      setContactLoading(false)
+    }
+  }
+
+  const closeContact = () => {
+    setShowContact(false)
+    setContactEmail('')
+    setContactMsg('')
+    setContactError(null)
+    setContactDone(false)
+  }
+
   return (
     <div className="sa-land menu-overlay">
 
@@ -62,11 +98,58 @@ function BurgerMenu({ onClose, onLogoClick, onNav }) {
           <div className="menu-eyebrow">Company</div>
           <div className="menu-stack">
             <button className="menu-cat">About</button>
-            <button className="menu-cat">Contact</button>
+            <button className="menu-cat" onClick={() => setShowContact(true)}>Contact</button>
           </div>
         </div>
 
       </div>
+
+      {/* Contact modal */}
+      {showContact && (
+        <div className="menu-contact-overlay" onClick={closeContact}>
+          <div className="menu-contact-box" onClick={e => e.stopPropagation()}>
+            <button className="menu-contact-close" onClick={closeContact}>✕</button>
+            {contactDone ? (
+              <>
+                <h2 className="menu-contact-title">We'll be in touch.</h2>
+                <p className="menu-contact-sub">Message received. We'll get back to you shortly.</p>
+              </>
+            ) : (
+              <>
+                <h2 className="menu-contact-title">Get in touch.</h2>
+                <p className="menu-contact-sub">Write whatever's on your mind. We read everything.</p>
+                <div className="menu-contact-fields">
+                  <input
+                    className="menu-contact-input"
+                    type="email"
+                    placeholder="your@email.com"
+                    value={contactEmail}
+                    onChange={e => setContactEmail(e.target.value)}
+                    disabled={contactLoading}
+                    autoFocus
+                  />
+                  <textarea
+                    className="menu-contact-textarea"
+                    placeholder="Your message..."
+                    value={contactMsg}
+                    onChange={e => setContactMsg(e.target.value)}
+                    disabled={contactLoading}
+                    rows={5}
+                  />
+                </div>
+                {contactError && <p className="menu-contact-error">{contactError}</p>}
+                <button
+                  className="menu-contact-submit"
+                  onClick={handleContact}
+                  disabled={contactLoading}
+                >
+                  {contactLoading ? 'Sending…' : 'Send'}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
