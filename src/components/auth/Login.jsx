@@ -22,7 +22,7 @@ const C = {
 const SHOW_SIGNUP = false
 
 // ── Main component ────────────────────────────────────────────────────────────
-export default function Login({ onSuccess, onSignup, initialMessage = '' }) {
+export default function Login({ onSuccess, onSignup, onVoice, initialMessage = '' }) {
   const [email,     setEmail]     = useState('')
   const [code,      setCode]      = useState('')
   const [error,     setError]     = useState(null)
@@ -142,7 +142,7 @@ export default function Login({ onSuccess, onSignup, initialMessage = '' }) {
             )}
             <p style={s.switchLine}>
               Not a pilot user?{' '}
-              <button className="sa-login-btn-reset" style={s.switchLink} onClick={() => { window.location.hash = 'voice' }}>Get early access.</button>
+              <button className="sa-login-btn-reset" style={s.switchLink} onClick={onVoice}>Get early access.</button>
             </p>
           </div>
 
