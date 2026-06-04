@@ -1,0 +1,127 @@
+/* ─── INTELLIGENCE LAYER PAGE — extends UseCases.css ────────────────────── */
+
+/* ── CONCEPT ─────────────────────────────────────────────────────────────── */
+.il-concept {
+  padding: 80px 80px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.il-concept-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: start;
+}
+.il-concept-body { display: flex; flex-direction: column; gap: 20px; }
+
+/* ── FOUR COMPONENTS ─────────────────────────────────────────────────────── */
+.il-components {
+  background: var(--bg-2);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 80px 80px;
+}
+.il-components-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.il-components-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 40px;
+}
+.il-component-card {
+  background: #0a0707;
+  border-radius: 14px;
+  padding: 36px 32px;
+}
+.il-component-name {
+  font-family: var(--serif);
+  font-size: 28px;
+  font-weight: 500;
+  color: #f4ebe3;
+  letter-spacing: -0.01em;
+  margin-bottom: 16px;
+}
+.il-component-body {
+  font-size: 15px;
+  line-height: 1.72;
+  color: rgba(244,235,227,0.62);
+}
+
+/* ── COMPOUNDS ───────────────────────────────────────────────────────────── */
+.il-compounds {
+  padding: 80px 80px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.il-compounds-inner {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 80px;
+  align-items: center;
+}
+.il-compounds-copy { display: flex; flex-direction: column; gap: 20px; }
+.il-compounds-stat {
+  text-align: center;
+  flex-shrink: 0;
+  width: 220px;
+}
+.il-stat-number {
+  font-family: var(--serif);
+  font-size: clamp(80px, 10vw, 140px);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--ember);
+}
+.il-stat-label {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--fg-dim);
+  margin-top: 12px;
+  max-width: 18ch;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ── ACCUMULATION ────────────────────────────────────────────────────────── */
+.il-accumulation {
+  background: var(--bg-2);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 80px 80px;
+}
+.il-accumulation-inner {
+  max-width: 820px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.il-pull {
+  margin-top: 32px;
+  padding: 28px 32px;
+  border-left: 3px solid var(--ember);
+  background: oklch(0.52 0.18 32 / 0.06);
+  border-radius: 0 10px 10px 0;
+  font-family: var(--serif);
+  font-size: clamp(20px, 2.2vw, 28px);
+  font-weight: 400;
+  font-style: italic;
+  line-height: 1.35;
+  color: var(--fg);
+  letter-spacing: -0.01em;
+}
+
+/* ── RESPONSIVE ──────────────────────────────────────────────────────────── */
+@media (max-width: 960px) {
+  .il-concept       { padding: 60px 24px; }
+  .il-concept-inner { grid-template-columns: 1fr; gap: 40px; }
+  .il-components    { padding: 60px 24px; }
+  .il-components-grid { grid-template-columns: 1fr; }
+  .il-compounds     { padding: 60px 24px; }
+  .il-compounds-inner { grid-template-columns: 1fr; gap: 48px; }
+  .il-compounds-stat  { width: auto; }
+  .il-accumulation  { padding: 60px 24px; }
+}

@@ -10,6 +10,7 @@ import AdminDashboard from './pages/AdminDashboard.jsx'
 import TermsPage from './components/TermsPage.jsx'
 import HowItWorks from './pages/HowItWorks.jsx'
 import Voice from './pages/Voice.jsx'
+import IntelligenceLayer          from './pages/IntelligenceLayer.jsx'
 import UseCaseCustomerService    from './pages/UseCaseCustomerService.jsx'
 import UseCaseSalesMarketing     from './pages/UseCaseSalesMarketing.jsx'
 import UseCaseFinanceAccounting  from './pages/UseCaseFinanceAccounting.jsx'
@@ -30,6 +31,7 @@ const SCREENS = {
   TERMS:               'terms',
   HOW_IT_WORKS:        'how-it-works',
   VOICE:               'voice',
+  INTELLIGENCE_LAYER:  'intelligence-layer',
   UC_CUSTOMER_SERVICE:    'use-case-customer-service',
   UC_SALES_MARKETING:     'use-case-sales-marketing',
   UC_FINANCE_ACCOUNTING:  'use-case-finance-accounting',
@@ -43,6 +45,7 @@ const HASH_SCREENS = new Set([
   SCREENS.ADMIN, SCREENS.TERMS,
   SCREENS.HOW_IT_WORKS,
   SCREENS.VOICE,
+  SCREENS.INTELLIGENCE_LAYER,
   SCREENS.UC_CUSTOMER_SERVICE,
   SCREENS.UC_SALES_MARKETING,
   SCREENS.UC_FINANCE_ACCOUNTING,
@@ -140,6 +143,7 @@ function screenFromHash(isAuthenticated = false) {
   if (section === 'terms')              return SCREENS.TERMS
   if (section === 'how-it-works')                 return SCREENS.HOW_IT_WORKS
   if (section === 'voice')                        return SCREENS.VOICE
+  if (section === 'intelligence-layer')           return SCREENS.INTELLIGENCE_LAYER
   if (section === 'use-case-customer-service')    return SCREENS.UC_CUSTOMER_SERVICE
   if (section === 'use-case-sales-marketing')     return SCREENS.UC_SALES_MARKETING
   if (section === 'use-case-finance-accounting')  return SCREENS.UC_FINANCE_ACCOUNTING
@@ -569,8 +573,9 @@ export default function App() {
     window.dispatchEvent(new PopStateEvent('popstate'))
   }
 
-  if (screen === SCREENS.HOW_IT_WORKS) return <HowItWorks onBack={goBackToMenu} />
-  if (screen === SCREENS.VOICE)        return <Voice      onBack={goBackToMenu} />
+  if (screen === SCREENS.HOW_IT_WORKS)     return <HowItWorks        onBack={goBackToMenu} />
+  if (screen === SCREENS.VOICE)            return <Voice             onBack={goBackToMenu} />
+  if (screen === SCREENS.INTELLIGENCE_LAYER) return <IntelligenceLayer onBack={goBackToMenu} />
 
   if (screen === SCREENS.UC_CUSTOMER_SERVICE)    return <UseCaseCustomerService    onBack={goBackToMenu} />
   if (screen === SCREENS.UC_SALES_MARKETING)     return <UseCaseSalesMarketing     onBack={goBackToMenu} />
