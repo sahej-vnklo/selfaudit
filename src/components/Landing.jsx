@@ -40,7 +40,7 @@ function BurgerMenu({ onClose, onLogoClick, onNav }) {
             <button className="menu-cat">Platform</button>
             <div className="menu-sublist">
               <button className="menu-sublink" onClick={() => onNav('intelligence-layer')}>The Intelligence Layer</button>
-              <button className="menu-sublink" onClick={() => onNav('how-it-works')}>The Six Loops</button>
+              <button className="menu-sublink" onClick={() => onNav('six-loops')}>The Six Loops</button>
             </div>
           </div>
 
