@@ -362,11 +362,9 @@ export default function Landing({ onStart, session, openMenu, onMenuOpened }) {
           </div>
           <span className="logo-text" style={{ fontSize: 27 }}>SelfAudit</span>
         </div>
-        <button className="nav-center-tease" onClick={() => { window.location.hash = 'voice' }}>
-          We're Not Talking About This Yet
-        </button>
         <div className="nav-right">
           <div className="nav-links">
+            <button style={{ fontSize: 15, color: 'var(--ember-glow)' }} onClick={() => { window.location.hash = 'voice' }}>What's Next</button>
             <button style={{ fontSize: 15 }} onClick={() => { window.location.hash = 'how-it-works' }}>How It Works</button>
           </div>
           <button className="nav-cta" onClick={handleStartAudit} style={{ fontSize: 17, height: 43, marginLeft: 18 }}>
