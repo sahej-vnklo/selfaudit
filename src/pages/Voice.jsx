@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import './Voice.css'
 
 // ── Phone transcript data ─────────────────────────────────────────────────────
@@ -25,6 +25,31 @@ const TRANSCRIPT = [
 const WAVE_HEIGHTS = [18, 32, 24, 40, 28, 36, 20, 44, 30, 38, 22, 34, 26, 42, 18, 36, 28, 40, 24, 32]
 
 export default function Voice({ onBack }) {
+  const [email,      setEmail]      = useState('')
+  const [loading,    setLoading]    = useState(false)
+  const [submitted,  setSubmitted]  = useState(false)
+  const [error,      setError]      = useState(null)
+
+  const handleSubmit = async () => {
+    setError(null)
+    if (!email.trim()) { setError('Enter your email first.'); return }
+    setLoading(true)
+    try {
+      const res = await fetch('/api/voice-waitlist', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ email: email.trim(), source: 'voice_page' }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setError(data?.error || 'Something went wrong. Try again.'); return }
+      setSubmitted(true)
+    } catch {
+      setError('Something went wrong. Try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="sa-voice">
 
@@ -159,14 +184,33 @@ export default function Voice({ onBack }) {
           <p className="voice-waitlist-sub">
             The intelligence is already running. The voice bridge is what's next. Leave your email — we'll sign you up as our pilot user.
           </p>
-          <div className="voice-form">
-            <input
-              className="voice-input"
-              type="email"
-              placeholder="your@email.com"
-            />
-            <button className="voice-submit">Request Access</button>
-          </div>
+          {submitted ? (
+            <div className="voice-success">
+              You're on the list. We'll be in touch.
+            </div>
+          ) : (
+            <>
+              <div className="voice-form">
+                <input
+                  className="voice-input"
+                  type="email"
+                  placeholder="your@email.com"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+                  disabled={loading}
+                />
+                <button
+                  className="voice-submit"
+                  onClick={handleSubmit}
+                  disabled={loading}
+                >
+                  {loading ? 'Saving…' : 'Request Access'}
+                </button>
+              </div>
+              {error && <p className="voice-error">{error}</p>}
+            </>
+          )}
         </div>
       </section>
 

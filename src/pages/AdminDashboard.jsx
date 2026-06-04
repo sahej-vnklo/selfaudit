@@ -200,10 +200,20 @@ const G = {
 const MONO = '"DM Mono", ui-monospace, monospace'
 const SANS = '"DM Sans", system-ui, -apple-system, sans-serif'
 
+function IconMail() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+      <rect x="1.75" y="3.5" width="10.5" height="7.5" rx="1.2" stroke="currentColor" strokeWidth="1.2" />
+      <path d="M1.75 5.25L7 8.25L12.25 5.25" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 const NAV_ITEMS = [
   { key: 'dashboard', label: 'Dashboard', Icon: IconHome },
-  { key: 'users', label: 'Users', Icon: IconPerson, badge: 'userCount' },
-  { key: 'settings', label: 'Settings', Icon: IconGear },
+  { key: 'users',     label: 'Users',     Icon: IconPerson, badge: 'userCount' },
+  { key: 'waitlist',  label: 'Waitlist',  Icon: IconMail },
+  { key: 'settings',  label: 'Settings',  Icon: IconGear },
 ]
 
 const TIER_STYLES = {
@@ -2135,6 +2145,65 @@ function InvitePanel({ session }) {
   )
 }
 
+// ── Voice Waitlist Panel ──────────────────────────────────────────────────────
+function VoiceWaitlistPanel({ session }) {
+  const [entries,  setEntries]  = React.useState([])
+  const [loading,  setLoading]  = React.useState(true)
+  const [error,    setError]    = React.useState(null)
+
+  React.useEffect(() => {
+    if (!session?.access_token) return
+    fetch('/api/admin-voice-waitlist', {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    })
+      .then(r => r.json())
+      .then(data => {
+        setEntries(data.entries || [])
+        setLoading(false)
+      })
+      .catch(err => {
+        setError(err.message)
+        setLoading(false)
+      })
+  }, [session])
+
+  const p = panelStyle({ padding: '18px 20px' })
+
+  if (loading) return <Spinner />
+  if (error)   return <div style={{ ...p, color: G.red, fontSize: 13 }}>Error: {error}</div>
+
+  return (
+    <div style={p}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <div style={{ fontSize: 14, fontWeight: 600, color: G.text }}>Voice Waitlist</div>
+        <div style={{ fontSize: 12, color: G.textMuted, fontFamily: MONO }}>{entries.length} {entries.length === 1 ? 'entry' : 'entries'}</div>
+      </div>
+      {entries.length === 0 ? (
+        <div style={{ fontSize: 13, color: G.textMuted }}>No entries yet.</div>
+      ) : (
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+          <thead>
+            <tr style={{ borderBottom: `1px solid ${G.border}` }}>
+              {['Email', 'Source', 'Joined'].map(h => (
+                <th key={h} style={{ textAlign: 'left', padding: '6px 10px', color: G.textMuted, fontWeight: 500, fontFamily: MONO, fontSize: 11, letterSpacing: '0.05em', textTransform: 'uppercase' }}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {entries.map(e => (
+              <tr key={e.id} style={{ borderBottom: `1px solid ${G.border}` }}>
+                <td style={{ padding: '10px 10px', color: G.text, fontFamily: MONO, fontSize: 12 }}>{e.email}</td>
+                <td style={{ padding: '10px 10px', color: G.textMuted, fontSize: 12 }}>{e.source}</td>
+                <td style={{ padding: '10px 10px', color: G.textMuted, fontFamily: MONO, fontSize: 11 }}>{new Date(e.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  )
+}
+
 export default function AdminDashboard({ session, onUnauthorized }) {
   const [theme, setTheme] = useState(() => localStorage.getItem('sa-theme') || 'light')
   const [navSection, setNavSection] = useState('dashboard')
@@ -2354,6 +2423,8 @@ export default function AdminDashboard({ session, onUnauthorized }) {
               </div>
             ) : navSection === 'users' ? (
               <UsersTable users={users} detailCache={detailCache} onSelectUser={handleSelectUser} title="Users" />
+            ) : navSection === 'waitlist' ? (
+              <VoiceWaitlistPanel session={session} />
             ) : (
               <div style={{ ...panelStyle({ padding: '18px 20px' }) }}>
                 <div style={{ color: G.text, fontSize: 13, marginBottom: 6 }}>Settings</div>
