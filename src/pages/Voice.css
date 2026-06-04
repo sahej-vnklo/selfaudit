@@ -99,6 +99,14 @@
   max-width: 1400px;
   margin: 0 auto;
 }
+.voice-tease-line {
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ember);
+  margin-bottom: 28px;
+  font-family: var(--mono);
+}
 .voice-label {
   font-family: var(--mono);
   font-size: 11px;

@@ -64,6 +64,22 @@
   letter-spacing: -0.01em;
   color: var(--fg);
 }
+.sa-land .nav-center-tease {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-family: var(--font-body, inherit);
+  color: var(--ember-glow, oklch(0.58 0.18 35));
+  letter-spacing: 0.02em;
+  opacity: 0.85;
+  transition: opacity 0.2s;
+  white-space: nowrap;
+}
+.sa-land .nav-center-tease:hover { opacity: 1; }
 .sa-land .nav-links { display: flex; gap: 36px; }
 .sa-land .nav-links a:empty { display: none; }
 .sa-land .nav-links a,

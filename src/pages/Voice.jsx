@@ -75,6 +75,7 @@ export default function Voice({ onBack }) {
 
       {/* HERO */}
       <section className="voice-hero">
+        <p className="voice-tease-line">You clicked. Of course you did.</p>
         <h1 className="voice-h1">
           They teach in school that business<br />
           is a separate entity.<br />
