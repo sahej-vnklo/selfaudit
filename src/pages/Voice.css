@@ -117,9 +117,9 @@
 }
 .voice-h1 {
   font-family: var(--serif);
-  font-size: clamp(40px, 5.5vw, 80px);
+  font-size: clamp(32px, 3.8vw, 58px);
   font-weight: 500;
-  line-height: 1.08;
+  line-height: 1.1;
   letter-spacing: -0.02em;
   color: var(--fg);
 }
