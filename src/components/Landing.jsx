@@ -130,6 +130,44 @@ const FAQS = [
   },
 ]
 
+// ── Lane data ─────────────────────────────────────────────────────────────────
+const LANES = [
+  {
+    name: 'Customer Service',
+    metrics: ['Response time vs SLA', 'Ticket volume & resolution', 'Recurring issue patterns', 'Single points of failure'],
+    scenario: "Flags the moment response time starts trending before it breaches. Names the agent who's carrying too much.",
+    icon: <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="10" cy="7" r="3.5"/><path d="M3 18c0-3.314 3.134-6 7-6s7 2.686 7 6"/></svg>,
+  },
+  {
+    name: 'Sales & Marketing',
+    metrics: ['Pipeline health & velocity', 'Deal stall detection', 'Outreach activity gaps', 'Conversion by source'],
+    scenario: "Surfaces the deals marked active that haven't moved in 60 days. Shows you real pipeline, not what the CRM says it is.",
+    icon: <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M2 14l4.5-4.5 3 3L14 7l3.5 2.5"/><path d="M14 5h3.5v3.5"/></svg>,
+  },
+  {
+    name: 'Finance & Accounting',
+    metrics: ['Margin by product/service', 'Burn rate & runway', 'LTV:CAC & churn signals', 'Overdue receivables'],
+    scenario: "Finds the service priced at 55% margin but delivering at 31%. The gap is absorbed by scope creep nobody's tracking.",
+    icon: <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M10 2v16"/><path d="M6.5 5.5C6.5 4.12 8.07 3 10 3s3.5 1.12 3.5 2.5S12 8 10 8s-3.5 1.12-3.5 2.5S8.07 13 10 13s3.5 1.12 3.5 2.5S12 17 10 17s-3.5-1.12-3.5-2.5"/></svg>,
+  },
+  {
+    name: 'Management & Strategy',
+    metrics: ['Goal progress & blockers', 'Execution follow-through', 'Repeated priority patterns', 'Team bottlenecks'],
+    scenario: "Notices when you set the same goal two years in a row. Names the blocker you keep stepping around.",
+    icon: <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="2.5" y="2.5" width="6" height="6" rx="1"/><rect x="11.5" y="2.5" width="6" height="6" rx="1"/><rect x="2.5" y="11.5" width="6" height="6" rx="1"/><rect x="11.5" y="11.5" width="6" height="6" rx="1"/></svg>,
+  },
+]
+
+// ── Artifact data ─────────────────────────────────────────────────────────────
+const ARTIFACTS = [
+  { name: 'Outreach Email',  desc: 'Ready-to-send. Personalized to the specific opportunity surfaced.',       icon: <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="16" height="13" rx="2"/><path d="M2 7l8 5 8-5"/></svg> },
+  { name: 'Process SOP',     desc: 'Step-by-step operational playbook to fix the diagnosed gap.',             icon: <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Z"/><path d="M8 7h4M8 10h4M8 13h2"/></svg> },
+  { name: 'Team Brief',      desc: 'Share findings with your team. The what, the why, the what next.',        icon: <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="7" cy="7" r="2.8"/><circle cx="14" cy="7" r="2.8"/><path d="M1 17c0-2.5 2.686-4.5 6-4.5M9 17c0-2.5 2.686-4.5 6-4.5"/></svg> },
+  { name: 'Action Plan',     desc: 'Sequenced steps, ranked by impact, with owners and timelines.',           icon: <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="14" height="14" rx="2"/><path d="M7 10l2 2 4-4"/></svg> },
+  { name: 'Hiring Brief',    desc: 'Role definition built from the actual gap the business has.',             icon: <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="6" width="16" height="11" rx="2"/><path d="M7 6V5a3 3 0 0 1 6 0v1"/></svg> },
+  { name: 'PDF Report',      desc: 'Full audit report. Shareable with board, investors, or advisors.',        icon: <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M10 3v9M7 9l3 3 3-3"/><path d="M4 14v2a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-2"/></svg> },
+]
+
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function Landing({ onStart, session }) {
   const posthog = usePostHog()
@@ -346,6 +384,21 @@ export default function Landing({ onStart, session }) {
         </p>
       </section>
 
+      {/* PROBLEM */}
+      <section className="problem block">
+        <h2 className="h2">The problem isn't the data.<br />It's that nobody is connecting it.</h2>
+        <div className="problem-card">
+          <div className="problem-eyebrow">Cross-Department Root Cause</div>
+          <p className="problem-quote">
+            "Your hiring freeze caused your support backlog, which drove your churn, which is{' '}
+            <span className="problem-quote-em">shortening your runway.</span>"
+          </p>
+          <p className="problem-body">
+            No single tool sees this. HubSpot knows your pipeline. Stripe knows your revenue. Zendesk knows your tickets. SelfAudit knows how all three connect — and tells you before it becomes a crisis.
+          </p>
+        </div>
+      </section>
+
       {/* PILLARS */}
       <section className="pillars block" id="platform" ref={pillarsRef}>
         <div className="pillars-wrap">
@@ -415,6 +468,92 @@ export default function Landing({ onStart, session }) {
             What Fortune 500s pay millions for is now accessible the moment you log in.
           </p>
           <p className="manifesto-close">ALL YOURS</p>
+        </div>
+      </section>
+
+      {/* FOUR LANES */}
+      <section className="four-lanes block">
+        <h2 className="h2">All four parts of your business. <em>Simultaneously.</em></h2>
+        <p className="lede">
+          No single person can watch Customer Service, Sales, Finance, and Strategy at once with equal attention. SelfAudit does. And when Sales is closing bad-fit deals that are straining delivery and spiking support tickets — it traces the chain.
+        </p>
+        <div className="lanes-grid">
+          {LANES.map(lane => (
+            <div className="lane-card" key={lane.name}>
+              <div className="lane-icon-wrap">{lane.icon}</div>
+              <h3 className="lane-name">{lane.name}</h3>
+              <ul className="lane-metrics">
+                {lane.metrics.map(m => <li key={m}>{m}</li>)}
+              </ul>
+              <p className="lane-scenario">{lane.scenario}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* YOUR STANDARDS */}
+      <section className="standards block">
+        <div className="standards-inner">
+          <div className="standards-panel">
+            <div className="standards-panel-label">Your Defined Standards</div>
+            <div className="standards-compare">
+              <div className="standards-col standards-generic">
+                <div className="standards-col-head">Generic AI</div>
+                {[['SLA','Industry average'],['Margin','Benchmark'],['Pipeline','Best practice'],['Churn','SaaS median']].map(([k,v]) => (
+                  <div className="standards-row" key={k}>
+                    <span className="std-key">{k}</span>
+                    <span className="std-val-dim">{v}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="standards-col standards-yours">
+                <div className="standards-col-head">SelfAudit</div>
+                {[['SLA','4hrs (yours)'],['Margin','>60% (yours)'],['Pipeline','10+ deals (yours)'],['Churn','<2%/mo (yours)']].map(([k,v]) => (
+                  <div className="standards-row" key={k}>
+                    <span className="std-key">{k}</span>
+                    <span className="std-val-ember">{v}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="standards-copy">
+            <h2 className="h2">Not the average business. <em>Your business.</em></h2>
+            <p className="lede">
+              Every threshold, every standard, every definition of healthy is yours. A 24-hour SLA is excellent for a volume support team and catastrophic for a premium service firm. SelfAudit doesn't assume. You define what good looks like across all four lanes — and the system flags the moment your operation drifts from your own standard.
+            </p>
+            <div className="standards-callout">
+              <strong>Your standards, not ours.</strong>{' '}
+              <em>Pipeline should have 10+ active deals. Gross margin must stay above 60%. Customer response under 4 hours. Runway never below 8 months. Once you set them, the system watches them — continuously, not quarterly.</em>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ARTIFACTS */}
+      <section className="artifacts block">
+        <div className="artifacts-inner">
+          <div className="artifacts-copy">
+            <h2 className="h2">Not just what to do. <em>The thing that does it.</em></h2>
+            <p className="lede">
+              Most intelligence tools tell you there's a problem. SelfAudit hands you the tool to fix it. Every diagnosis produces a ready-to-use artifact — the outreach email, the process SOP, the team brief, the hiring spec. Not a recommendation to think about. The actual deliverable. From diagnosis to done in one session.
+            </p>
+            <div className="artifacts-callout">
+              <strong>The highest-retention feature in the product.</strong>{' '}
+              <em>Founders who generate artifacts weekly are deeply integrated — the product produces things they share, implement, and send. The artifact becomes the evidence that SelfAudit is doing its job. That's a very hard habit to walk away from.</em>
+            </div>
+          </div>
+          <div className="artifacts-grid">
+            {ARTIFACTS.map(a => (
+              <div className="artifact-card" key={a.name}>
+                <div className="artifact-icon-wrap">{a.icon}</div>
+                <div>
+                  <div className="artifact-name">{a.name}</div>
+                  <div className="artifact-desc">{a.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
