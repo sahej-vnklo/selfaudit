@@ -8,6 +8,7 @@ import Dashboard from './components/Dashboard.jsx'
 import DashboardWelcomeTour from './components/DashboardWelcomeTour.jsx'
 import AdminDashboard from './pages/AdminDashboard.jsx'
 import TermsPage from './components/TermsPage.jsx'
+import HowItWorks from './pages/HowItWorks.jsx'
 
 const PENDING_AUTH_INTENT_KEY = 'sa-auth-intent'
 const PENDING_CHECKOUT_RETURN_KEY = 'sa-checkout-return'
@@ -22,6 +23,7 @@ const SCREENS = {
   TOUR_PREVIEW:        'tour-preview',
   ADMIN:               'admin',
   TERMS:               'terms',
+  HOW_IT_WORKS:        'how-it-works',
 }
 
 const HASH_SCREENS = new Set([
@@ -29,6 +31,7 @@ const HASH_SCREENS = new Set([
   SCREENS.DASHBOARD,
   SCREENS.TOUR_PREVIEW,
   SCREENS.ADMIN, SCREENS.TERMS,
+  SCREENS.HOW_IT_WORKS,
 ])
 
 const DASHBOARD_SECTION_HASHES = new Set(['home', 'reports', 'intelligence', 'business-state', 'alerts', 'connectors', 'agent', 'billing', 'account'])
@@ -120,6 +123,7 @@ function screenFromHash(isAuthenticated = false) {
   if (section === 'tour-preview')       return SCREENS.TOUR_PREVIEW
   if (section === 'admin')              return SCREENS.ADMIN
   if (section === 'terms')              return SCREENS.TERMS
+  if (section === 'how-it-works')       return SCREENS.HOW_IT_WORKS
   // Dashboard section hashes (#billing, #reports, etc.) must not exit the dashboard
   if (isAuthenticated && DASHBOARD_SECTION_HASHES.has(section)) return SCREENS.DASHBOARD
   return null
@@ -535,6 +539,10 @@ export default function App() {
 
   if (screen === SCREENS.TERMS) {
     return <TermsPage />
+  }
+
+  if (screen === SCREENS.HOW_IT_WORKS) {
+    return <HowItWorks onBack={() => { window.location.hash = ''; history.pushState({}, '', '/'); window.dispatchEvent(new PopStateEvent('popstate')) }} />
   }
 
   if (screen === SCREENS.DASHBOARD) {
