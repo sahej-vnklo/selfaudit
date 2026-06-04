@@ -88,28 +88,6 @@ function BurgerMenu({ onClose, onLogoClick }) {
   )
 }
 
-// ── Pillar data ───────────────────────────────────────────────────────────────
-const PILLARS = [
-  { idx: '01', name: 'Reconnaissance', desc: 'We monitor every signal across your business around the clock — systems, markets, conversations, behaviors. Nothing gets missed.' },
-  { idx: '02', name: 'Diagnostic',     desc: 'Contextual AI reconstructs the full chain of cause across teams, vendors, and timelines. From noise to root cause, in seconds.' },
-  { idx: '03', name: 'Investigative',  desc: 'Every detected event is ranked by real business impact. Triage becomes math, not opinion. Focus always goes where it matters most.' },
-  { idx: '04', name: 'Synthesis',      desc: 'Approved playbooks execute autonomously in your existing tools — Slack, SAP, ServiceNow — with full audit trail and provenance.' },
-  { idx: '05', name: 'Memory',         desc: 'Post-action verification catches the moment a process starts to drift — long before quarterly review can catch it.' },
-  { idx: '06', name: 'Feedback',       desc: 'Every outcome feeds back into the system, making each loop smarter and more precise. The system compounds with every cycle.' },
-]
-
-// Vertical centres of each glass plate (fraction of image height, top→bottom)
-const PILLAR_CENTERS = [0.262, 0.403, 0.519, 0.625, 0.718, 0.836]
-const VH_TOP = 0.058, VH_BOT = 0.074, SIDE_L = 3, SIDE_R = 97
-
-function pillarClipPath(i) {
-  const cy  = PILLAR_CENTERS[i]
-  const top = ((cy - VH_TOP) * 100).toFixed(1)
-  const mid = (cy * 100).toFixed(1)
-  const bot = ((cy + VH_BOT) * 100).toFixed(1)
-  return `polygon(50% ${top}%, ${SIDE_R}% ${mid}%, 50% ${bot}%, ${SIDE_L}% ${mid}%)`
-}
-
 // ── FAQ data ──────────────────────────────────────────────────────────────────
 const FAQS = [
   {
@@ -172,8 +150,6 @@ const ARTIFACTS = [
 export default function Landing({ onStart, session }) {
   const posthog = usePostHog()
 
-  const [activePillar, setActivePillar] = useState(0)
-  const [descVisible,  setDescVisible]  = useState(true)
   const [openFaq,      setOpenFaq]      = useState(null)
   const [menuOpen,     setMenuOpen]     = useState(false)
 
@@ -182,8 +158,6 @@ export default function Landing({ onStart, session }) {
   const heroImgRef    = useRef(null)
   const floatStackRef = useRef(null)
   const stageRef      = useRef(null)
-  const pillarsRef    = useRef(null)
-  const autoTimerRef  = useRef(null)
 
   const handleLogoClick = useCallback(() => {
     if (session) {
@@ -201,16 +175,6 @@ export default function Landing({ onStart, session }) {
       window.location.hash = 'login'
     }
   }, [posthog, onStart, session])
-
-  // Pillar change with brief fade so text transitions smoothly
-  const changePillar = useCallback((i) => {
-    if (i === activePillar) return
-    setDescVisible(false)
-    setTimeout(() => {
-      setActivePillar(i)
-      setDescVisible(true)
-    }, 180)
-  }, [activePillar])
 
   // ── Nav scrolled state ────────────────────────────────────────────────────
   useEffect(() => {
@@ -289,25 +253,6 @@ export default function Landing({ onStart, session }) {
     }, { threshold: 0.35 })
     io.observe(stage)
     return () => io.disconnect()
-  }, [])
-
-  // ── Pillar auto-advance ───────────────────────────────────────────────────
-  useEffect(() => {
-    const start = () => {
-      autoTimerRef.current = setInterval(() => {
-        setActivePillar(prev => (prev + 1) % 6)
-      }, 4200)
-    }
-    const stop = () => clearInterval(autoTimerRef.current)
-    const el = pillarsRef.current
-    el?.addEventListener('mouseenter', stop)
-    el?.addEventListener('mouseleave', start)
-    start()
-    return () => {
-      stop()
-      el?.removeEventListener('mouseenter', stop)
-      el?.removeEventListener('mouseleave', start)
-    }
   }, [])
 
   // ── Verdict 3-D tilt ─────────────────────────────────────────────────────
@@ -396,61 +341,6 @@ export default function Landing({ onStart, session }) {
           <p className="problem-body">
             No single tool sees this. HubSpot knows your pipeline. Stripe knows your revenue. Zendesk knows your tickets. SelfAudit knows how all three connect — and tells you before it becomes a crisis.
           </p>
-        </div>
-      </section>
-
-      {/* PILLARS */}
-      <section className="pillars block" id="platform" ref={pillarsRef}>
-        <div className="pillars-wrap">
-
-          <div className="pillars-header">
-            <div className="eyebrow" />
-            <h2 className="h2">Six loops. <em>One system.</em></h2>
-            <p className="lede">
-              SelfAudit operates through six continuous intelligence loops. Each loop works 24/7. Together, they turn complexity into clarity and action.
-            </p>
-            <nav className="pillar-nav">
-              {PILLARS.map((p, i) => (
-                <button
-                  key={p.idx}
-                  className={`pillar-btn${activePillar === i ? ' active' : ''}`}
-                  onClick={() => changePillar(i)}
-                  onMouseEnter={() => changePillar(i)}
-                >
-                  <span className="idx">{p.idx}</span>
-                  <span className="name">{p.name}</span>
-                  <span className="arrow">›</span>
-                </button>
-              ))}
-            </nav>
-          </div>
-
-          <div className="pillars-cube-area">
-            <div className="tower-art">
-              <img
-                className="tower-base"
-                src="/assets/platform-stack.png"
-                alt="SelfAudit layered intelligence"
-                style={{ padding: '5px 0 0' }}
-              />
-              <img
-                className="tower-glow"
-                src="/assets/platform-stack.png"
-                alt=""
-                aria-hidden="true"
-                style={{ clipPath: pillarClipPath(activePillar) }}
-              />
-            </div>
-            <div className="pillar-readout">
-              <div className="readout-eyebrow">
-                {PILLARS[activePillar].idx} — {PILLARS[activePillar].name}
-              </div>
-              <p className={`readout-desc${descVisible ? ' show' : ''}`}>
-                {PILLARS[activePillar].desc}
-              </p>
-            </div>
-          </div>
-
         </div>
       </section>
 
