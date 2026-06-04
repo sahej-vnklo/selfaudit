@@ -167,7 +167,6 @@ export default function Voice({ onBack }) {
             />
             <button className="voice-submit">Request Access</button>
           </div>
-          <p className="voice-form-note">No spam. No newsletters. Just access when it's live.</p>
         </div>
       </section>
 
