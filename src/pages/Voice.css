@@ -48,14 +48,22 @@
   font-size: 14px;
   font-weight: 500;
   color: var(--fg-dim);
-  background: none;
-  border: none;
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
   padding: 0;
   cursor: pointer;
   transition: color .2s;
   font-family: var(--sans);
 }
-.voice-back:hover { color: var(--fg); }
+.voice-back:hover {
+  color: var(--fg);
+  transform: none;
+  box-shadow: none !important;
+  filter: none;
+  background: none !important;
+}
 .voice-back svg  { width: 16px; height: 16px; }
 .voice-nav-center {
   display: flex;
