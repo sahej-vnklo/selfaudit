@@ -154,14 +154,6 @@ export default function Voice({ onBack }) {
 
       </section>
 
-      {/* PULL QUOTE */}
-      <section className="voice-quote-section">
-        <blockquote className="voice-blockquote">
-          The underlying intelligence layer is already live.<br />
-          This round builds the voice bridge.
-        </blockquote>
-      </section>
-
       {/* WAITLIST */}
       <section className="voice-waitlist">
         <div className="voice-waitlist-inner">
