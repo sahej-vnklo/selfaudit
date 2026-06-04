@@ -159,7 +159,7 @@ export default function Voice({ onBack }) {
         <div className="voice-waitlist-inner">
           <h2 className="voice-waitlist-title">Be first.</h2>
           <p className="voice-waitlist-sub">
-            The intelligence is already running. The voice bridge is what's next. Leave your email — we'll reach out when it's ready.
+            The intelligence is already running. The voice bridge is what's next. Leave your email — we'll sign you up as our pilot user.
           </p>
           <div className="voice-form">
             <input
