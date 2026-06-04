@@ -293,6 +293,7 @@ export default function Landing({ onStart, session }) {
         </div>
         <div className="nav-right">
           <div className="nav-links">
+            <button style={{ fontSize: 15, color: 'var(--ember-glow)' }} onClick={() => { window.location.hash = 'voice' }}>Voice</button>
             <button style={{ fontSize: 15 }} onClick={() => { window.location.hash = 'how-it-works' }}>How It Works</button>
             <button style={{ fontSize: 15 }}>Pricing</button>
           </div>
