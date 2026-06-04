@@ -10,7 +10,7 @@ const BackArrow = () => (
 
 export default function About({ onBack }) {
   return (
-    <div className="about-page">
+    <div className="sa-uc about-page">
 
       {/* Nav */}
       <nav className="uc-nav">
