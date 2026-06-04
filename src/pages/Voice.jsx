@@ -77,7 +77,7 @@ export default function Voice({ onBack }) {
             The operating intelligence layer is already live. Memory, diagnosis, synthesis, governance — running now. This builds the voice bridge that makes it feel like a phone call with your business itself.
           </p>
           <p className="voice-body">
-            Founders will not open five tools. <strong>They will call the business directly.</strong> That is the category.
+            Founders will not open five tools. <strong>They will call the business directly.</strong>
           </p>
         </div>
 
