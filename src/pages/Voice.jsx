@@ -51,11 +51,10 @@ export default function Voice({ onBack }) {
 
       {/* HERO */}
       <section className="voice-hero">
-        <p className="voice-label">Vision</p>
         <h1 className="voice-h1">
           They teach in school that business<br />
           is a separate entity.<br />
-          I say why not make it a separate <em>living</em> entity.
+          We say why not make it a separate <em>living</em> entity.
         </h1>
       </section>
 
