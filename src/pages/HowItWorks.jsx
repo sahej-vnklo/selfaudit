@@ -63,7 +63,6 @@ export default function HowItWorks({ onBack }) {
       {/* OPENING */}
       <section className="hiw-open">
         <div className="hiw-open-inner">
-          <div className="hiw-eyebrow">Intelligence Architecture</div>
           <h1 className="hiw-h1">Most businesses<br />run open loops.</h1>
           <p className="hiw-body">
             Decisions made. Executed. Forgotten. The information that should be making your business sharper is scattered across tools, meetings, and inboxes. Nobody is connecting it. Nobody is learning from it. The loop never closes — and you can't see where it's bleeding.
@@ -118,7 +117,6 @@ export default function HowItWorks({ onBack }) {
         <div className="hiw-section-inner">
           <div className="hiw-legible-inner">
             <div>
-              <div className="hiw-eyebrow">The prerequisite</div>
               <h2 className="hiw-h2">For a closed loop to work, your business must be legible.</h2>
               <p className="hiw-body">
                 Every important signal your business emits has to be captured. Not stored in someone's memory. Not buried in a thread. Captured, connected, and fed into the intelligence layer continuously.
@@ -154,7 +152,6 @@ export default function HowItWorks({ onBack }) {
       {/* SIX LOOPS */}
       <section className="hiw-six">
         <div className="hiw-section-inner">
-          <div className="hiw-eyebrow">The mechanism</div>
           <h2 className="hiw-h2">SelfAudit is the closed loop<br />for your entire operation.</h2>
           <p className="hiw-sub">Six continuous intelligence loops. Each one feeds the next. Together they form a system that never stops improving.</p>
           <div className="hiw-six-grid">
@@ -195,7 +192,6 @@ export default function HowItWorks({ onBack }) {
       <section className="hiw-os">
         <div className="hiw-section-inner">
           <div className="hiw-os-inner">
-            <div className="hiw-eyebrow">The frame</div>
             <h2 className="hiw-h2-xl">Not a tool.<br /><em>The operating system<br />your business runs on.</em></h2>
             <p className="hiw-body">
               Tools require you to operate them. You pull the report, run the query, interpret the output, then decide what to do. An operating system runs the operation. SelfAudit watches every signal, traces every chain, and surfaces what matters — without being asked.
