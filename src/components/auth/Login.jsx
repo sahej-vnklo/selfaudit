@@ -194,7 +194,7 @@ export default function Login({ onSuccess, onSignup, initialMessage = '' }) {
             {modalSubmitted ? (
               <>
                 <h2 style={s.modalTitle}>You're on the list.</h2>
-                <p style={s.modalSub}>We'll sign you up as our pilot user when Voice goes live.</p>
+                <p style={s.modalSub}>We'll be in touch.</p>
               </>
             ) : (
               <>
