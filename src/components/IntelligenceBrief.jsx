@@ -259,8 +259,8 @@ function hasAnyBriefData(financialFields, financial, operational, context) {
   return visibleFields.some(isFilled)
 }
 
-export default function IntelligenceBrief({ user, profile, onProfileChange }) {
-  const theme = localStorage.getItem('sa-theme') || 'dark'
+export default function IntelligenceBrief({ user, profile, theme: themeProp, onProfileChange }) {
+  const theme = themeProp || localStorage.getItem('sa-theme') || 'dark'
   const themeVars = getThemeVars(theme)
   const [financial, setFinancial] = useState({})
   const [operational, setOperational] = useState({})

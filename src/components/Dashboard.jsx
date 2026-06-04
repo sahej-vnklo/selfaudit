@@ -2331,6 +2331,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                   <IntelligenceBrief
                     user={user}
                     profile={profile}
+                    theme={theme}
                     onProfileChange={(updated) => setProfile((prev) => ({ ...prev, ...updated }))}
                   />
                 </PageShell>
