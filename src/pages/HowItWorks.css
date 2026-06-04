@@ -23,9 +23,9 @@
   min-height:             100vh;
 }
 
-.sa-hiw a       { text-decoration: none; color: inherit; }
-.sa-hiw button  { font-family: var(--sans); cursor: pointer; }
-.sa-hiw img     { display: block; max-width: 100%; }
+.sa-hiw a   { text-decoration: none; color: inherit; }
+.sa-hiw button { font-family: var(--sans); cursor: pointer; }
+.sa-hiw img { display: block; max-width: 100%; }
 
 /* ── NAV ─────────────────────────────────────────────────────────────────── */
 .hiw-nav {

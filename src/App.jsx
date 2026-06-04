@@ -175,6 +175,7 @@ async function maybeHandleEmailAuthConfirm(sb) {
 export default function App() {
   const [screen,              setScreen]              = useState(screenFromHash() ?? SCREENS.LANDING)
   const [userInfo,            setUserInfo]            = useState(null)
+  const [openMenuOnBack,      setOpenMenuOnBack]      = useState(false)
   const [conversationHistory, setConversationHistory] = useState([])
   const [auditSessionId,      setAuditSessionId]      = useState(null)
   const [session,             setSession]             = useState(null)
@@ -561,20 +562,20 @@ export default function App() {
     return <TermsPage />
   }
 
-  if (screen === SCREENS.HOW_IT_WORKS) {
-    return <HowItWorks onBack={() => { window.location.hash = ''; history.pushState({}, '', '/'); window.dispatchEvent(new PopStateEvent('popstate')) }} />
+  const goBackToMenu = () => {
+    setOpenMenuOnBack(true)
+    window.location.hash = ''
+    history.pushState({}, '', '/')
+    window.dispatchEvent(new PopStateEvent('popstate'))
   }
 
-  if (screen === SCREENS.VOICE) {
-    return <Voice onBack={() => { window.location.hash = ''; history.pushState({}, '', '/'); window.dispatchEvent(new PopStateEvent('popstate')) }} />
-  }
+  if (screen === SCREENS.HOW_IT_WORKS) return <HowItWorks onBack={goBackToMenu} />
+  if (screen === SCREENS.VOICE)        return <Voice      onBack={goBackToMenu} />
 
-  const ucBack = () => { window.location.hash = ''; history.pushState({}, '', '/'); window.dispatchEvent(new PopStateEvent('popstate')) }
-
-  if (screen === SCREENS.UC_CUSTOMER_SERVICE)    return <UseCaseCustomerService    onBack={ucBack} />
-  if (screen === SCREENS.UC_SALES_MARKETING)     return <UseCaseSalesMarketing     onBack={ucBack} />
-  if (screen === SCREENS.UC_FINANCE_ACCOUNTING)  return <UseCaseFinanceAccounting  onBack={ucBack} />
-  if (screen === SCREENS.UC_MANAGEMENT_STRATEGY) return <UseCaseManagementStrategy onBack={ucBack} />
+  if (screen === SCREENS.UC_CUSTOMER_SERVICE)    return <UseCaseCustomerService    onBack={goBackToMenu} />
+  if (screen === SCREENS.UC_SALES_MARKETING)     return <UseCaseSalesMarketing     onBack={goBackToMenu} />
+  if (screen === SCREENS.UC_FINANCE_ACCOUNTING)  return <UseCaseFinanceAccounting  onBack={goBackToMenu} />
+  if (screen === SCREENS.UC_MANAGEMENT_STRATEGY) return <UseCaseManagementStrategy onBack={goBackToMenu} />
 
   if (screen === SCREENS.DASHBOARD) {
     if (!session) { navigate(SCREENS.LOGIN); return null }
@@ -598,6 +599,8 @@ export default function App() {
           onStart={handleLandingStart}
           onSignUp={(plan) => { window.location.hash = plan ? `signup?plan=${plan}` : 'signup' }}
           session={session}
+          openMenu={openMenuOnBack}
+          onMenuOpened={() => setOpenMenuOnBack(false)}
         />
       )}
     </>

@@ -197,3 +197,16 @@ a:hover {
   transform:           translateY(0) scale(1.00);
   transition-duration: 55ms;
 }
+
+/* ─── MARKETING / PUBLIC PAGE BUTTON RESET ───────────────────────────────────
+ * These pages manage their own button behaviour.
+ * Must override the global hover AND the [data-theme="light"] !important rule.
+ * ─────────────────────────────────────────────────────────────────────────── */
+.sa-land button:hover:not(:disabled),
+.sa-hiw  button:hover:not(:disabled),
+.sa-voice button:hover:not(:disabled),
+.sa-uc   button:hover:not(:disabled) {
+  transform:  none !important;
+  box-shadow: none !important;
+  filter:     none !important;
+}

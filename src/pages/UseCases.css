@@ -21,10 +21,9 @@
   min-height:             100vh;
 }
 
-.sa-uc a            { text-decoration: none; color: inherit; }
-.sa-uc a:hover      { opacity: 1; }
-.sa-uc button       { font-family: var(--sans); cursor: pointer; }
-.sa-uc button:hover { transform: none; box-shadow: none; filter: none; }
+.sa-uc a       { text-decoration: none; color: inherit; }
+.sa-uc a:hover { opacity: 1; }
+.sa-uc button  { font-family: var(--sans); cursor: pointer; }
 
 /* ── NAV ─────────────────────────────────────────────────────────────────── */
 .uc-nav {

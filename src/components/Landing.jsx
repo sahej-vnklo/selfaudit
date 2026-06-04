@@ -142,11 +142,18 @@ const ARTIFACTS = [
 ]
 
 // ── Component ─────────────────────────────────────────────────────────────────
-export default function Landing({ onStart, session }) {
+export default function Landing({ onStart, session, openMenu, onMenuOpened }) {
   const posthog = usePostHog()
 
-  const [openFaq,      setOpenFaq]      = useState(null)
-  const [menuOpen,     setMenuOpen]     = useState(false)
+  const [openFaq,  setOpenFaq]  = useState(null)
+  const [menuOpen, setMenuOpen] = useState(false)
+
+  useEffect(() => {
+    if (openMenu) {
+      setMenuOpen(true)
+      onMenuOpened?.()
+    }
+  }, [openMenu, onMenuOpened])
 
   const navRef        = useRef(null)
   const heroRef       = useRef(null)
