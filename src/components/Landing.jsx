@@ -677,9 +677,9 @@ export default function Landing({ onStart, session, openMenu, onMenuOpened }) {
             <p className="econ-desc">Periodic strategic intelligence. Brilliant, expensive, and gone the moment the engagement ends.</p>
           </div>
           <div className="econ-card">
-            <div className="econ-label">Bloomberg</div>
-            <div className="econ-price">$30K<span className="unit">/yr</span></div>
-            <p className="econ-desc">World-class market intelligence. It still does not know your customers, pipeline, margins, or stalled priorities.</p>
+            <div className="econ-label">Accenture</div>
+            <div className="econ-price">$500K–$10M<span className="unit">/yr</span></div>
+            <p className="econ-desc">Operational transformation at scale. Brilliant teams, multi-year engagements, and gone the moment the contract ends.</p>
           </div>
           <div className="econ-card">
             <div className="econ-label">Fractional COO</div>
