@@ -2147,9 +2147,10 @@ function InvitePanel({ session }) {
 
 // ── Voice Waitlist Panel ──────────────────────────────────────────────────────
 function VoiceWaitlistPanel({ session }) {
-  const [entries,  setEntries]  = React.useState([])
-  const [loading,  setLoading]  = React.useState(true)
-  const [error,    setError]    = React.useState(null)
+  const [entries,   setEntries]   = React.useState([])
+  const [loading,   setLoading]   = React.useState(true)
+  const [error,     setError]     = React.useState(null)
+  const [deletingId, setDeletingId] = React.useState(null)
 
   React.useEffect(() => {
     if (!session?.access_token) return
@@ -2166,6 +2167,24 @@ function VoiceWaitlistPanel({ session }) {
         setLoading(false)
       })
   }, [session])
+
+  const handleDelete = async (id) => {
+    setDeletingId(id)
+    try {
+      const res = await fetch('/api/admin-voice-waitlist-delete', {
+        method:  'DELETE',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+        body:    JSON.stringify({ id }),
+      })
+      if (res.ok) {
+        setEntries(prev => prev.filter(e => e.id !== id))
+      }
+    } catch (err) {
+      console.error('[waitlist delete]', err.message)
+    } finally {
+      setDeletingId(null)
+    }
+  }
 
   const p = panelStyle({ padding: '18px 20px' })
 
@@ -2184,7 +2203,7 @@ function VoiceWaitlistPanel({ session }) {
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead>
             <tr style={{ borderBottom: `1px solid ${G.border}` }}>
-              {['Email', 'Source', 'Joined'].map(h => (
+              {['Email', 'Source', 'Joined', ''].map(h => (
                 <th key={h} style={{ textAlign: 'left', padding: '6px 10px', color: G.textMuted, fontWeight: 500, fontFamily: MONO, fontSize: 11, letterSpacing: '0.05em', textTransform: 'uppercase' }}>{h}</th>
               ))}
             </tr>
@@ -2195,6 +2214,15 @@ function VoiceWaitlistPanel({ session }) {
                 <td style={{ padding: '10px 10px', color: G.text, fontFamily: MONO, fontSize: 12 }}>{e.email}</td>
                 <td style={{ padding: '10px 10px', color: G.textMuted, fontSize: 12 }}>{e.source}</td>
                 <td style={{ padding: '10px 10px', color: G.textMuted, fontFamily: MONO, fontSize: 11 }}>{new Date(e.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
+                <td style={{ padding: '10px 10px', textAlign: 'right' }}>
+                  <button
+                    onClick={() => handleDelete(e.id)}
+                    disabled={deletingId === e.id}
+                    style={{ background: 'none', border: `1px solid ${G.border}`, borderRadius: 6, color: G.red, fontFamily: MONO, fontSize: 11, padding: '4px 10px', cursor: 'pointer', opacity: deletingId === e.id ? 0.5 : 1, transition: 'opacity .2s, border-color .2s' }}
+                  >
+                    {deletingId === e.id ? '…' : 'Delete'}
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
