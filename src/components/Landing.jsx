@@ -91,10 +91,8 @@ function BurgerMenu({ onClose, onLogoClick, onNav }) {
           </div>
         </div>
 
-        {/* RIGHT — Commercial + Company */}
+        {/* RIGHT — Company */}
         <div className="menu-col right">
-          <div className="menu-eyebrow">Commercial</div>
-
           <div className="menu-eyebrow">Company</div>
           <div className="menu-stack">
             <button className="menu-cat">About</button>
