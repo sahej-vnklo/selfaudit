@@ -202,27 +202,37 @@ export default function HowItWorks({ onBack }) {
       {/* SIX LOOPS — tower */}
       <section className="hiw-six" ref={pillarsRef}>
         <div className="hiw-section-inner">
+
+          {/* Centered heading */}
+          <div className="hiw-six-heading">
+            <h2 className="hiw-h2">SelfAudit is the closed loop<br />for your entire operation.</h2>
+            <p className="hiw-sub">Six continuous intelligence loops. Each one feeds the next. Together they form a system that never stops improving.</p>
+          </div>
+
+          {/* Two columns */}
           <div className="hiw-pillars-wrap">
 
-            <div className="hiw-pillars-header">
-              <h2 className="hiw-h2">SelfAudit is the closed loop<br />for your entire operation.</h2>
-              <p className="hiw-sub">Six continuous intelligence loops. Each one feeds the next. Together they form a system that never stops improving.</p>
-              <nav className="hiw-pillar-nav">
-                {PILLARS.map((p, i) => (
-                  <button
-                    key={p.idx}
-                    className={`hiw-pillar-btn${activePillar === i ? ' active' : ''}`}
-                    onClick={() => changePillar(i)}
-                    onMouseEnter={() => changePillar(i)}
-                  >
+            {/* Left — pillar list with inline expand */}
+            <nav className="hiw-pillar-nav">
+              {PILLARS.map((p, i) => (
+                <div
+                  key={p.idx}
+                  className={`hiw-pillar-item${activePillar === i ? ' active' : ''}`}
+                  onMouseEnter={() => changePillar(i)}
+                >
+                  <div className="hiw-pillar-row">
                     <span className="hiw-p-idx">{p.idx}</span>
                     <span className="hiw-p-name">{p.name}</span>
                     <span className="hiw-p-arrow">›</span>
-                  </button>
-                ))}
-              </nav>
-            </div>
+                  </div>
+                  <div className="hiw-pillar-desc-wrap">
+                    <p className="hiw-pillar-desc">{p.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </nav>
 
+            {/* Right — tower only */}
             <div className="hiw-pillars-cube-area">
               <div className="hiw-tower-art">
                 <img
@@ -238,14 +248,6 @@ export default function HowItWorks({ onBack }) {
                   aria-hidden="true"
                   style={{ clipPath: pillarClipPath(activePillar) }}
                 />
-              </div>
-              <div className="hiw-pillar-readout">
-                <div className="hiw-readout-eyebrow">
-                  {PILLARS[activePillar].idx} — {PILLARS[activePillar].name}
-                </div>
-                <p className={`hiw-readout-desc${descVisible ? ' show' : ''}`}>
-                  {PILLARS[activePillar].desc}
-                </p>
               </div>
             </div>
 
