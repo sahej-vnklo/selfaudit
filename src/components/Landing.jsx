@@ -59,21 +59,10 @@ function BurgerMenu({ onClose, onLogoClick, onNav }) {
         <div className="menu-col right">
           <div className="menu-eyebrow">Commercial</div>
 
-          <div className="menu-group">
-            <button className="menu-cat">Pricing</button>
-            <div className="menu-sublist">
-              <button className="menu-sublink">Professional</button>
-              <button className="menu-sublink">Enterprise</button>
-            </div>
-          </div>
-
-          <div className="menu-divider" />
-
           <div className="menu-eyebrow">Company</div>
           <div className="menu-stack">
             <button className="menu-cat">About</button>
             <button className="menu-cat">Security</button>
-            <button className="menu-cat">Careers</button>
             <button className="menu-cat">Contact</button>
           </div>
         </div>
