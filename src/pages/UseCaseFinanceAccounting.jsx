@@ -33,7 +33,6 @@ export default function UseCaseFinanceAccounting({ onBack }) {
       <nav className="uc-nav">
         <button className="uc-back" onClick={onBack}><BackArrow /> SelfAudit</button>
         <div className="uc-nav-center">Finance &amp; Accounting</div>
-        <button className="uc-nav-cta" onClick={onBack}>Start Audit</button>
       </nav>
 
       <section className="uc-hero">

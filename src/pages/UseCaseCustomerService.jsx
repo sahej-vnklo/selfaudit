@@ -33,7 +33,6 @@ export default function UseCaseCustomerService({ onBack }) {
       <nav className="uc-nav">
         <button className="uc-back" onClick={onBack}><BackArrow /> SelfAudit</button>
         <div className="uc-nav-center">Customer Service</div>
-        <button className="uc-nav-cta" onClick={onBack}>Start Audit</button>
       </nav>
 
       <section className="uc-hero">

@@ -33,7 +33,6 @@ export default function UseCaseManagementStrategy({ onBack }) {
       <nav className="uc-nav">
         <button className="uc-back" onClick={onBack}><BackArrow /> SelfAudit</button>
         <div className="uc-nav-center">Management &amp; Strategy</div>
-        <button className="uc-nav-cta" onClick={onBack}>Start Audit</button>
       </nav>
 
       <section className="uc-hero">

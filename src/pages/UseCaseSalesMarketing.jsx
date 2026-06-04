@@ -33,7 +33,6 @@ export default function UseCaseSalesMarketing({ onBack }) {
       <nav className="uc-nav">
         <button className="uc-back" onClick={onBack}><BackArrow /> SelfAudit</button>
         <div className="uc-nav-center">Sales &amp; Marketing</div>
-        <button className="uc-nav-cta" onClick={onBack}>Start Audit</button>
       </nav>
 
       <section className="uc-hero">
