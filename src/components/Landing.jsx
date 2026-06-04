@@ -163,12 +163,12 @@ const FAQS = [
     a: "A $2M war room. A permanent team of analysts, a CFO, a process consultant, and a risk officer — running simultaneously, 24/7. That's what this is.",
   },
   {
-    q: 'When do I need Enterprise?',
-    a: "When one operator isn't enough. Enterprise deploys SelfAudit as an intelligence layer across your entire organization — every team, every function, running from the same live diagnosis. Custom compliance, security controls, and SSO included. The difference between one person using intelligence and an entire business operating on it.",
+    q: 'What does it actually do when I\'m not using it?',
+    a: "It watches. Every area of your business — customer service, sales, finance, operations — is under continuous monitoring. When something drifts past your threshold, it diagnoses the root cause, scores the severity, and surfaces a specific fix. Most founders log back in and find it caught something they hadn't noticed yet. That's the point.",
   },
   {
-    q: 'What are the four operating lanes?',
-    a: "Customer Service. Marketing & Sales. Finance & Accounting. Management & Strategy. SelfAudit watches all four simultaneously, flags what's drifting, and tells you which one is bleeding first. Then it tells you exactly how to fix it — specific actions, sequenced. It doesn't report problems. It closes them.\n\nGive it a goal. It builds the entire operation to reach it.",
+    q: 'Can it tell me what to do, or just what\'s wrong?',
+    a: "Both. Every finding comes with a root cause, a severity score, a financial impact estimate, and a sequenced execution plan. It also produces the artifacts — action plans, SOPs, email drafts, conversation scripts. The gap between diagnosis and done closes in the same session.",
   },
 ]
 
