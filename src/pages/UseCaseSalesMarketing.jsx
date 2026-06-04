@@ -2,10 +2,22 @@ import React from 'react'
 import './UseCases.css'
 
 const SIGNALS = [
-  { name: 'Pipeline health & velocity', desc: 'Tracks deal movement over time — not just volume. Surfaces slowdowns before they become stalls.' },
-  { name: 'Deal stall detection', desc: 'Flags deals marked active with zero movement. Shows real pipeline, not what the CRM reports.' },
-  { name: 'Outreach activity gaps', desc: 'Identifies where and when outreach volume dropped. Names the segment going dark.' },
-  { name: 'Conversion by source', desc: 'Which channels are actually converting. Separates signal from noise in your acquisition mix.' },
+  {
+    name: 'Pipeline health & velocity',
+    desc: 'Distinguishes genuine pipeline growth from deals that haven\'t moved in weeks. Diagnoses whether the slowdown is a rep, a segment, or a market signal — and tells you which to address.',
+  },
+  {
+    name: 'Deal stall detection',
+    desc: 'Traces a stalled deal to the specific rep, stage, or objection pattern. Doesn\'t just flag it — generates the re-engagement approach and the conversation to have.',
+  },
+  {
+    name: 'Outreach activity gaps',
+    desc: 'Links outreach volume drops to pipeline impact downstream. Diagnoses whether it\'s a capacity problem or a behavioral one — then sequences the fix accordingly.',
+  },
+  {
+    name: 'Conversion by source',
+    desc: 'Surfaces which channels are actually converting vs which look good on paper. Diagnoses why conversion is dropping in specific sources and what to change first.',
+  },
 ]
 
 const BackArrow = () => (
@@ -26,9 +38,9 @@ export default function UseCaseSalesMarketing({ onBack }) {
 
       <section className="uc-hero">
         <div className="uc-area-tag">Sales &amp; Marketing</div>
-        <h1 className="uc-h1">It shows you <em>real pipeline.</em> Not what the CRM says it is.</h1>
+        <h1 className="uc-h1">The pipeline problem isn't where you think it is. <em>SelfAudit traces it to the source.</em></h1>
         <p className="uc-intro">
-          Pipeline looks healthy until it doesn't. SelfAudit watches deal movement, outreach activity, and conversion patterns continuously — surfacing the gaps your CRM will never show you.
+          A stalled pipeline isn't always a lead quality problem. Sometimes it's one rep, one behavior change, one segment going dark. SelfAudit diagnoses the actual cause — not the symptom the CRM is showing you — and tells you exactly what to do about it.
         </p>
       </section>
 
@@ -36,21 +48,46 @@ export default function UseCaseSalesMarketing({ onBack }) {
 
       <section className="uc-problem">
         <div className="uc-problem-inner">
-          <h2 className="uc-h2">Deals stall silently. The CRM stays green.</h2>
+          <h2 className="uc-h2">The CRM shows green. The pipeline is rotting quietly.</h2>
           <div>
             <p className="uc-body">
-              Deals get marked active and never touched again. Outreach volume drops in specific segments without anyone noticing. Conversion differences between channels compound for quarters before they surface in a report.
+              Deals stay marked active for weeks with no movement. Outreach volume drops in a specific segment and nobody notices until the end of quarter. A rep changes their approach after a lost deal and the downstream effect takes 6 weeks to show up in revenue.
             </p>
             <p className="uc-body">
-              The CRM reflects what was entered — not the truth of what's moving. By the time someone pulls the pipeline report, the quarter is already at risk.
+              By the time the pipeline review happens, the problem is already expensive. SelfAudit doesn't wait for the review. It traces the signal to the cause and gives you the fix while there's still time to act.
             </p>
           </div>
         </div>
       </section>
 
+      <section className="uc-chain-section">
+        <div className="uc-chain-inner">
+          <div className="uc-signals-eyebrow">How SelfAudit works in Sales &amp; Marketing</div>
+          <div className="uc-chain-grid">
+            <div className="uc-chain-step">
+              <div className="uc-chain-num">01</div>
+              <div className="uc-chain-title">What's happening</div>
+              <p className="uc-chain-body">3 deals in final stage have had zero activity in 47 days. Enterprise outreach dropped 38% over the last 3 weeks. Pipeline velocity is at 40% of last quarter — but the CRM shows everything active.</p>
+            </div>
+            <div className="uc-chain-divider" />
+            <div className="uc-chain-step">
+              <div className="uc-chain-num">02</div>
+              <div className="uc-chain-title">Why it's happening</div>
+              <p className="uc-chain-body">Not a market problem. One rep changed their outreach approach after a lost deal on March 14th. The stall is behavioral, not structural. The CRM reflects what was entered — not what's actually moving.</p>
+            </div>
+            <div className="uc-chain-divider" />
+            <div className="uc-chain-step">
+              <div className="uc-chain-num">03</div>
+              <div className="uc-chain-title">What to do next</div>
+              <p className="uc-chain-body">One targeted coaching conversation — framed around the specific pattern, not generic performance. Re-engagement sequences for the 3 stalled deals drafted and ready to send. CRM hygiene rules updated so status reflects reality going forward.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="uc-signals">
-        <div className="uc-signals-eyebrow">What SelfAudit watches</div>
-        <h2 className="uc-h2">Four signals. Continuously.</h2>
+        <div className="uc-signals-eyebrow">From signal to fix</div>
+        <h2 className="uc-h2">Every input diagnosed. Every finding actioned.</h2>
         <div className="uc-signals-grid">
           {SIGNALS.map(s => (
             <div className="uc-signal-card" key={s.name}>
@@ -71,18 +108,18 @@ export default function UseCaseSalesMarketing({ onBack }) {
               <span>Sales &amp; Marketing</span>
             </div>
             <p className="uc-verdict-quote">
-              "Three deals in final stage have had zero activity in 47 days. Outreach to the enterprise segment dropped 38% over the last three weeks. Real pipeline is 40% of what the CRM is reporting."
+              "3 deals in final stage, zero activity in 47 days. Enterprise outreach down 38% — traced to one rep who changed approach after a lost deal on March 14th. The pipeline problem is behavioral, not structural. Real pipeline is 40% of what the CRM reports."
             </p>
             <div className="uc-verdict-outcome">
-              <strong>Deals re-engaged or removed.</strong> Outreach gap addressed before end of quarter. Pipeline forecast corrected. The problem was upstream — not in the close.
+              <strong>Action:</strong> Coaching brief generated around the specific behavior pattern. Re-engagement sequences for all 3 deals drafted. CRM hygiene rules enforced going forward. The quarter is recoverable — but only this week.
             </div>
           </div>
         </div>
       </section>
 
       <section className="uc-cta">
-        <h2 className="uc-cta-title">See your real pipeline.</h2>
-        <p className="uc-cta-sub">SelfAudit shows you what's actually moving — and what's been sitting still for 47 days.</p>
+        <h2 className="uc-cta-title">Know why pipeline stalls. Not just that it did.</h2>
+        <p className="uc-cta-sub">SelfAudit diagnoses your sales operation — then tells you exactly what to fix and who needs to hear it.</p>
         <button className="uc-cta-btn" onClick={onBack}>Start Audit</button>
       </section>
 
