@@ -62,7 +62,6 @@ function BurgerMenu({ onClose, onLogoClick, onNav }) {
           <div className="menu-eyebrow">Company</div>
           <div className="menu-stack">
             <button className="menu-cat">About</button>
-            <button className="menu-cat">Security</button>
             <button className="menu-cat">Contact</button>
           </div>
         </div>
