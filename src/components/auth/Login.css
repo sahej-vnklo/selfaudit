@@ -1,11 +1,3 @@
-/* Reset global index.css button hover bleed on login page */
-.sa-login-btn-reset,
-.sa-login-btn-reset:hover {
-  transform: none !important;
-  box-shadow: none !important;
-  filter: none !important;
-  background: none !important;
-  border: none !important;
-  border-radius: 0 !important;
-  padding: 0 !important;
-}
+/* Reset global index.css button hover bleed */
+.sa-login-btn-reset         { background: none !important; border: none !important; box-shadow: none !important; border-radius: 0 !important; padding: 0 !important; }
+.sa-login-btn-reset:hover   { transform: none !important; box-shadow: none !important; filter: none !important; background: none !important; border: none !important; opacity: 0.8; }
