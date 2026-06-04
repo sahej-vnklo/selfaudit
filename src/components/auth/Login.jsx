@@ -22,13 +22,48 @@ const C = {
 const SHOW_SIGNUP = false
 
 // ── Main component ────────────────────────────────────────────────────────────
-export default function Login({ onSuccess, onSignup, onVoice, initialMessage = '' }) {
-  const [email,     setEmail]     = useState('')
-  const [code,      setCode]      = useState('')
-  const [error,     setError]     = useState(null)
-  const [loading,   setLoading]   = useState(false)
-  const [codeSent,  setCodeSent]  = useState(false)
-  const [otpType,   setOtpType]   = useState('magiclink')
+export default function Login({ onSuccess, onSignup, initialMessage = '' }) {
+  const [email,        setEmail]        = useState('')
+  const [code,         setCode]         = useState('')
+  const [error,        setError]        = useState(null)
+  const [loading,      setLoading]      = useState(false)
+  const [codeSent,     setCodeSent]     = useState(false)
+  const [otpType,      setOtpType]      = useState('magiclink')
+
+  // ── Early access modal ────────────────────────────────────────────────────
+  const [showModal,      setShowModal]      = useState(false)
+  const [modalEmail,     setModalEmail]     = useState('')
+  const [modalLoading,   setModalLoading]   = useState(false)
+  const [modalSubmitted, setModalSubmitted] = useState(false)
+  const [modalError,     setModalError]     = useState(null)
+
+  const handleEarlyAccess = async () => {
+    setModalError(null)
+    if (!modalEmail.trim()) { setModalError('Enter your email first.'); return }
+    setModalLoading(true)
+    try {
+      const res = await fetch('/api/voice-waitlist', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ email: modalEmail.trim(), source: 'login_page' }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setModalError(data?.error || 'Something went wrong. Try again.'); return }
+      setModalSubmitted(true)
+    } catch {
+      setModalError('Something went wrong. Try again.')
+    } finally {
+      setModalLoading(false)
+    }
+  }
+
+  const closeModal = () => {
+    setShowModal(false)
+    setModalEmail('')
+    setModalError(null)
+    setModalSubmitted(false)
+    setModalLoading(false)
+  }
 
   useEffect(() => {
     if (initialMessage) setError(initialMessage)
@@ -142,13 +177,55 @@ export default function Login({ onSuccess, onSignup, onVoice, initialMessage = '
             )}
             <p style={s.switchLine}>
               Not a pilot user?{' '}
-              <button className="sa-login-btn-reset" style={s.switchLink} onClick={onVoice}>Get early access.</button>
+              <button className="sa-login-btn-reset" style={s.switchLink} onClick={() => setShowModal(true)}>Get early access.</button>
             </p>
           </div>
 
           <Fine />
         </div>
       </section>
+
+      {/* ── Early access modal ─────────────────────────────────────────── */}
+      {showModal && (
+        <div style={s.modalOverlay} onClick={closeModal}>
+          <div style={s.modalBox} onClick={e => e.stopPropagation()}>
+            <button className="sa-login-btn-reset" style={s.modalClose} onClick={closeModal}>✕</button>
+
+            {modalSubmitted ? (
+              <>
+                <h2 style={s.modalTitle}>You're on the list.</h2>
+                <p style={s.modalSub}>We'll sign you up as our pilot user when Voice goes live.</p>
+              </>
+            ) : (
+              <>
+                <h2 style={s.modalTitle}>Get early access.</h2>
+                <p style={s.modalSub}>Leave your email — we'll sign you up as our pilot user.</p>
+                <div style={{ marginTop: 24 }}>
+                  <label style={s.fieldLabel}>Email</label>
+                  <input
+                    style={{ ...s.input, ...(modalError ? { borderColor: C.ember } : {}) }}
+                    type="email"
+                    placeholder="your@email.com"
+                    value={modalEmail}
+                    onChange={e => setModalEmail(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && handleEarlyAccess()}
+                    disabled={modalLoading}
+                    autoFocus
+                  />
+                </div>
+                {modalError && <p style={s.error}>{modalError}</p>}
+                <button
+                  style={{ ...s.btn, marginTop: 16, opacity: modalLoading ? 0.7 : 1 }}
+                  onClick={handleEarlyAccess}
+                  disabled={modalLoading}
+                >
+                  {modalLoading ? 'Saving…' : 'Request Access'}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -456,5 +533,52 @@ const s = {
     color: C.fgDim,
     textDecoration: 'underline',
     textUnderlineOffset: 2,
+  },
+
+  // Modal
+  modalOverlay: {
+    position: 'fixed',
+    inset: 0,
+    background: 'rgba(10,7,7,0.55)',
+    backdropFilter: 'blur(6px)',
+    zIndex: 200,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  modalBox: {
+    position: 'relative',
+    width: '100%',
+    maxWidth: 440,
+    background: '#ffffff',
+    border: '1px solid rgba(26,17,16,0.14)',
+    borderRadius: 16,
+    padding: '44px 40px 40px',
+    boxShadow: '0 40px 80px -20px rgba(10,7,7,0.35)',
+  },
+  modalClose: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    color: C.fgMute,
+    fontSize: 16,
+    lineHeight: 1,
+    transition: 'color .2s',
+    cursor: 'pointer',
+  },
+  modalTitle: {
+    fontFamily: C.serif,
+    fontSize: 32,
+    fontWeight: 500,
+    letterSpacing: '-0.02em',
+    lineHeight: 1.05,
+    color: C.fg,
+    marginBottom: 10,
+  },
+  modalSub: {
+    fontSize: 15,
+    color: C.fgDim,
+    lineHeight: 1.6,
   },
 }

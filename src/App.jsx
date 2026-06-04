@@ -510,7 +510,6 @@ export default function App() {
         if (session) setSession(session)
       }}
       onSignup={() => navigate(SCREENS.SIGNUP)}
-      onVoice={() => navigate(SCREENS.VOICE)}
     />
   }
 
