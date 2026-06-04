@@ -16,6 +16,7 @@ import UseCaseCustomerService    from './pages/UseCaseCustomerService.jsx'
 import UseCaseSalesMarketing     from './pages/UseCaseSalesMarketing.jsx'
 import UseCaseFinanceAccounting  from './pages/UseCaseFinanceAccounting.jsx'
 import UseCaseManagementStrategy from './pages/UseCaseManagementStrategy.jsx'
+import About                     from './pages/About.jsx'
 
 const PENDING_AUTH_INTENT_KEY = 'sa-auth-intent'
 const PENDING_CHECKOUT_RETURN_KEY = 'sa-checkout-return'
@@ -38,6 +39,7 @@ const SCREENS = {
   UC_SALES_MARKETING:     'use-case-sales-marketing',
   UC_FINANCE_ACCOUNTING:  'use-case-finance-accounting',
   UC_MANAGEMENT_STRATEGY: 'use-case-management-strategy',
+  ABOUT:                  'about',
 }
 
 const HASH_SCREENS = new Set([
@@ -53,6 +55,7 @@ const HASH_SCREENS = new Set([
   SCREENS.UC_SALES_MARKETING,
   SCREENS.UC_FINANCE_ACCOUNTING,
   SCREENS.UC_MANAGEMENT_STRATEGY,
+  SCREENS.ABOUT,
 ])
 
 const DASHBOARD_SECTION_HASHES = new Set(['home', 'reports', 'intelligence', 'business-state', 'alerts', 'connectors', 'agent', 'billing', 'account'])
@@ -152,6 +155,7 @@ function screenFromHash(isAuthenticated = false) {
   if (section === 'use-case-sales-marketing')     return SCREENS.UC_SALES_MARKETING
   if (section === 'use-case-finance-accounting')  return SCREENS.UC_FINANCE_ACCOUNTING
   if (section === 'use-case-management-strategy') return SCREENS.UC_MANAGEMENT_STRATEGY
+  if (section === 'about')                         return SCREENS.ABOUT
   // Dashboard section hashes (#billing, #reports, etc.) must not exit the dashboard
   if (isAuthenticated && DASHBOARD_SECTION_HASHES.has(section)) return SCREENS.DASHBOARD
   return null
@@ -586,6 +590,7 @@ export default function App() {
   if (screen === SCREENS.UC_SALES_MARKETING)     return <UseCaseSalesMarketing     onBack={goBackToMenu} />
   if (screen === SCREENS.UC_FINANCE_ACCOUNTING)  return <UseCaseFinanceAccounting  onBack={goBackToMenu} />
   if (screen === SCREENS.UC_MANAGEMENT_STRATEGY) return <UseCaseManagementStrategy onBack={goBackToMenu} />
+  if (screen === SCREENS.ABOUT)                   return <About                     onBack={goBackToMenu} />
 
   if (screen === SCREENS.DASHBOARD) {
     if (!session) { navigate(SCREENS.LOGIN); return null }
