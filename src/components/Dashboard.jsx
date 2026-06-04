@@ -2404,7 +2404,6 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                       )}
                       {tier === 'intelligence' && <LiveBillingCard billing={billing} billingLoading={billingLoading} billingError={billingError} onOpenPortal={openPortal} portalLoading={portalLoading} />}
                       <div style={styles.tierGrid}>
-                        {TIERS.map((item) => <TierCard key={item.key} tier={item} currentTier={tier} userId={user?.id} email={user?.email} requiresPayment={requiresPayment} />)}
                       </div>
                     </PageShell>
                   )}
