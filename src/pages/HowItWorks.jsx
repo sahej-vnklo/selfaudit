@@ -1,5 +1,26 @@
-import React from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import './HowItWorks.css'
+
+// ── Pillar / tower data (mirrored from Landing) ───────────────────────────────
+const PILLARS = [
+  { idx: '01', name: 'Reconnaissance', desc: 'We monitor every signal across your business around the clock — systems, markets, conversations, behaviors. Nothing gets missed.' },
+  { idx: '02', name: 'Diagnostic',     desc: 'Contextual AI reconstructs the full chain of cause across teams, vendors, and timelines. From noise to root cause, in seconds.' },
+  { idx: '03', name: 'Investigative',  desc: 'Every detected event is ranked by real business impact. Triage becomes math, not opinion. Focus always goes where it matters most.' },
+  { idx: '04', name: 'Synthesis',      desc: 'Approved playbooks execute autonomously in your existing tools — Slack, SAP, ServiceNow — with full audit trail and provenance.' },
+  { idx: '05', name: 'Memory',         desc: 'Post-action verification catches the moment a process starts to drift — long before quarterly review can catch it.' },
+  { idx: '06', name: 'Feedback',       desc: 'Every outcome feeds back into the system, making each loop smarter and more precise. The system compounds with every cycle.' },
+]
+
+const PILLAR_CENTERS = [0.262, 0.403, 0.519, 0.625, 0.718, 0.836]
+const VH_TOP = 0.058, VH_BOT = 0.074, SIDE_L = 3, SIDE_R = 97
+
+function pillarClipPath(i) {
+  const cy  = PILLAR_CENTERS[i]
+  const top = ((cy - VH_TOP) * 100).toFixed(1)
+  const mid = (cy * 100).toFixed(1)
+  const bot = ((cy + VH_BOT) * 100).toFixed(1)
+  return `polygon(50% ${top}%, ${SIDE_R}% ${mid}%, 50% ${bot}%, ${SIDE_L}% ${mid}%)`
+}
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 const LOOPS = [
@@ -36,6 +57,35 @@ const BEFORE_AFTER = [
 
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function HowItWorks({ onBack }) {
+  const [activePillar, setActivePillar] = useState(0)
+  const [descVisible,  setDescVisible]  = useState(true)
+  const autoTimerRef  = useRef(null)
+  const pillarsRef    = useRef(null)
+
+  const changePillar = useCallback((i) => {
+    if (i === activePillar) return
+    setDescVisible(false)
+    setTimeout(() => { setActivePillar(i); setDescVisible(true) }, 180)
+  }, [activePillar])
+
+  useEffect(() => {
+    const start = () => {
+      autoTimerRef.current = setInterval(() => {
+        setActivePillar(prev => (prev + 1) % 6)
+      }, 4200)
+    }
+    const stop = () => clearInterval(autoTimerRef.current)
+    const el = pillarsRef.current
+    el?.addEventListener('mouseenter', stop)
+    el?.addEventListener('mouseleave', start)
+    start()
+    return () => {
+      stop()
+      el?.removeEventListener('mouseenter', stop)
+      el?.removeEventListener('mouseleave', start)
+    }
+  }, [])
+
   return (
     <div className="sa-hiw">
 
@@ -149,19 +199,56 @@ export default function HowItWorks({ onBack }) {
         </div>
       </section>
 
-      {/* SIX LOOPS */}
-      <section className="hiw-six">
+      {/* SIX LOOPS — tower */}
+      <section className="hiw-six" ref={pillarsRef}>
         <div className="hiw-section-inner">
-          <h2 className="hiw-h2">SelfAudit is the closed loop<br />for your entire operation.</h2>
-          <p className="hiw-sub">Six continuous intelligence loops. Each one feeds the next. Together they form a system that never stops improving.</p>
-          <div className="hiw-six-grid">
-            {LOOPS.map(l => (
-              <div className="six-card" key={l.idx}>
-                <div className="six-idx">{l.idx}</div>
-                <div className="six-name">{l.name}</div>
-                <p className="six-desc">{l.closed}</p>
+          <div className="hiw-pillars-wrap">
+
+            <div className="hiw-pillars-header">
+              <h2 className="hiw-h2">SelfAudit is the closed loop<br />for your entire operation.</h2>
+              <p className="hiw-sub">Six continuous intelligence loops. Each one feeds the next. Together they form a system that never stops improving.</p>
+              <nav className="hiw-pillar-nav">
+                {PILLARS.map((p, i) => (
+                  <button
+                    key={p.idx}
+                    className={`hiw-pillar-btn${activePillar === i ? ' active' : ''}`}
+                    onClick={() => changePillar(i)}
+                    onMouseEnter={() => changePillar(i)}
+                  >
+                    <span className="hiw-p-idx">{p.idx}</span>
+                    <span className="hiw-p-name">{p.name}</span>
+                    <span className="hiw-p-arrow">›</span>
+                  </button>
+                ))}
+              </nav>
+            </div>
+
+            <div className="hiw-pillars-cube-area">
+              <div className="hiw-tower-art">
+                <img
+                  className="hiw-tower-base"
+                  src="/assets/platform-stack.png"
+                  alt="SelfAudit layered intelligence"
+                  style={{ padding: '5px 0 0' }}
+                />
+                <img
+                  className="hiw-tower-glow"
+                  src="/assets/platform-stack.png"
+                  alt=""
+                  aria-hidden="true"
+                  style={{ clipPath: pillarClipPath(activePillar) }}
+                />
               </div>
-            ))}
+              <div className="hiw-pillar-readout">
+                <div className="hiw-readout-eyebrow">
+                  {PILLARS[activePillar].idx} — {PILLARS[activePillar].name}
+                </div>
+                <p className={`hiw-readout-desc${descVisible ? ' show' : ''}`}>
+                  {PILLARS[activePillar].desc}
+                </p>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
