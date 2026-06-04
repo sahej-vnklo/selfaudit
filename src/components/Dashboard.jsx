@@ -813,7 +813,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
   const badge = TIER_BADGE[tier] || TIER_BADGE.intelligence
   const intelligenceUnlocked = tier === 'intelligence'
   const activationLocked = requiresPayment || checkoutSyncing
-  const shouldShowWelcomeTour = !!profile && !requiresPayment && shouldShowWelcomeTourForProfile(profile)
+  const shouldShowWelcomeTour = false
 
   // ── Report-derived values (shared across Oversight + AI Opportunities) ──
   const latestDiagnosticReport = useMemo(() => getLatestDiagnosticReport(reports), [reports])
