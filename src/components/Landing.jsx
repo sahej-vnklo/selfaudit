@@ -5,7 +5,7 @@ import { PRIVACY_POLICY_URL, TERMS_HASH } from '../lib/legal.js'
 import './Landing.css'
 
 // ── Burger menu overlay ───────────────────────────────────────────────────────
-function BurgerMenu({ onClose, onLogoClick }) {
+function BurgerMenu({ onClose, onLogoClick, onNav }) {
   return (
     <div className="sa-land menu-overlay">
 
@@ -39,24 +39,19 @@ function BurgerMenu({ onClose, onLogoClick }) {
           <div className="menu-group">
             <button className="menu-cat">Platform</button>
             <div className="menu-sublist">
-              <button className="menu-sublink">The Intelligence Layer</button>
-              <button className="menu-sublink">The Six Loops</button>
-              <button className="menu-sublink">Integrations</button>
+              <button className="menu-sublink" onClick={() => onNav('how-it-works')}>The Intelligence Layer</button>
+              <button className="menu-sublink" onClick={() => onNav('how-it-works')}>The Six Loops</button>
             </div>
           </div>
 
           <div className="menu-group">
             <button className="menu-cat">Use Cases</button>
             <div className="menu-sublist">
-              <button className="menu-sublink">Customer Service</button>
-              <button className="menu-sublink">Sales &amp; Marketing</button>
-              <button className="menu-sublink">Finance &amp; Accounting</button>
-              <button className="menu-sublink">Management &amp; Strategy</button>
+              <button className="menu-sublink" onClick={() => onNav('use-case-customer-service')}>Customer Service</button>
+              <button className="menu-sublink" onClick={() => onNav('use-case-sales-marketing')}>Sales &amp; Marketing</button>
+              <button className="menu-sublink" onClick={() => onNav('use-case-finance-accounting')}>Finance &amp; Accounting</button>
+              <button className="menu-sublink" onClick={() => onNav('use-case-management-strategy')}>Management &amp; Strategy</button>
             </div>
-          </div>
-
-          <div className="menu-group">
-            <button className="menu-cat">Impact Studies</button>
           </div>
         </div>
 
@@ -676,6 +671,7 @@ export default function Landing({ onStart, session }) {
         <BurgerMenu
           onClose={() => setMenuOpen(false)}
           onLogoClick={() => { setMenuOpen(false); handleLogoClick() }}
+          onNav={(hash) => { setMenuOpen(false); window.location.hash = hash }}
         />,
         document.body
       )}
