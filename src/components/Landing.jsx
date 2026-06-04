@@ -160,7 +160,7 @@ const FAQS = [
   },
   {
     q: "What's the closest thing to SelfAudit that already exists?",
-    a: "A $2M war room. A permanent team of analysts, a CFO, a process consultant, and a risk officer — running simultaneously, 24/7. That's what this is. At $999 a month.",
+    a: "A $2M war room. A permanent team of analysts, a CFO, a process consultant, and a risk officer — running simultaneously, 24/7. That's what this is.",
   },
   {
     q: 'When do I need Enterprise?',
@@ -668,7 +668,7 @@ export default function Landing({ onStart, session, openMenu, onMenuOpened }) {
         <h2 className="h2 econ-headline">
           Strategic intelligence used to belong to the <em>Fortune 500.</em>
         </h2>
-        <p className="lede econ-lede">Here's what it cost them. Here's what it costs now.</p>
+        <p className="lede econ-lede">Here's what it cost them.</p>
 
         <div className="econ-grid">
           <div className="econ-card">
@@ -686,10 +686,10 @@ export default function Landing({ onStart, session, openMenu, onMenuOpened }) {
             <div className="econ-price">$60K–$180K<span className="unit">/yr</span></div>
             <p className="econ-desc">Human pattern recognition on a part-time schedule. Helpful, but bounded by hours, memory, and access.</p>
           </div>
-          <div className="econ-card is-featured">
-            <div className="econ-label">SELFAUDIT</div>
-            <div className="econ-price">$11,988<span className="unit">/yr</span></div>
-            <p className="econ-desc">Continuous strategic intelligence operation. Always watching. Always diagnosing. Always getting sharper.</p>
+          <div className="econ-card">
+            <div className="econ-label">Palantir</div>
+            <div className="econ-price">$1M–$50M<span className="unit">/yr</span></div>
+            <p className="econ-desc">Operational intelligence at enterprise scale. The closest thing to what SelfAudit does — built for governments and Fortune 500s only.</p>
           </div>
         </div>
       </section>
