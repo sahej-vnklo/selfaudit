@@ -160,7 +160,7 @@ const FAQS = [
   },
   {
     q: "What's the closest thing to SelfAudit that already exists?",
-    a: "A $2M war room. A permanent team of analysts, a CFO, a process consultant, and a risk officer — running simultaneously, 24/7. That's what this is. At $1,188 a year.",
+    a: "A $2M war room. A permanent team of analysts, a CFO, a process consultant, and a risk officer — running simultaneously, 24/7. That's what this is. At $999 a month.",
   },
   {
     q: 'When do I need Enterprise?',
@@ -688,7 +688,7 @@ export default function Landing({ onStart, session, openMenu, onMenuOpened }) {
           </div>
           <div className="econ-card is-featured">
             <div className="econ-label">SELFAUDIT</div>
-            <div className="econ-price">$1,188<span className="unit">/yr</span></div>
+            <div className="econ-price">$11,988<span className="unit">/yr</span></div>
             <p className="econ-desc">Continuous strategic intelligence operation. Always watching. Always diagnosing. Always getting sharper.</p>
           </div>
         </div>
