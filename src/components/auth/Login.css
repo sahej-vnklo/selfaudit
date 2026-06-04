@@ -1,0 +1,11 @@
+/* Reset global index.css button hover bleed on login page */
+.sa-login-btn-reset,
+.sa-login-btn-reset:hover {
+  transform: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+  background: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+}

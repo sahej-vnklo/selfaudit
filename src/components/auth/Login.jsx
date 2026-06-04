@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { initSupabase } from '../../lib/supabase.js'
 import { PRIVACY_POLICY_URL, TERMS_HASH } from '../../lib/legal.js'
+import './Login.css'
 
 // ── Hardcoded light-mode design tokens ───────────────────────────────────────
 const C = {
@@ -136,12 +137,12 @@ export default function Login({ onSuccess, onSignup, initialMessage = '' }) {
             {SHOW_SIGNUP && (
               <p style={s.switchLine}>
                 Don't have an account?{' '}
-                <button style={s.switchLink} onClick={onSignup}>Sign up</button>
+                <button className="sa-login-btn-reset" style={s.switchLink} onClick={onSignup}>Sign up</button>
               </p>
             )}
             <p style={s.switchLine}>
               Not a pilot user?{' '}
-              <button style={s.switchLink} onClick={() => { window.location.hash = 'voice' }}>Get early access.</button>
+              <button className="sa-login-btn-reset" style={s.switchLink} onClick={() => { window.location.hash = 'voice' }}>Get early access.</button>
             </p>
           </div>
 
@@ -431,6 +432,8 @@ const s = {
   switchLink: {
     background: 'none',
     border: 'none',
+    boxShadow: 'none',
+    borderRadius: 0,
     color: C.emberGlow,
     fontWeight: 500,
     cursor: 'pointer',
@@ -438,6 +441,8 @@ const s = {
     padding: 0,
     fontFamily: C.sans,
     transition: 'color .2s',
+    transform: 'none',
+    filter: 'none',
   },
   fine: {
     textAlign: 'center',
