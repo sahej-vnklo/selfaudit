@@ -13,20 +13,9 @@ export default function About({ onBack }) {
     <div className="about-page">
 
       {/* Nav */}
-      <nav className="about-nav">
-        <button className="about-back" onClick={onBack}>
-          <BackArrow /> Back
-        </button>
-        <div className="about-logo">
-          <svg width="26" height="26" viewBox="0 0 32 32" fill="none">
-            <g stroke="oklch(0.52 0.18 32)" strokeLinejoin="round" strokeLinecap="round" fill="none">
-              <path d="M16,2 L28.1,9 L28.1,23 L16,30 L3.9,23 L3.9,9 Z" strokeWidth="1.8" />
-              <path d="M16,9.5 L21.6,12.75 L21.6,19.25 L16,22.5 L10.4,19.25 L10.4,12.75 Z" strokeWidth="1.4" />
-              <path d="M16,2 L16,9.5 M28.1,9 L21.6,12.75 M28.1,23 L21.6,19.25 M16,30 L16,22.5 M3.9,23 L10.4,19.25 M3.9,9 L10.4,12.75" strokeWidth="1.2" />
-            </g>
-          </svg>
-          SelfAudit
-        </div>
+      <nav className="uc-nav">
+        <button className="uc-back" onClick={onBack}><BackArrow /> SelfAudit</button>
+        <div className="uc-nav-center">About</div>
       </nav>
 
       {/* Hero */}
