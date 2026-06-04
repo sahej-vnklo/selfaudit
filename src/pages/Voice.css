@@ -22,8 +22,10 @@
   min-height:             100vh;
 }
 
-.sa-voice a      { text-decoration: none; color: inherit; }
-.sa-voice button { font-family: var(--sans); cursor: pointer; }
+.sa-voice a             { text-decoration: none; color: inherit; }
+.sa-voice a:hover       { opacity: 1; }
+.sa-voice button        { font-family: var(--sans); cursor: pointer; }
+.sa-voice button:hover  { transform: none; box-shadow: none; filter: none; }
 
 /* ── NAV ─────────────────────────────────────────────────────────────────── */
 .voice-nav {
