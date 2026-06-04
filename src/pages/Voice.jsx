@@ -46,7 +46,6 @@ export default function Voice({ onBack }) {
           </svg>
           <span>Voice</span>
         </div>
-        <button className="voice-nav-cta" onClick={onBack}>Pilot Login</button>
       </nav>
 
       {/* HERO */}
