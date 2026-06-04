@@ -17,6 +17,9 @@ const C = {
   mono:        '"JetBrains Mono", ui-monospace, monospace',
 }
 
+// ── Toggle: flip to true to re-enable public signup ───────────────────────────
+const SHOW_SIGNUP = false
+
 // ── Main component ────────────────────────────────────────────────────────────
 export default function Login({ onSuccess, onSignup, initialMessage = '' }) {
   const [email,     setEmail]     = useState('')
@@ -130,9 +133,15 @@ export default function Login({ onSuccess, onSignup, initialMessage = '' }) {
               {loading ? 'Sending…' : 'Email me a code'}
             </button>
 
+            {SHOW_SIGNUP && (
+              <p style={s.switchLine}>
+                Don't have an account?{' '}
+                <button style={s.switchLink} onClick={onSignup}>Sign up</button>
+              </p>
+            )}
             <p style={s.switchLine}>
-              Don't have an account?{' '}
-              <button style={s.switchLink} onClick={onSignup}>Sign up</button>
+              Not a pilot user?{' '}
+              <button style={s.switchLink} onClick={() => { window.location.hash = 'voice' }}>Get early access.</button>
             </p>
           </div>
 
