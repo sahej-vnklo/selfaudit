@@ -115,7 +115,7 @@ function SignupForm({ onLogin }) {
               <h2 style={s.cardTitle}>Enter your code</h2>
               <p style={s.cardSub}>
                 We sent a code to <strong style={{ color: C.fg }}>{email}</strong>.
-                Enter it here to create your account, then we'll take you into checkout for the {selectedPlan === 'enterprise' ? 'Enterprise' : 'Professional'} plan.
+                Enter it here to activate your account.
               </p>
               <input
                 style={{ ...s.input, marginTop: 8, textAlign: 'center', fontSize: 24, letterSpacing: '0.35em', fontVariantNumeric: 'tabular-nums' }}
@@ -152,50 +152,7 @@ function SignupForm({ onLogin }) {
           <div style={s.card}>
             <p style={s.eyebrow}>Create account</p>
             <h2 style={s.cardTitle}>Start your first audit</h2>
-            <p style={s.cardSub}>Choose a plan to get started. Billing happens after account creation.</p>
-
-            {/* Plan selector */}
-            <div style={{ marginBottom: 24 }}>
-              <div style={{ fontFamily: C.mono, fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: C.fgMute, marginBottom: 10 }}>
-                Choose plan
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {SIGNUP_PLANS.map(p => {
-                  const sel = selectedPlan === p.key
-                  return (
-                    <button
-                      key={p.key}
-                      onClick={() => setSelectedPlan(p.key)}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: 12,
-                        padding: '12px 16px', borderRadius: 10,
-                        border: sel ? `1.5px solid ${C.ember}` : `1px solid ${C.line2}`,
-                        background: sel ? 'rgba(26,17,16,0.04)' : '#ffffff',
-                        cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s',
-                        fontFamily: C.sans,
-                      }}
-                    >
-                      <div style={{
-                        width: 17, height: 17, borderRadius: '50%', flexShrink: 0,
-                        border: sel ? `5px solid ${C.ember}` : `1.5px solid ${C.line2}`,
-                        background: '#ffffff', transition: 'all 0.15s',
-                      }} />
-                      <div style={{ flex: 1 }}>
-                        <span style={{ fontSize: 14, fontWeight: 600, color: C.fg }}>{p.name}</span>
-                        {p.popular && (
-                          <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 600, background: C.ember, color: '#fff', padding: '2px 8px', borderRadius: 100 }}>
-                            Popular
-                          </span>
-                        )}
-                      </div>
-                      <span style={{ fontSize: 14, fontWeight: 600, color: sel ? C.ember : C.fg }}>
-                        {p.price}<span style={{ fontSize: 12, fontWeight: 400, color: C.fgMute }}>/mo</span>
-                      </span>
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
+            <p style={s.cardSub}>Create your account to get started.</p>
 
             {/* Fields */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 20 }}>
