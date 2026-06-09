@@ -92,6 +92,3 @@ Built by **Sahej Singh** — nearly a decade in operations, working alongside ma
 
 SelfAudit is the product that should have existed ten years ago.
 
----
-
-*Applying to YC S26.*
