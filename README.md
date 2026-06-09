@@ -1,124 +1,97 @@
-# SelfAudit — Does your business actually need AI?
+# SelfAudit
 
-A free, AI-powered business audit tool. Built by Vnklo.
+> *They teach in school that business is a separate entity.*
+> *I say — why not make it a separate living entity.*
 
----
+**The direct line to your business.**
 
-## What it does
-
-1. User lands → starts free audit (no signup)
-2. Provides name, email, phone (optional), context
-3. Claude-powered neutral audit conversation (6–10 questions)
-4. On-screen report: honest findings, non-AI fixes, AI opportunities
-5. "Share with Vnklo" button → sends full report to sales@vnklo.com via Resend
+You call. It picks up. It tells you what's happening, what's at risk, and what to do next — without opening a single dashboard or briefing a single analyst.
 
 ---
 
-## Deploy in 15 minutes
+## What It Does
 
-### 1. Install dependencies
+Most founders are the last people to know what's actually happening in their own companies. By the time a report lands or a meeting happens, the moment has passed.
 
-```bash
-npm install
-```
+SelfAudit gives your business a voice. A live operational model that watches everything, connects the dots you don't have time to connect, and is reachable the moment you need it.
 
-### 2. Set environment variables
-
-Create a `.env` file in the root:
-
-```
-VITE_CLAUDE_API_KEY=sk-ant-YOUR_KEY_HERE
-VITE_RESEND_API_KEY=re_YOUR_KEY_HERE
-```
-
-**Get your Claude API key:** https://console.anthropic.com  
-**Get your Resend API key:** https://resend.com (free tier: 3,000 emails/month)
-
-### 3. Configure Resend
-
-In your Resend dashboard:
-- Add and verify your sending domain (selfaudit.co or vnklo.com)
-- Update the `from` field in `src/lib/audit.js` if needed:
-  ```
-  from: 'SelfAudit <audit@selfaudit.co>'
-  ```
-  Change to a verified domain you own, e.g. `audit@vnklo.com`
-
-### 4. Run locally
-
-```bash
-npm run dev
-```
-
-### 5. Deploy to Vercel (recommended)
-
-```bash
-npm install -g vercel
-vercel
-```
-
-Add your env vars in the Vercel dashboard under Project → Settings → Environment Variables.
-
-### 6. Deploy to Netlify (alternative)
-
-```bash
-npm run build
-# Drag the `dist/` folder to netlify.com/drop
-```
-
-Add env vars in Netlify dashboard under Site → Environment Variables.
-
-### 7. Point your domain
-
-Buy `selfaudit.co` (or similar) on Namecheap/GoDaddy.  
-In your registrar's DNS settings, add a CNAME record pointing to your Vercel/Netlify deployment URL.
+**Not a dashboard. Not an app. A direct line — available any time, from anywhere.**
 
 ---
 
-## Project structure
+## How It Works
 
-```
-src/
-  App.jsx              — Screen router
-  components/
-    Landing.jsx        — Landing page
-    Onboarding.jsx     — Name/email/phone/context form
-    AuditChat.jsx      — Chat interface
-    Report.jsx         — Report display + share CTA
-    ConfigScreen.jsx   — Dev-only API key setup (remove in prod)
-  lib/
-    audit.js           — Claude API, report generation, Resend email
-  index.css            — Global styles + CSS variables
-```
+### 1. Map Your Business
+Every company is different. SelfAudit lets you define the units that make up your business — Customer Service, Sales, Finance, Operations, whatever applies. Pre-built industry templates mean setup takes 30 minutes, not days.
 
----
+### 2. Connect Your Tools
+SelfAudit connects to the tools your team already uses — Zoho, HubSpot, Slack, QuickBooks, and more. One OAuth click per integration. Live data flows into your operational model automatically.
 
-## Customization
+### 3. SelfAudit Watches
+The intelligence loop runs continuously. It reads your live data, compares it against your structure and targets, and builds a real-time picture of your business — across every unit, every day.
 
-**Change report destination email:**  
-In `src/lib/audit.js`, update:
-```js
-to: ['sales@vnklo.com'],
-```
+### 4. You Call
+Dial in. Ask what's happening. Ask what the biggest risk is. Ask what's about to go wrong.
 
-**Change the from address:**  
-Same file:
-```js
-from: 'SelfAudit <audit@selfaudit.co>',
-```
-
-**Adjust audit depth:**  
-In `src/lib/audit.js`, modify the `SYSTEM_PROMPT` — specifically the exchange count trigger for `[READY_FOR_REPORT]`.
+Your business picks up.
 
 ---
 
-## Notes
+## The Intelligence Layer
 
-- Report is displayed on-screen only. No PDF generation, no download.
-- User cannot take the report to a competitor — it lives in the browser session.
-- All AI processing happens client-side via Anthropic API.
-- Email is sent server-side via Resend API (secure, no key exposed in frontend — move RESEND key to a serverless function for production hardening).
+SelfAudit doesn't surface numbers — it surfaces diagnoses.
+
+- **Root cause analysis** — not "tickets are up 12%", but why they're up and what caused it
+- **Second-order alerts** — a Sales pipeline drop today is a cash flow problem in 90 days; SelfAudit connects those dots before you knew to look
+- **Cross-unit reasoning** — patterns that span Customer Service, Sales, and Finance get read as one compound signal, not three separate alerts
+- **Next steps** — specific, contextual, actionable recommendations based on your actual structure and data
 
 ---
 
-Built by [Vnklo](https://vnklo.com)
+## Architecture
+
+SelfAudit is local-first. Your business model lives on your machine — not on a shared server.
+
+```
+~/.selfaudit/
+  config.json
+  units/
+    customer-service/
+      schema.json        ← unit definition, properties, targets
+      integrations.json  ← connected tools
+      objects/           ← individual entities (employees, accounts)
+      snapshots/         ← historical state captures
+    sales/
+    finance/
+    ...
+```
+
+Each unit is a folder. Each entity is a JSON file. The entire ontology is portable, version-controllable, and owned by the user.
+
+**Stack:** Next.js · Node.js · Claude API · OAuth integrations · Local file system
+
+---
+
+## Why Local-First
+
+Founders connecting their CRM, finances, and HR tools need to trust where that data lives. Local-first means the business model never lives on a shared server. That trust is what unlocks the integrations. Privacy is the feature.
+
+---
+
+## Status
+
+Currently in private pilot. Working prototype with end-to-end intelligence loop. Voice interface in active development.
+
+If you're a founder interested in early access — [reach out](mailto:sahej2269@gmail.com).
+
+---
+
+## The Founder
+
+Built by **Sahej Singh** — nearly a decade in operations, working alongside management, directors, and CEOs. Watched the same pattern repeat across every company: smart people, incomplete pictures, wrong calls.
+
+SelfAudit is the product that should have existed ten years ago.
+
+---
+
+*Applying to YC S26.*
