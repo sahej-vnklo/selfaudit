@@ -725,10 +725,7 @@ export default function Landing({ onStart, session, openMenu, onMenuOpened }) {
         <div className="final-cta-glow" />
         <div className="final-cta-inner">
           <div className="final-cta-eyebrow" />
-          <h2 className="final-cta-title">Stop guessing.<br />Start knowing.</h2>
-          <p className="final-cta-sub">
-            The business is already emitting the truth. The operation is whether you can hear it in time.
-          </p>
+          <h2 className="final-cta-title">The era of opening apps is over.<br />The era of calling your business has begun.</h2>
           <button
             className="btn btn-primary"
             onClick={handleStartAudit}
