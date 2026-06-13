@@ -422,7 +422,7 @@ export default function Landing({ onStart, session, openMenu, onMenuOpened }) {
             SelfAudit puts it directly in your hands.
           </p>
           <p className="manifesto-body">
-            Six continuous analytical loops running inside your business 24/7 — surfacing inefficiencies, compounding decisions in real time.
+            It maps your business. It watches it. It thinks before you act. It acts when you approve. And you can call it. Your data stays yours and never leaves your machine.
           </p>
           <p className="manifesto-pull">
             What Fortune 500s pay millions for is now accessible the moment you log in.
