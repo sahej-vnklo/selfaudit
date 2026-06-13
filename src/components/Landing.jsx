@@ -518,7 +518,7 @@ export default function Landing({ onStart, session, openMenu, onMenuOpened }) {
             <div className="eyebrow" />
             <h2 className="h2">The system that already knows what's breaking.</h2>
             <p className="lede" style={{ marginTop: 24 }}>
-              No switching between tools. No waiting for reports. SelfAudit surfaces what needs attention — and what to do next — before you think to ask.
+              It's not a report you run. It's a system that never stops running. SelfAudit watches every signal, connects what your tools can't, and has ranked root causes ready — so by the time you log in, it already knows.
             </p>
             <div style={{ marginTop: 36 }}>
               <button className="btn btn-primary" onClick={handleStartAudit} style={{ fontSize: 16, height: 43 }}>
