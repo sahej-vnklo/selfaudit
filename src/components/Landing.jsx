@@ -401,7 +401,7 @@ export default function Landing({ onStart, session, openMenu, onMenuOpened }) {
 
       {/* PROBLEM */}
       <section className="problem block">
-        <h2 className="h2">The problem isn't the data.<br />It's that nobody is connecting it.</h2>
+        <h2 className="h2">Your business is already telling you what's wrong.<br />Nobody is listening.</h2>
         <div className="problem-card">
           <div className="problem-eyebrow">Cross-Department Root Cause</div>
           <p className="problem-quote">
