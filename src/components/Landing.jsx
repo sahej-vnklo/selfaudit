@@ -418,16 +418,11 @@ export default function Landing({ onStart, session, openMenu, onMenuOpened }) {
       <section className="manifesto">
         <div className="manifesto-inner">
           <p className="manifesto-punch">
-            McKinsey sells it. Palantir builds it. Bloomberg rents fragments of it.<br />
-            SelfAudit puts it directly in your hands.
-          </p>
-          <p className="manifesto-body">
-            It maps your business. It watches it. It thinks before you act. It acts when you approve. And you can call it. Your data stays yours and never leaves your machine.
-          </p>
-          <p className="manifesto-pull">
             What Fortune 500s pay millions for is now accessible the moment you log in.
           </p>
-          <p className="manifesto-close">ALL YOURS</p>
+          <h2 className="manifesto-punch">
+            It maps your business. It watches it. It thinks before you act. It acts when you approve. And you can call it. Your data stays yours and never leaves your machine.
+          </h2>
         </div>
       </section>
 
