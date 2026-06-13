@@ -391,12 +391,11 @@ export default function Landing({ onStart, session, openMenu, onMenuOpened }) {
       {/* STATEMENT */}
       <section className="statement">
         <p className="statement-heading">
-          Performant software was never a luxury.<br />
-          Strategic intelligence still is.<br />
-          Until now.
+          Most founders are the last to know<br />
+          what's happening in their own business.
         </p>
         <p className="statement-body">
-          SelfAudit is the intelligence layer that never sleeps — autonomous, continuous, surfacing what matters the most.
+          SelfAudit is the operating system underneath your company — it watches every part of it simultaneously, connects the dots your tools can't, and tells you what's breaking before it costs you.
         </p>
       </section>
 
