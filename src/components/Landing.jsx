@@ -156,19 +156,23 @@ function BurgerMenu({ onClose, onLogoClick, onNav }) {
 const FAQS = [
   {
     q: 'Do I need connectors before it becomes useful?',
-    a: 'No. SelfAudit starts with what you know about your business. Connectors deepen the system over time — but the operation does not wait for perfect data to begin diagnosing.',
+    a: 'No. SelfAudit starts with what you know about your business. Connectors deepen the system over time — but it does not wait for perfect data to begin diagnosing.',
+  },
+  {
+    q: 'How is this different from just asking an AI chatbot?',
+    a: "A chatbot responds to what you ask. SelfAudit acts on what you haven't noticed yet. It's mapped to your specific business — your units, your thresholds, your standards. It runs continuously in the background. You don't have to prompt it. It watches, diagnoses, and surfaces root causes before you think to ask.",
+  },
+  {
+    q: 'Does it take actions on its own, or do I stay in control?',
+    a: "You're always in the loop. SelfAudit watches and diagnoses continuously — but it acts when you say so. Every recommendation, every artifact, every execution is triggered by you. It thinks before you act. It acts when you approve.",
+  },
+  {
+    q: 'Is my business data safe? Where does it go?',
+    a: "Your business data never leaves your machine. SelfAudit is built local-first — your metrics, your standards, your operational data are stored on your device, not on our servers. The AI reasoning happens in the cloud, but what it reasons about stays with you. No vendor sees your numbers. No data sharing. Your machine, your data, your control.",
   },
   {
     q: "What's the closest thing to SelfAudit that already exists?",
     a: "A $2M war room. A permanent team of analysts, a CFO, a process consultant, and a risk officer — running simultaneously, 24/7. That's what this is.",
-  },
-  {
-    q: 'What does it actually do when I\'m not using it?',
-    a: "It watches. Every area of your business — customer service, sales, finance, operations — is under continuous monitoring. When something drifts past your threshold, it diagnoses the root cause, scores the severity, and surfaces a specific fix. Most founders log back in and find it caught something they hadn't noticed yet. That's the point.",
-  },
-  {
-    q: 'Can it tell me what to do, or just what\'s wrong?',
-    a: "Both. Every finding comes with a root cause, a severity score, a financial impact estimate, and a sequenced execution plan. It also produces the artifacts — action plans, SOPs, email drafts, conversation scripts. The gap between diagnosis and done closes in the same session.",
   },
 ]
 
