@@ -617,24 +617,24 @@ export default function Landing({ onStart, session, openMenu, onMenuOpened }) {
         <div className="verdicts-grid">
           {[
             {
-              sev: 'Critical', high: false, cat: 'Vendor Risk',
-              quote: '"Your vendor SLA breach was flagged 11 days before your ops team knew it existed."',
-              outcome: <><strong>Rerouted in 4 hours.</strong> $2.1M in exposure recovered before it reached a single dashboard.</>,
+              sev: 'Critical', high: false, cat: 'Cash Flow',
+              quote: '"Your burn rate report showed 9 months of runway. It missed three deferred payables and a slipped renewal. Actual runway: under 4 months."',
+              outcome: <><strong>Surfaced before next board meeting.</strong> Payment terms restructured in 48 hours.</>,
             },
             {
-              sev: 'Critical', high: false, cat: 'Process Drift',
-              quote: '"Three teams were running the same manual exception process. None knew the others existed."',
-              outcome: <><strong>Policy unified in 48 hours.</strong> 60% reduction in redundant operational work across regions.</>,
+              sev: 'Critical', high: false, cat: 'Churn',
+              quote: '"You don\'t have a sales problem. Your last 4 churned accounts all flagged the same onboarding gap — months before they left."',
+              outcome: <><strong>Onboarding fixed in 2 weeks.</strong> Next 3 renewals closed without discounting.</>,
             },
             {
-              sev: 'High', high: true, cat: 'Inventory',
-              quote: "\"You don't have a stock problem. You have a forecasting problem dressed as one.\"",
-              outcome: 'SKU-4421 rerouted. $840k in SLA penalties avoided. Inside one loop, no escalation.',
+              sev: 'High', high: true, cat: 'Hiring',
+              quote: '"You were about to make a second sales hire. The real gap was follow-up — 60% of warm leads had no second touch within 5 days."',
+              outcome: <><strong>Sequence built in one session.</strong> Pipeline moved without the headcount cost.</>,
             },
             {
-              sev: 'High', high: true, cat: 'Compliance',
-              quote: '"Your approval workflow had 14 steps. SelfAudit closed it in 3 — inside policy — without asking."',
-              outcome: <><strong>11 days to first action.</strong> Zero manual escalation. Full audit trail. Completely autonomous.</>,
+              sev: 'High', high: true, cat: 'Margin',
+              quote: '"Your Starter plan has 3x the support load of your highest tier. You\'re subsidising 40% of your customer base and calling it growth."',
+              outcome: <><strong>Plan restructured.</strong> Support load down 60%. Gross margin up 9 points.</>,
             },
           ].map((v, i) => (
             <div
