@@ -427,26 +427,6 @@ export default function Landing({ onStart, session, openMenu, onMenuOpened }) {
         </div>
       </section>
 
-      {/* FOUR LANES */}
-      <section className="four-lanes block">
-        <h2 className="h2">All four parts of your business. <em>Simultaneously.</em></h2>
-        <p className="lede">
-          No single person can watch Customer Service, Sales, Finance, and Strategy at once with equal attention. SelfAudit does. And when Sales is closing bad-fit deals that are straining delivery and spiking support tickets — it traces the chain.
-        </p>
-        <div className="lanes-grid">
-          {LANES.map(lane => (
-            <div className="lane-card" key={lane.name}>
-              <div className="lane-icon-wrap">{lane.icon}</div>
-              <h3 className="lane-name">{lane.name}</h3>
-              <ul className="lane-metrics">
-                {lane.metrics.map(m => <li key={m}>{m}</li>)}
-              </ul>
-              <p className="lane-scenario">{lane.scenario}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
       {/* YOUR STANDARDS */}
       <section className="standards block">
         <div className="standards-inner">
@@ -474,9 +454,9 @@ export default function Landing({ onStart, session, openMenu, onMenuOpened }) {
             </div>
           </div>
           <div className="standards-copy">
-            <h2 className="h2">Not the average business. <em>Your business.</em></h2>
+            <h2 className="h2">Built around your business,<br /><em>not any business.</em></h2>
             <p className="lede">
-              Every threshold, every standard, every definition of healthy is yours. A 24-hour SLA is excellent for a volume support team and catastrophic for a premium service firm. SelfAudit doesn't assume. You define what good looks like across all four lanes — and the system flags the moment your operation drifts from your own standard.
+              Every unit, every threshold, every definition of healthy is yours. A SaaS company and a logistics firm have nothing in common — and SelfAudit knows the difference. You define what your business looks like, what healthy means across every area, and the system watches it continuously against your own standard. Not a benchmark. Not an industry average. Yours.
             </p>
             <div className="standards-callout">
               <strong>Your standards, not ours.</strong>{' '}
