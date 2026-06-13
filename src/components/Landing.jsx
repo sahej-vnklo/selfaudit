@@ -659,7 +659,7 @@ export default function Landing({ onStart, session, openMenu, onMenuOpened }) {
       <section className="economics block" style={{ padding: '130px 48px 150px' }}>
         <div className="eyebrow" />
         <h2 className="h2 econ-headline">
-          Strategic intelligence used to belong to the <em>Fortune 500.</em>
+          This level of operational clarity used to belong to the <em>Fortune 500.</em>
         </h2>
         <p className="lede econ-lede">Here's what it cost them.</p>
 
