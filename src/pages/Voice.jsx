@@ -97,7 +97,7 @@ export default function Voice({ onBack }) {
             Not a dashboard. Not an app. A direct line — available any time, from anywhere. Your business picks up. It knows the history, the risks, the numbers, and what needs to happen next.
           </p>
           <p className="voice-body">
-            The operating intelligence layer is already live. Memory, diagnosis, synthesis, governance — running now. The voice layer is the last mile — and we're building it.
+            The operating system is already live. Memory, diagnosis, synthesis, governance — running now. The voice layer is the last mile — and we're building it.
           </p>
           <p className="voice-body">
             Founders will not open five tools. <strong>They will call the business directly.</strong>
