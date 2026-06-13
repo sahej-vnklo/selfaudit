@@ -491,12 +491,11 @@ export default function Landing({ onStart, session, openMenu, onMenuOpened }) {
           <div className="artifacts-copy">
             <h2 className="h2">Not just what to do. <em>The thing that does it.</em></h2>
             <p className="lede">
-              Most intelligence tools tell you there's a problem. SelfAudit hands you the tool to fix it. Every diagnosis produces a ready-to-use artifact — the outreach email, the process SOP, the team brief, the hiring spec. Not a recommendation to think about. The actual deliverable. From diagnosis to done in one session.
+              Most tools surface a problem and leave you to figure out the fix. SelfAudit closes the loop itself. Spot a churn signal — it drafts the retention email. Find a process gap — it writes the SOP. Identify a hiring need — it builds the brief. You call it. It executes. Done.
             </p>
-            <div className="artifacts-callout">
-              <strong>The highest-retention feature in the product.</strong>{' '}
-              <em>Founders who generate artifacts weekly are deeply integrated — the product produces things they share, implement, and send. The artifact becomes the evidence that SelfAudit is doing its job. That's a very hard habit to walk away from.</em>
-            </div>
+            <p className="lede" style={{ marginTop: 20, fontStyle: 'italic', color: 'var(--fg-dim)' }}>
+              One command. Diagnosis to deliverable in a single session.
+            </p>
           </div>
           <div className="artifacts-grid">
             {ARTIFACTS.map(a => (
