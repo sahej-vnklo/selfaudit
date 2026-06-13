@@ -401,16 +401,35 @@ export default function Landing({ onStart, session, openMenu, onMenuOpened }) {
 
       {/* PROBLEM */}
       <section className="problem block">
-        <h2 className="h2">Your business is already telling you what's wrong.<br />Nobody is listening.</h2>
-        <div className="problem-card">
-          <div className="problem-eyebrow">Cross-Department Root Cause</div>
-          <p className="problem-quote">
-            "Your hiring freeze caused your support backlog, which drove your churn, which is{' '}
-            <span className="problem-quote-em">shortening your runway.</span>"
-          </p>
-          <p className="problem-body">
-            No single tool sees this. HubSpot knows your pipeline. Stripe knows your revenue. Zendesk knows your tickets. SelfAudit knows how all three connect — and tells you before it becomes a crisis.
-          </p>
+        <div className="problem-inner">
+          <div className="problem-copy">
+            <h2 className="h2">Every business problem has a cause that isn't where <em className="problem-em">the problem appeared.</em></h2>
+            <p className="problem-body" style={{ marginTop: 28 }}>
+              A decision made in one part of your business creates a consequence in a completely different part — weeks or months later. By the time it arrives, the decision that caused it is already forgotten. Three more decisions have been made on top of it. All of them pointed at the symptom.
+            </p>
+            <p className="problem-body" style={{ marginTop: 20 }}>
+              SelfAudit watches the relationship between every area of your business simultaneously. It names the chain before it completes.
+            </p>
+          </div>
+          <div className="problem-chains">
+            <div className="chain-card">
+              <div className="chain-dept">Finance → Ops → Revenue</div>
+              <div className="chain-title">Support team cut to reduce burn</div>
+              <div className="chain-desc">Response times double → satisfaction drops → churn rises 90 days later → diagnosed as a sales problem</div>
+            </div>
+            <div className="chain-connector">↓ Next chain</div>
+            <div className="chain-card">
+              <div className="chain-dept">Finance → Sales → Talent</div>
+              <div className="chain-title">Price raised to improve margins</div>
+              <div className="chain-desc">Sales cycle lengthens → close rate drops → misread as execution failure → sales lead fired</div>
+            </div>
+            <div className="chain-connector">↓ Next chain</div>
+            <div className="chain-card">
+              <div className="chain-dept">Sales → Finance → Strategy</div>
+              <div className="chain-title">Revenue flat → three salespeople hired</div>
+              <div className="chain-desc">Problem was retention, not sales → churn continued → six months and $220K later, nothing changed</div>
+            </div>
+          </div>
         </div>
       </section>
 
