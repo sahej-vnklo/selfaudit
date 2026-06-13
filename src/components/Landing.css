@@ -323,10 +323,14 @@
   line-height: 1.2;
   letter-spacing: -0.02em;
   color: #0a0707;
-  white-space: nowrap;
   max-width: 100%;
   text-align: center;
   padding: 7px 0 0;
+}
+.sa-land .manifesto-punch.manifesto-sub {
+  font-size: clamp(18px, 2vw, 32px);
+  font-weight: 400;
+  color: #3a3030;
 }
 .sa-land .manifesto-pull {
   font-family: "Cormorant Garamond", "Times New Roman", serif;

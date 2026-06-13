@@ -420,8 +420,9 @@ export default function Landing({ onStart, session, openMenu, onMenuOpened }) {
           <p className="manifesto-punch">
             What Fortune 500s pay millions for is now accessible the moment you log in.
           </p>
-          <h2 className="manifesto-punch">
-            It maps your business. It watches it. It thinks before you act. It acts when you approve. And you can call it. Your data stays yours and never leaves your machine.
+          <h2 className="manifesto-punch manifesto-sub">
+            It maps your business. It watches it. It thinks before you act. It acts when you approve. And you can call it.<br />
+            Your data stays yours and never leaves your machine.
           </h2>
         </div>
       </section>
