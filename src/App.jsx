@@ -8,17 +8,11 @@ import Dashboard from './components/Dashboard.jsx'
 import DashboardWelcomeTour from './components/DashboardWelcomeTour.jsx'
 import AdminDashboard from './pages/AdminDashboard.jsx'
 import TermsPage from './components/TermsPage.jsx'
-import HowItWorks from './pages/HowItWorks.jsx'
-import Voice from './pages/Voice.jsx'
-import IntelligenceLayer          from './pages/IntelligenceLayer.jsx'
-import SixLoops                  from './pages/SixLoops.jsx'
-import LiveOntology              from './pages/LiveOntology.jsx'
-import Capabilities             from './pages/Capabilities.jsx'
-import UseCaseCustomerService    from './pages/UseCaseCustomerService.jsx'
-import UseCaseSalesMarketing     from './pages/UseCaseSalesMarketing.jsx'
-import UseCaseFinanceAccounting  from './pages/UseCaseFinanceAccounting.jsx'
-import UseCaseManagementStrategy from './pages/UseCaseManagementStrategy.jsx'
-import About                     from './pages/About.jsx'
+import Voice              from './pages/Voice.jsx'
+import IntelligenceLayer  from './pages/IntelligenceLayer.jsx'
+import LiveOntology       from './pages/LiveOntology.jsx'
+import Capabilities       from './pages/Capabilities.jsx'
+import About              from './pages/About.jsx'
 
 const PENDING_AUTH_INTENT_KEY = 'sa-auth-intent'
 const PENDING_CHECKOUT_RETURN_KEY = 'sa-checkout-return'
@@ -33,17 +27,11 @@ const SCREENS = {
   TOUR_PREVIEW:        'tour-preview',
   ADMIN:               'admin',
   TERMS:               'terms',
-  HOW_IT_WORKS:        'how-it-works',
   VOICE:               'voice',
   INTELLIGENCE_LAYER:  'intelligence-layer',
-  SIX_LOOPS:           'six-loops',
   LIVE_ONTOLOGY:       'live-ontology',
   CAPABILITIES:        'capabilities',
-  UC_CUSTOMER_SERVICE:    'use-case-customer-service',
-  UC_SALES_MARKETING:     'use-case-sales-marketing',
-  UC_FINANCE_ACCOUNTING:  'use-case-finance-accounting',
-  UC_MANAGEMENT_STRATEGY: 'use-case-management-strategy',
-  ABOUT:                  'about',
+  ABOUT:               'about',
 }
 
 const HASH_SCREENS = new Set([
@@ -51,14 +39,10 @@ const HASH_SCREENS = new Set([
   SCREENS.DASHBOARD,
   SCREENS.TOUR_PREVIEW,
   SCREENS.ADMIN, SCREENS.TERMS,
-  SCREENS.HOW_IT_WORKS,
   SCREENS.VOICE,
   SCREENS.INTELLIGENCE_LAYER,
-  SCREENS.SIX_LOOPS,
-  SCREENS.UC_CUSTOMER_SERVICE,
-  SCREENS.UC_SALES_MARKETING,
-  SCREENS.UC_FINANCE_ACCOUNTING,
-  SCREENS.UC_MANAGEMENT_STRATEGY,
+  SCREENS.LIVE_ONTOLOGY,
+  SCREENS.CAPABILITIES,
   SCREENS.ABOUT,
 ])
 
@@ -151,17 +135,11 @@ function screenFromHash(isAuthenticated = false) {
   if (section === 'tour-preview')       return SCREENS.TOUR_PREVIEW
   if (section === 'admin')              return SCREENS.ADMIN
   if (section === 'terms')              return SCREENS.TERMS
-  if (section === 'how-it-works')                 return SCREENS.HOW_IT_WORKS
-  if (section === 'voice')                        return SCREENS.VOICE
-  if (section === 'intelligence-layer')           return SCREENS.INTELLIGENCE_LAYER
-  if (section === 'six-loops')                    return SCREENS.SIX_LOOPS
-  if (section === 'live-ontology')                return SCREENS.LIVE_ONTOLOGY
-  if (section === 'capabilities')                 return SCREENS.CAPABILITIES
-  if (section === 'use-case-customer-service')    return SCREENS.UC_CUSTOMER_SERVICE
-  if (section === 'use-case-sales-marketing')     return SCREENS.UC_SALES_MARKETING
-  if (section === 'use-case-finance-accounting')  return SCREENS.UC_FINANCE_ACCOUNTING
-  if (section === 'use-case-management-strategy') return SCREENS.UC_MANAGEMENT_STRATEGY
-  if (section === 'about')                         return SCREENS.ABOUT
+  if (section === 'voice')             return SCREENS.VOICE
+  if (section === 'intelligence-layer') return SCREENS.INTELLIGENCE_LAYER
+  if (section === 'live-ontology')      return SCREENS.LIVE_ONTOLOGY
+  if (section === 'capabilities')       return SCREENS.CAPABILITIES
+  if (section === 'about')              return SCREENS.ABOUT
   // Dashboard section hashes (#billing, #reports, etc.) must not exit the dashboard
   if (isAuthenticated && DASHBOARD_SECTION_HASHES.has(section)) return SCREENS.DASHBOARD
   return null
@@ -587,18 +565,11 @@ export default function App() {
     window.dispatchEvent(new PopStateEvent('popstate'))
   }
 
-  if (screen === SCREENS.HOW_IT_WORKS)     return <HowItWorks        onBack={goBackToMenu} />
-  if (screen === SCREENS.VOICE)            return <Voice             onBack={goBackToMenu} />
+  if (screen === SCREENS.VOICE)             return <Voice            onBack={goBackToMenu} />
   if (screen === SCREENS.INTELLIGENCE_LAYER) return <IntelligenceLayer onBack={goBackToMenu} />
-  if (screen === SCREENS.SIX_LOOPS)         return <SixLoops          onBack={goBackToMenu} />
-  if (screen === SCREENS.LIVE_ONTOLOGY)     return <LiveOntology      onBack={goBackToMenu} />
-  if (screen === SCREENS.CAPABILITIES)      return <Capabilities      onBack={goBackToMenu} />
-
-  if (screen === SCREENS.UC_CUSTOMER_SERVICE)    return <UseCaseCustomerService    onBack={goBackToMenu} />
-  if (screen === SCREENS.UC_SALES_MARKETING)     return <UseCaseSalesMarketing     onBack={goBackToMenu} />
-  if (screen === SCREENS.UC_FINANCE_ACCOUNTING)  return <UseCaseFinanceAccounting  onBack={goBackToMenu} />
-  if (screen === SCREENS.UC_MANAGEMENT_STRATEGY) return <UseCaseManagementStrategy onBack={goBackToMenu} />
-  if (screen === SCREENS.ABOUT)                   return <About                     onBack={goBackToMenu} />
+  if (screen === SCREENS.LIVE_ONTOLOGY)     return <LiveOntology     onBack={goBackToMenu} />
+  if (screen === SCREENS.CAPABILITIES)      return <Capabilities     onBack={goBackToMenu} />
+  if (screen === SCREENS.ABOUT)             return <About            onBack={goBackToMenu} />
 
   if (screen === SCREENS.DASHBOARD) {
     if (!session) { navigate(SCREENS.LOGIN); return null }
