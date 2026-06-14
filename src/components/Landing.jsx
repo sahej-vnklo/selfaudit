@@ -362,7 +362,7 @@ export default function Landing({ onStart, session, openMenu, onMenuOpened }) {
         </div>
         <div className="nav-right">
           <div className="nav-links">
-            <button className="nav-next" onClick={() => { window.location.hash = 'voice' }}>What's Next</button>
+            <button className="nav-cta" onClick={() => { window.location.hash = 'voice' }} style={{ fontSize: 17, height: 43 }}>What's Next</button>
           </div>
           <button className="nav-cta" onClick={handleStartAudit} style={{ fontSize: 17, height: 43, marginLeft: 18 }}>
             Start Audit
