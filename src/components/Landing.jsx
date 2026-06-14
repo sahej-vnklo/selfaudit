@@ -76,17 +76,17 @@ function BurgerMenu({ onClose, onLogoClick, onNav }) {
             <button className="menu-cat">Platform</button>
             <div className="menu-sublist">
               <button className="menu-sublink" onClick={() => onNav('intelligence-layer')}>The Intelligence Layer</button>
-              <button className="menu-sublink" onClick={() => onNav('six-loops')}>The Six Loops</button>
+              <button className="menu-sublink" onClick={() => onNav('live-ontology')}>Live Ontology</button>
             </div>
           </div>
 
           <div className="menu-group">
-            <button className="menu-cat">Use Cases</button>
+            <button className="menu-cat">Capabilities</button>
             <div className="menu-sublist">
-              <button className="menu-sublink" onClick={() => onNav('use-case-customer-service')}>Customer Service</button>
-              <button className="menu-sublink" onClick={() => onNav('use-case-sales-marketing')}>Sales &amp; Marketing</button>
-              <button className="menu-sublink" onClick={() => onNav('use-case-finance-accounting')}>Finance &amp; Accounting</button>
-              <button className="menu-sublink" onClick={() => onNav('use-case-management-strategy')}>Management &amp; Strategy</button>
+              <button className="menu-sublink" onClick={() => onNav('capability-monitoring')}>Continuous Monitoring</button>
+              <button className="menu-sublink" onClick={() => onNav('capability-diagnosis')}>Root Cause Diagnosis</button>
+              <button className="menu-sublink" onClick={() => onNav('capability-execution')}>Agentic Execution</button>
+              <button className="menu-sublink" onClick={() => onNav('capability-privacy')}>Local-First Privacy</button>
             </div>
           </div>
         </div>
