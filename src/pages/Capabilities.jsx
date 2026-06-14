@@ -7,7 +7,7 @@ const CAPABILITIES = [
     idx: '01',
     name: 'Monitor every area',
     body: 'SelfAudit watches every area of your business continuously — Sales, Finance, Customer Service, Operations, whatever you\'ve mapped. It doesn\'t wait for you to open a dashboard. It doesn\'t run on a schedule. It\'s always reading, always current, and surfaces what matters before you think to check.',
-    quote: null,
+    quote: '"Response times in Customer Service have been climbing for 6 days. You haven\'t opened the dashboard once this week. You\'re seeing this now because SelfAudit flagged it — not because you asked."',
   },
   {
     idx: '02',
@@ -25,25 +25,25 @@ const CAPABILITIES = [
     idx: '04',
     name: 'Reason across departments',
     body: 'Every other tool reasons inside one area. SelfAudit reasons across all of them simultaneously. A support spike in Customer Service, a velocity drop in Sales, a shift in Finance — not three separate alerts. One compound root cause spanning all three. A pipeline slowdown today is a cash flow problem in 90 days. SelfAudit connects those dots before you knew to look.',
-    quote: null,
+    quote: '"Pipeline velocity dropped 22% in Sales three weeks ago. Support tickets tagged \'billing confusion\' spiked the same week. Cash flow is now 11 days shorter than your model assumed. Three signals. One root cause."',
   },
   {
     idx: '05',
     name: 'Simulate decisions',
     body: 'Before you act, model the outcome. Raise prices — what happens to churn? Hire someone — where does it hit the runway? Cut a budget — which areas feel it first and when? SelfAudit runs the scenario against your live business model and shows you the second-order effects before a dollar moves.',
-    quote: null,
+    quote: '"Raising your entry price 30% is projected to reduce new signups by 18% but increase gross margin by 14 points — net positive within 60 days. Churn risk is concentrated in your Starter tier, not your growth accounts."',
   },
   {
     idx: '06',
     name: 'Execute with approval',
     body: 'Every finding comes staged for action. The retention email is drafted. The SOP is written. The task is assigned. You review it, you approve it, it runs — across your tools, with a full audit trail. You stay the decision-maker. It becomes the operator.',
-    quote: null,
+    quote: '"Retention email drafted for the March cohort. SOP written for the onboarding step where drop-off is occurring. Task created and assigned to your CS lead. Approve to run."',
   },
   {
     idx: '07',
     name: 'Call your business',
     body: 'Between meetings. On the way somewhere. At 11pm. You call. SelfAudit picks up. It knows your business, knows what\'s happening right now, and tells you what to do next. Four minutes. No dashboard. No analyst. A direct line to the business itself.',
-    quote: null,
+    quote: '"What\'s the biggest risk right now?" / "Churn in the March cohort is up 34%. Root cause: onboarding drop-off at step 3. If unaddressed — ~$18k MRR lost by end of month. Want me to stage a fix?"',
     number: '+1 (855) SELFAUDIT',
   },
 ]
