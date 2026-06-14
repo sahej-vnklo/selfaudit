@@ -1,0 +1,18 @@
+/* ─── LIVE ONTOLOGY PAGE — extends UseCases.css + IntelligenceLayer.css ─── */
+
+.lo-local {
+  background: var(--bg-2);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 80px 80px;
+}
+.lo-local-inner {
+  max-width: 820px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+@media (max-width: 960px) {
+  .lo-local { padding: 60px 24px; }
+}
