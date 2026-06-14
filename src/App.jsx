@@ -13,6 +13,7 @@ import Voice from './pages/Voice.jsx'
 import IntelligenceLayer          from './pages/IntelligenceLayer.jsx'
 import SixLoops                  from './pages/SixLoops.jsx'
 import LiveOntology              from './pages/LiveOntology.jsx'
+import Capabilities             from './pages/Capabilities.jsx'
 import UseCaseCustomerService    from './pages/UseCaseCustomerService.jsx'
 import UseCaseSalesMarketing     from './pages/UseCaseSalesMarketing.jsx'
 import UseCaseFinanceAccounting  from './pages/UseCaseFinanceAccounting.jsx'
@@ -37,6 +38,7 @@ const SCREENS = {
   INTELLIGENCE_LAYER:  'intelligence-layer',
   SIX_LOOPS:           'six-loops',
   LIVE_ONTOLOGY:       'live-ontology',
+  CAPABILITIES:        'capabilities',
   UC_CUSTOMER_SERVICE:    'use-case-customer-service',
   UC_SALES_MARKETING:     'use-case-sales-marketing',
   UC_FINANCE_ACCOUNTING:  'use-case-finance-accounting',
@@ -154,6 +156,7 @@ function screenFromHash(isAuthenticated = false) {
   if (section === 'intelligence-layer')           return SCREENS.INTELLIGENCE_LAYER
   if (section === 'six-loops')                    return SCREENS.SIX_LOOPS
   if (section === 'live-ontology')                return SCREENS.LIVE_ONTOLOGY
+  if (section === 'capabilities')                 return SCREENS.CAPABILITIES
   if (section === 'use-case-customer-service')    return SCREENS.UC_CUSTOMER_SERVICE
   if (section === 'use-case-sales-marketing')     return SCREENS.UC_SALES_MARKETING
   if (section === 'use-case-finance-accounting')  return SCREENS.UC_FINANCE_ACCOUNTING
@@ -589,6 +592,7 @@ export default function App() {
   if (screen === SCREENS.INTELLIGENCE_LAYER) return <IntelligenceLayer onBack={goBackToMenu} />
   if (screen === SCREENS.SIX_LOOPS)         return <SixLoops          onBack={goBackToMenu} />
   if (screen === SCREENS.LIVE_ONTOLOGY)     return <LiveOntology      onBack={goBackToMenu} />
+  if (screen === SCREENS.CAPABILITIES)      return <Capabilities      onBack={goBackToMenu} />
 
   if (screen === SCREENS.UC_CUSTOMER_SERVICE)    return <UseCaseCustomerService    onBack={goBackToMenu} />
   if (screen === SCREENS.UC_SALES_MARKETING)     return <UseCaseSalesMarketing     onBack={goBackToMenu} />

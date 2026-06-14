@@ -81,13 +81,7 @@ function BurgerMenu({ onClose, onLogoClick, onNav }) {
           </div>
 
           <div className="menu-group">
-            <button className="menu-cat">Capabilities</button>
-            <div className="menu-sublist">
-              <button className="menu-sublink" onClick={() => onNav('capability-monitoring')}>Continuous Monitoring</button>
-              <button className="menu-sublink" onClick={() => onNav('capability-diagnosis')}>Root Cause Diagnosis</button>
-              <button className="menu-sublink" onClick={() => onNav('capability-execution')}>Agentic Execution</button>
-              <button className="menu-sublink" onClick={() => onNav('capability-privacy')}>Local-First Privacy</button>
-            </div>
+            <button className="menu-cat" onClick={() => onNav('capabilities')}>Capabilities</button>
           </div>
         </div>
 

@@ -70,12 +70,6 @@ export default function IntelligenceLayer({ onBack }) {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="uc-cta">
-        <h2 className="uc-cta-title">Start building the layer.</h2>
-        <p className="uc-cta-sub">It starts accumulating from your first audit. The longer it runs, the sharper it gets.</p>
-        <button className="uc-cta-btn" onClick={onBack}>Start Audit</button>
-      </section>
 
     </div>
   )

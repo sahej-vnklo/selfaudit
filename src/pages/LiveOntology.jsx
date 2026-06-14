@@ -90,12 +90,6 @@ export default function LiveOntology({ onBack }) {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="uc-cta">
-        <h2 className="uc-cta-title">Start building your map.</h2>
-        <p className="uc-cta-sub">The ontology starts taking shape the moment you log in. The longer it runs, the more it understands.</p>
-        <button className="uc-cta-btn" onClick={onBack}>Start Audit</button>
-      </section>
 
     </div>
   )

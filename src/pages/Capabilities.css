@@ -1,0 +1,81 @@
+/* ─── CAPABILITIES PAGE ──────────────────────────────────────────────────── */
+
+.cap-hero {
+  padding: 140px 80px 80px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.cap-list {
+  padding: 0 80px 100px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.cap-list-inner {
+  display: flex;
+  flex-direction: column;
+}
+
+.cap-item {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 32px;
+  padding: 48px 0;
+  border-top: 1px solid var(--line);
+}
+.cap-item:last-child {
+  border-bottom: 1px solid var(--line);
+}
+
+.cap-idx {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--fg-mute);
+  padding-top: 6px;
+}
+
+.cap-name {
+  font-family: var(--serif);
+  font-size: clamp(22px, 2.4vw, 30px);
+  font-weight: 500;
+  color: var(--fg);
+  letter-spacing: -0.01em;
+  margin: 0 0 14px;
+}
+
+.cap-body {
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--fg-dim);
+  max-width: 680px;
+  margin: 0;
+}
+
+.cap-quote {
+  margin-top: 20px;
+  padding: 20px 24px;
+  border-left: 3px solid var(--ember);
+  background: oklch(0.52 0.18 32 / 0.04);
+  border-radius: 0 8px 8px 0;
+  font-family: var(--serif);
+  font-size: 17px;
+  font-style: italic;
+  line-height: 1.55;
+  color: var(--fg);
+  max-width: 620px;
+}
+
+.cap-number {
+  margin-top: 20px;
+  font-family: var(--mono);
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  color: var(--ember);
+}
+
+@media (max-width: 960px) {
+  .cap-hero  { padding: 120px 24px 60px; }
+  .cap-list  { padding: 0 24px 80px; }
+  .cap-item  { grid-template-columns: 40px 1fr; gap: 20px; padding: 36px 0; }
+}
