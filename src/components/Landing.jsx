@@ -81,6 +81,9 @@ function BurgerMenu({ onClose, onLogoClick, onNav }) {
           </div>
 
           <div className="menu-group">
+            <button className="menu-cat" onClick={() => onNav('voice')}>What's Next</button>
+          </div>
+          <div className="menu-group">
             <button className="menu-cat" onClick={() => onNav('capabilities')}>Capabilities</button>
           </div>
         </div>
@@ -361,10 +364,7 @@ export default function Landing({ onStart, session, openMenu, onMenuOpened }) {
           <span className="logo-text" style={{ fontSize: 27 }}>SelfAudit</span>
         </div>
         <div className="nav-right">
-          <div className="nav-links">
-            <button className="nav-cta" onClick={() => { window.location.hash = 'voice' }} style={{ fontSize: 17, height: 43 }}>What's Next</button>
-          </div>
-          <button className="nav-cta" onClick={handleStartAudit} style={{ fontSize: 17, height: 43, marginLeft: 18 }}>
+          <button className="nav-cta" onClick={handleStartAudit} style={{ fontSize: 17, height: 43 }}>
             Start Audit
           </button>
           <button className="nav-burger" aria-label="Open menu" onClick={() => setMenuOpen(true)}>
