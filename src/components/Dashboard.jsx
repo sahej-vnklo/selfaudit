@@ -2161,9 +2161,9 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                 const isExpanded       = selectedMode !== null || sessionActive || agentState !== 'idle'
 
                 const PILLS = [
-                  { key: 'diagnose', label: '/diagnose', desc: 'find root causes' },
-                  { key: 'goal',     label: '/goal',     desc: 'map a goal' },
-                  { key: 'scan',     label: '/scan',     desc: 'investigate fast' },
+                  { key: 'diagnose', label: 'diagnose', desc: 'find root causes' },
+                  { key: 'goal',     label: 'goal',     desc: 'map a goal' },
+                  { key: 'scan',     label: 'scan',     desc: 'investigate fast' },
                 ]
 
                 if (!isExpanded) {
