@@ -125,6 +125,32 @@
   filter: none;
   opacity: 1;
 }
+.sa-land .nav-next {
+  display: inline-flex;
+  align-items: center;
+  padding: 11px 20px;
+  background: transparent;
+  color: var(--ember-glow);
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  border: 1px solid oklch(0.6 0.18 35 / 0.5);
+  box-shadow: 0 0 10px -2px oklch(0.6 0.18 35 / 0.25);
+  font-family: var(--sans);
+  cursor: pointer;
+  animation: nextPulse 2.4s ease-in-out infinite;
+  transition: transform .2s, background .2s;
+}
+.sa-land .nav-next:hover {
+  transform: translateY(-1px);
+  background: oklch(0.55 0.18 32 / 0.1);
+}
+@keyframes nextPulse {
+  0%, 100% { border-color: oklch(0.6 0.18 35 / 0.35); box-shadow: 0 0 8px -2px oklch(0.6 0.18 35 / 0.15); }
+  50%       { border-color: oklch(0.7 0.18 35 / 0.75); box-shadow: 0 0 14px -2px oklch(0.6 0.18 35 / 0.45); }
+}
+
 .sa-land .nav-right { display: flex; align-items: center; gap: 18px; }
 .sa-land .nav-burger {
   display: inline-flex;
