@@ -4138,16 +4138,7 @@ function AiOpportunitiesDetailPanel({ user, userInfo, reports, items, tier, init
             ))}
           </div>
 
-          <div style={styles.aiCtaWrap}>
-            {shared ? (
-              <div style={styles.aiSuccessText}>Founder review requested. We&apos;ll be in touch within 24 hours.</div>
-            ) : (
-              <button type="button" style={styles.aiShareButton} onClick={handleShare} disabled={sharing || !sourceReport || !sourcePayload}>
-                {sharing ? 'Requesting…' : 'Get founder review'}
-              </button>
-            )}
-            {error && <div style={styles.aiErrorText}>{error}</div>}
-          </div>
+          {error && <div style={styles.aiErrorText}>{error}</div>}
         </>
       )}
     </PanelCard>
