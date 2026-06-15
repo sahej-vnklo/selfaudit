@@ -6,6 +6,7 @@ import { normalizeHubspotData, normalizeStripeData, mergeNormalized } from '../c
 import { runGovernanceMonitoring } from '../governance/monitoring.js'
 import { buildGovernanceAdvice } from '../governance/advice.js'
 import { enrichGovernanceWithAI } from '../governance/ai-advisor.js'
+import { loadSchema } from '../blueprint/schema-registry.js'
 
 function getSupabase() {
   return createClient(
@@ -477,8 +478,8 @@ export async function runBusinessHealthCheck(userId) {
   const sb         = getSupabase()
   const checked_at = new Date().toISOString()
 
-  // 1-4: Load user profile, company brain, intelligence_brief, integrations, user overrides in parallel
-  const [brainRes, briefRes, profileRes, overridesRes] = await Promise.allSettled([
+  // 1-5: Load user profile, company brain, intelligence_brief, integrations, user overrides, schema in parallel
+  const [brainRes, briefRes, profileRes, overridesRes, schemaRes] = await Promise.allSettled([
     getCompanyBrain(userId),
     sb.from('intelligence_brief')
       .select('financial, operational, context')
@@ -491,12 +492,14 @@ export async function runBusinessHealthCheck(userId) {
     sb.from('user_rule_overrides')
       .select('rule_id, value, enabled')
       .eq('user_id', userId),
+    loadSchema(userId),
   ])
 
   const brain        = brainRes.status   === 'fulfilled' ? brainRes.value             : null
   const brief        = briefRes.status   === 'fulfilled' ? briefRes.value.data        : null
   const integrations = profileRes.status === 'fulfilled' ? profileRes.value.data?.integrations : null
   const overrideRows = overridesRes.status === 'fulfilled' ? (overridesRes.value.data ?? []) : []
+  const schema       = schemaRes.status  === 'fulfilled' ? schemaRes.value            : null
 
   // Build override Map for O(1) lookup in evaluateRulePack
   const userOverrides = overrideRows.length > 0
@@ -539,7 +542,7 @@ export async function runBusinessHealthCheck(userId) {
   const health_score        = scoreFromRisks(allRisks)
   const opportunities       = buildOpportunities(brain, normalized)
   const summary             = buildSummary(allRisks, brain)
-  const governanceBase      = runGovernanceMonitoring({ brain, brief, normalized, checkedAt: checked_at, userOverrides })
+  const governanceBase      = runGovernanceMonitoring({ brain, brief, normalized, checkedAt: checked_at, userOverrides, schema })
 
   // Persist metric snapshots non-blocking — do not await, never blocks health check
   persistMetricSnapshots(userId, governanceBase.snapshots, sb, checked_at).catch(() => {})

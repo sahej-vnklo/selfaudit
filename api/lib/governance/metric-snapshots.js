@@ -1,16 +1,23 @@
 import { normalizeGovernanceMetrics } from './shared/contracts.js'
-import { OPERATIONAL_AREA_REGISTRY } from './area-registry.js'
+import {
+  AREA_CUSTOMER_SERVICE,
+  AREA_FINANCE_ACCOUNTING,
+  AREA_MANAGEMENT_STRATEGY,
+  AREA_MARKETING_SALES,
+} from '../blueprint/catalog/areas.js'
 
-function metric(key, value, source, metadata = {}) {
-  if (value == null || Number.isNaN(value)) return null
-  return { key, value, source, ...metadata }
-}
+// Backward-compat fallback: the 4 SaaS areas used before schema-driven selection existed.
+// When no schema is passed, the engine monitors these by default.
+const DEFAULT_AREAS = [
+  AREA_CUSTOMER_SERVICE,
+  AREA_FINANCE_ACCOUNTING,
+  AREA_MANAGEMENT_STRATEGY,
+  AREA_MARKETING_SALES,
+]
 
-function ratio(numerator, denominator) {
-  const top = Number(numerator)
-  const bottom = Number(denominator)
-  if (!Number.isFinite(top) || !Number.isFinite(bottom) || bottom <= 0) return null
-  return Number(((top / bottom) * 100).toFixed(1))
+function metric(key, value, source) {
+  if (value == null || (typeof value === 'number' && Number.isNaN(value))) return null
+  return { key, value, source }
 }
 
 function safeNumber(value) {
@@ -18,121 +25,141 @@ function safeNumber(value) {
   return Number.isFinite(parsed) ? parsed : null
 }
 
-function buildCustomerServiceMetrics({ brief }) {
-  const operational = brief?.operational ?? {}
-  const metrics = [
-    metric('ticket_volume', safeNumber(operational.support_tickets_per_week), 'intelligence_brief'),
-  ].filter(Boolean)
+function getNestedValue(obj, path) {
+  if (!obj || !path) return null
+  let cur = obj
+  for (const part of path.split('.')) {
+    if (cur == null) return null
+    cur = cur[part]
+  }
+  return cur ?? null
+}
 
-  return {
-    areaId: 'customer-service',
-    metrics,
-    sources: metrics.length ? ['intelligence_brief'] : [],
+// Resolve the first source in the list that returns a non-null value
+function resolveSources(sources, { brief, brain, normalized }) {
+  const normMetrics = normalizeGovernanceMetrics(normalized?.metrics)
+  for (const src of sources) {
+    let val = null
+    if (src.type === 'brief')         val = getNestedValue(brief, src.path)
+    else if (src.type === 'brain')    val = getNestedValue(brain, src.path)
+    else if (src.type === 'normalized') val = normMetrics[src.field] ?? null
+    else if (src.type === 'integration') {
+      if (Array.isArray(normalized?.metrics)) {
+        const found = normalized.metrics.find((m) => m.source === src.integration && m.key === src.field)
+        val = found?.value ?? null
+      }
+    }
+    if (val != null) return val
+  }
+  return null
+}
+
+// Resolve an input slot used by 'divide'/'ratio' transforms.
+// Input can be { metricKey } (reference to already-resolved metrics) or { metricKey, sources }
+function resolveInput(input, ctx, resolved) {
+  if (input.sources?.length) {
+    const raw = resolveSources(input.sources, ctx)
+    return safeNumber(raw)
+  }
+  if (input.metricKey) return resolved[input.metricKey] ?? null
+  return null
+}
+
+// Apply a single metric mapping to produce a numeric value (or null if unavailable)
+function applyTransform(mapping, ctx, resolved) {
+  const { transform, sources = [], inputs = [], computation } = mapping
+
+  switch (transform) {
+    case 'safeNumber': {
+      return safeNumber(resolveSources(sources, ctx))
+    }
+
+    case 'arrayLength': {
+      const raw = resolveSources(sources, ctx)
+      if (Array.isArray(raw)) return raw.length
+      return safeNumber(raw)
+    }
+
+    case 'computed': {
+      if (computation === 'session-followthrough-rate') {
+        const sessions = ctx.brain?.recent_sessions ?? []
+        const done = new Set(['resolved', 'done', 'closed', 'complete', 'completed'])
+        const followedThrough = sessions.filter((s) => done.has(String(s?.status || '').toLowerCase())).length
+        return sessions.length > 0 ? Number(((followedThrough / sessions.length) * 100).toFixed(1)) : null
+      }
+      return null
+    }
+
+    case 'ratio':
+    case 'divide': {
+      if (inputs.length < 2) return null
+      const [numInput, denomInput] = inputs
+      const numerator   = resolveInput(numInput,   ctx, resolved)
+      const denominator = resolveInput(denomInput, ctx, resolved)
+      if (numerator == null || denominator == null || denominator === 0) return null
+      const result = transform === 'ratio'
+        ? (numerator / denominator) * 100
+        : numerator / denominator
+      return Number(result.toFixed(2))
+    }
+
+    default:
+      return null
   }
 }
 
-function buildMarketingSalesMetrics({ brief, normalized }) {
-  const operational = brief?.operational ?? {}
-  const normalizedMetrics = normalizeGovernanceMetrics(normalized?.metrics)
-  const leadVolume = normalizedMetrics.leads ?? normalizedMetrics.new_contacts_this_month ?? null
-  const sqlCount = normalizedMetrics.sqls ?? null
-
-  const metrics = [
-    metric('pipeline_value', normalizedMetrics.open_pipeline_value ?? null, 'hubspot'),
-    metric('open_deals', normalizedMetrics.open_deals ?? null, 'hubspot'),
-    metric('lead_volume', leadVolume, 'hubspot'),
-    metric('stage_conversion', leadVolume ? ratio(sqlCount, leadVolume) : null, 'derived', { derivedFrom: ['sqls', 'leads'] }),
-    metric('sales_cycle_days', safeNumber(operational.sales_cycle), 'intelligence_brief'),
-  ].filter(Boolean)
-
-  return {
-    areaId: 'marketing-sales',
-    metrics,
-    sources: [...new Set(metrics.map((item) => item.source === 'derived' ? 'hubspot' : item.source))],
+function buildSnapshotForArea(area, ctx, checkedAt) {
+  if (!Array.isArray(area.metricMappings) || area.metricMappings.length === 0) {
+    return { areaId: area.id, checkedAt, metrics: [], metricsByKey: {}, sources: [], coverage: 0 }
   }
-}
 
-function buildFinanceAccountingMetrics({ brief, normalized }) {
-  const financial = brief?.financial ?? {}
-  const context   = brief?.context   ?? {}
+  const resolved = {}
+  const metrics  = []
 
-  // Extract Stripe metrics — prefer live connector data over manual brief entries
-  const stripe = {}
-  if (normalized?.metrics) {
-    for (const m of normalized.metrics.filter(m => m.source === 'stripe')) {
-      stripe[m.key] = m.value
+  // Pass 1: resolve all non-derived transforms
+  for (const mapping of area.metricMappings) {
+    if (['safeNumber', 'arrayLength', 'computed'].includes(mapping.transform)) {
+      const value = applyTransform(mapping, ctx, resolved)
+      if (value != null) {
+        resolved[mapping.metricKey] = value
+        metrics.push(metric(mapping.metricKey, value, mapping.source))
+      }
     }
   }
 
-  const mrr      = stripe.mrr        ?? safeNumber(financial.mrr)
-  const churn    = stripe.churn_rate ?? safeNumber(financial.churn)
-  const ltv      = stripe.ltv        ?? safeNumber(financial.ltv)
-  const cac      = safeNumber(financial.cac)
-  const burnRate = safeNumber(financial.burn_rate)
-  const runway   = safeNumber(financial.runway ?? context.runway)
+  // Pass 2: resolve derived transforms that may reference pass-1 results
+  for (const mapping of area.metricMappings) {
+    if (['divide', 'ratio'].includes(mapping.transform)) {
+      const value = applyTransform(mapping, ctx, resolved)
+      if (value != null) {
+        resolved[mapping.metricKey] = value
+        metrics.push(metric(mapping.metricKey, value, mapping.source))
+      }
+    }
+  }
 
-  const mrrSource   = stripe.mrr        != null ? 'stripe' : 'intelligence_brief'
-  const churnSource = stripe.churn_rate != null ? 'stripe' : 'intelligence_brief'
-  const ltvSource   = stripe.ltv        != null ? 'stripe' : 'intelligence_brief'
-
-  const metrics = [
-    metric('mrr',          mrr,       mrrSource),
-    metric('churn_rate',   churn,     churnSource),
-    metric('burn_rate',    burnRate,  'intelligence_brief'),
-    metric('runway_months',runway,    'intelligence_brief'),
-    metric('ltv_cac_ratio',
-      ltv != null && cac != null && cac > 0 ? Number((ltv / cac).toFixed(2)) : null,
-      'derived', { derivedFrom: [ltvSource, 'intelligence_brief'] }
-    ),
-  ].filter(Boolean)
+  const valid   = metrics.filter(Boolean)
+  const sources = [...new Set(valid.map((m) => m.source).filter(Boolean))]
 
   return {
-    areaId: 'finance-accounting',
-    metrics,
-    sources: [...new Set(metrics.map((item) => item.source === 'derived' ? mrrSource : item.source))],
+    areaId: area.id,
+    checkedAt,
+    metrics: valid,
+    metricsByKey: normalizeGovernanceMetrics(valid),
+    sources,
+    coverage: valid.length,
   }
 }
 
-function buildManagementStrategyMetrics({ brain }) {
-  const sessions = brain?.recent_sessions ?? []
-  const resolvedStatuses = new Set(['resolved', 'done', 'closed', 'complete', 'completed'])
-  const followedThrough = sessions.filter((session) => resolvedStatuses.has(String(session?.status || '').toLowerCase())).length
-  const followthroughRate = sessions.length > 0 ? Number(((followedThrough / sessions.length) * 100).toFixed(1)) : null
+export function buildAreaMetricSnapshots({
+  brain    = null,
+  brief    = null,
+  normalized = null,
+  checkedAt  = new Date().toISOString(),
+  schema   = null,
+} = {}) {
+  const areas = schema?.areas?.length ? schema.areas : DEFAULT_AREAS
+  const ctx   = { brain, brief, normalized }
 
-  const metrics = [
-    metric('goal_progress', safeNumber(brain?.goal_score), 'company_brain'),
-    metric('priority_backlog', Array.isArray(brain?.top_priorities) ? brain.top_priorities.length : null, 'company_brain'),
-    metric('repeated_blockers', Array.isArray(brain?.repeated_blockers) ? brain.repeated_blockers.length : null, 'company_brain'),
-    metric('watchouts', Array.isArray(brain?.watchouts) ? brain.watchouts.length : null, 'company_brain'),
-    metric('followthrough_rate', followthroughRate, 'derived', { derivedFrom: ['recent_sessions.status'] }),
-  ].filter(Boolean)
-
-  return {
-    areaId: 'management-strategy',
-    metrics,
-    sources: [...new Set(metrics.map((item) => item.source === 'derived' ? 'company_brain' : item.source))],
-  }
-}
-
-export function buildAreaMetricSnapshots({ brain = null, brief = null, normalized = null, checkedAt = new Date().toISOString() } = {}) {
-  const builders = [
-    buildCustomerServiceMetrics,
-    buildMarketingSalesMetrics,
-    buildFinanceAccountingMetrics,
-    buildManagementStrategyMetrics,
-  ]
-
-  const knownAreas = new Set(OPERATIONAL_AREA_REGISTRY.map((area) => area.id))
-
-  return builders
-    .map((builder) => builder({ brain, brief, normalized }))
-    .filter((snapshot) => snapshot && knownAreas.has(snapshot.areaId))
-    .map((snapshot) => ({
-      areaId: snapshot.areaId,
-      checkedAt,
-      metrics: snapshot.metrics,
-      metricsByKey: normalizeGovernanceMetrics(snapshot.metrics),
-      sources: snapshot.sources,
-      coverage: snapshot.metrics.length,
-    }))
+  return areas.map((area) => buildSnapshotForArea(area, ctx, checkedAt))
 }

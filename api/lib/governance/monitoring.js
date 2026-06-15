@@ -1,8 +1,8 @@
 import { evaluateOperationalArea, getOperationalAreaModule } from './area-registry.js'
 import { buildAreaMetricSnapshots } from './metric-snapshots.js'
+import { buildCompoundDiagnosis } from './causal-engine.js'
+import { COMPOUND_RULES_SAAS } from '../blueprint/catalog/areas.js'
 
-// Flatten all area metric snapshots into one combined key→value map
-// so compound rules can reference metrics from different areas.
 function buildCombinedMetrics(snapshots) {
   const all = {}
   for (const snapshot of snapshots) {
@@ -11,143 +11,109 @@ function buildCombinedMetrics(snapshots) {
   return all
 }
 
-// Cross-area compound rules — fire only when two metrics from different areas
-// breach thresholds simultaneously, signalling a structural problem.
-function evaluateCompoundRules(m) {
-  const findings = []
-
-  const num = (key) => (typeof m[key] === 'number' ? m[key] : null)
-
-  const churn        = num('churn_rate')
-  const runway       = num('runway_months')
-  const openDeals    = num('open_deals')
-  const leadVol      = num('lead_volume')
-  const ltvCac       = num('ltv_cac_ratio')
-  const goalProg     = num('goal_progress')
-  const followThru   = num('followthrough_rate')
-  const stageConv    = num('stage_conversion')
-  const salesCycle   = num('sales_cycle_days')
-
-  if (churn !== null && runway !== null && churn > 5 && runway < 9) {
-    findings.push({
-      id: 'compound:cash-fragility',
-      type: 'risk', status: 'bad', severity: 'critical',
-      areaId: 'cross', areaLabel: 'Cross-Area',
-      title: 'Cash fragility',
-      summary: `Churn at ${churn}% combined with ${runway} months runway creates compounding financial pressure.`,
-      recommendation: 'Treat churn reduction and cash conservation as a single priority — one directly extends the other.',
-      metricKey: 'compound', comparator: 'compound', thresholdValue: null, metricValue: null,
-    })
+function compareCondition(value, comparator, threshold) {
+  switch (comparator) {
+    case 'lt':  return value < threshold
+    case 'lte': return value <= threshold
+    case 'gt':  return value > threshold
+    case 'gte': return value >= threshold
+    case 'eq':  return value === threshold
+    case 'neq': return value !== threshold
+    default:    return false
   }
+}
 
-  if (openDeals !== null && leadVol !== null && openDeals === 0 && leadVol < 10) {
-    findings.push({
-      id: 'compound:pipeline-collapse',
-      type: 'risk', status: 'bad', severity: 'critical',
-      areaId: 'cross', areaLabel: 'Cross-Area',
-      title: 'Pipeline collapse',
-      summary: 'No open deals and lead flow below 10 — the revenue engine has stalled at both ends of the funnel.',
-      recommendation: 'Start an outbound sprint immediately and review every lead source for blockage.',
-      metricKey: 'compound', comparator: 'compound', thresholdValue: null, metricValue: null,
-    })
-  }
+// Evaluate compound rules from the schema (or fall back to SaaS defaults).
+// Compound rules are cross-area signals that fire when two metrics breach simultaneously.
+function evaluateCompoundRules(compoundRules, combinedMetrics) {
+  const rules = compoundRules?.length ? compoundRules : COMPOUND_RULES_SAAS
 
-  if (ltvCac !== null && churn !== null && ltvCac < 1 && churn > 5) {
-    findings.push({
-      id: 'compound:unit-economics-inversion',
-      type: 'risk', status: 'bad', severity: 'critical',
-      areaId: 'cross', areaLabel: 'Cross-Area',
-      title: 'Unit economics are inverted',
-      summary: `LTV:CAC below 1 and churn above 5% means acquiring customers is destroying value, not building it.`,
-      recommendation: 'Pause acquisition spend and fix retention before scaling further.',
-      metricKey: 'compound', comparator: 'compound', thresholdValue: null, metricValue: null,
-    })
-  }
-
-  if (goalProg !== null && followThru !== null && goalProg < 60 && followThru < 60) {
-    findings.push({
-      id: 'compound:execution-breakdown',
-      type: 'risk', status: 'bad', severity: 'high',
-      areaId: 'cross', areaLabel: 'Cross-Area',
-      title: 'Execution breakdown',
-      summary: 'Goal progress below 60% and follow-through below 60% — strategy is not surviving contact with execution.',
-      recommendation: 'Cut active priorities to 3 or fewer and rebuild weekly accountability before adding new goals.',
-      metricKey: 'compound', comparator: 'compound', thresholdValue: null, metricValue: null,
-    })
-  }
-
-  if (stageConv !== null && salesCycle !== null && stageConv < 15 && salesCycle > 45) {
-    findings.push({
-      id: 'compound:sales-process-breakdown',
-      type: 'risk', status: 'bad', severity: 'high',
-      areaId: 'cross', areaLabel: 'Cross-Area',
-      title: 'Sales process breakdown',
-      summary: `Conversion below 15% and sales cycle above 45 days — the funnel is leaking at every stage and moving too slowly.`,
-      recommendation: 'Run a focused sales process diagnostic and fix qualification and late-stage friction first.',
-      metricKey: 'compound', comparator: 'compound', thresholdValue: null, metricValue: null,
-    })
-  }
-
-  return findings
+  return rules
+    .filter((rule) =>
+      rule.conditions.every((cond) => {
+        const val = combinedMetrics[cond.metricKey]
+        return val != null && compareCondition(val, cond.comparator, cond.value)
+      })
+    )
+    .map((rule) => ({
+      id:              rule.id,
+      type:            'risk',
+      status:          rule.status ?? 'bad',
+      severity:        rule.severity ?? 'high',
+      areaId:          'cross',
+      areaLabel:       'Cross-Area',
+      title:           rule.title,
+      summary:         rule.summary,
+      recommendation:  rule.recommendation,
+      metricKey:       'compound',
+      comparator:      'compound',
+      thresholdValue:  null,
+      metricValue:     null,
+    }))
 }
 
 function deriveAreaStatus(findings, coverage) {
   if (!coverage) return 'no-signal'
-  if (findings.some((finding) => finding.status === 'bad')) return 'bad'
-  if (findings.some((finding) => finding.status === 'watch')) return 'watch'
+  if (findings.some((f) => f.status === 'bad'))   return 'bad'
+  if (findings.some((f) => f.status === 'watch')) return 'watch'
   return 'good'
 }
 
 function summarizeArea(area, status, findings, coverage) {
-  if (!coverage) {
-    return `No live signals yet for ${area.label}.`
-  }
+  if (!coverage) return `No live signals yet for ${area?.label ?? 'this area'}.`
   if (status === 'bad') {
-    return findings
-      .filter((finding) => finding.status === 'bad')
-      .slice(0, 2)
-      .map((finding) => finding.title)
-      .join('; ')
+    return findings.filter((f) => f.status === 'bad').slice(0, 2).map((f) => f.title).join('; ')
   }
   if (status === 'watch') {
-    return findings
-      .filter((finding) => finding.status === 'watch' || finding.status === 'bad')
-      .slice(0, 2)
-      .map((finding) => finding.title)
-      .join('; ')
+    return findings.filter((f) => f.status === 'watch' || f.status === 'bad').slice(0, 2).map((f) => f.title).join('; ')
   }
-  return `${area.label} looks stable based on the currently available signals.`
+  return `${area?.label ?? 'This area'} looks stable based on the currently available signals.`
 }
 
 function toLegacyRisk(area, finding) {
   return {
-    severity: finding.severity,
-    category: area.areaId,
-    title: finding.title,
-    description: finding.summary,
-    evidence: `${finding.metricKey} ${finding.comparator} ${finding.thresholdValue} (observed ${finding.metricValue})`,
+    severity:           finding.severity,
+    category:           area.areaId,
+    title:              finding.title,
+    description:        finding.summary,
+    evidence:           `${finding.metricKey} ${finding.comparator} ${finding.thresholdValue} (observed ${finding.metricValue})`,
     recommended_action: finding.recommendation,
-    source: 'governance',
+    source:             'governance',
   }
 }
 
-export function runGovernanceMonitoring({ brain = null, brief = null, normalized = null, checkedAt = new Date().toISOString(), userOverrides = null } = {}) {
-  const snapshots = buildAreaMetricSnapshots({ brain, brief, normalized, checkedAt })
+export function runGovernanceMonitoring({
+  brain         = null,
+  brief         = null,
+  normalized    = null,
+  checkedAt     = new Date().toISOString(),
+  userOverrides = null,
+  schema        = null,
+} = {}) {
+  const snapshots = buildAreaMetricSnapshots({ brain, brief, normalized, checkedAt, schema })
+
+  // Build a lookup from schemaArea.id → schemaArea so evaluators use per-user rule packs if present
+  const schemaAreaMap = Object.fromEntries(
+    (schema?.areas ?? []).map((a) => [a.id, a])
+  )
 
   const areas = snapshots.map((snapshot) => {
-    const area = getOperationalAreaModule(snapshot.areaId)
-    const findings = evaluateOperationalArea(snapshot.areaId, snapshot.metricsByKey, userOverrides)
-    const status = deriveAreaStatus(findings, snapshot.coverage)
-    const summary = summarizeArea(area, status, findings, snapshot.coverage)
+    const catalogArea = getOperationalAreaModule(snapshot.areaId)
+    const schemaArea  = schemaAreaMap[snapshot.areaId] ?? null
+    const areaRef     = schemaArea ?? catalogArea
+
+    const findings = evaluateOperationalArea(snapshot.areaId, snapshot.metricsByKey, userOverrides, schemaArea)
+    const status   = deriveAreaStatus(findings, snapshot.coverage)
+    const summary  = summarizeArea(areaRef, status, findings, snapshot.coverage)
 
     return {
-      areaId: snapshot.areaId,
-      label: area?.label ?? snapshot.areaId,
+      areaId:   snapshot.areaId,
+      label:    areaRef?.label ?? snapshot.areaId,
       status,
       summary,
       coverage: snapshot.coverage,
-      sources: snapshot.sources,
-      metrics: snapshot.metrics,
+      sources:  snapshot.sources,
+      metrics:  snapshot.metrics,
       findings,
     }
   })
@@ -156,26 +122,32 @@ export function runGovernanceMonitoring({ brain = null, brief = null, normalized
     area.findings.map((finding) => ({ ...finding, areaId: area.areaId, areaLabel: area.label }))
   )
 
-  // Compound rules fire on combined metrics from all areas
-  const combinedMetrics = buildCombinedMetrics(snapshots)
-  const compoundFindings = evaluateCompoundRules(combinedMetrics)
+  const combinedMetrics   = buildCombinedMetrics(snapshots)
+  const compoundFindings  = evaluateCompoundRules(schema?.compoundRules, combinedMetrics)
 
   const findings = [...areaFindings, ...compoundFindings]
 
+  // Causal diagnosis — surfaces root causes and cascades across bad metrics
+  const badMetricKeys = areaFindings
+    .filter((f) => f.status === 'bad' || f.status === 'watch')
+    .map((f) => f.metricKey)
+    .filter((k) => k !== 'compound')
+  const causalDiagnosis = buildCompoundDiagnosis([...new Set(badMetricKeys)])
+
   const areaRisks = areas.flatMap((area) =>
     area.findings
-      .filter((finding) => finding.status === 'watch' || finding.status === 'bad')
-      .map((finding) => toLegacyRisk(area, finding))
+      .filter((f) => f.status === 'watch' || f.status === 'bad')
+      .map((f) => toLegacyRisk(area, f))
   )
 
   const compoundRisks = compoundFindings.map((finding) => ({
-    severity: finding.severity,
-    category: 'cross-area',
-    title: finding.title,
-    description: finding.summary,
-    evidence: 'Cross-area compound signal',
+    severity:           finding.severity,
+    category:           'cross-area',
+    title:              finding.title,
+    description:        finding.summary,
+    evidence:           'Cross-area compound signal',
     recommended_action: finding.recommendation,
-    source: 'governance-compound',
+    source:             'governance-compound',
   }))
 
   const risks = [...areaRisks, ...compoundRisks]
@@ -186,13 +158,14 @@ export function runGovernanceMonitoring({ brain = null, brief = null, normalized
     snapshots,
     findings,
     compoundFindings,
+    causalDiagnosis,
     risks,
     summary: {
-      totalAreas: areas.length,
-      areasWithSignals: areas.filter((area) => area.coverage > 0).length,
-      areasNeedingAttention: areas.filter((area) => area.status === 'bad').length,
-      areasToWatch: areas.filter((area) => area.status === 'watch').length,
-      compoundSignals: compoundFindings.length,
+      totalAreas:              areas.length,
+      areasWithSignals:        areas.filter((a) => a.coverage > 0).length,
+      areasNeedingAttention:   areas.filter((a) => a.status === 'bad').length,
+      areasToWatch:            areas.filter((a) => a.status === 'watch').length,
+      compoundSignals:         compoundFindings.length,
     },
   }
 }
