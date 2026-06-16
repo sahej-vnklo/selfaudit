@@ -493,17 +493,17 @@ export default function CockpitSection({ user, navigateSection }) {
             )}
           </div>
 
-          {/* RIGHT — At a Glance (data) or Calibration (no data) */}
+          {/* RIGHT — At a Glance */}
           <div style={{ padding: '22px' }}>
+            <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: C.textFaint, marginBottom: 10 }}>At a Glance</div>
             {cos.at_a_glance.length > 0 ? (
-              <>
-                <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: C.textFaint, marginBottom: 10 }}>At a Glance</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {cos.at_a_glance.map((item, i) => <GlanceRow key={i} item={item} />)}
-                </div>
-              </>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {cos.at_a_glance.map((item, i) => <GlanceRow key={i} item={item} />)}
+              </div>
             ) : (
-              <CalibrationPanel calibration={data.calibration ?? []} navigateSection={navigateSection} />
+              <div style={{ fontSize: 12, color: C.textMuted, lineHeight: 1.55 }}>
+                Connect your tools to see live metrics here.
+              </div>
             )}
           </div>
 

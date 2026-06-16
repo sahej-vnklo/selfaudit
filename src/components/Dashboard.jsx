@@ -2455,6 +2455,9 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                   <div style={{ marginTop: 24 }}>
                     <OperationalOversightSection intelligenceUnlocked={intelligenceUnlocked} healthIntel={healthIntel} userId={user?.id} areaTrends={areaTrends} />
                   </div>
+                  <div style={{ marginTop: 24 }}>
+                    <ThresholdEditorPanel userId={user?.id} />
+                  </div>
                 </PageShell>
               )}
 
