@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { validateUserToken } from './lib/auth.js'
 import { synthesizeUserIntelligence } from './lib/intelligence/synthesize.js'
 import { upsertCompanyBrain } from './lib/intelligence/company-brain.js'
+import { syncFlatGoalFields, upsertGoalNode } from './lib/goals/service.js'
 import { sendUserReportEmail } from './lib/notifications/user-report-email.js'
 import { validateSaveReportPayload } from './lib/save-report-validation.js'
 
@@ -56,6 +57,28 @@ function goalScoreFromFeasibility(feasibility) {
   return null
 }
 
+function parseTimelineDate(value) {
+  if (!value) return null
+
+  const direct = new Date(value)
+  if (!Number.isNaN(direct.getTime())) return direct.toISOString().slice(0, 10)
+
+  const monthMatch = String(value).match(/\b(january|february|march|april|may|june|july|august|september|october|november|december)\b[\s,/-]*(\d{1,2})?(?:[\s,/-]+)?(\d{4})/i)
+  if (monthMatch) {
+    const [, monthName, day, year] = monthMatch
+    const candidate = new Date(`${monthName} ${day || 1}, ${year}`)
+    if (!Number.isNaN(candidate.getTime())) return candidate.toISOString().slice(0, 10)
+  }
+
+  return null
+}
+
+function parseNumericValue(value) {
+  if (typeof value === 'number' && Number.isFinite(value)) return value
+  const match = String(value || '').replace(/,/g, '').match(/-?\d+(\.\d+)?/)
+  return match ? Number(match[0]) : null
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
@@ -69,7 +92,7 @@ export default async function handler(req, res) {
   if (!await validateUserToken(req, res, userId)) return
 
   try {
-    const { error: insertError } = await supabase.from('reports').insert({
+    const { data: savedReport, error: insertError } = await supabase.from('reports').insert({
       user_id:           userId,
       session_id:        sessionId ?? null,
       title:             r.headline,
@@ -80,7 +103,7 @@ export default async function handler(req, res) {
       domain:            domain ?? null,
       conversation_mode: r.conversation_mode,
       headline:          r.headline,
-    })
+    }).select('id').single()
     if (insertError) throw insertError
 
     // Structured memory: append new entry to profiles.context
@@ -155,6 +178,19 @@ export default async function handler(req, res) {
       }
 
       await upsertCompanyBrain(userId, brainPatch)
+
+      if (goalMode && r.goal_gap_analysis?.goal) {
+        const goalNode = await upsertGoalNode(supabase, userId, {
+          title: r.goal_gap_analysis.goal,
+          goal_type: 'company',
+          source_report_id: savedReport?.id ?? null,
+          progress: r.business_state?.goal_score ?? newScore ?? 0,
+          deadline: parseTimelineDate(r.goal_gap_analysis?.realistic_timeline),
+          baseline_value: parseNumericValue(r.goal_gap_analysis?.baseline ?? goalBaseline),
+          status: 'active',
+        })
+        syncFlatGoalFields(supabase, userId, goalNode).catch(() => {})
+      }
     } catch (bsErr) {
       console.warn('[save-report] company brain update failed:', bsErr.message)
     }

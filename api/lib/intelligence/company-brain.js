@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { getActiveGoal } from '../goals/service.js'
 
 function getSupabase() {
   return createClient(
@@ -51,10 +52,10 @@ export function mergeCompanyBrain(existing, patch) {
 
 // Fetch a unified company brain for a user from all relevant tables.
 // Returns a single flat object — callers don't need to know which table data came from.
-export async function getCompanyBrain(userId) {
+export async function getCompanyBrain(userId, supabase = null) {
   if (!userId) return null
 
-  const sb = getSupabase()
+  const sb = supabase || getSupabase()
 
   const [profileRes, stateRes, intelRes, memoryRes] = await Promise.allSettled([
     sb.from('profiles')
@@ -83,6 +84,7 @@ export async function getCompanyBrain(userId) {
   const state    = stateRes.status   === 'fulfilled' ? stateRes.value.data          : null
   const intel    = intelRes.status   === 'fulfilled' ? intelRes.value.data          : null
   const sessions = memoryRes.status  === 'fulfilled' ? (memoryRes.value.data ?? []) : []
+  const activeGoal = await getActiveGoal(sb, userId).catch(() => null)
 
   return {
     // Identity
@@ -99,10 +101,15 @@ export async function getCompanyBrain(userId) {
     conversion_bottlenecks: state?.conversion_bottlenecks ?? [],
     operational_blockers:  state?.operational_blockers     ?? [],
     current_constraints:   state?.current_constraints      ?? [],
-    active_goal:           state?.active_goal              ?? null,
+    active_goal_id:        activeGoal?.id                  ?? null,
+    active_goal:           activeGoal?.title               ?? state?.active_goal ?? null,
     goal_timeline:         state?.goal_timeline            ?? null,
     goal_baseline:         state?.goal_baseline            ?? null,
-    goal_score:            state?.goal_score               ?? 0,
+    goal_score:            activeGoal?.progress            ?? state?.goal_score ?? 0,
+    goal_health_score:     activeGoal?.health_score        ?? null,
+    goal_deadline:         activeGoal?.deadline            ?? null,
+    goal_metric_key:       activeGoal?.metric_key          ?? null,
+    goal_area_id:          activeGoal?.area_id             ?? null,
     last_audit_headline:   state?.last_audit_headline      ?? null,
     assumptions_unverified: state?.assumptions_unverified  ?? [],
     team_ownership:        state?.team_ownership           ?? null,

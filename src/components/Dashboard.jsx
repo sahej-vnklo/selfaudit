@@ -605,6 +605,22 @@ function extractGoalFromContext(context) {
 }
 
 function extractGoalState(profile, reports, businessState) {
+  if (businessState?.active_goal_id) {
+    const structuredDeadline = businessState.goal_deadline
+      ? new Date(businessState.goal_deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+      : ''
+
+    return {
+      goal: businessState.active_goal || '',
+      progress: typeof businessState.goal_score === 'number' ? businessState.goal_score : null,
+      timeline: structuredDeadline,
+      goal_health_score: typeof businessState.goal_health_score === 'number' ? businessState.goal_health_score : null,
+      goal_deadline: businessState.goal_deadline || null,
+      goal_metric_key: businessState.goal_metric_key || null,
+      goal_area_id: businessState.goal_area_id || null,
+    }
+  }
+
   const savedScore = typeof businessState?.goal_score === 'number' ? businessState.goal_score : null
   const fromProfile = extractGoalFromContext(profile?.context)
   if (fromProfile.goal) {
@@ -633,6 +649,20 @@ function extractGoalState(profile, reports, businessState) {
   }
 
   return { goal: '', progress: null, timeline: '' }
+}
+
+function formatGoalDeadline(dateString) {
+  if (!dateString) return 'No deadline set'
+  const parsed = new Date(dateString)
+  if (Number.isNaN(parsed.getTime())) return 'No deadline set'
+  return parsed.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+function getGoalHealthMeta(score) {
+  if (typeof score !== 'number') return { label: 'Not scored', color: G.textFaint, background: G.surface2 }
+  if (score >= 70) return { label: 'On track', color: G.greenText, background: G.greenBg }
+  if (score >= 40) return { label: 'Watch', color: G.amberText, background: G.amberBg }
+  return { label: 'At risk', color: G.redText, background: G.redBg }
 }
 
 function formatAuditDate(dateString, options = { month: 'short', day: 'numeric' }) {
@@ -1222,6 +1252,26 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
           })
             .then(r => r.ok ? r.json() : null)
             .then(d => { if (!cancelled && d?.trends) setAreaTrends(d.trends) })
+            .catch(() => {})
+
+          fetch(`/api/goals?userId=${encodeURIComponent(user.id)}`, {
+            headers: _tok ? { Authorization: `Bearer ${_tok}` } : {},
+          })
+            .then(r => r.ok ? r.json() : null)
+            .then((d) => {
+              if (!cancelled && d?.active) {
+                setBusinessState((prev) => ({
+                  ...(prev || {}),
+                  active_goal_id: d.active.id,
+                  active_goal: d.active.title || prev?.active_goal || '',
+                  goal_score: typeof d.active.progress === 'number' ? d.active.progress : prev?.goal_score ?? null,
+                  goal_health_score: typeof d.active.health_score === 'number' ? d.active.health_score : null,
+                  goal_deadline: d.active.deadline || null,
+                  goal_metric_key: d.active.metric_key || null,
+                  goal_area_id: d.active.area_id || null,
+                }))
+              }
+            })
             .catch(() => {})
         }).catch(() => {})
       } catch (error) {
@@ -3760,6 +3810,8 @@ function BusinessHealthPanel({ latestDomains, healthIntel, goalState, right = nu
   const circumference = 2 * Math.PI * radius
   const fill = (score / 100) * circumference
   const progress = typeof goalState?.progress === 'number' ? Math.max(0, Math.min(100, goalState.progress)) : 0
+  const structuredGoal = !!(goalState?.goal && typeof goalState?.goal_health_score === 'number')
+  const goalHealthMeta = getGoalHealthMeta(goalState?.goal_health_score)
 
   const activeRisks       = healthIntel?.active_risks?.slice(0, 3)       ?? []
   const unresolvedActions = healthIntel?.unresolved_actions?.slice(0, 3) ?? []
@@ -3814,16 +3866,48 @@ function BusinessHealthPanel({ latestDomains, healthIntel, goalState, right = nu
 
           <div style={styles.businessHealthSection}>
             <div style={styles.businessHealthSectionTitle}>goal progress</div>
-            <div style={styles.businessHealthGoalText}>
-              {goalState?.goal || 'No active goal'}
-            </div>
-            <div style={styles.goalTrack}>
-              <div style={{ ...styles.goalFill, width: `${goalState?.goal ? progress : 0}%` }} />
-            </div>
-            <div style={styles.goalMetaRow}>
-              <div>{goalState?.goal ? (typeof goalState.progress === 'number' ? `${goalState.progress}% of the way there` : 'Progress not quantified yet') : 'No goal progress yet'}</div>
-              <div>{goalState?.timeline || 'Timeline still being assessed'}</div>
-            </div>
+            {structuredGoal ? (
+              <div style={styles.goalTrackerCard}>
+                <div style={styles.goalTrackerHeader}>
+                  <div style={styles.businessHealthGoalText}>{goalState.goal}</div>
+                  <div style={{ ...styles.goalHealthBadge, color: goalHealthMeta.color, background: goalHealthMeta.background }}>
+                    {goalHealthMeta.label}
+                  </div>
+                </div>
+                <div style={styles.goalTrack}>
+                  <div style={{ ...styles.goalFill, width: `${progress}%` }} />
+                </div>
+                <div style={styles.goalMetaGrid}>
+                  <div style={styles.goalMetaBlock}>
+                    <span style={styles.goalMetaLabel}>Progress</span>
+                    <span>{typeof goalState.progress === 'number' ? `${goalState.progress}% complete` : 'Progress not quantified yet'}</span>
+                  </div>
+                  <div style={styles.goalMetaBlock}>
+                    <span style={styles.goalMetaLabel}>Deadline</span>
+                    <span>{formatGoalDeadline(goalState.goal_deadline)}</span>
+                  </div>
+                  {goalState.goal_area_id && (
+                    <div style={styles.goalMetaBlock}>
+                      <span style={styles.goalMetaLabel}>Area</span>
+                      <span style={styles.goalAreaTag}>{goalState.goal_area_id}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <>
+                <div style={styles.businessHealthGoalText}>
+                  {goalState?.goal || 'No active goal'}
+                </div>
+                <div style={styles.goalTrack}>
+                  <div style={{ ...styles.goalFill, width: `${goalState?.goal ? progress : 0}%` }} />
+                </div>
+                <div style={styles.goalMetaRow}>
+                  <div>{goalState?.goal ? (typeof goalState.progress === 'number' ? `${goalState.progress}% of the way there` : 'Progress not quantified yet') : 'No goal progress yet'}</div>
+                  <div>{goalState?.timeline || 'Timeline still being assessed'}</div>
+                </div>
+              </>
+            )}
           </div>
 
           {activeRisks.length > 0 && (
@@ -7558,6 +7642,30 @@ const styles = {
     color: G.textSecondary,
     lineHeight: 1.5,
   },
+  goalTrackerCard: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 12,
+    padding: 14,
+    border: `1px solid ${G.border}`,
+    borderRadius: 12,
+    background: G.surface2,
+  },
+  goalTrackerHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    gap: 12,
+    alignItems: 'flex-start',
+  },
+  goalHealthBadge: {
+    flexShrink: 0,
+    padding: '6px 10px',
+    borderRadius: 999,
+    fontSize: 11,
+    fontWeight: 700,
+    letterSpacing: '0.04em',
+    textTransform: 'uppercase',
+  },
   goalTrack: {
     marginTop: 14,
     height: 4,
@@ -7577,6 +7685,35 @@ const styles = {
     marginTop: 10,
     fontSize: 11,
     color: G.textFaint,
+  },
+  goalMetaGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+    gap: 12,
+    fontSize: 12,
+    color: G.textSecondary,
+  },
+  goalMetaBlock: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 4,
+  },
+  goalMetaLabel: {
+    fontSize: 10,
+    color: G.textFaint,
+    textTransform: 'uppercase',
+    letterSpacing: '0.06em',
+  },
+  goalAreaTag: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    width: 'fit-content',
+    padding: '5px 8px',
+    borderRadius: 999,
+    background: G.accentLight,
+    color: G.accentText,
+    fontSize: 11,
+    fontWeight: 600,
   },
   aiCard: {
     background: G.surface2,
