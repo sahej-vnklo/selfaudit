@@ -4773,6 +4773,76 @@ function TopButtons({ onDiagnose, onGoal }) {
   )
 }
 
+const CONNECTOR_LOGOS = {
+  hubspot: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#FF7A59"/>
+      <circle cx="23.5" cy="13.5" r="3" fill="white"/>
+      <circle cx="23.5" cy="13.5" r="1.4" fill="#FF7A59"/>
+      <line x1="23.5" y1="10" x2="23.5" y2="7" stroke="white" strokeWidth="1.6" strokeLinecap="round"/>
+      <line x1="23.5" y1="20" x2="23.5" y2="17" stroke="white" strokeWidth="1.6" strokeLinecap="round"/>
+      <line x1="20" y1="13.5" x2="17" y2="13.5" stroke="white" strokeWidth="1.6" strokeLinecap="round"/>
+      <line x1="30" y1="13.5" x2="27" y2="13.5" stroke="white" strokeWidth="1.6" strokeLinecap="round"/>
+      <path d="M20.5 15.5L12 24C11.4 24.6 11.4 25.6 12 26.2L12.8 27C13.4 27.6 14.4 27.6 15 27L21 21" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
+    </svg>
+  ),
+  stripe: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#635BFF"/>
+      <path d="M18.1 15.3c0-.9.7-1.2 1.9-1.2 1.7 0 3.9.5 5.6 1.4v-5.3c-1.9-.7-3.7-1-5.6-1-4.6 0-7.6 2.4-7.6 6.4 0 6.2 8.6 5.2 8.6 7.9 0 1-.9 1.4-2.1 1.4-1.8 0-4.2-.8-6-1.8v5.4c2 .9 4.1 1.3 6 1.3 4.7 0 7.9-2.3 7.9-6.4-.1-6.8-8.7-5.5-8.7-8.1z" fill="white"/>
+    </svg>
+  ),
+  gmail: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="white"/>
+      <path d="M8 12h22v16H8z" fill="white" stroke="#E0E0E0" strokeWidth="0.5"/>
+      <path d="M8 12l11 9 11-9" stroke="#EA4335" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M8 12v16h5V19l6 5 6-5v9h5V12" fill="white"/>
+      <path d="M8 12l11 9 11-9H8z" fill="#EA4335"/>
+      <rect x="8" y="12" width="5" height="16" fill="#C5221F"/>
+      <rect x="25" y="12" width="5" height="16" fill="#C5221F"/>
+      <path d="M13 28V19l6 5 6-5v9" fill="white"/>
+    </svg>
+  ),
+  googledrive: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="white" stroke="#E8E8E8" strokeWidth="0.5"/>
+      <path d="M19 8L27.5 23H10.5L19 8Z" fill="#0066DA"/>
+      <path d="M10.5 23L6 31H24.5L28.5 23H10.5Z" fill="#00AC47"/>
+      <path d="M27.5 23L32 31H24.5L19 21.5L24.5 12L27.5 23Z" fill="#FFBA00"/>
+    </svg>
+  ),
+  slack: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#4A154B"/>
+      <path d="M13.5 21.5a2 2 0 0 1-2 2 2 2 0 0 1-2-2 2 2 0 0 1 2-2h2v2z" fill="#E01E5A"/>
+      <path d="M14.5 21.5a2 2 0 0 1 2-2 2 2 0 0 1 2 2v5a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-5z" fill="#E01E5A"/>
+      <path d="M16.5 13.5a2 2 0 0 1-2-2 2 2 0 0 1 2-2 2 2 0 0 1 2 2v2h-2z" fill="#36C5F0"/>
+      <path d="M16.5 14.5a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-5a2 2 0 0 1-2-2 2 2 0 0 1 2-2h5z" fill="#36C5F0"/>
+      <path d="M24.5 16.5a2 2 0 0 1 2-2 2 2 0 0 1 2 2 2 2 0 0 1-2 2h-2v-2z" fill="#2EB67D"/>
+      <path d="M23.5 16.5a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2 2 2 0 0 1 2 2v5z" fill="#2EB67D"/>
+      <path d="M21.5 24.5a2 2 0 0 1 2 2 2 2 0 0 1-2 2 2 2 0 0 1-2-2v-2h2z" fill="#ECB22E"/>
+      <path d="M21.5 23.5a2 2 0 0 1-2-2 2 2 0 0 1 2-2h5a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-5z" fill="#ECB22E"/>
+    </svg>
+  ),
+  notion: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#1A1A1A"/>
+      <path d="M11 10.5c.7.6 1 .5 2.3.4l12.5-.7c.3 0 .3-.2.1-.3l-2.1-1.5c-.4-.3-.9-.6-1.9-.5L9.7 9c-.4.1-.5.3-.3.5l1.6 1z" fill="white"/>
+      <path d="M11.7 13v13.5c0 .7.4 1 1.2 1l13.8-.8c.8 0 1-.4 1-1V12.2c0-.7-.3-1-1-1l-14 .8c-.8.1-1 .4-1 1zm13.3.3c.1.5 0 1-.5 1l-.9.1v9.4c-.8.4-1.5.6-2.1.6-.9 0-1.2-.3-1.9-1.2l-4.1-6.4v6.2l1.3.3s0 1-1.4 1l-3.8.2c-.1-.5 0-1 .4-1l1-.3V15l-1.4-.1c-.1-.5.1-1.2 1-1.3l4.1-.2 4.3 6.6V14l-1.1-.2c-.1-.6.3-1 .9-1.1l3.7-.2-.5.4z" fill="white"/>
+    </svg>
+  ),
+  zendesk: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#03363D"/>
+      <path d="M19 10a6 6 0 0 1 6 6H13a6 6 0 0 1 6-6z" fill="#8BC34A"/>
+      <path d="M13 16l12 0-6 8-6-8z" fill="#8BC34A"/>
+      <path d="M19 28a6 6 0 0 1-6-6h12a6 6 0 0 1-6 6z" fill="white" opacity="0.8"/>
+      <path d="M25 22l-12 0 6-8 6 8z" fill="white" opacity="0.8"/>
+    </svg>
+  ),
+}
+
 function ConnectorsSection({ user }) {
   const [connectorList, setConnectorList] = useState([])
   const [loading, setLoading] = useState(true)
@@ -4989,8 +5059,8 @@ function ConnectorsSection({ user }) {
                   gap: 12,
                   padding: '16px',
                   borderRadius: 12,
-                  border: `0.5px solid ${connected ? 'rgba(76,175,80,0.25)' : 'var(--d-border, rgba(0,0,0,0.1))'}`,
-                  background: connected ? 'rgba(76,175,80,0.03)' : 'var(--d-surface, rgba(0,0,0,0.02))',
+                  border: `1px solid ${connected ? 'rgba(76,175,80,0.3)' : 'var(--d-border, rgba(255,255,255,0.07))'}`,
+                  background: connected ? 'rgba(76,175,80,0.05)' : 'var(--d-card, rgba(255,255,255,0.04))',
                   transition: 'border-color 0.15s, box-shadow 0.15s',
                   cursor: 'default',
                 }}
@@ -5000,22 +5070,12 @@ function ConnectorsSection({ user }) {
                 {/* Top row: avatar + category + action */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={{
-                      width: 38,
-                      height: 38,
-                      borderRadius: 10,
-                      background: 'var(--bg, #fff)',
-                      border: '0.5px solid var(--d-border, rgba(0,0,0,0.1))',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: 12,
-                      fontWeight: 700,
-                      color: 'var(--fg-mute)',
-                      letterSpacing: '-0.01em',
-                      boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-                    }}>
-                      {connector.name.slice(0, 2).toUpperCase()}
+                    <div style={{ width: 38, height: 38, borderRadius: 10, overflow: 'hidden', flexShrink: 0, boxShadow: '0 1px 4px rgba(0,0,0,0.1)' }}>
+                      {CONNECTOR_LOGOS[connector.id] ?? (
+                        <div style={{ width: 38, height: 38, background: 'var(--d-surface, #eee)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: 'var(--fg-mute)' }}>
+                          {connector.name.slice(0, 2).toUpperCase()}
+                        </div>
+                      )}
                     </div>
                     <div>
                       <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', lineHeight: 1.2 }}>{connector.name}</div>
