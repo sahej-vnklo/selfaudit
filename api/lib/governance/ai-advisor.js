@@ -162,6 +162,10 @@ function buildUserMessage({ governance, brain, intelligenceBrief, deterministicA
     payload.company_dna = brain.company_dna_formatted
   }
 
+  if (brain?.historical_memory_formatted) {
+    payload.historical_memory = brain.historical_memory_formatted
+  }
+
   return `Review these governance findings and improve the diagnosis quality without changing the underlying facts or severity.
 
 Rules:

@@ -5,7 +5,7 @@ import { normalizeConnectorData } from '../connectors/normalize.js'
 import { runGovernanceMonitoring } from '../governance/monitoring.js'
 import { buildGovernanceAdvice } from '../governance/advice.js'
 import { enrichGovernanceWithAI } from '../governance/ai-advisor.js'
-import { loadSchema } from '../blueprint/schema-registry.js'
+import { computeSchemaFingerprint, loadSchema } from '../blueprint/schema-registry.js'
 import { writeHealthCheckToIntelligenceBrief } from './writeback.js'
 import { recomputeCompanyDNA } from '../intelligence/company-dna.js'
 
@@ -22,7 +22,7 @@ const SEVERITY_ORDER      = { critical: 0, high: 1, medium: 2, low: 3 }
 
 // Persist governance metric snapshots to area_metric_snapshots table.
 // Non-blocking — failures are swallowed so the health check always completes.
-async function persistMetricSnapshots(userId, snapshots, sb, capturedAt) {
+async function persistMetricSnapshots(userId, snapshots, sb, capturedAt, schemaVersion = null) {
   if (!userId || !snapshots?.length) return
   try {
     const rows = []
@@ -55,6 +55,7 @@ async function persistMetricSnapshots(userId, snapshots, sb, capturedAt) {
       metric_name:     r.metric_name,
       value:           r.value,
       captured_at:     capturedAt,
+      schema_version:  schemaVersion ?? null,
       source:          r.source,
       delta_from_prior: priorMap[`${r.area}:${r.metric_name}`] != null
         ? Number((r.value - priorMap[`${r.area}:${r.metric_name}`]).toFixed(4))
@@ -500,6 +501,7 @@ export async function runBusinessHealthCheck(userId) {
   const userOverrides = overrideRows.length > 0
     ? new Map(overrideRows.map((row) => [row.rule_id, { value: row.value, enabled: row.enabled }]))
     : null
+  const schemaVersion = computeSchemaFingerprint(schema)
 
   if (briefRes.status === 'fulfilled' && briefRes.value.error) {
     console.warn('[health-check] brief fetch error:', briefRes.value.error.message)
@@ -528,7 +530,7 @@ export async function runBusinessHealthCheck(userId) {
   const governanceBase      = runGovernanceMonitoring({ brain, brief, normalized, checkedAt: checked_at, userOverrides, schema })
 
   // Persist metric snapshots non-blocking — do not await, never blocks health check
-  persistMetricSnapshots(userId, governanceBase.snapshots, sb, checked_at)
+  persistMetricSnapshots(userId, governanceBase.snapshots, sb, checked_at, schemaVersion)
     .then(() => recomputeCompanyDNA(sb, userId))
     .catch(() => {})
 
@@ -586,6 +588,7 @@ export async function runBusinessHealthCheck(userId) {
   const result = {
     userId,
     checked_at,
+    schema_version: schemaVersion,
     health_score,
     risks: allRisks,
     opportunities,

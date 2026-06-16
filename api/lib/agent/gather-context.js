@@ -5,6 +5,7 @@ import { normalizeConnectorData } from '../connectors/normalize.js'
 import { getRecentDecisions } from '../decisions/service.js'
 import { formatDecisionsForPrompt } from '../decisions/context.js'
 import { getCompanyDNASummary } from '../intelligence/company-dna.js'
+import { formatHistoricalMemoryForPrompt, getHistoricalMemory } from '../intelligence/historical-memory.js'
 
 function getSupabase() {
   return createClient(
@@ -180,7 +181,7 @@ export async function gatherAgentContext(userId, plan) {
   const needsConnector = needed.includes('hubspot_pipeline') || needed.includes('hubspot_contacts')
 
   // Parallel loads for everything
-  const [briefBlock, auditBlock, healthBlock, alertBlock, connectorBlock, decisionsBlock, companyDNABlock] = await Promise.allSettled([
+  const [briefBlock, auditBlock, healthBlock, alertBlock, connectorBlock, decisionsBlock, companyDNABlock, historicalMemoryBlock] = await Promise.allSettled([
     needed.includes('intelligence_brief') ? loadIntelligenceBrief(sb, userId) : Promise.resolve(null),
     needed.includes('recent_audits')      ? loadRecentAudits(sb, userId)       : Promise.resolve(null),
     needed.includes('health_checks')      ? loadHealthChecks(sb, userId)        : Promise.resolve(null),
@@ -188,6 +189,7 @@ export async function gatherAgentContext(userId, plan) {
     needsConnector ? loadConnectorData(userId)                                   : Promise.resolve(null),
     userId ? loadDecisionMemory(sb, userId)                                      : Promise.resolve({ source: 'decision_memory', summary: '', raw: [] }),
     userId ? getCompanyDNASummary(sb, userId)                                    : Promise.resolve({ status: 'insufficient_data', patterns: [], formatted: null }),
+    userId ? getHistoricalMemory(sb, userId)                                     : Promise.resolve({ status: 'insufficient_history', summary: null, metrics: [] }),
   ])
 
   for (const [result, key] of [
@@ -198,6 +200,7 @@ export async function gatherAgentContext(userId, plan) {
     [connectorBlock, 'hubspot'],
     [decisionsBlock, 'decision_memory'],
     [companyDNABlock, 'company_dna'],
+    [historicalMemoryBlock, 'historical_memory'],
   ]) {
     const block = result.status === 'fulfilled' ? result.value : null
     if (block) {
@@ -205,6 +208,14 @@ export async function gatherAgentContext(userId, plan) {
         if (block.formatted) {
           contextBlocks.push({ source: 'company_dna', summary: block.formatted })
           sourcesUsed.push('company_dna')
+        }
+        continue
+      }
+      if (key === 'historical_memory') {
+        const formatted = formatHistoricalMemoryForPrompt(block)
+        if (formatted) {
+          contextBlocks.push({ source: 'historical_memory', summary: formatted })
+          sourcesUsed.push('historical_memory')
         }
         continue
       }
@@ -230,6 +241,12 @@ export async function gatherAgentContext(userId, plan) {
     company_dna:        companyDNABlock.status === 'fulfilled'
       ? companyDNABlock.value
       : { status: 'insufficient_data', patterns: [], formatted: null },
+    historical_memory:  historicalMemoryBlock.status === 'fulfilled'
+      ? {
+          ...historicalMemoryBlock.value,
+          formatted: formatHistoricalMemoryForPrompt(historicalMemoryBlock.value),
+        }
+      : { status: 'insufficient_history', summary: null, metrics: [] },
   }
 
   return { context_blocks: contextBlocks, structured_context: structured, sources_used: sourcesUsed, missing_sources: missingSources }

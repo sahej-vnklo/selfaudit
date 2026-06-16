@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { getActiveGoal } from '../goals/service.js'
 import { getCompanyDNASummary } from './company-dna.js'
+import { formatHistoricalMemoryForPrompt, getHistoricalMemory } from './historical-memory.js'
 
 function getSupabase() {
   return createClient(
@@ -87,10 +88,19 @@ export async function getCompanyBrain(userId, supabase = null) {
   const sessions = memoryRes.status  === 'fulfilled' ? (memoryRes.value.data ?? []) : []
   const activeGoal = await getActiveGoal(sb, userId).catch(() => null)
   let companyDNA = { status: 'insufficient_data', patterns: [], formatted: null }
+  let historicalMemory = { status: 'insufficient_history', summary: null, metrics: [] }
+  let historicalMemoryFormatted = null
   try {
     companyDNA = await getCompanyDNASummary(sb, userId)
   } catch {
     companyDNA = { status: 'insufficient_data', patterns: [], formatted: null }
+  }
+  try {
+    historicalMemory = await getHistoricalMemory(sb, userId)
+    historicalMemoryFormatted = formatHistoricalMemoryForPrompt(historicalMemory)
+  } catch {
+    historicalMemory = { status: 'insufficient_history', summary: null, metrics: [] }
+    historicalMemoryFormatted = null
   }
 
   return {
@@ -137,6 +147,9 @@ export async function getCompanyBrain(userId, supabase = null) {
     company_dna_status:    companyDNA.status,
     company_dna_patterns:  companyDNA.patterns,
     company_dna_formatted: companyDNA.formatted,
+    historical_memory_status: historicalMemory.status,
+    historical_memory_metrics: historicalMemory.metrics,
+    historical_memory_formatted: historicalMemoryFormatted,
 
     // Latest session memory
     last_session: sessions.length > 0 ? {

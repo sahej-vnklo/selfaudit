@@ -41,6 +41,7 @@ export default async function handler(req, res) {
       .insert({
         user_id:             userId,
         checked_at:          new Date().toISOString(),
+        schema_version:      result.schema_version ?? null,
         health_score:        result.health_score ?? null,
         risks:               result.risks ?? [],
         opportunities:       result.opportunities ?? [],

@@ -11,6 +11,36 @@ function getClient() {
   return _supabase
 }
 
+export function computeSchemaFingerprint(schema) {
+  if (!schema || typeof schema !== 'object') return 'unknown'
+
+  const industryId = String(
+    schema.industryId ||
+    schema.industry_id ||
+    schema.industry ||
+    ''
+  ).trim()
+
+  const areas = Array.isArray(schema.areas) ? schema.areas : []
+  const areaIds = areas
+    .map((area) => String(area?.id || area?.areaId || '').trim())
+    .filter(Boolean)
+    .sort()
+
+  const metricKeys = [...new Set(
+    areas.flatMap((area) =>
+      Array.isArray(area?.metricFamilies)
+        ? area.metricFamilies.map((family) => String(family?.key || '').trim()).filter(Boolean)
+        : []
+    )
+  )].sort()
+
+  const raw = `${industryId}:${areaIds.join(',')}:${metricKeys.join(',')}`
+  if (!raw || raw === '::') return 'unknown'
+
+  return Buffer.from(raw).toString('base64').slice(0, 12)
+}
+
 // Load a user's compiled schema from Supabase.
 // Returns null if none exists (user hasn't completed onboarding).
 export async function loadSchema(userId) {
@@ -27,10 +57,11 @@ export async function loadSchema(userId) {
 // Persist a compiled schema for a user.
 // Upserts — calling this again with a new schema replaces the old one.
 export async function saveSchema(userId, schema) {
+  const schemaVersion = computeSchemaFingerprint(schema)
   const { error } = await getClient()
     .from('company_schemas')
     .upsert(
-      { user_id: userId, schema, updated_at: new Date().toISOString() },
+      { user_id: userId, schema, schema_version: schemaVersion, updated_at: new Date().toISOString() },
       { onConflict: 'user_id' },
     )
 
