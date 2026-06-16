@@ -412,6 +412,23 @@ function alertSeverityTone(value) {
   return { bg: G.surface3, color: G.textSecondary, border: G.border2 }
 }
 
+function alertTierRank(value) {
+  if (value === 'critical') return 5
+  if (value === 'alert') return 4
+  if (value === 'escalate') return 3
+  if (value === 'flag') return 2
+  if (value === 'watch') return 1
+  return 0
+}
+
+function alertTierTone(value) {
+  if (value === 'critical') return { bg: G.redBg, color: G.redText, border: G.red, label: 'critical' }
+  if (value === 'alert') return { bg: 'rgba(245, 122, 32, 0.12)', color: '#f57a20', border: '#f57a20', label: 'alert' }
+  if (value === 'escalate') return { bg: G.amberBg, color: G.amberText, border: G.amber, label: 'escalate' }
+  if (value === 'flag') return { bg: 'rgba(54, 120, 255, 0.12)', color: '#5c8dff', border: '#5c8dff', label: 'flag' }
+  return { bg: G.surface3, color: G.textSecondary, border: G.border2, label: 'watch' }
+}
+
 function alertStatusTone(value) {
   if (value === 'acknowledged') return { bg: G.accentLight, color: G.accentText, border: G.accent }
   return { bg: G.surface3, color: G.textSecondary, border: G.border2 }
@@ -3707,6 +3724,22 @@ function AlertsInboxSection({
     )
   }
 
+  const sortedAlerts = [...alerts].sort((a, b) => {
+    const tierDiff = alertTierRank(b?.escalation_tier) - alertTierRank(a?.escalation_tier)
+    if (tierDiff !== 0) return tierDiff
+    return new Date(b?.created_at || 0).getTime() - new Date(a?.created_at || 0).getTime()
+  })
+
+  const tierCounts = sortedAlerts.reduce((acc, alert) => {
+    const tier = alert?.escalation_tier || 'watch'
+    acc[tier] = (acc[tier] || 0) + 1
+    return acc
+  }, {})
+
+  const summaryTiers = ['critical', 'alert', 'escalate', 'flag', 'watch']
+    .filter((tier) => tierCounts[tier] > 0)
+    .map((tier) => `${tierCounts[tier]} ${tier}`)
+
   return (
     <PanelCard
       title="alerts inbox"
@@ -3728,6 +3761,10 @@ function AlertsInboxSection({
         </div>
       </div>
 
+      {summaryTiers.length > 0 ? (
+        <div style={styles.alertTierSummary}>{summaryTiers.join(' · ')}</div>
+      ) : null}
+
       {alertsError ? <div style={styles.alertsError}>{alertsError}</div> : null}
 
       {alertsLoading ? (
@@ -3736,7 +3773,8 @@ function AlertsInboxSection({
         <EmptyPanel message="No unresolved alerts right now." />
       ) : (
         <div style={styles.alertsList}>
-          {alerts.map((alert) => {
+          {sortedAlerts.map((alert) => {
+            const tierTone = alertTierTone(alert.escalation_tier)
             const severityTone = alertSeverityTone(alert.severity)
             const statusTone = alertStatusTone(alert.status)
             const busy = !!updatingAlertIds?.[alert.id]
@@ -3752,6 +3790,9 @@ function AlertsInboxSection({
                     </div>
                   </div>
                   <div style={styles.alertPills}>
+                    <span style={{ ...styles.alertPill, background: tierTone.bg, color: tierTone.color, borderColor: tierTone.border }}>
+                      {tierTone.label}
+                    </span>
                     <span style={{ ...styles.alertPill, background: severityTone.bg, color: severityTone.color, borderColor: severityTone.border }}>
                       {alert.severity || 'medium'}
                     </span>
@@ -7273,6 +7314,14 @@ const styles = {
     fontSize: 12,
     color: G.redText,
     marginBottom: 12,
+  },
+  alertTierSummary: {
+    marginBottom: 12,
+    fontSize: 12,
+    color: G.textSecondary,
+    lineHeight: 1.6,
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
   },
   alertsList: {
     display: 'flex',
