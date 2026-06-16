@@ -8,6 +8,7 @@ import DashboardWelcomeTour from './DashboardWelcomeTour.jsx'
 import CockpitSection from './Cockpit.jsx'
 import DepartmentPage from './DepartmentPage.jsx'
 import SchemaSetup from './SchemaSetup.jsx'
+import SimulationPage from './SimulationPage.jsx'
 import { OPERATIONAL_AREAS } from '../lib/governance/areaRegistry.js'
 import './Dashboard.css'
 // Legacy sharpTheme imports kept for sub-component backward-compatibility
@@ -360,7 +361,7 @@ const LEGACY_NOTIFICATION_AREA_MAP = {
   customer_experience: 'customer_health',
 }
 const GOVERNANCE_AREA_LABELS = Object.fromEntries(OPERATIONAL_AREAS.map((area) => [area.id, area.label]))
-const SECTIONS = ['home', 'oversight', 'reports', 'intelligence', 'business-state', 'alerts', 'connectors', 'agent', 'billing', 'account']
+const SECTIONS = ['home', 'oversight', 'reports', 'intelligence', 'business-state', 'alerts', 'connectors', 'simulate', 'agent', 'billing', 'account']
 const INTELLIGENCE_ONLY_SECTIONS = new Set(['oversight', 'alerts', 'connectors', 'agent'])
 const WELCOME_TOUR_ROLLOUT_AT = Date.parse('2026-05-24T00:30:00-04:00')
 
@@ -2018,6 +2019,12 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
               </svg>
               <span className="navlabel">Connectors</span>
             </button>
+            <button className={`dash-navbtn${section === 'simulate' ? ' active' : ''}`} data-label="Simulate" aria-label="Simulate" type="button" onClick={() => navigateSection('simulate')}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/>
+              </svg>
+              <span className="navlabel">Simulate</span>
+            </button>
           </nav>
 
           <div className="dash-side-foot">
@@ -2550,6 +2557,11 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                 </PageShell>
               )}
               {section === 'connectors' && <ConnectorsSection user={user} />}
+              {section === 'simulate'  && (
+                <PageShell title="Simulate" sub="Run a what-if scenario against the current governance engine without changing live data.">
+                  <SimulationPage userId={user?.id} />
+                </PageShell>
+              )}
               {section === 'agent'      && <AgentSection user={user} />}
               {section === 'cockpit'    && <CockpitSection user={user} navigateSection={navigateSection} />}
               {section === 'dept-customer-service'    && <DepartmentPage areaId="customer-service"    user={user} navigateSection={navigateSection} view={deptView} />}
