@@ -140,12 +140,21 @@ function buildSnapshotForArea(area, ctx, checkedAt) {
 
   const valid   = metrics.filter(Boolean)
   const sources = [...new Set(valid.map((m) => m.source).filter(Boolean))]
+  const metricsByKey = normalizeGovernanceMetrics(valid)
+
+  if (ctx.metricOverrides && typeof ctx.metricOverrides === 'object') {
+    for (const [key, value] of Object.entries(ctx.metricOverrides)) {
+      if (value != null && Number.isFinite(Number(value))) {
+        metricsByKey[key] = Number(value)
+      }
+    }
+  }
 
   return {
     areaId: area.id,
     checkedAt,
     metrics: valid,
-    metricsByKey: normalizeGovernanceMetrics(valid),
+    metricsByKey,
     sources,
     coverage: valid.length,
   }
@@ -157,9 +166,10 @@ export function buildAreaMetricSnapshots({
   normalized = null,
   checkedAt  = new Date().toISOString(),
   schema   = null,
+  metricOverrides = null,
 } = {}) {
   const areas = schema?.areas?.length ? schema.areas : DEFAULT_AREAS
-  const ctx   = { brain, brief, normalized }
+  const ctx   = { brain, brief, normalized, metricOverrides }
 
   return areas.map((area) => buildSnapshotForArea(area, ctx, checkedAt))
 }

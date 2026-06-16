@@ -89,8 +89,9 @@ export function runGovernanceMonitoring({
   checkedAt     = new Date().toISOString(),
   userOverrides = null,
   schema        = null,
+  metricOverrides = null,
 } = {}) {
-  const snapshots = buildAreaMetricSnapshots({ brain, brief, normalized, checkedAt, schema })
+  const snapshots = buildAreaMetricSnapshots({ brain, brief, normalized, checkedAt, schema, metricOverrides })
 
   // Build a lookup from schemaArea.id → schemaArea so evaluators use per-user rule packs if present
   const schemaAreaMap = Object.fromEntries(
