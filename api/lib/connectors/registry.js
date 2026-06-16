@@ -50,7 +50,7 @@ export const CONNECTOR_REGISTRY = [
     required_tier: 'intelligence',
   },
   {
-    id:          'google_drive',
+    id:          'googledrive',
     name:        'Google Drive',
     category:    'Docs',
     status:      'available',
