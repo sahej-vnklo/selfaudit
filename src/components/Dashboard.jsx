@@ -4968,13 +4968,13 @@ function ConnectorsSection({ user }) {
         />
       </div>
 
-      {/* ── Connector list ── */}
+      {/* ── Connector grid ── */}
       {loading ? (
         <div style={{ color: 'var(--fg-mute)', fontSize: 13, padding: '24px 0' }}>Checking connector status…</div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
           {filtered.length === 0 && (
-            <div style={{ color: 'var(--fg-mute)', fontSize: 13, padding: '24px 0' }}>No connectors match.</div>
+            <div style={{ color: 'var(--fg-mute)', fontSize: 13, padding: '24px 0', gridColumn: '1/-1' }}>No connectors match.</div>
           )}
           {filtered.map((connector) => {
             const connected = !!connector.connected
@@ -4985,106 +4985,110 @@ function ConnectorsSection({ user }) {
                 key={connector.id}
                 style={{
                   display: 'flex',
-                  alignItems: 'center',
-                  gap: 16,
-                  padding: '12px 16px',
-                  borderRadius: 10,
-                  border: '0.5px solid transparent',
-                  transition: 'background 0.1s, border-color 0.1s',
-                  background: 'transparent',
+                  flexDirection: 'column',
+                  gap: 12,
+                  padding: '16px',
+                  borderRadius: 12,
+                  border: `0.5px solid ${connected ? 'rgba(76,175,80,0.25)' : 'var(--d-border, rgba(0,0,0,0.1))'}`,
+                  background: connected ? 'rgba(76,175,80,0.03)' : 'var(--d-surface, rgba(0,0,0,0.02))',
+                  transition: 'border-color 0.15s, box-shadow 0.15s',
+                  cursor: 'default',
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--d-surface, rgba(255,255,255,0.03))'; e.currentTarget.style.borderColor = 'var(--d-border, rgba(255,255,255,0.06))' }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'transparent' }}
+                onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,0,0,0.06)'; e.currentTarget.style.borderColor = connected ? 'rgba(76,175,80,0.4)' : 'var(--accent, #C8622A)33' }}
+                onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = connected ? 'rgba(76,175,80,0.25)' : 'var(--d-border, rgba(0,0,0,0.1))' }}
               >
-                {/* Logo placeholder */}
-                <div style={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: 8,
-                  background: 'var(--d-surface, rgba(255,255,255,0.05))',
-                  border: '0.5px solid var(--d-border, rgba(255,255,255,0.08))',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: 'var(--fg-mute)',
-                  flexShrink: 0,
-                  letterSpacing: '-0.02em',
-                }}>
-                  {connector.name.slice(0, 2).toUpperCase()}
-                </div>
-
-                {/* Name + description */}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text)', marginBottom: 1 }}>{connector.name}</div>
-                  <div style={{ fontSize: 12, color: 'var(--fg-mute)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{connector.description}</div>
-                </div>
-
-                {/* Category pill */}
-                <div style={{ fontSize: 11, color: 'var(--fg-mute)', letterSpacing: '0.06em', textTransform: 'uppercase', flexShrink: 0, minWidth: 60, textAlign: 'right' }}>
-                  {connector.category}
-                </div>
-
-                {/* Action */}
-                {connected ? (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#4CAF50' }}>
-                      <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#4CAF50' }} />
-                      Connected
-                    </div>
-                    <button
-                      type="button"
-                      disabled={busy}
-                      onClick={() => disconnect(connector.id)}
-                      style={{
-                        fontSize: 11,
-                        color: 'var(--fg-mute)',
-                        background: 'transparent',
-                        border: '0.5px solid var(--d-border, rgba(255,255,255,0.08))',
-                        borderRadius: 6,
-                        padding: '4px 10px',
-                        cursor: 'pointer',
-                        fontFamily: 'inherit',
-                        opacity: busy ? 0.5 : 1,
-                      }}
-                    >
-                      {busy ? 'Removing…' : 'Remove'}
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    style={{
-                      width: 28,
-                      height: 28,
-                      borderRadius: 8,
-                      border: '0.5px solid var(--d-border, rgba(255,255,255,0.12))',
-                      background: 'transparent',
-                      color: 'var(--fg-mute)',
-                      cursor: 'pointer',
+                {/* Top row: avatar + category + action */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{
+                      width: 38,
+                      height: 38,
+                      borderRadius: 10,
+                      background: 'var(--bg, #fff)',
+                      border: '0.5px solid var(--d-border, rgba(0,0,0,0.1))',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      fontSize: 18,
-                      flexShrink: 0,
+                      fontSize: 12,
+                      fontWeight: 700,
+                      color: 'var(--fg-mute)',
+                      letterSpacing: '-0.01em',
+                      boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+                    }}>
+                      {connector.name.slice(0, 2).toUpperCase()}
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', lineHeight: 1.2 }}>{connector.name}</div>
+                      <div style={{ fontSize: 10, color: 'var(--fg-mute)', textTransform: 'uppercase', letterSpacing: '0.07em', marginTop: 1 }}>{connector.category}</div>
+                    </div>
+                  </div>
+
+                  {/* Action button */}
+                  {connected ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: '#4CAF50', fontWeight: 500 }}>
+                      <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#4CAF50' }} />
+                      Connected
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      style={{
+                        width: 28,
+                        height: 28,
+                        borderRadius: 8,
+                        border: '0.5px solid var(--d-border, rgba(0,0,0,0.15))',
+                        background: 'transparent',
+                        color: 'var(--fg-mute)',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: 18,
+                        fontFamily: 'inherit',
+                        lineHeight: 1,
+                      }}
+                      onClick={async () => {
+                        const token = await getSessionToken()
+                        if (!token) return
+                        const response = await fetch('/api/connect/composio/auth', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                          body: JSON.stringify({ userId: user.id, provider: connector.id }),
+                        })
+                        const data = await response.json().catch(() => ({}))
+                        if (response.ok && data?.url) { window.location.href = data.url; return }
+                        setToast(data?.error || `Could not connect ${connector.name}.`)
+                      }}
+                    >
+                      +
+                    </button>
+                  )}
+                </div>
+
+                {/* Description */}
+                <div style={{ fontSize: 12, color: 'var(--fg-mute)', lineHeight: 1.5 }}>{connector.description}</div>
+
+                {/* Remove button for connected */}
+                {connected && (
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => disconnect(connector.id)}
+                    style={{
+                      fontSize: 11,
+                      color: 'var(--fg-mute)',
+                      background: 'transparent',
+                      border: '0.5px solid var(--d-border, rgba(0,0,0,0.12))',
+                      borderRadius: 6,
+                      padding: '5px 0',
+                      cursor: 'pointer',
                       fontFamily: 'inherit',
-                      lineHeight: 1,
-                    }}
-                    onClick={async () => {
-                      const token = await getSessionToken()
-                      if (!token) return
-                      const response = await fetch('/api/connect/composio/auth', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                        body: JSON.stringify({ userId: user.id, provider: connector.id }),
-                      })
-                      const data = await response.json().catch(() => ({}))
-                      if (response.ok && data?.url) { window.location.href = data.url; return }
-                      setToast(data?.error || `Could not connect ${connector.name}.`)
+                      opacity: busy ? 0.5 : 1,
+                      width: '100%',
+                      textAlign: 'center',
                     }}
                   >
-                    +
+                    {busy ? 'Removing…' : 'Remove'}
                   </button>
                 )}
               </div>
