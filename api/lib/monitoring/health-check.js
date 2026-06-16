@@ -1,7 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { getCompanyBrain } from '../intelligence/company-brain.js'
-import { fetchHubspotBusinessState } from '../connectors/hubspot.js'
-import { fetchStripeBusinessState } from '../connectors/stripe.js'
+import { fetchHubspotData, fetchStripeData } from '../connectors/data-fetcher.js'
 import { normalizeHubspotData, normalizeStripeData, mergeNormalized } from '../connectors/normalize.js'
 import { runGovernanceMonitoring } from '../governance/monitoring.js'
 import { buildGovernanceAdvice } from '../governance/advice.js'
@@ -478,16 +477,12 @@ export async function runBusinessHealthCheck(userId) {
   const sb         = getSupabase()
   const checked_at = new Date().toISOString()
 
-  // 1-5: Load user profile, company brain, intelligence_brief, integrations, user overrides, schema in parallel
-  const [brainRes, briefRes, profileRes, overridesRes, schemaRes] = await Promise.allSettled([
+  // 1-4: Load company brain, intelligence_brief, user overrides, schema in parallel
+  const [brainRes, briefRes, overridesRes, schemaRes] = await Promise.allSettled([
     getCompanyBrain(userId),
     sb.from('intelligence_brief')
       .select('financial, operational, context')
       .eq('user_id', userId)
-      .single(),
-    sb.from('profiles')
-      .select('integrations')
-      .eq('id', userId)
       .single(),
     sb.from('user_rule_overrides')
       .select('rule_id, value, enabled')
@@ -495,39 +490,34 @@ export async function runBusinessHealthCheck(userId) {
     loadSchema(userId),
   ])
 
-  const brain        = brainRes.status   === 'fulfilled' ? brainRes.value             : null
-  const brief        = briefRes.status   === 'fulfilled' ? briefRes.value.data        : null
-  const integrations = profileRes.status === 'fulfilled' ? profileRes.value.data?.integrations : null
+  const brain        = brainRes.status     === 'fulfilled' ? brainRes.value      : null
+  const brief        = briefRes.status     === 'fulfilled' ? briefRes.value.data : null
   const overrideRows = overridesRes.status === 'fulfilled' ? (overridesRes.value.data ?? []) : []
-  const schema       = schemaRes.status  === 'fulfilled' ? schemaRes.value            : null
+  const schema       = schemaRes.status    === 'fulfilled' ? schemaRes.value     : null
 
-  // Build override Map for O(1) lookup in evaluateRulePack
   const userOverrides = overrideRows.length > 0
     ? new Map(overrideRows.map((row) => [row.rule_id, { value: row.value, enabled: row.enabled }]))
     : null
 
-  if (briefRes.status   === 'fulfilled' && briefRes.value.error)   console.warn('[health-check] brief fetch error:', briefRes.value.error.message)
-  if (profileRes.status === 'fulfilled' && profileRes.value.error) console.warn('[health-check] profile fetch error:', profileRes.value.error.message)
+  if (briefRes.status === 'fulfilled' && briefRes.value.error) {
+    console.warn('[health-check] brief fetch error:', briefRes.value.error.message)
+  }
 
-  // 5-6: Pull and normalize connector data — non-blocking, failures skip gracefully
+  // 5-6: Pull and normalize connector data via Composio — non-blocking, failures skip gracefully
   let normalized = null
 
-  if (integrations?.hubspot?.access_token) {
-    try {
-      const raw = await fetchHubspotBusinessState(userId, integrations)
-      if (raw) normalized = normalizeHubspotData(raw)
-    } catch { /* non-blocking */ }
-  }
+  try {
+    const raw = await fetchHubspotData(userId)
+    if (raw) normalized = normalizeHubspotData(raw)
+  } catch { /* non-blocking */ }
 
-  if (integrations?.stripe?.api_key) {
-    try {
-      const raw = await fetchStripeBusinessState(userId, integrations)
-      if (raw) {
-        const stripeNormalized = normalizeStripeData(raw)
-        normalized = normalized ? mergeNormalized(normalized, stripeNormalized) : stripeNormalized
-      }
-    } catch { /* non-blocking */ }
-  }
+  try {
+    const raw = await fetchStripeData(userId)
+    if (raw) {
+      const stripeNormalized = normalizeStripeData(raw)
+      normalized = normalized ? mergeNormalized(normalized, stripeNormalized) : stripeNormalized
+    }
+  } catch { /* non-blocking */ }
 
   // 7: Run all analyzers
   const allRisks = [

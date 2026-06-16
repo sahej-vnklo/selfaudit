@@ -9,12 +9,15 @@
     "test:critical": "node --test tests/critical-flows.test.mjs"
   },
   "dependencies": {
+    "@composio/client": "^0.1.0-alpha.73",
+    "@composio/core": "^0.10.0",
     "@modelcontextprotocol/sdk": "^1.12.0",
     "@posthog/react": "^1.9.0",
     "@sentry/react": "^10.51.0",
     "@stripe/react-stripe-js": "^6.3.0",
     "@stripe/stripe-js": "^9.3.1",
     "@supabase/supabase-js": "^2.105.1",
+    "composio-core": "^0.5.39",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.1",
     "posthog-js": "^1.372.6",

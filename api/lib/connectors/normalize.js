@@ -38,7 +38,7 @@ export function createNormalizedOutput(provider) {
   }
 }
 
-// Maps HubSpot raw result (from fetchHubspotBusinessState) → normalized shape.
+// Maps HubSpot raw result (from data-fetcher.js fetchHubspotData) → normalized shape.
 export function normalizeHubspotData(hubspotData) {
   if (!hubspotData) return null
 
@@ -165,7 +165,7 @@ export function normalizeHubspotData(hubspotData) {
   return out
 }
 
-// Maps Stripe raw result (from fetchStripeBusinessState) → normalized shape.
+// Maps Stripe raw result (from data-fetcher.js fetchStripeData) → normalized shape.
 export function normalizeStripeData(stripeData) {
   if (!stripeData) return null
 

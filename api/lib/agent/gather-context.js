@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { getCompanyBrain, formatBrainForPrompt } from '../intelligence/company-brain.js'
-import { fetchHubspotBusinessState } from '../connectors/hubspot.js'
+import { fetchHubspotData } from '../connectors/data-fetcher.js'
 import { normalizeHubspotData } from '../connectors/normalize.js'
 
 function getSupabase() {
@@ -93,10 +93,9 @@ async function loadRiskAlerts(sb, userId) {
   } catch { return null }
 }
 
-async function loadConnectorData(userId, integrations) {
-  if (!integrations?.hubspot?.access_token) return null
+async function loadConnectorData(userId) {
   try {
-    const raw = await fetchHubspotBusinessState(userId, integrations)
+    const raw = await fetchHubspotData(userId)
     if (!raw) return null
     const n = normalizeHubspotData(raw)
     const m = Object.fromEntries(n.metrics.map((x) => [x.key, x.value]))
@@ -155,19 +154,15 @@ export async function gatherAgentContext(userId, plan) {
     }
   } catch { /* non-blocking */ }
 
-  // Resolve integrations before the parallel block — await inside allSettled args would serialize everything
   const needsConnector = needed.includes('hubspot_pipeline') || needed.includes('hubspot_contacts')
-  const integrations = needsConnector && brain ? await getIntegrations(sb, userId) : null
 
-  // Parallel loads for everything else
+  // Parallel loads for everything
   const [briefBlock, auditBlock, healthBlock, alertBlock, connectorBlock] = await Promise.allSettled([
     needed.includes('intelligence_brief') ? loadIntelligenceBrief(sb, userId) : Promise.resolve(null),
     needed.includes('recent_audits')      ? loadRecentAudits(sb, userId)       : Promise.resolve(null),
     needed.includes('health_checks')      ? loadHealthChecks(sb, userId)        : Promise.resolve(null),
     needed.includes('risk_alerts')        ? loadRiskAlerts(sb, userId)          : Promise.resolve(null),
-    needsConnector
-      ? loadConnectorData(userId, integrations)
-      : Promise.resolve(null),
+    needsConnector ? loadConnectorData(userId)                                   : Promise.resolve(null),
   ])
 
   for (const [result, key] of [
@@ -199,9 +194,3 @@ export async function gatherAgentContext(userId, plan) {
   return { context_blocks: contextBlocks, structured_context: structured, sources_used: sourcesUsed, missing_sources: missingSources }
 }
 
-async function getIntegrations(sb, userId) {
-  try {
-    const { data } = await sb.from('profiles').select('integrations').eq('id', userId).single()
-    return data?.integrations ?? null
-  } catch { return null }
-}

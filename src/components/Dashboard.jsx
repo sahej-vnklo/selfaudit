@@ -4405,13 +4405,13 @@ function ConnectorsSection({ user }) {
     try {
       const token = await getSessionToken()
       if (!token) return
-      const response = await fetch('/api/connect/hubspot/preview', {
+      const response = await fetch('/api/connect/composio/preview', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ userId: user.id }),
+        body: JSON.stringify({ userId: user.id, provider: 'hubspot' }),
       })
       const data = await response.json()
       if (data?.source === 'hubspot') setPreview(data)
@@ -4456,13 +4456,13 @@ function ConnectorsSection({ user }) {
     try {
       const token = await getSessionToken()
       if (!token) return
-      await fetch('/api/connect/disconnect', {
+      await fetch('/api/connect/composio/disconnect', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ userId: user.id, provider }),
+        body: JSON.stringify({ provider }),
       })
       if (provider === 'hubspot') setPreview(null)
       await loadConnectors()
@@ -4518,10 +4518,10 @@ function ConnectorsSection({ user }) {
                     onClick={async () => {
                       const token = await getSessionToken()
                       if (!token) return
-                      const response = await fetch(`/api/connect/${connector.id}/auth`, {
+                      const response = await fetch('/api/connect/composio/auth', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                        body: JSON.stringify({ userId: user.id }),
+                        body: JSON.stringify({ userId: user.id, provider: connector.id }),
                       })
                       const data = await response.json().catch(() => ({}))
                       if (response.ok && data?.url) { window.location.href = data.url; return }

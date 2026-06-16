@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { getConnectorRegistry } from './lib/connectors/registry.js'
 import { requireIntelligencePlan } from './lib/plans.js'
+import { getComposioConnectionMap } from './lib/connectors/composio.js'
 
 function getAnonSupabase() {
   return createClient(
@@ -31,24 +32,22 @@ export default async function handler(req, res) {
 
   const service = getServiceSupabase()
   if (!await requireIntelligencePlan({ userId, res, supabase: service, feature: 'Connectors' })) return
-  const { data, error } = await service
-    .from('profiles')
-    .select('integrations')
-    .eq('id', userId)
-    .single()
 
-  if (error) return res.status(500).json({ error: error.message })
+  let connectionMap = {}
+  try {
+    connectionMap = await getComposioConnectionMap(userId)
+  } catch (err) {
+    console.warn('[connectors] Composio status fetch failed:', err.message)
+  }
 
-  const integrations = data?.integrations || {}
   const registry = getConnectorRegistry()
-
   const connectors = registry.map((connector) => {
-    const integration = integrations?.[connector.id] || {}
+    const conn = connectionMap[connector.id] || {}
     return {
       ...connector,
-      connected:      !!integration.access_token,
-      connected_at:   integration.connected_at   ?? null,
-      last_synced_at: integration.last_synced_at ?? null,
+      connected:      !!conn.connected,
+      connected_at:   conn.connected_at   ?? null,
+      last_synced_at: conn.connected_at   ?? null,
     }
   })
 
