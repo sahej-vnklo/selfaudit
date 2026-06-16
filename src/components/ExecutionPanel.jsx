@@ -801,10 +801,11 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
             </div>
           </div>
 
+          {/* Recommended types — shown prominently */}
           <div style={ep.outputCardGrid}>
-            {ARTIFACT_TYPES.map((type) => {
+            {(recommendations.length > 0 ? recommendations : ARTIFACT_TYPES.slice(0, 1)).map((type) => {
+              if (!ARTIFACT_TYPES.includes(type)) return null
               const isSelected = selectedType === type
-              const isRec = recommendations.includes(type)
               return (
                 <button
                   key={type}
@@ -824,7 +825,7 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
                   <div style={ep.outputCardBody}>
                     <div style={ep.outputCardTitleRow}>
                       <div style={ep.outputCardTitle}>{ARTIFACT_LABELS[type]}</div>
-                      {isRec && <span style={ep.recBadge}>Recommended</span>}
+                      <span style={ep.recBadge}>Recommended</span>
                     </div>
                     <div style={ep.outputCardText}>{ARTIFACT_DESCRIPTIONS[type]}</div>
                   </div>
@@ -832,6 +833,41 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
               )
             })}
           </div>
+
+          {/* Other formats — quiet secondary section */}
+          {ARTIFACT_TYPES.filter((type) => !recommendations.includes(type)).length > 0 && (
+            <div style={{ marginTop: 16 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--fg-mute)', marginBottom: 10 }}>
+                Other formats
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                {ARTIFACT_TYPES.filter((type) => !recommendations.includes(type)).map((type) => {
+                  const isSelected = selectedType === type
+                  return (
+                    <button
+                      key={type}
+                      type="button"
+                      disabled={generating}
+                      onClick={() => !generating && setSelectedType(type)}
+                      style={{
+                        background: isSelected ? 'var(--accent-soft, rgba(200,98,42,0.1))' : 'transparent',
+                        border: `0.5px solid ${isSelected ? 'var(--accent, #C8622A)' : 'var(--d-border, rgba(255,255,255,0.08))'}`,
+                        borderRadius: 8,
+                        padding: '7px 12px',
+                        fontSize: 12,
+                        color: isSelected ? 'var(--accent, #C8622A)' : 'var(--fg-mute)',
+                        cursor: generating ? 'not-allowed' : 'pointer',
+                        opacity: generating ? 0.5 : 1,
+                        fontFamily: 'inherit',
+                      }}
+                    >
+                      {ARTIFACT_LABELS[type]}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
 
           <button
             style={{ ...ep.generateBtn, ...(isGenerateDisabled ? ep.generateBtnDisabled : {}) }}
