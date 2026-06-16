@@ -199,6 +199,12 @@ const ARTIFACT_ICONS = {
   TEAM_BRIEF:       '◉',
 }
 
+const PUSH_ACTIONS = {
+  EMAIL:       { label: 'Create Gmail Draft' },
+  TEAM_BRIEF:  { label: 'Post to Slack' },
+  ACTION_PLAN: { label: 'Push to Notion' },
+}
+
 function parseReportPayload(report) {
   if (!report) return null
   if (report.report_data && typeof report.report_data === 'object') return report.report_data
@@ -450,7 +456,7 @@ async function downloadArtifactPdf(artifact, artifactLabel) {
   }
 }
 
-export default function ExecutionPanel({ report, reports = [], userInfo, variant = 'report', theme: themeProp = null }) {
+export default function ExecutionPanel({ report, reports = [], userInfo, variant = 'report', theme: themeProp = null, onActionStaged = null }) {
   const theme = themeProp || localStorage.getItem('sa-theme') || 'dark'
   const themeVars = getThemeVars(theme)
   const sharpThemeActive = theme === 'sharp'
@@ -469,9 +475,14 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
   const [showFormats, setShowFormats] = useState(false)
   const [error, setError]             = useState(null)
   const [artifact, setArtifact]       = useState(null)
+  const [currentArtifactId, setCurrentArtifactId] = useState(null)
+  const [currentArtifactType, setCurrentArtifactType] = useState(null)
   const [copiedSection, setCopiedSection] = useState(null)
   const [pastArtifacts, setPastArtifacts] = useState([])
   const [expandedPast, setExpandedPast]   = useState(null)
+  const [stagingAction, setStagingAction] = useState(false)
+  const [stagedAction, setStagedAction] = useState(null)
+  const [stageError, setStageError] = useState(null)
 
   useEffect(() => {
     if (reportOptions.some((item) => item.id === selectedReportId)) return
@@ -514,7 +525,11 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
   useEffect(() => {
     setShowFormats(false)
     setArtifact(null)
+    setCurrentArtifactId(null)
+    setCurrentArtifactType(null)
     setCopiedSection(null)
+    setStagedAction(null)
+    setStageError(null)
   }, [activeReport?.id])
 
   useEffect(() => {
@@ -603,7 +618,11 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
       if (data.recommendations?.recommended?.length) {
         setRecommendations(data.recommendations.recommended)
       }
+      setStagedAction(null)
+      setStageError(null)
       setArtifact(data.artifact)
+      setCurrentArtifactId(data.savedArtifact?.id ?? null)
+      setCurrentArtifactType(selectedType)
       setShowFormats(false)
       if (data.savedArtifact) {
         setPastArtifacts((prev) => [
@@ -803,8 +822,54 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
               >
                 PDF
               </button>
+              {PUSH_ACTIONS[currentArtifactType] && (
+                <button
+                  type="button"
+                  style={{ ...ep.copyAllBtn, background: 'var(--accent)', border: '1px solid var(--accent)', color: 'var(--button-text)' }}
+                  disabled={stagingAction || !!stagedAction || !scopedUserInfo?.userId}
+                  onClick={async () => {
+                    setStagingAction(true)
+                    setStageError(null)
+                    try {
+                      let artifactToken = ''
+                      if (scopedUserInfo?.userId) {
+                        const sb = await initSupabase()
+                        const { data: { session } } = await sb.auth.getSession()
+                        artifactToken = session?.access_token || ''
+                      }
+
+                      const response = await fetch('/api/actions/stage', {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                          ...(artifactToken ? { Authorization: `Bearer ${artifactToken}` } : {}),
+                        },
+                        body: JSON.stringify({
+                          userId: scopedUserInfo?.userId ?? null,
+                          artifactId: currentArtifactId,
+                          artifactType: currentArtifactType,
+                          artifact,
+                        }),
+                      })
+                      const data = await response.json().catch(() => ({}))
+                      if (!response.ok) throw new Error(data.error || 'Could not add this action to the queue.')
+
+                      setStagedAction({ id: data.action?.id || '', label: PUSH_ACTIONS[currentArtifactType]?.label || 'Queued' })
+                      if (typeof onActionStaged === 'function') onActionStaged()
+                    } catch (stageErr) {
+                      setStageError(stageErr?.message || 'Could not add this action to the queue.')
+                    } finally {
+                      setStagingAction(false)
+                    }
+                  }}
+                >
+                  {stagingAction ? '...' : stagedAction ? 'Queued ✓' : PUSH_ACTIONS[currentArtifactType]?.label}
+                </button>
+              )}
             </div>
           </div>
+          {stageError && <p style={ep.stageError}>{stageError}</p>}
+          {stagedAction && <p style={ep.stageNotice}>Added to your action queue. Approve it from dashboard home.</p>}
           {(artifact.sections || []).map((section, idx, arr) => (
             <div key={idx} style={idx === arr.length - 1 ? ep.sectionCardLast : ep.sectionCard}>
               <div style={ep.sectionCardHeader}>
@@ -1148,6 +1213,12 @@ const ep = {
   },
   errorMsg: {
     fontSize: 12, color: 'var(--error)', marginTop: 8,
+  },
+  stageError: {
+    fontSize: 12, color: 'var(--error)', marginTop: 8,
+  },
+  stageNotice: {
+    fontSize: 12, color: 'var(--text-muted)', marginTop: 8,
   },
   helperText: {
     fontSize: 12,

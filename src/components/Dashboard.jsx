@@ -747,6 +747,13 @@ function buildAiOpportunityItems(reports, tier) {
     }))
 }
 
+function formatPendingActionType(actionType) {
+  return String(actionType || '')
+    .toLowerCase()
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase())
+}
+
 export default function Dashboard({ user, onStartAudit, onSignOut, auditJustCompleted = false, onAuditCompletedAck }) {
   const [theme, setTheme] = useState(() => {
     const saved = localStorage.getItem('sa-theme')
@@ -779,6 +786,8 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
   const [updatingAlertIds, setUpdatingAlertIds] = useState({})
   const [completingOnboarding, setCompletingOnboarding] = useState(false)
   const [hasSchema, setHasSchema] = useState(null)
+  const [actionFeed, setActionFeed] = useState({ pending: [], history: [] })
+  const [actionFeedLoaded, setActionFeedLoaded] = useState(false)
   const pendingAuditRef        = useRef(null)
   const pendingAuditParamsRef  = useRef(null)
   const [decisionLogOpen, setDecisionLogOpen]         = useState(false)
@@ -847,6 +856,39 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
     const { data: { session } } = await sb.auth.getSession()
     return session?.access_token || ''
   }, [])
+
+  const fetchActionFeed = useCallback(async () => {
+    if (!user?.id) return
+
+    try {
+      const token = await getSessionToken()
+      if (!token) {
+        setActionFeedLoaded(true)
+        return
+      }
+
+      const response = await fetch(`/api/actions/feed?userId=${encodeURIComponent(user.id)}`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        throw new Error(data?.error || 'Could not load action feed.')
+      }
+
+      setActionFeed({
+        pending: Array.isArray(data?.pending) ? data.pending : [],
+        history: Array.isArray(data?.history) ? data.history : [],
+      })
+    } catch (error) {
+      console.warn('[dashboard] action feed load failed:', error?.message || error)
+    } finally {
+      setActionFeedLoaded(true)
+    }
+  }, [getSessionToken, user?.id])
 
   useEffect(() => {
     const syncSection = () => setSection(getSectionFromHash())
@@ -975,6 +1017,12 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
       cancelled = true
     }
   }, [getSessionToken, user?.id])
+
+  useEffect(() => {
+    if (!user?.id) return
+    setActionFeedLoaded(false)
+    fetchActionFeed()
+  }, [fetchActionFeed, user?.id])
 
   // Refresh reports from DB — called when Execution Panel opens so it always shows the latest session
   const refreshReports = useCallback(async () => {
@@ -1857,6 +1905,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                 userInfo={shareUserInfo}
                 variant="dashboard"
                 theme={theme}
+                onActionStaged={fetchActionFeed}
               />
             </div>
           ) : (
@@ -2331,6 +2380,64 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                   </div>
                 )
               })()}
+
+              {(actionFeedLoaded && (actionFeed.pending.length > 0 || actionFeed.history.length > 0)) && (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16, marginTop: 18 }}>
+                  {actionFeed.pending.length > 0 && (
+                    <section style={styles.actionQueueCard}>
+                      <div style={styles.actionQueueEyebrow}>Action Queue</div>
+                      <div style={styles.actionQueueTitle}>Waiting for approval</div>
+                      <div style={styles.actionQueueSub}>Approve the work SelfAudit is ready to push into your tools.</div>
+                      <div style={{ marginTop: 10 }}>
+                        {actionFeed.pending.map((action) => (
+                          <PendingActionCard
+                            key={action.id}
+                            action={action}
+                            userId={user.id}
+                            onResolved={fetchActionFeed}
+                          />
+                        ))}
+                      </div>
+                    </section>
+                  )}
+
+                  {actionFeed.history.length > 0 && (
+                    <section style={styles.executionHistoryCard}>
+                      <div style={styles.actionQueueEyebrow}>Execution History</div>
+                      <div style={styles.actionQueueTitle}>What already ran</div>
+                      <div style={styles.actionQueueSub}>A quick view of draft creation, posts, pushes, and anything that failed.</div>
+                      <div style={{ marginTop: 10 }}>
+                        {actionFeed.history.slice(0, 5).map((log) => (
+                          <div key={log.id} style={styles.executionHistoryRow}>
+                            <div>
+                              <div style={styles.executionHistoryAction}>{formatPendingActionType(log.action_type)}</div>
+                              <div style={styles.executionHistoryMeta}>{String(log.connector || '').toUpperCase() || 'APP'}</div>
+                            </div>
+                            <div style={{ textAlign: 'right' }}>
+                              <div style={{
+                                ...styles.executionHistoryOutcome,
+                                color: log.outcome === 'success'
+                                  ? 'var(--ember)'
+                                  : log.outcome === 'failed'
+                                    ? 'var(--red-text)'
+                                    : 'var(--text-muted)',
+                              }}
+                              >
+                                {log.outcome}
+                              </div>
+                              <div style={styles.executionHistoryDate}>
+                                {log.executed_at
+                                  ? new Date(log.executed_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                                  : ''}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+                  )}
+                </div>
+              )}
             </>
           )}
 
@@ -2489,6 +2596,98 @@ function PageShell({ title, sub, actions, children }) {
         </div>
       )}
       {children}
+    </div>
+  )
+}
+
+function PendingActionCard({ action, userId, onResolved }) {
+  const actionMeta = {
+    EMAIL:      { inputKey: 'recipient_email', inputLabel: 'Recipient email', inputPlaceholder: 'name@example.com' },
+    TEAM_BRIEF: { inputKey: 'channel', inputLabel: 'Slack channel', inputPlaceholder: '#channel or ID' },
+    ACTION_PLAN: { inputKey: 'parent_id', inputLabel: 'Notion page ID', inputPlaceholder: 'Paste Notion page ID' },
+  }[action?.action_type] || null
+
+  const [inputVal, setInputVal] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  const resolve = async (decision) => {
+    setLoading(true)
+    setError('')
+    try {
+      const sb = await initSupabase()
+      const { data: { session } } = await sb.auth.getSession()
+      const token = session?.access_token || ''
+      const finalArgs = decision === 'approve' && actionMeta
+        ? { [actionMeta.inputKey]: inputVal.trim() }
+        : {}
+
+      const response = await fetch('/api/actions/execute', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          userId,
+          pendingActionId: action.id,
+          decision,
+          finalArgs,
+        }),
+      })
+
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(data.error || 'Could not resolve action.')
+      if (typeof onResolved === 'function') onResolved()
+    } catch (resolveErr) {
+      setError(resolveErr?.message || 'Could not resolve action.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div style={styles.pendingActionRow}>
+      <div style={styles.pendingActionTop}>
+        <div>
+          <div style={styles.pendingActionTitle}>{action.title || formatPendingActionType(action.action_type)}</div>
+          <div style={styles.pendingActionMeta}>{formatPendingActionType(action.action_type)} via {String(action.connector || '').toUpperCase()}</div>
+        </div>
+      </div>
+      {actionMeta && (
+        <>
+          <div style={styles.pendingActionLabel}>{actionMeta.inputLabel}</div>
+          <input
+            type="text"
+            value={inputVal}
+            onChange={(event) => setInputVal(event.target.value)}
+            placeholder={actionMeta.inputPlaceholder}
+            style={styles.pendingActionInput}
+          />
+        </>
+      )}
+      <div style={styles.pendingActionButtons}>
+        <button
+          type="button"
+          disabled={loading || (actionMeta && !inputVal.trim())}
+          onClick={() => resolve('approve')}
+          style={{
+            ...styles.pendingActionApprove,
+            ...(loading || (actionMeta && !inputVal.trim()) ? styles.pendingActionApproveDisabled : {}),
+          }}
+        >
+          {loading ? '...' : 'Approve'}
+        </button>
+        <button
+          type="button"
+          disabled={loading}
+          onClick={() => resolve('dismiss')}
+          style={styles.pendingActionDismiss}
+        >
+          Dismiss
+        </button>
+      </div>
+      {error && <div style={styles.pendingActionError}>{error}</div>}
     </div>
   )
 }
@@ -6349,6 +6548,138 @@ const styles = {
     marginTop: 8,
     fontSize: 13,
     color: G.textSecondary,
+  },
+  actionQueueCard: {
+    background: 'var(--d-surface)',
+    border: '1px solid var(--d-border)',
+    borderRadius: 16,
+    boxShadow: 'var(--d-shadow)',
+    padding: '18px 20px',
+  },
+  executionHistoryCard: {
+    background: 'var(--d-surface)',
+    border: '1px solid var(--d-border)',
+    borderRadius: 16,
+    boxShadow: 'var(--d-shadow)',
+    padding: '18px 20px',
+  },
+  actionQueueEyebrow: {
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: '0.12em',
+    color: 'var(--ember)',
+    fontWeight: 700,
+    marginBottom: 8,
+  },
+  actionQueueTitle: {
+    fontSize: 16,
+    color: 'var(--fg)',
+    fontWeight: 600,
+    marginBottom: 4,
+  },
+  actionQueueSub: {
+    fontSize: 13,
+    color: 'var(--fg-dim)',
+    lineHeight: 1.6,
+  },
+  pendingActionRow: {
+    padding: '12px 0',
+    borderBottom: '1px solid var(--d-border)',
+  },
+  pendingActionTop: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: 10,
+    marginBottom: 8,
+  },
+  pendingActionTitle: {
+    fontSize: 13,
+    color: 'var(--fg)',
+    fontWeight: 600,
+  },
+  pendingActionMeta: {
+    fontSize: 11,
+    color: 'var(--fg-mute)',
+    marginTop: 3,
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+  },
+  pendingActionLabel: {
+    fontSize: 11,
+    color: 'var(--fg-mute)',
+    marginBottom: 6,
+  },
+  pendingActionInput: {
+    width: '100%',
+    boxSizing: 'border-box',
+    padding: '8px 10px',
+    borderRadius: 8,
+    border: '1px solid var(--d-border)',
+    background: 'var(--d-bg)',
+    color: 'var(--fg)',
+    fontSize: 12,
+    marginBottom: 10,
+  },
+  pendingActionButtons: {
+    display: 'flex',
+    gap: 8,
+  },
+  pendingActionApprove: {
+    padding: '7px 14px',
+    fontSize: 12,
+    background: 'var(--ember)',
+    color: '#fff',
+    border: 'none',
+    borderRadius: 8,
+    cursor: 'pointer',
+  },
+  pendingActionApproveDisabled: {
+    opacity: 0.55,
+    cursor: 'not-allowed',
+  },
+  pendingActionDismiss: {
+    padding: '7px 14px',
+    fontSize: 12,
+    background: 'transparent',
+    color: 'var(--fg-dim)',
+    border: '1px solid var(--d-border)',
+    borderRadius: 8,
+    cursor: 'pointer',
+  },
+  pendingActionError: {
+    fontSize: 12,
+    color: 'var(--red-text)',
+    marginTop: 8,
+  },
+  executionHistoryRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 12,
+    padding: '10px 0',
+    borderBottom: '1px solid var(--d-border)',
+  },
+  executionHistoryAction: {
+    fontSize: 13,
+    color: 'var(--fg)',
+    fontWeight: 600,
+  },
+  executionHistoryMeta: {
+    fontSize: 11,
+    color: 'var(--fg-mute)',
+    marginTop: 3,
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+  },
+  executionHistoryOutcome: {
+    fontSize: 12,
+    fontWeight: 600,
+  },
+  executionHistoryDate: {
+    fontSize: 11,
+    color: 'var(--fg-mute)',
+    marginTop: 3,
   },
   alertBar: {
     background: G.amberBg,

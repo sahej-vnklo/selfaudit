@@ -10,3 +10,5 @@ package-lock.json
 supabase/.temp/
 .DS_Store
 **/.DS_Store
+.vercel
+.env*
