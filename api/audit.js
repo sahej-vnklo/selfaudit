@@ -823,7 +823,7 @@ export default async function handler(req, res) {
       method: 'POST',
       headers,
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-6',
         max_tokens: isReport ? (goalMode ? 4000 : 3200) : 1024,
         system: buildSystemPrompt(industry, domain, intelligenceBrief, userMemory, goalMode, goal, goalTimeline, goalBaseline, businessState, patterns, connectorContext, sessionContinuity, governanceContext),
         messages: finalMessages,
@@ -892,7 +892,7 @@ export default async function handler(req, res) {
               method: 'POST',
               headers,
               body: JSON.stringify({
-                model: 'claude-sonnet-4-20250514',
+                model: 'claude-sonnet-4-6',
                 max_tokens: goalMode ? 4000 : 3200,
                 system: buildSystemPrompt(industry, domain, intelligenceBrief, userMemory, goalMode, goal, goalTimeline, goalBaseline, businessState, patterns, connectorContext, sessionContinuity, governanceContext),
                 messages: retryMessages,

@@ -6,7 +6,7 @@
 //   memory / news / discuss — specialised single-turn responses
 
 const CLAUDE_API  = 'https://api.anthropic.com/v1/messages'
-const SONNET_MODEL = 'claude-sonnet-4-20250514'
+const SONNET_MODEL = 'claude-sonnet-4-6'
 
 // ── System prompts per mode ───────────────────────────────────────────────────
 

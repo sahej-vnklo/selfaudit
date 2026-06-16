@@ -68,7 +68,7 @@ export default async function handler(req, res) {
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-6',
         max_tokens: 1000,
         system: 'You are a financial data extractor. Extract only verifiable numbers from the document provided. Return valid JSON only, no markdown.',
         messages: [{ role: 'user', content: prompt }],

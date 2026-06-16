@@ -77,7 +77,7 @@ export async function generateAgentAnswer({ query, plan, context, conversationHi
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
-      model:      'claude-sonnet-4-20250514',
+      model:      'claude-sonnet-4-6',
       max_tokens: 2000,
       system:     buildSystemPrompt(),
       messages:   [{ role: 'user', content: userMessage }],

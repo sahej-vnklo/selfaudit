@@ -4,7 +4,7 @@ import { findRelevantDecisions } from '../decisions/matcher.js'
 import { formatDecisionsForPrompt } from '../decisions/context.js'
 
 const CLAUDE_API = 'https://api.anthropic.com/v1/messages'
-const MODEL = 'claude-sonnet-4-20250514'
+const MODEL = 'claude-sonnet-4-6'
 
 function getSupabase() {
   return createClient(
