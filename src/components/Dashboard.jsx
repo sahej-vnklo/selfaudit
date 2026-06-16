@@ -1888,7 +1888,8 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
         </div>
 
         {(() => {
-          const hasNewResults = agentYDone && sessionActive
+          const artifactMode = currentMode?.mode === 'diagnose' || currentMode?.mode === 'goal'
+          const hasNewResults = agentYDone && sessionActive && artifactMode
           return (
             <button
               className="dash-status"
@@ -2237,6 +2238,27 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                                 <div style={{ color: 'rgba(251,146,60,0.4)' }}>
                                   <div>{'> AGENT_Y // STANDING BY'}</div>
                                   <div style={{ marginTop: 6, opacity: 0.7 }}>{'> Reply to Agent X to continue'}</div>
+                                  {(currentMode?.mode === 'diagnose' || currentMode?.mode === 'goal') && (
+                                    <div style={{ marginTop: 10 }}>
+                                      <button
+                                        type="button"
+                                        onClick={() => setShowResultsPanel(true)}
+                                        style={{
+                                          background: 'none',
+                                          border: '0.5px solid rgba(251,146,60,0.25)',
+                                          borderRadius: 6,
+                                          color: 'rgba(251,146,60,0.7)',
+                                          fontSize: '0.65rem',
+                                          letterSpacing: '0.08em',
+                                          padding: '5px 10px',
+                                          cursor: 'pointer',
+                                          fontFamily: '"JetBrains Mono", monospace',
+                                        }}
+                                      >
+                                        {'> See execution panel →'}
+                                      </button>
+                                    </div>
+                                  )}
                                 </div>
                               )}
                               {agentYStream.length > 0 && agentState === 'agent_y' && agentYStream.length < 10 && (
