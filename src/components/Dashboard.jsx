@@ -4883,7 +4883,7 @@ function ConnectorsSection({ user }) {
     }
   }
 
-  const categories = ['all', ...Array.from(new Set(connectorList.map(c => (c.category || '').toLowerCase()))).filter(Boolean)]
+  const categoryOptions = ['all', ...Array.from(new Set(connectorList.map(c => (c.category || '').toLowerCase()))).filter(Boolean)]
 
   const filtered = connectorList.filter((c) => {
     const connected = !!c.connected
@@ -4894,16 +4894,18 @@ function ConnectorsSection({ user }) {
     return true
   })
 
-  const pillStyle = (active) => ({
-    fontSize: 12,
-    padding: '5px 14px',
-    borderRadius: 20,
-    border: `0.5px solid ${active ? 'var(--accent, #C8622A)' : 'var(--d-border, rgba(255,255,255,0.08))'}`,
-    background: active ? 'rgba(200,98,42,0.1)' : 'transparent',
-    color: active ? 'var(--accent, #C8622A)' : 'var(--fg-mute)',
+  const tabStyle = (active) => ({
+    fontSize: 13,
+    padding: '6px 16px',
+    borderRadius: 0,
+    border: 'none',
+    borderBottom: `2px solid ${active ? 'var(--accent, #C8622A)' : 'transparent'}`,
+    background: 'transparent',
+    color: active ? 'var(--text)' : 'var(--fg-mute)',
     cursor: 'pointer',
     fontFamily: 'inherit',
-    letterSpacing: '0.01em',
+    fontWeight: active ? 500 : 400,
+    transition: 'color 0.1s',
   })
 
   return (
@@ -4911,26 +4913,40 @@ function ConnectorsSection({ user }) {
       {toast && <div style={styles.connectorsToast}>{toast}</div>}
 
       {/* ── Toolbar ── */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 0, marginBottom: 24, borderBottom: '1px solid var(--d-border, rgba(0,0,0,0.1))' }}>
         {/* Filter tabs */}
-        <div style={{ display: 'flex', gap: 6 }}>
-          {['all', 'connected', 'available'].map((f) => (
-            <button key={f} type="button" style={pillStyle(filter === f)} onClick={() => setFilter(f)}>
-              {f.charAt(0).toUpperCase() + f.slice(1)}
-            </button>
-          ))}
-        </div>
+        {['all', 'connected', 'available'].map((f) => (
+          <button key={f} type="button" style={tabStyle(filter === f)} onClick={() => setFilter(f)}>
+            {f.charAt(0).toUpperCase() + f.slice(1)}
+          </button>
+        ))}
 
-        <div style={{ width: '0.5px', height: 20, background: 'var(--d-border, rgba(255,255,255,0.08))', margin: '0 2px' }} />
+        {/* Spacer */}
+        <div style={{ flex: 1 }} />
 
-        {/* Category filter */}
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          {categories.map((cat) => (
-            <button key={cat} type="button" style={pillStyle(categoryFilter === cat)} onClick={() => setCategoryFilter(cat)}>
-              {cat.charAt(0).toUpperCase() + cat.slice(1)}
-            </button>
+        {/* Category dropdown */}
+        <select
+          value={categoryFilter}
+          onChange={(e) => setCategoryFilter(e.target.value)}
+          style={{
+            fontSize: 12,
+            padding: '5px 10px',
+            border: '0.5px solid var(--d-border, rgba(0,0,0,0.15))',
+            borderRadius: 8,
+            background: 'transparent',
+            color: 'var(--fg-mute)',
+            fontFamily: 'inherit',
+            cursor: 'pointer',
+            marginRight: 8,
+            outline: 'none',
+          }}
+        >
+          {categoryOptions.map((cat) => (
+            <option key={cat} value={cat}>
+              {cat === 'all' ? 'All categories' : cat.charAt(0).toUpperCase() + cat.slice(1)}
+            </option>
           ))}
-        </div>
+        </select>
 
         {/* Search */}
         <input
@@ -4939,9 +4955,8 @@ function ConnectorsSection({ user }) {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           style={{
-            marginLeft: 'auto',
             background: 'transparent',
-            border: '0.5px solid var(--d-border, rgba(255,255,255,0.08))',
+            border: '0.5px solid var(--d-border, rgba(0,0,0,0.15))',
             borderRadius: 8,
             padding: '6px 12px',
             fontSize: 12,
