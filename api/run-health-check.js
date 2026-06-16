@@ -19,6 +19,7 @@ import { runBusinessHealthCheck } from './lib/monitoring/health-check.js'
 import { createRiskAlertsFromHealthCheck } from './lib/monitoring/risk-alerts.js'
 import { upsertCompanyBrain } from './lib/intelligence/company-brain.js'
 import { validateUserToken } from './lib/auth.js'
+import { observeDecisionOutcomes } from './lib/decisions/service.js'
 
 const supabase = createClient(
   process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
@@ -62,6 +63,8 @@ export default async function handler(req, res) {
     } catch (persistErr) {
       console.warn('[run-health-check] persist failed:', persistErr.message)
     }
+
+    observeDecisionOutcomes(supabase, userId, healthCheckId, result?.governance?.findings || []).catch(() => {})
 
     // 3. Create risk alerts for medium/high/critical risks (deduped)
     try {

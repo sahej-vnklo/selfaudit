@@ -20,6 +20,7 @@ import { createRiskAlertsFromHealthCheck } from '../lib/monitoring/risk-alerts.j
 import { buildRiskAlertEmail } from '../lib/notifications/risk-email.js'
 import { isAuthorisedCronRequest } from '../lib/cron-auth.js'
 import { getComposioConnectionMap } from '../lib/connectors/composio.js'
+import { observeDecisionOutcomes } from '../lib/decisions/service.js'
 
 const INTELLIGENCE_TIERS = new Set(['intelligence'])
 const BATCH_LIMIT = 50   // max users processed per cron invocation
@@ -197,6 +198,8 @@ export default async function handler(req, res) {
       } catch (persistErr) {
         console.warn(`[cron/business-health] persist failed for ${user.id}:`, persistErr.message)
       }
+
+      observeDecisionOutcomes(sb, user.id, healthCheckId, result?.governance?.findings || []).catch(() => {})
 
       // Create deduped risk alerts
       let newAlerts = []

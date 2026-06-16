@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { validateUserToken } from '../lib/auth.js'
 import { getActionForArtifact } from '../lib/actions/registry.js'
 import { executePendingAction } from '../lib/actions/execute-action.js'
+import { createDecisionRecord } from '../lib/decisions/service.js'
 
 const supabase = createClient(
   process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
@@ -42,7 +43,7 @@ export default async function handler(req, res) {
       .update({ status: 'dismissed', updated_at: now })
       .eq('id', pendingActionId)
 
-    await supabase.from('execution_log').insert({
+    const { data: executionLogRow, error: executionLogError } = await supabase.from('execution_log').insert({
       user_id: userId,
       pending_action_id: pendingActionId,
       action_type: pendingAction.action_type,
@@ -51,6 +52,14 @@ export default async function handler(req, res) {
       final_args: {},
       outcome: 'dismissed',
       executed_at: now,
+    }).select('*').single()
+
+    if (executionLogError) {
+      return res.status(500).json({ error: executionLogError.message })
+    }
+
+    createDecisionRecord(supabase, userId, { pendingAction, executionLogRow }).catch((err) => {
+      console.warn('[decisions]', err?.message || err)
     })
 
     return res.status(200).json({ outcome: 'dismissed' })
@@ -81,7 +90,7 @@ export default async function handler(req, res) {
       .update({ status: 'executed', updated_at: completeTime })
       .eq('id', pendingActionId)
 
-    await supabase.from('execution_log').insert({
+    const { data: executionLogRow, error: executionLogError } = await supabase.from('execution_log').insert({
       user_id: userId,
       pending_action_id: pendingActionId,
       action_type: pendingAction.action_type,
@@ -91,6 +100,14 @@ export default async function handler(req, res) {
       outcome: 'success',
       composio_result: composioResult || null,
       executed_at: completeTime,
+    }).select('*').single()
+
+    if (executionLogError) {
+      return res.status(500).json({ error: executionLogError.message })
+    }
+
+    createDecisionRecord(supabase, userId, { pendingAction, executionLogRow }).catch((err) => {
+      console.warn('[decisions]', err?.message || err)
     })
 
     return res.status(200).json({ outcome: 'success', result: composioResult })
@@ -104,7 +121,7 @@ export default async function handler(req, res) {
       })
       .eq('id', pendingActionId)
 
-    await supabase.from('execution_log').insert({
+    const { data: executionLogRow, error: executionLogError } = await supabase.from('execution_log').insert({
       user_id: userId,
       pending_action_id: pendingActionId,
       action_type: pendingAction.action_type,
@@ -118,7 +135,13 @@ export default async function handler(req, res) {
       composio_result: null,
       error_message: error?.message || 'Execution failed',
       executed_at: failedTime,
-    })
+    }).select('*').single()
+
+    if (!executionLogError && executionLogRow) {
+      createDecisionRecord(supabase, userId, { pendingAction, executionLogRow }).catch((err) => {
+        console.warn('[decisions]', err?.message || err)
+      })
+    }
 
     const payload = {
       error: error?.message || 'Execution failed',

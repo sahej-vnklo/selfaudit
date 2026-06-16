@@ -1,7 +1,18 @@
+import { createClient } from '@supabase/supabase-js'
 import { buildGovernanceAdvice } from './advice.js'
+import { findRelevantDecisions } from '../decisions/matcher.js'
+import { formatDecisionsForPrompt } from '../decisions/context.js'
 
 const CLAUDE_API = 'https://api.anthropic.com/v1/messages'
 const MODEL = 'claude-sonnet-4-20250514'
+
+function getSupabase() {
+  return createClient(
+    process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY,
+    { auth: { persistSession: false } },
+  )
+}
 
 function compactObject(value) {
   if (!value || typeof value !== 'object') return value
@@ -116,7 +127,7 @@ function buildFindingsByArea(governance) {
     }))
 }
 
-function buildUserMessage({ governance, brain, intelligenceBrief, deterministicAdvice }) {
+function buildUserMessage({ governance, brain, intelligenceBrief, deterministicAdvice, decisionMemory = [] }) {
   const payload = {
     business_snapshot: buildBusinessSnapshot(brain, intelligenceBrief),
     governance_summary: governance?.summary ?? {},
@@ -141,6 +152,10 @@ function buildUserMessage({ governance, brain, intelligenceBrief, deterministicA
         evidence: item.evidence,
       })),
     },
+  }
+
+  if (Array.isArray(decisionMemory) && decisionMemory.length > 0) {
+    payload.decision_memory = decisionMemory
   }
 
   return `Review these governance findings and improve the diagnosis quality without changing the underlying facts or severity.
@@ -235,6 +250,7 @@ function mergeAdvice(base, parsed) {
 }
 
 export async function enrichGovernanceWithAI({
+  userId,
   governance,
   brain,
   intelligenceBrief,
@@ -242,6 +258,17 @@ export async function enrichGovernanceWithAI({
 }) {
   const baseAdvice = deterministicAdvice ?? buildGovernanceAdvice(governance)
   const apiKey = process.env.CLAUDE_API_KEY || process.env.VITE_CLAUDE_API_KEY
+  let decisionMemory = []
+
+  if (userId) {
+    try {
+      const supabase = getSupabase()
+      const relevantDecisions = await findRelevantDecisions(supabase, userId, governance?.findings ?? [])
+      decisionMemory = formatDecisionsForPrompt(relevantDecisions)
+    } catch {
+      decisionMemory = []
+    }
+  }
 
   if (!apiKey || !baseAdvice.diagnoses?.length) {
     return baseAdvice
@@ -261,7 +288,7 @@ export async function enrichGovernanceWithAI({
         system: buildSystemPrompt(),
         messages: [{
           role: 'user',
-          content: buildUserMessage({ governance, brain, intelligenceBrief, deterministicAdvice: baseAdvice }),
+          content: buildUserMessage({ governance, brain, intelligenceBrief, deterministicAdvice: baseAdvice, decisionMemory }),
         }],
       }),
     })

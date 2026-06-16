@@ -2,6 +2,8 @@ import { createClient } from '@supabase/supabase-js'
 import { getCompanyBrain, formatBrainForPrompt } from '../intelligence/company-brain.js'
 import { fetchAllConnectedData } from '../connectors/data-fetcher.js'
 import { normalizeConnectorData } from '../connectors/normalize.js'
+import { getRecentDecisions } from '../decisions/service.js'
+import { formatDecisionsForPrompt } from '../decisions/context.js'
 
 function getSupabase() {
   return createClient(
@@ -93,6 +95,21 @@ async function loadRiskAlerts(sb, userId) {
   } catch { return null }
 }
 
+async function loadDecisionMemory(sb, userId) {
+  try {
+    const decisions = await getRecentDecisions(sb, userId, 10)
+    const formatted = formatDecisionsForPrompt(decisions)
+    if (!formatted.length) return { source: 'decision_memory', summary: '', raw: [] }
+    const lines = formatted.map((item) => {
+      const outcome = item.observed_result ? `${item.execution_outcome} -> ${item.observed_result}` : item.execution_outcome
+      return `[${item.finding_area_id}] ${item.finding_title} -> ${item.prior_action} (${outcome})`
+    })
+    return { source: 'decision_memory', summary: lines.join('\n'), raw: formatted }
+  } catch {
+    return { source: 'decision_memory', summary: '', raw: [] }
+  }
+}
+
 async function loadConnectorData(userId) {
   try {
     const allData = await fetchAllConnectedData(userId)
@@ -162,12 +179,13 @@ export async function gatherAgentContext(userId, plan) {
   const needsConnector = needed.includes('hubspot_pipeline') || needed.includes('hubspot_contacts')
 
   // Parallel loads for everything
-  const [briefBlock, auditBlock, healthBlock, alertBlock, connectorBlock] = await Promise.allSettled([
+  const [briefBlock, auditBlock, healthBlock, alertBlock, connectorBlock, decisionsBlock] = await Promise.allSettled([
     needed.includes('intelligence_brief') ? loadIntelligenceBrief(sb, userId) : Promise.resolve(null),
     needed.includes('recent_audits')      ? loadRecentAudits(sb, userId)       : Promise.resolve(null),
     needed.includes('health_checks')      ? loadHealthChecks(sb, userId)        : Promise.resolve(null),
     needed.includes('risk_alerts')        ? loadRiskAlerts(sb, userId)          : Promise.resolve(null),
     needsConnector ? loadConnectorData(userId)                                   : Promise.resolve(null),
+    userId ? loadDecisionMemory(sb, userId)                                      : Promise.resolve({ source: 'decision_memory', summary: '', raw: [] }),
   ])
 
   for (const [result, key] of [
@@ -176,10 +194,13 @@ export async function gatherAgentContext(userId, plan) {
     [healthBlock,    'health_checks'],
     [alertBlock,     'risk_alerts'],
     [connectorBlock, 'hubspot'],
+    [decisionsBlock, 'decision_memory'],
   ]) {
     const block = result.status === 'fulfilled' ? result.value : null
     if (block) {
-      contextBlocks.push(block)
+      if (key !== 'decision_memory' || block.summary) {
+        contextBlocks.push(block)
+      }
       sourcesUsed.push(block.source)
     } else if (needed.includes(key) || needed.includes(`${key}_pipeline`) || needed.includes(`${key}_contacts`)) {
       if (!missingSources.includes(key)) missingSources.push(key)
@@ -194,8 +215,8 @@ export async function gatherAgentContext(userId, plan) {
     health_check:       healthBlock.status === 'fulfilled' ? healthBlock.value?.raw : null,
     risk_alerts:        alertBlock.status === 'fulfilled'  ? alertBlock.value?.raw  : null,
     connector:          connectorBlock.status === 'fulfilled' ? connectorBlock.value : null,
+    decision_memory:    decisionsBlock.status === 'fulfilled' ? (decisionsBlock.value?.raw ?? []) : [],
   }
 
   return { context_blocks: contextBlocks, structured_context: structured, sources_used: sourcesUsed, missing_sources: missingSources }
 }
-

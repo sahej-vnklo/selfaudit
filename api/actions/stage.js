@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { validateUserToken } from '../lib/auth.js'
 import { getActionForArtifact } from '../lib/actions/registry.js'
+import { buildFindingFingerprint } from '../lib/decisions/matcher.js'
 
 const supabase = createClient(
   process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
@@ -13,7 +14,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { userId, artifactId, artifactType, artifact } = req.body || {}
+  const { userId, artifactId, artifactType, artifact, finding, sourceHealthCheckId } = req.body || {}
   if (!userId || !artifactType || !artifact) {
     return res.status(400).json({ error: 'userId, artifactType, and artifact are required' })
   }
@@ -25,6 +26,7 @@ export default async function handler(req, res) {
   }
 
   const stagedArgs = action.buildArgs(artifact, {})
+  const findingFingerprint = finding ? buildFindingFingerprint(finding) : null
 
   const { data, error } = await supabase
     .from('pending_actions')
@@ -36,6 +38,9 @@ export default async function handler(req, res) {
       connector: action.connector,
       title: action.label,
       staged_args: stagedArgs,
+      finding_snapshot: finding || null,
+      finding_fingerprint: findingFingerprint,
+      source_health_check_id: sourceHealthCheckId || null,
       status: 'pending',
       updated_at: new Date().toISOString(),
     })

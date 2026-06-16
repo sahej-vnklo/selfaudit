@@ -108,6 +108,24 @@ const TeamMember = createUnitType({
   ],
 })
 
+const DecisionSaaS = createUnitType({
+  id: 'decision',
+  label: 'Decision',
+  description: 'An action taken in response to an important operating finding, with later outcomes attached',
+  areas: ['management-strategy'],
+  interfaces: ['observable', 'actionable', 'linked'],
+  properties: [
+    createPropertyDef({ key: 'finding_area',    label: 'Finding area',    type: 'string' }),
+    createPropertyDef({ key: 'action_taken',    label: 'Action taken',    type: 'string' }),
+    createPropertyDef({ key: 'outcome',         label: 'Execution outcome', type: 'enum', enumValues: ['dismissed', 'success', 'failed'] }),
+    createPropertyDef({ key: 'observed_result', label: 'Observed result', type: 'enum', enumValues: ['improved', 'unchanged', 'worsened', 'resolved', 'unknown'] }),
+    createPropertyDef({ key: 'executed_at',     label: 'Executed at',     type: 'date' }),
+  ],
+  links: [
+    createLinkDef({ id: 'decision-linked-to-goal-area', label: 'Came from area', toUnitTypeId: 'goal', cardinality: 'many-to-one' }),
+  ],
+})
+
 // ─── E-commerce / D2C ─────────────────────────────────────────────────────────
 
 const Order = createUnitType({
@@ -355,6 +373,7 @@ export const UNIT_TYPE_CATALOG = {
   'lead':             Lead,
   'goal':             GoalSaaS,
   'team-member':      TeamMember,
+  'decision':         DecisionSaaS,
   // E-commerce
   'order':            Order,
   'sku':              SKU,

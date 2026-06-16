@@ -531,6 +531,7 @@ export async function runBusinessHealthCheck(userId) {
 
   const deterministicGovernanceAdvice = buildGovernanceAdvice(governanceBase)
   const governanceAdvice    = await enrichGovernanceWithAI({
+    userId,
     governance: governanceBase,
     brain,
     intelligenceBrief: brief,

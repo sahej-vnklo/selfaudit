@@ -1,6 +1,7 @@
 import { runBusinessHealthCheck } from './lib/monitoring/health-check.js'
 import { createRiskAlertsFromHealthCheck } from './lib/monitoring/risk-alerts.js'
 import { createClient } from '@supabase/supabase-js'
+import { observeDecisionOutcomes } from './lib/decisions/service.js'
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -51,6 +52,8 @@ export default async function handler(req, res) {
       .single()
 
     if (hcErr) return res.status(500).json({ error: hcErr.message })
+
+    observeDecisionOutcomes(supabase, userId, hc.id, result?.governance?.findings || []).catch(() => {})
 
     await createRiskAlertsFromHealthCheck(userId, { ...result, id: hc.id })
 
