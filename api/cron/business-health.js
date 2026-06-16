@@ -19,6 +19,7 @@ import { runBusinessHealthCheck } from '../lib/monitoring/health-check.js'
 import { createRiskAlertsFromHealthCheck } from '../lib/monitoring/risk-alerts.js'
 import { buildRiskAlertEmail } from '../lib/notifications/risk-email.js'
 import { isAuthorisedCronRequest } from '../lib/cron-auth.js'
+import { getComposioConnectionMap } from '../lib/connectors/composio.js'
 
 const INTELLIGENCE_TIERS = new Set(['intelligence'])
 const BATCH_LIMIT = 50   // max users processed per cron invocation
@@ -128,6 +129,7 @@ export default async function handler(req, res) {
   }
 
   const users = profiles ?? []
+  const slotModulo = Math.floor(Date.now() / (12 * 60 * 60 * 1000)) % 2
 
   const summary = {
     checked_users:  0,
@@ -138,8 +140,38 @@ export default async function handler(req, res) {
     finished_at:    null,
   }
 
+  const connectionChecks = await Promise.allSettled(
+    users.map(async (user) => {
+      const connectionMap = await getComposioConnectionMap(user.id)
+      return {
+        userId: user.id,
+        hasConnections: Object.keys(connectionMap || {}).length > 0,
+      }
+    }),
+  )
+
+  const connectionStatusByUser = new Map(
+    connectionChecks.map((result, index) => {
+      if (result.status === 'fulfilled') {
+        return [result.value.userId, result.value.hasConnections]
+      }
+
+      console.warn(
+        `[cron/business-health] connection lookup failed for ${users[index]?.id}:`,
+        result.reason?.message || result.reason || 'Unknown error',
+      )
+      return [users[index]?.id, true]
+    }),
+  )
+
+  const scheduledUsers = users.filter((user) => {
+    const hasConnections = connectionStatusByUser.get(user.id)
+    if (hasConnections) return true
+    return slotModulo === 0
+  })
+
   // 2. Process each user — isolated try/catch so one failure can't abort the batch
-  for (const user of users) {
+  for (const user of scheduledUsers) {
     try {
       // Run health check
       const result = await runBusinessHealthCheck(user.id)

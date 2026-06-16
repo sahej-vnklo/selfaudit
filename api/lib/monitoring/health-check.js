@@ -6,6 +6,7 @@ import { runGovernanceMonitoring } from '../governance/monitoring.js'
 import { buildGovernanceAdvice } from '../governance/advice.js'
 import { enrichGovernanceWithAI } from '../governance/ai-advisor.js'
 import { loadSchema } from '../blueprint/schema-registry.js'
+import { writeHealthCheckToIntelligenceBrief } from './writeback.js'
 
 function getSupabase() {
   return createClient(
@@ -578,7 +579,7 @@ export async function runBusinessHealthCheck(userId) {
     },
   }
 
-  return {
+  const result = {
     userId,
     checked_at,
     health_score,
@@ -589,4 +590,8 @@ export async function runBusinessHealthCheck(userId) {
     evidence,
     governance,
   }
+
+  writeHealthCheckToIntelligenceBrief(userId, { ...result, normalized }, sb).catch(() => {})
+
+  return result
 }

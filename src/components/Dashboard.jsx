@@ -7,6 +7,7 @@ import ExecutionPanel from './ExecutionPanel.jsx'
 import DashboardWelcomeTour from './DashboardWelcomeTour.jsx'
 import CockpitSection from './Cockpit.jsx'
 import DepartmentPage from './DepartmentPage.jsx'
+import SchemaSetup from './SchemaSetup.jsx'
 import { OPERATIONAL_AREAS } from '../lib/governance/areaRegistry.js'
 import './Dashboard.css'
 // Legacy sharpTheme imports kept for sub-component backward-compatibility
@@ -777,6 +778,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
   const [alertsError, setAlertsError] = useState('')
   const [updatingAlertIds, setUpdatingAlertIds] = useState({})
   const [completingOnboarding, setCompletingOnboarding] = useState(false)
+  const [hasSchema, setHasSchema] = useState(null)
   const pendingAuditRef        = useRef(null)
   const pendingAuditParamsRef  = useRef(null)
   const [decisionLogOpen, setDecisionLogOpen]         = useState(false)
@@ -839,6 +841,12 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
   useEffect(() => {
     localStorage.setItem('sa-theme', theme)
   }, [theme])
+
+  const getSessionToken = useCallback(async () => {
+    const sb = await initSupabase()
+    const { data: { session } } = await sb.auth.getSession()
+    return session?.access_token || ''
+  }, [])
 
   useEffect(() => {
     const syncSection = () => setSection(getSectionFromHash())
@@ -930,6 +938,43 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
       cancelled = true
     }
   }, [user])
+
+  useEffect(() => {
+    if (!user?.id) return
+    let cancelled = false
+    setHasSchema(null)
+
+    ;(async () => {
+      try {
+        const token = await getSessionToken()
+        if (!token) {
+          if (!cancelled) setHasSchema(true)
+          return
+        }
+
+        const response = await fetch(`/api/schema-setup?userId=${encodeURIComponent(user.id)}`, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+
+        const data = await response.json().catch(() => ({}))
+        if (!response.ok) {
+          throw new Error(data?.error || 'Could not load schema status.')
+        }
+
+        if (!cancelled) setHasSchema(!!data?.schema)
+      } catch (error) {
+        console.warn('[dashboard] schema status load failed:', error?.message || error)
+        if (!cancelled) setHasSchema(true)
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [getSessionToken, user?.id])
 
   // Refresh reports from DB — called when Execution Panel opens so it always shows the latest session
   const refreshReports = useCallback(async () => {
@@ -1891,6 +1936,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
           {/* Command / Home — two agent cards + command bar */}
           {section === 'home' && (
             <>
+              {hasSchema === false && <SchemaSetup user={user} onComplete={() => setHasSchema(true)} />}
               <div className="dash-cards">
                 {auditJustCompleted ? (
                   <>
