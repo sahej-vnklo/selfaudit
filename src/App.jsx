@@ -13,6 +13,7 @@ import IntelligenceLayer  from './pages/IntelligenceLayer.jsx'
 import LiveOntology       from './pages/LiveOntology.jsx'
 import Capabilities       from './pages/Capabilities.jsx'
 import About              from './pages/About.jsx'
+import SchemaSetup        from './components/SchemaSetup.jsx'
 
 const PENDING_AUTH_INTENT_KEY = 'sa-auth-intent'
 const PENDING_CHECKOUT_RETURN_KEY = 'sa-checkout-return'
@@ -32,6 +33,7 @@ const SCREENS = {
   LIVE_ONTOLOGY:       'live-ontology',
   CAPABILITIES:        'capabilities',
   ABOUT:               'about',
+  ONBOARDING_PREVIEW:  'onboarding-preview',
 }
 
 const HASH_SCREENS = new Set([
@@ -44,6 +46,7 @@ const HASH_SCREENS = new Set([
   SCREENS.LIVE_ONTOLOGY,
   SCREENS.CAPABILITIES,
   SCREENS.ABOUT,
+  SCREENS.ONBOARDING_PREVIEW,
 ])
 
 const DASHBOARD_SECTION_HASHES = new Set(['home', 'reports', 'intelligence', 'business-state', 'alerts', 'connectors', 'agent', 'billing', 'account'])
@@ -140,6 +143,7 @@ function screenFromHash(isAuthenticated = false) {
   if (section === 'live-ontology')      return SCREENS.LIVE_ONTOLOGY
   if (section === 'capabilities')       return SCREENS.CAPABILITIES
   if (section === 'about')              return SCREENS.ABOUT
+  if (section === 'onboarding-preview') return SCREENS.ONBOARDING_PREVIEW
   // Dashboard section hashes (#billing, #reports, etc.) must not exit the dashboard
   if (isAuthenticated && DASHBOARD_SECTION_HASHES.has(section)) return SCREENS.DASHBOARD
   return null
@@ -570,6 +574,13 @@ export default function App() {
   if (screen === SCREENS.LIVE_ONTOLOGY)     return <LiveOntology     onBack={goBackToMenu} />
   if (screen === SCREENS.CAPABILITIES)      return <Capabilities     onBack={goBackToMenu} />
   if (screen === SCREENS.ABOUT)             return <About            onBack={goBackToMenu} />
+  if (screen === SCREENS.ONBOARDING_PREVIEW) {
+    return (
+      <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+        <SchemaSetup user={{ id: 'preview' }} onComplete={() => alert('onComplete() fired — in real flow this dismisses the overlay')} />
+      </div>
+    )
+  }
 
   if (screen === SCREENS.DASHBOARD) {
     if (!session) { navigate(SCREENS.LOGIN); return null }
