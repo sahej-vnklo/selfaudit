@@ -318,6 +318,53 @@ function getRecommendedMoveContent(report, parsedReport, recommendations) {
   }
 }
 
+function normalizeFindingAreaId(label) {
+  return String(label || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
+}
+
+function buildStageFinding(parsedReport, healthIntel) {
+  const topDomain = parsedReport?.domains?.find((domain) => domain.status === 'critical')
+    || parsedReport?.domains?.find((domain) => domain.status === 'needs_work')
+    || null
+
+  if (topDomain?.name && (topDomain.finding || topDomain.action)) {
+    return {
+      areaId: normalizeFindingAreaId(topDomain.name),
+      title: topDomain.finding || `${topDomain.name} needs attention`,
+      severity: topDomain.status === 'critical' ? 'high' : 'medium',
+      status: topDomain.status === 'critical' ? 'bad' : 'watch',
+      recommendation: topDomain.action || parsedReport?.priority_actions?.[0] || '',
+      metricKey: null,
+      metricValue: null,
+      comparator: null,
+      thresholdValue: null,
+    }
+  }
+
+  const governanceDiagnosis = Array.isArray(healthIntel?.governance_top_diagnoses)
+    ? healthIntel.governance_top_diagnoses[0]
+    : null
+
+  if (governanceDiagnosis?.title) {
+    return {
+      areaId: governanceDiagnosis.area_id || '',
+      title: governanceDiagnosis.title,
+      severity: governanceDiagnosis.severity || 'medium',
+      status: (healthIntel?.governance_areas_needing_attention ?? 0) > 0 ? 'bad' : 'watch',
+      recommendation: Array.isArray(healthIntel?.health_check_actions) ? (healthIntel.health_check_actions[0] || '') : '',
+      metricKey: null,
+      metricValue: null,
+      comparator: null,
+      thresholdValue: null,
+    }
+  }
+
+  return null
+}
+
 function buildScopedUserInfo(userInfo, report, parsedReport) {
   return {
     ...userInfo,
@@ -456,7 +503,7 @@ async function downloadArtifactPdf(artifact, artifactLabel) {
   }
 }
 
-export default function ExecutionPanel({ report, reports = [], userInfo, variant = 'report', theme: themeProp = null, onActionStaged = null }) {
+export default function ExecutionPanel({ report, reports = [], userInfo, variant = 'report', theme: themeProp = null, onActionStaged = null, healthIntel = null }) {
   const theme = themeProp || localStorage.getItem('sa-theme') || 'dark'
   const themeVars = getThemeVars(theme)
   const sharpThemeActive = theme === 'sharp'
@@ -517,6 +564,7 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
     () => getRecommendedMoveContent(activeReport, parsedReport, recommendations),
     [activeReport, parsedReport, recommendations]
   )
+  const stageFinding = useMemo(() => buildStageFinding(parsedReport, healthIntel), [parsedReport, healthIntel])
   const activeIndex = useMemo(
     () => reportOptions.findIndex((item) => item.id === activeReport?.id),
     [reportOptions, activeReport]
@@ -849,6 +897,7 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
                           artifactId: currentArtifactId,
                           artifactType: currentArtifactType,
                           artifact,
+                          ...(stageFinding ? { finding: stageFinding } : {}),
                         }),
                       })
                       const data = await response.json().catch(() => ({}))

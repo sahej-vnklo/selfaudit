@@ -1954,6 +1954,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                 reports={reports}
                 userInfo={shareUserInfo}
                 variant="dashboard"
+                healthIntel={healthIntel}
                 theme={theme}
                 onActionStaged={fetchActionFeed}
               />
@@ -3200,6 +3201,7 @@ function HomeSection({ user, profile, businessState, businessStateLoading, repor
             reports={reports}
             report={latestDiagnosticReport || latestReport}
             userInfo={shareUserInfo}
+            healthIntel={healthIntel}
             theme={theme}
           />
         </div>
