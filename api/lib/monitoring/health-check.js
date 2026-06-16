@@ -7,6 +7,7 @@ import { buildGovernanceAdvice } from '../governance/advice.js'
 import { enrichGovernanceWithAI } from '../governance/ai-advisor.js'
 import { loadSchema } from '../blueprint/schema-registry.js'
 import { writeHealthCheckToIntelligenceBrief } from './writeback.js'
+import { recomputeCompanyDNA } from '../intelligence/company-dna.js'
 
 function getSupabase() {
   return createClient(
@@ -527,7 +528,9 @@ export async function runBusinessHealthCheck(userId) {
   const governanceBase      = runGovernanceMonitoring({ brain, brief, normalized, checkedAt: checked_at, userOverrides, schema })
 
   // Persist metric snapshots non-blocking — do not await, never blocks health check
-  persistMetricSnapshots(userId, governanceBase.snapshots, sb, checked_at).catch(() => {})
+  persistMetricSnapshots(userId, governanceBase.snapshots, sb, checked_at)
+    .then(() => recomputeCompanyDNA(sb, userId))
+    .catch(() => {})
 
   const deterministicGovernanceAdvice = buildGovernanceAdvice(governanceBase)
   const governanceAdvice    = await enrichGovernanceWithAI({

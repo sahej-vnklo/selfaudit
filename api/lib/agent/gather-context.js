@@ -4,6 +4,7 @@ import { fetchAllConnectedData } from '../connectors/data-fetcher.js'
 import { normalizeConnectorData } from '../connectors/normalize.js'
 import { getRecentDecisions } from '../decisions/service.js'
 import { formatDecisionsForPrompt } from '../decisions/context.js'
+import { getCompanyDNASummary } from '../intelligence/company-dna.js'
 
 function getSupabase() {
   return createClient(
@@ -179,13 +180,14 @@ export async function gatherAgentContext(userId, plan) {
   const needsConnector = needed.includes('hubspot_pipeline') || needed.includes('hubspot_contacts')
 
   // Parallel loads for everything
-  const [briefBlock, auditBlock, healthBlock, alertBlock, connectorBlock, decisionsBlock] = await Promise.allSettled([
+  const [briefBlock, auditBlock, healthBlock, alertBlock, connectorBlock, decisionsBlock, companyDNABlock] = await Promise.allSettled([
     needed.includes('intelligence_brief') ? loadIntelligenceBrief(sb, userId) : Promise.resolve(null),
     needed.includes('recent_audits')      ? loadRecentAudits(sb, userId)       : Promise.resolve(null),
     needed.includes('health_checks')      ? loadHealthChecks(sb, userId)        : Promise.resolve(null),
     needed.includes('risk_alerts')        ? loadRiskAlerts(sb, userId)          : Promise.resolve(null),
     needsConnector ? loadConnectorData(userId)                                   : Promise.resolve(null),
     userId ? loadDecisionMemory(sb, userId)                                      : Promise.resolve({ source: 'decision_memory', summary: '', raw: [] }),
+    userId ? getCompanyDNASummary(sb, userId)                                    : Promise.resolve({ status: 'insufficient_data', patterns: [], formatted: null }),
   ])
 
   for (const [result, key] of [
@@ -195,9 +197,18 @@ export async function gatherAgentContext(userId, plan) {
     [alertBlock,     'risk_alerts'],
     [connectorBlock, 'hubspot'],
     [decisionsBlock, 'decision_memory'],
+    [companyDNABlock, 'company_dna'],
   ]) {
     const block = result.status === 'fulfilled' ? result.value : null
     if (block) {
+      if (key === 'company_dna') {
+        if (block.formatted) {
+          contextBlocks.push({ source: 'company_dna', summary: block.formatted })
+          sourcesUsed.push('company_dna')
+        }
+        continue
+      }
+
       if (key !== 'decision_memory' || block.summary) {
         contextBlocks.push(block)
       }
@@ -216,6 +227,9 @@ export async function gatherAgentContext(userId, plan) {
     risk_alerts:        alertBlock.status === 'fulfilled'  ? alertBlock.value?.raw  : null,
     connector:          connectorBlock.status === 'fulfilled' ? connectorBlock.value : null,
     decision_memory:    decisionsBlock.status === 'fulfilled' ? (decisionsBlock.value?.raw ?? []) : [],
+    company_dna:        companyDNABlock.status === 'fulfilled'
+      ? companyDNABlock.value
+      : { status: 'insufficient_data', patterns: [], formatted: null },
   }
 
   return { context_blocks: contextBlocks, structured_context: structured, sources_used: sourcesUsed, missing_sources: missingSources }
