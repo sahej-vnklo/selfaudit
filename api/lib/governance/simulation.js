@@ -68,7 +68,7 @@ function buildNarrative(triggerMetricKey, downstream) {
     return `Changing ${triggerMetricKey} does not trigger a clear downstream cascade in the current causal graph.`
   }
 
-  const chain = downstream.slice(0, 3).map((item) => item.key).join(' -> ')
+  const chain = downstream.slice(0, 3).map((item) => item.nodeId).join(' -> ')
   return `${triggerMetricKey} is likely to pressure ${chain} next.`
 }
 
@@ -145,7 +145,7 @@ export async function runScenario(supabase, userId, scenario) {
   })
 
   const triggerAreaId = findTriggerAreaId(simulated.snapshots, scenario.metricKey)
-  const downstream = projectDownstream(scenario.metricKey, 3)
+  const downstream = projectDownstream(triggerAreaId, simulated.findings)
   const delta = buildDelta(baseline, simulated)
 
   return {
