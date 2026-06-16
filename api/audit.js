@@ -11,8 +11,8 @@
 
 import { createClient } from '@supabase/supabase-js'
 import { validateUserToken } from './lib/auth.js'
-import { fetchHubspotData } from './lib/connectors/data-fetcher.js'
-import { normalizeHubspotData, formatNormalizedForPrompt } from './lib/connectors/normalize.js'
+import { fetchAllConnectedData } from './lib/connectors/data-fetcher.js'
+import { normalizeConnectorData, formatNormalizedForPrompt } from './lib/connectors/normalize.js'
 import { getCompanyBrain, formatBrainForPrompt } from './lib/intelligence/company-brain.js'
 import { getUserPlan } from './lib/plans.js'
 
@@ -69,10 +69,10 @@ async function fetchConnectorContext(userId, supabase) {
     const plan = await getUserPlan(userId, supabase)
     if (plan !== 'intelligence') return ''
 
-    const hubspotData = await fetchHubspotData(userId)
-    if (!hubspotData) return ''
+    const connectorData = await fetchAllConnectedData(userId)
+    if (!Object.keys(connectorData).length) return ''
 
-    const normalized = normalizeHubspotData(hubspotData)
+    const normalized = normalizeConnectorData(connectorData)
     return formatNormalizedForPrompt(normalized)
   } catch {
     return ''

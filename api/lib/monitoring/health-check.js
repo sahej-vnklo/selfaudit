@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { getCompanyBrain } from '../intelligence/company-brain.js'
-import { fetchHubspotData, fetchStripeData } from '../connectors/data-fetcher.js'
-import { normalizeHubspotData, normalizeStripeData, mergeNormalized } from '../connectors/normalize.js'
+import { fetchAllConnectedData } from '../connectors/data-fetcher.js'
+import { normalizeConnectorData } from '../connectors/normalize.js'
 import { runGovernanceMonitoring } from '../governance/monitoring.js'
 import { buildGovernanceAdvice } from '../governance/advice.js'
 import { enrichGovernanceWithAI } from '../governance/ai-advisor.js'
@@ -503,20 +503,11 @@ export async function runBusinessHealthCheck(userId) {
     console.warn('[health-check] brief fetch error:', briefRes.value.error.message)
   }
 
-  // 5-6: Pull and normalize connector data via Composio — non-blocking, failures skip gracefully
+  // 5: Pull data from all connected apps — non-blocking, failures skip gracefully
   let normalized = null
-
   try {
-    const raw = await fetchHubspotData(userId)
-    if (raw) normalized = normalizeHubspotData(raw)
-  } catch { /* non-blocking */ }
-
-  try {
-    const raw = await fetchStripeData(userId)
-    if (raw) {
-      const stripeNormalized = normalizeStripeData(raw)
-      normalized = normalized ? mergeNormalized(normalized, stripeNormalized) : stripeNormalized
-    }
+    const connectorData = await fetchAllConnectedData(userId)
+    if (Object.keys(connectorData).length) normalized = normalizeConnectorData(connectorData)
   } catch { /* non-blocking */ }
 
   // 7: Run all analyzers

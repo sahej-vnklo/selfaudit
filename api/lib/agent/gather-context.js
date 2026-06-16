@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { getCompanyBrain, formatBrainForPrompt } from '../intelligence/company-brain.js'
-import { fetchHubspotData } from '../connectors/data-fetcher.js'
-import { normalizeHubspotData } from '../connectors/normalize.js'
+import { fetchAllConnectedData } from '../connectors/data-fetcher.js'
+import { normalizeConnectorData } from '../connectors/normalize.js'
 
 function getSupabase() {
   return createClient(
@@ -95,14 +95,16 @@ async function loadRiskAlerts(sb, userId) {
 
 async function loadConnectorData(userId) {
   try {
-    const raw = await fetchHubspotData(userId)
-    if (!raw) return null
-    const n = normalizeHubspotData(raw)
+    const allData = await fetchAllConnectedData(userId)
+    if (!Object.keys(allData).length) return null
+    const n = normalizeConnectorData(allData)
+    if (!n) return null
+
     const m = Object.fromEntries(n.metrics.map((x) => [x.key, x.value]))
     const closingSoon = n.entities.filter((e) => e.type === 'deal')
 
     const lines = []
-    if (m.open_deals != null)         lines.push(`Open deals: ${m.open_deals}`)
+    if (m.open_deals != null)          lines.push(`Open deals: ${m.open_deals}`)
     if (m.open_pipeline_value != null) lines.push(`Pipeline value: ${fmt(m.open_pipeline_value)}`)
     if (m.avg_deal_size)               lines.push(`Avg deal size: ${fmt(m.avg_deal_size)}`)
     if (m.new_contacts_this_month)     lines.push(`New contacts this month: ${m.new_contacts_this_month}`)
@@ -110,10 +112,13 @@ async function loadConnectorData(userId) {
     if (m.mqls  != null)               lines.push(`MQLs: ${m.mqls}`)
     if (m.sqls  != null)               lines.push(`SQLs: ${m.sqls}`)
     if (m.customers != null)           lines.push(`Customers in CRM: ${m.customers}`)
+    if (m.mrr != null)                 lines.push(`MRR: ${fmt(m.mrr)}`)
+    if (m.churn_rate != null)          lines.push(`Churn: ${m.churn_rate}%`)
+    if (m.open_tickets != null)        lines.push(`Open tickets: ${m.open_tickets}`)
     if (closingSoon.length)            lines.push(`Closing in 14 days: ${closingSoon.map((d) => `${d.label} ${fmt(d.amount)}`).join(', ')}`)
 
     return {
-      source: 'hubspot',
+      source: n.provider,
       summary: lines.join(' · '),
       normalized: n,
     }
