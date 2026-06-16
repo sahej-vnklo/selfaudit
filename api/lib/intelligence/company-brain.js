@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { getActiveGoal } from '../goals/service.js'
+import { getCompanyDNASummary } from './company-dna.js'
 
 function getSupabase() {
   return createClient(
@@ -85,6 +86,12 @@ export async function getCompanyBrain(userId, supabase = null) {
   const intel    = intelRes.status   === 'fulfilled' ? intelRes.value.data          : null
   const sessions = memoryRes.status  === 'fulfilled' ? (memoryRes.value.data ?? []) : []
   const activeGoal = await getActiveGoal(sb, userId).catch(() => null)
+  let companyDNA = { status: 'insufficient_data', patterns: [], formatted: null }
+  try {
+    companyDNA = await getCompanyDNASummary(sb, userId)
+  } catch {
+    companyDNA = { status: 'insufficient_data', patterns: [], formatted: null }
+  }
 
   return {
     // Identity
@@ -127,6 +134,9 @@ export async function getCompanyBrain(userId, supabase = null) {
     opportunities:         intel?.opportunities            ?? [],
     synthesized_profile:   intel?.synthesized_profile      ?? null,
     last_synthesized_at:   intel?.last_synthesized_at      ?? null,
+    company_dna_status:    companyDNA.status,
+    company_dna_patterns:  companyDNA.patterns,
+    company_dna_formatted: companyDNA.formatted,
 
     // Latest session memory
     last_session: sessions.length > 0 ? {
