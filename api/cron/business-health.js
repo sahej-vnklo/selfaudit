@@ -17,6 +17,8 @@
 import { createClient } from '@supabase/supabase-js'
 import { runBusinessHealthCheck } from '../lib/monitoring/health-check.js'
 import { createRiskAlertsFromHealthCheck } from '../lib/monitoring/risk-alerts.js'
+import { meetsEmailThreshold } from '../lib/monitoring/escalation.js'
+import { stageCriticalAction } from '../lib/monitoring/critical-action-staging.js'
 import { buildRiskAlertEmail } from '../lib/notifications/risk-email.js'
 import { isAuthorisedCronRequest } from '../lib/cron-auth.js'
 import { getComposioConnectionMap } from '../lib/connectors/composio.js'
@@ -52,7 +54,7 @@ function mapAlertCategoryToPreference(alert) {
 
 function alertMatchesPreferences(alert, prefAreas) {
   if (!Array.isArray(prefAreas) || prefAreas.length === 0) return false
-  if (alert?.severity === 'critical' && prefAreas.includes('critical_risks')) return true
+  if (alert?.escalation_tier === 'critical' && prefAreas.includes('critical_risks')) return true
   const mapped = mapAlertCategoryToPreference(alert)
   return !!mapped && prefAreas.includes(mapped)
 }
@@ -212,12 +214,19 @@ export default async function handler(req, res) {
       try {
         const { data: prefRow } = await sb
           .from('intelligence_notification_preferences')
-          .select('enabled, frequency, channels, areas, last_notified_at')
+          .select('enabled, frequency, channels, areas, last_notified_at, email_threshold')
           .eq('user_id', user.id)
           .maybeSingle()
 
+        for (const alert of newAlerts) {
+          if (alert?.escalation_tier === 'critical' && !alert?.execution_staged) {
+            stageCriticalAction(sb, user.id, alert).catch(() => {})
+          }
+        }
+
         const wantsEmail = !!prefRow?.enabled && Array.isArray(prefRow?.channels) && prefRow.channels.includes('email')
         const dueNow = alertsAreDue(prefRow)
+        const emailThreshold = prefRow?.email_threshold || 'alert'
 
         if (wantsEmail && dueNow) {
           const { data: unsentAlerts = [] } = await sb
@@ -228,7 +237,10 @@ export default async function handler(req, res) {
             .eq('notification_sent', false)
             .order('created_at', { ascending: false })
 
-          const matchedAlerts = unsentAlerts.filter((alert) => alertMatchesPreferences(alert, prefRow.areas || []))
+          const matchedAlerts = unsentAlerts.filter((alert) =>
+            alertMatchesPreferences(alert, prefRow.areas || []) &&
+            meetsEmailThreshold(alert.escalation_tier, emailThreshold)
+          )
           const userEmail = user.notification_email || user.email
 
           if (userEmail && matchedAlerts.length > 0) {

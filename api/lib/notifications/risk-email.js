@@ -1,21 +1,47 @@
 // buildRiskAlertEmail — builds the risk alert notification email payload.
 // Matches the visual style of send-report.js (same CSS variables, same structure).
 
-const SEVERITY_COLOR  = { critical: '#A32D2D', high: '#BA7517', medium: '#8A6A00' }
-const SEVERITY_BG     = { critical: '#FCEBEB', high:  '#FAEEDA', medium: '#FAFAE0' }
-const SEVERITY_BORDER = { critical: '#E8A0A0', high:  '#F0C878', medium: '#D4C84A' }
-const SEVERITY_LABEL  = { critical: 'Critical', high: 'High',    medium: 'Medium'  }
+const TIER_COLOR = {
+  critical: '#A32D2D',
+  alert: '#BA5B17',
+  escalate: '#8A6A00',
+  flag: '#285AA6',
+  watch: '#6B6860',
+}
+const TIER_BG = {
+  critical: '#FCEBEB',
+  alert: '#FBEBDD',
+  escalate: '#FAFAE0',
+  flag: '#EAF2FF',
+  watch: '#F4F3EF',
+}
+const TIER_BORDER = {
+  critical: '#E8A0A0',
+  alert: '#F0BA78',
+  escalate: '#D4C84A',
+  flag: '#A8C1F0',
+  watch: '#E8E6E0',
+}
+const TIER_LABEL = {
+  critical: 'Critical',
+  alert: 'Alert',
+  escalate: 'Escalate',
+  flag: 'Flag',
+  watch: 'Watch',
+}
+const TIER_ORDER = ['critical', 'alert', 'escalate', 'flag', 'watch']
 
-function severityColor(s)  { return SEVERITY_COLOR[s]  || '#6B6860' }
-function severityBg(s)     { return SEVERITY_BG[s]     || '#F4F3EF' }
-function severityBorder(s) { return SEVERITY_BORDER[s] || '#E8E6E0' }
-function severityLabel(s)  { return SEVERITY_LABEL[s]  || s }
+function tierColor(value) { return TIER_COLOR[value] || '#6B6860' }
+function tierBg(value) { return TIER_BG[value] || '#F4F3EF' }
+function tierBorder(value) { return TIER_BORDER[value] || '#E8E6E0' }
+function tierLabel(value) { return TIER_LABEL[value] || value }
 
 function alertBlock(alert) {
-  const color  = severityColor(alert.severity)
-  const bg     = severityBg(alert.severity)
-  const border = severityBorder(alert.severity)
-  const label  = severityLabel(alert.severity)
+  const tier = alert.escalation_tier || 'watch'
+  const color  = tierColor(tier)
+  const bg     = tierBg(tier)
+  const border = tierBorder(tier)
+  const label  = tierLabel(tier)
   const evidence = typeof alert.evidence === 'object' && alert.evidence !== null
     ? (alert.evidence.raw ?? JSON.stringify(alert.evidence))
     : String(alert.evidence || '')
@@ -35,14 +61,20 @@ function alertBlock(alert) {
   </div>`
 }
 
-function groupBySeverity(alerts) {
-  const order = ['critical', 'high', 'medium']
+function groupByTier(alerts) {
   const groups = {}
-  for (const s of order) {
-    const group = alerts.filter((a) => a.severity === s)
-    if (group.length) groups[s] = group
+  for (const tier of TIER_ORDER) {
+    const group = alerts.filter((a) => (a.escalation_tier || 'watch') === tier)
+    if (group.length) groups[tier] = group
   }
   return groups
+}
+
+function getHighestTier(alerts) {
+  for (const tier of TIER_ORDER) {
+    if (alerts.some((alert) => (alert.escalation_tier || 'watch') === tier)) return tier
+  }
+  return 'watch'
 }
 
 export function buildRiskAlertEmail(user, alerts) {
@@ -51,21 +83,24 @@ export function buildRiskAlertEmail(user, alerts) {
   const name         = user?.name  || user?.email?.split('@')[0] || 'there'
   const email        = user?.email || ''
   const dashboardUrl = 'https://tryselfaudit.com/#home'
-  const groups       = groupBySeverity(alerts)
-  const criticalCount = (groups.critical || []).length
-  const highCount     = (groups.high     || []).length
+  const groups       = groupByTier(alerts)
+  const highestTier  = getHighestTier(alerts)
 
-  const subjectPrefix = criticalCount > 0
-    ? `🚨 ${criticalCount} critical risk${criticalCount > 1 ? 's' : ''} flagged`
-    : highCount > 0
-      ? `⚠️ ${highCount} high-risk alert${highCount > 1 ? 's' : ''}`
-      : `📋 ${alerts.length} risk alert${alerts.length > 1 ? 's' : ''} from your health check`
+  const subjectPrefix = highestTier === 'critical'
+    ? `🚨 Critical alert${alerts.length > 1 ? 's' : ''} flagged`
+    : highestTier === 'alert'
+      ? `⚠️ Alert${alerts.length > 1 ? 's' : ''} requiring attention`
+      : highestTier === 'escalate'
+        ? `⚠️ Escalation${alerts.length > 1 ? 's' : ''} surfaced`
+        : highestTier === 'flag'
+          ? `📌 Flagged issue${alerts.length > 1 ? 's' : ''} from your health check`
+          : `👀 Watch item${alerts.length > 1 ? 's' : ''} from your health check`
   const subject = `${subjectPrefix} — SelfAudit`
 
-  const alertSections = Object.entries(groups).map(([severity, group]) => `
+  const alertSections = Object.entries(groups).map(([tier, group]) => `
   <div style="margin-bottom:24px;">
     <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#6B6860;font-weight:600;margin-bottom:10px;">
-      ${severityLabel(severity)} risks (${group.length})
+      ${tierLabel(tier)} (${group.length})
     </div>
     ${group.map(alertBlock).join('')}
   </div>`).join('')
@@ -105,7 +140,7 @@ export function buildRiskAlertEmail(user, alerts) {
     `Hi ${name}, your health check flagged ${alerts.length} risk${alerts.length > 1 ? 's' : ''}:`,
     ``,
     ...alerts.map((a, i) => [
-      `${i + 1}. [${severityLabel(a.severity).toUpperCase()}] ${a.title}`,
+      `${i + 1}. [${tierLabel(a.escalation_tier || 'watch').toUpperCase()}] ${a.title}`,
       a.description     ? `   Why it matters: ${a.description}` : '',
       a.evidence        ? `   Evidence: ${typeof a.evidence === 'object' ? (a.evidence.raw || JSON.stringify(a.evidence)) : a.evidence}` : '',
       a.recommended_action ? `   Action: ${a.recommended_action}` : '',

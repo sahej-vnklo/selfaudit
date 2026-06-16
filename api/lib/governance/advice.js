@@ -36,6 +36,10 @@ function buildDiagnosisItem(areaEntry, finding) {
     areaLabel:      areaEntry.label,
     status:         finding.status,
     severity:       finding.severity,
+    metricKey:      finding.metricKey,
+    metricValue:    finding.metricValue,
+    comparator:     finding.comparator,
+    thresholdValue: finding.thresholdValue,
     title:          finding.title,
     summary:        finding.summary,
     rootCause:      buildRootCause(areaEntry, finding, metricDef),
@@ -86,7 +90,6 @@ export function buildGovernanceAdvice(governance) {
   ).slice(0, 6)
 
   const alertCandidates = diagnoses
-    .filter((item) => item.severity === 'critical' || item.severity === 'high' || item.severity === 'medium')
     .map((item) => ({
       severity:           item.severity,
       category:           item.areaId,
@@ -94,6 +97,11 @@ export function buildGovernanceAdvice(governance) {
       description:        item.summary,
       evidence:           item.evidence,
       recommended_action: item.recommendation,
+      metricKey:          item.metricKey,
+      metricValue:        item.metricValue,
+      comparator:         item.comparator,
+      thresholdValue:     item.thresholdValue,
+      status:             item.status,
       source:             'governance',
     }))
 

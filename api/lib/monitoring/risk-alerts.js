@@ -20,6 +20,7 @@
 // create index on risk_alerts (user_id, status, created_at desc);
 
 import { createClient } from '@supabase/supabase-js'
+import { mapFindingToEscalationTier, tierRank } from './escalation.js'
 
 function getSupabase() {
   return createClient(
@@ -28,8 +29,6 @@ function getSupabase() {
     { auth: { persistSession: false } }
   )
 }
-
-const ALERT_SEVERITIES = new Set(['medium', 'high', 'critical'])
 
 // Normalise a title for deduplication — strips leading numbers, currency amounts,
 // and counts so "3 SQLs ready for close" matches "1 SQL ready for close".
@@ -45,20 +44,41 @@ function normaliseTitle(title) {
 async function loadOpenAlertIndex(sb, userId) {
   const { data } = await sb
     .from('risk_alerts')
-    .select('id, category, title')
+    .select('id, category, title, escalation_tier, severity, execution_staged')
     .eq('user_id', userId)
     .eq('status', 'open')
 
   const index = new Map()
   for (const row of data ?? []) {
     const key = `${row.category}::${normaliseTitle(row.title)}`
-    index.set(key, row.id)
+    index.set(key, row)
   }
   return index
 }
 
-// Creates risk alerts from a health check result, skipping duplicates.
-// Only medium / high / critical risks are persisted as alerts.
+function buildAlertPayload(userId, healthCheckId, risk) {
+  return {
+    user_id: userId,
+    health_check_id: healthCheckId,
+    severity: risk.severity,
+    category: risk.category,
+    title: risk.title,
+    description: risk.description ?? null,
+    evidence: risk.evidence ? { raw: risk.evidence } : null,
+    recommended_action: risk.recommended_action ?? null,
+    escalation_tier: mapFindingToEscalationTier(risk),
+    finding_status: risk.status ?? null,
+    metric_key: risk.metricKey ?? null,
+    metric_value: risk.metricValue ?? null,
+    threshold_value: risk.thresholdValue ?? null,
+    comparator: risk.comparator ?? null,
+    status: 'open',
+    notification_sent: false,
+  }
+}
+
+// Creates risk alerts from a health check result, skipping duplicates unless the
+// incoming alert has escalated above the currently open tier.
 export async function createRiskAlertsFromHealthCheck(userId, healthCheck) {
   if (!userId || !healthCheck) return []
 
@@ -69,32 +89,55 @@ export async function createRiskAlertsFromHealthCheck(userId, healthCheck) {
   const openIndex = await loadOpenAlertIndex(sb, userId)
 
   const toInsert = []
+  const updatedAlerts = []
   const alertCandidates = [
     ...(healthCheck.risks ?? []),
     ...(healthCheck.governance?.alert_candidates ?? []),
   ]
 
   for (const risk of alertCandidates) {
-    if (!ALERT_SEVERITIES.has(risk.severity)) continue
-
     const key = `${risk.category}::${normaliseTitle(risk.title)}`
-    if (openIndex.has(key)) continue   // already an open alert for this
+    const payload = buildAlertPayload(userId, healthCheckId, risk)
+    const existing = openIndex.get(key)
 
-    toInsert.push({
-      user_id:            userId,
-      health_check_id:    healthCheckId,
-      severity:           risk.severity,
-      category:           risk.category,
-      title:              risk.title,
-      description:        risk.description ?? null,
-      evidence:           risk.evidence ? { raw: risk.evidence } : null,
-      recommended_action: risk.recommended_action ?? null,
-      status:             'open',
-      notification_sent:  false,
-    })
+    if (existing) {
+      const existingTier = existing.escalation_tier || mapFindingToEscalationTier(existing)
+      if (tierRank(payload.escalation_tier) <= tierRank(existingTier)) continue
+
+      const { data: updated, error: updateError } = await sb
+        .from('risk_alerts')
+        .update({
+          severity: payload.severity,
+          description: payload.description,
+          evidence: payload.evidence,
+          recommended_action: payload.recommended_action,
+          escalation_tier: payload.escalation_tier,
+          finding_status: payload.finding_status,
+          metric_key: payload.metric_key,
+          metric_value: payload.metric_value,
+          threshold_value: payload.threshold_value,
+          comparator: payload.comparator,
+          health_check_id: payload.health_check_id,
+          notification_sent: false,
+        })
+        .eq('id', existing.id)
+        .eq('user_id', userId)
+        .select()
+        .single()
+
+      if (updateError) {
+        console.warn('[risk-alerts] update error:', updateError.message)
+      } else if (updated) {
+        updatedAlerts.push(updated)
+        openIndex.set(key, updated)
+      }
+      continue
+    }
+
+    toInsert.push(payload)
   }
 
-  if (toInsert.length === 0) return []
+  if (toInsert.length === 0) return updatedAlerts
 
   const { data, error } = await sb
     .from('risk_alerts')
@@ -103,10 +146,10 @@ export async function createRiskAlertsFromHealthCheck(userId, healthCheck) {
 
   if (error) {
     console.error('[risk-alerts] insert error:', error.message)
-    return []
+    return updatedAlerts
   }
 
-  return data ?? []
+  return [...updatedAlerts, ...(data ?? [])]
 }
 
 // Returns all open alerts for a user, newest first.
