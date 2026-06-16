@@ -4779,6 +4779,9 @@ function ConnectorsSection({ user }) {
   const [disconnecting, setDisconnecting] = useState('')
   const [toast, setToast] = useState('')
   const [preview, setPreview] = useState(null)
+  const [filter, setFilter] = useState('all')
+  const [search, setSearch] = useState('')
+  const [categoryFilter, setCategoryFilter] = useState('all')
 
   const getSessionToken = async () => {
     const sb = await initSupabase()
@@ -4880,50 +4883,179 @@ function ConnectorsSection({ user }) {
     }
   }
 
+  const categories = ['all', ...Array.from(new Set(connectorList.map(c => (c.category || '').toLowerCase()))).filter(Boolean)]
+
+  const filtered = connectorList.filter((c) => {
+    const connected = !!c.connected
+    if (filter === 'connected' && !connected) return false
+    if (filter === 'available' && connected) return false
+    if (categoryFilter !== 'all' && (c.category || '').toLowerCase() !== categoryFilter) return false
+    if (search && !c.name.toLowerCase().includes(search.toLowerCase())) return false
+    return true
+  })
+
+  const pillStyle = (active) => ({
+    fontSize: 12,
+    padding: '5px 14px',
+    borderRadius: 20,
+    border: `0.5px solid ${active ? 'var(--accent, #C8622A)' : 'var(--d-border, rgba(255,255,255,0.08))'}`,
+    background: active ? 'rgba(200,98,42,0.1)' : 'transparent',
+    color: active ? 'var(--accent, #C8622A)' : 'var(--fg-mute)',
+    cursor: 'pointer',
+    fontFamily: 'inherit',
+    letterSpacing: '0.01em',
+  })
+
   return (
     <PageShell title="Connectors" sub="Connect live systems so audits can reason from verified data, not just self-reported context.">
       {toast && <div style={styles.connectorsToast}>{toast}</div>}
-      <div style={styles.connectorsGrid}>
-        {connectorList.map((connector) => {
-          const available = connector.status === 'available'
-          const comingSoon = connector.status === 'coming_soon'
-          const connected = !!connector.connected
-          const busy = disconnecting === connector.id
 
-          return (
-            <div key={connector.id} style={{ ...styles.connectorCard, opacity: comingSoon ? 0.68 : 1 }}>
-              <div style={styles.connectorCardTop}>
-                <div>
-                  <div style={styles.connectorName}>{connector.name}</div>
-                  <div style={styles.connectorCategory}>{connector.category}</div>
+      {/* ── Toolbar ── */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20, flexWrap: 'wrap' }}>
+        {/* Filter tabs */}
+        <div style={{ display: 'flex', gap: 6 }}>
+          {['all', 'connected', 'available'].map((f) => (
+            <button key={f} type="button" style={pillStyle(filter === f)} onClick={() => setFilter(f)}>
+              {f.charAt(0).toUpperCase() + f.slice(1)}
+            </button>
+          ))}
+        </div>
+
+        <div style={{ width: '0.5px', height: 20, background: 'var(--d-border, rgba(255,255,255,0.08))', margin: '0 2px' }} />
+
+        {/* Category filter */}
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {categories.map((cat) => (
+            <button key={cat} type="button" style={pillStyle(categoryFilter === cat)} onClick={() => setCategoryFilter(cat)}>
+              {cat.charAt(0).toUpperCase() + cat.slice(1)}
+            </button>
+          ))}
+        </div>
+
+        {/* Search */}
+        <input
+          type="text"
+          placeholder="Search connectors…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={{
+            marginLeft: 'auto',
+            background: 'transparent',
+            border: '0.5px solid var(--d-border, rgba(255,255,255,0.08))',
+            borderRadius: 8,
+            padding: '6px 12px',
+            fontSize: 12,
+            color: 'var(--text)',
+            fontFamily: 'inherit',
+            outline: 'none',
+            width: 180,
+          }}
+        />
+      </div>
+
+      {/* ── Connector list ── */}
+      {loading ? (
+        <div style={{ color: 'var(--fg-mute)', fontSize: 13, padding: '24px 0' }}>Checking connector status…</div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          {filtered.length === 0 && (
+            <div style={{ color: 'var(--fg-mute)', fontSize: 13, padding: '24px 0' }}>No connectors match.</div>
+          )}
+          {filtered.map((connector) => {
+            const connected = !!connector.connected
+            const busy = disconnecting === connector.id
+
+            return (
+              <div
+                key={connector.id}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 16,
+                  padding: '12px 16px',
+                  borderRadius: 10,
+                  border: '0.5px solid transparent',
+                  transition: 'background 0.1s, border-color 0.1s',
+                  background: 'transparent',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--d-surface, rgba(255,255,255,0.03))'; e.currentTarget.style.borderColor = 'var(--d-border, rgba(255,255,255,0.06))' }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'transparent' }}
+              >
+                {/* Logo placeholder */}
+                <div style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 8,
+                  background: 'var(--d-surface, rgba(255,255,255,0.05))',
+                  border: '0.5px solid var(--d-border, rgba(255,255,255,0.08))',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: 'var(--fg-mute)',
+                  flexShrink: 0,
+                  letterSpacing: '-0.02em',
+                }}>
+                  {connector.name.slice(0, 2).toUpperCase()}
                 </div>
-                <span
-                  style={{
-                    ...styles.connectorBadge,
-                    ...(connected
-                      ? styles.connectorBadgeConnected
-                      : available
-                        ? styles.connectorBadgeAdd
-                        : styles.connectorBadgeSoon),
-                  }}
-                >
-                  {connected ? 'Connected' : available ? 'Add' : 'Coming soon'}
-                </span>
-              </div>
 
-              <div style={styles.connectorBodyText}>
-                {connector.description || ''}
-              </div>
+                {/* Name + description */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--text)', marginBottom: 1 }}>{connector.name}</div>
+                  <div style={{ fontSize: 12, color: 'var(--fg-mute)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{connector.description}</div>
+                </div>
 
-              {available ? (
-                connected ? (
-                  <button type="button" style={styles.connectorDisconnectBtn} onClick={() => disconnect(connector.id)} disabled={busy}>
-                    {busy ? 'Disconnecting…' : 'Disconnect'}
-                  </button>
+                {/* Category pill */}
+                <div style={{ fontSize: 11, color: 'var(--fg-mute)', letterSpacing: '0.06em', textTransform: 'uppercase', flexShrink: 0, minWidth: 60, textAlign: 'right' }}>
+                  {connector.category}
+                </div>
+
+                {/* Action */}
+                {connected ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#4CAF50' }}>
+                      <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#4CAF50' }} />
+                      Connected
+                    </div>
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() => disconnect(connector.id)}
+                      style={{
+                        fontSize: 11,
+                        color: 'var(--fg-mute)',
+                        background: 'transparent',
+                        border: '0.5px solid var(--d-border, rgba(255,255,255,0.08))',
+                        borderRadius: 6,
+                        padding: '4px 10px',
+                        cursor: 'pointer',
+                        fontFamily: 'inherit',
+                        opacity: busy ? 0.5 : 1,
+                      }}
+                    >
+                      {busy ? 'Removing…' : 'Remove'}
+                    </button>
+                  </div>
                 ) : (
                   <button
                     type="button"
-                    style={styles.connectorConnectBtn}
+                    style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: 8,
+                      border: '0.5px solid var(--d-border, rgba(255,255,255,0.12))',
+                      background: 'transparent',
+                      color: 'var(--fg-mute)',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: 18,
+                      flexShrink: 0,
+                      fontFamily: 'inherit',
+                      lineHeight: 1,
+                    }}
                     onClick={async () => {
                       const token = await getSessionToken()
                       if (!token) return
@@ -4937,55 +5069,14 @@ function ConnectorsSection({ user }) {
                       setToast(data?.error || `Could not connect ${connector.name}.`)
                     }}
                   >
-                    Connect {connector.name}
+                    +
                   </button>
-                )
-              ) : (
-                <div style={styles.connectorSoonText}>Available in a later release.</div>
-              )}
-
-              {connector.id === 'stripe' && connected && (
-                <div style={styles.connectorPreview}>
-                  <div style={styles.connectorPreviewMeta}>
-                    Connected · {connector.account_name ? `${connector.account_name} · ` : ''}Run a health check to pull live data.
-                  </div>
-                </div>
-              )}
-
-              {connector.id === 'hubspot' && connected && preview?.source === 'hubspot' && (
-                <div style={styles.connectorPreview}>
-                  <div style={styles.connectorPreviewMeta}>
-                    Last synced: {formatRelativeTime(connector.last_synced_at || preview.fetched_at)}
-                  </div>
-                  {preview.pipeline && (
-                    <div style={styles.connectorPreviewStat}>
-                      Open deals: {preview.pipeline.total_open_deals ?? 0}
-                      {typeof preview.pipeline.total_open_value === 'number' ? ` · $${preview.pipeline.total_open_value.toLocaleString()}` : ''}
-                    </div>
-                  )}
-                  {!!preview.signals?.length && (
-                    <div style={styles.connectorSignals}>
-                      {preview.signals.slice(0, 2).map((signal) => (
-                        <div key={signal} style={styles.connectorSignalLine}>{signal}</div>
-                      ))}
-                    </div>
-                  )}
-                  <button type="button" style={styles.connectorSyncBtn} onClick={loadHubspotPreview}>
-                    Sync now
-                  </button>
-                </div>
-              )}
-
-              {connector.required_tier && (
-                <div style={styles.connectorTierLabel}>
-                  {connector.required_tier === 'intelligence' ? 'Intelligence' : connector.required_tier}
-                </div>
-              )}
-            </div>
-          )
-        })}
-      </div>
-      {loading && <div style={styles.connectorsLoading}>Checking connector status…</div>}
+                )}
+              </div>
+            )
+          })}
+        </div>
+      )}
     </PageShell>
   )
 }
