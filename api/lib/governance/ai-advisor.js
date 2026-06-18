@@ -242,9 +242,31 @@ function dedupeActions(items) {
   return output
 }
 
+// After AI enrichment sharpens diagnoses, copy the enriched rootCause/impact back
+// onto matching alert_candidates (they're 1:1 by category::title from advice.js).
+// The AI's alert_candidate output schema doesn't include these fields, so we pull
+// from the already-merged diagnoses instead of expecting them from Claude.
+function applyDiagnosisRootCauseToAlerts(alertCandidates, diagnoses) {
+  if (!Array.isArray(alertCandidates) || !Array.isArray(diagnoses)) return alertCandidates
+  const diagByKey = indexBy(diagnoses, (d) => `${d.areaId}::${d.title}`)
+
+  return alertCandidates.map((alert) => {
+    const diag = diagByKey.get(`${alert.category}::${alert.title}`)
+    if (!diag) return alert
+    return {
+      ...alert,
+      rootCause: diag.rootCause ?? alert.rootCause ?? null,
+      impact:    diag.impact    ?? alert.impact    ?? null,
+    }
+  })
+}
+
 function mergeAdvice(base, parsed) {
   const diagnoses = mergeDiagnoses(base.diagnoses, parsed?.diagnoses)
-  const alertCandidates = mergeAlertCandidates(base.alert_candidates, parsed?.alert_candidates)
+  const alertCandidates = applyDiagnosisRootCauseToAlerts(
+    mergeAlertCandidates(base.alert_candidates, parsed?.alert_candidates),
+    diagnoses,
+  )
   const recommendedActions = Array.isArray(parsed?.recommended_actions) && parsed.recommended_actions.length
     ? dedupeActions(parsed.recommended_actions).slice(0, 6)
     : base.recommended_actions

@@ -2602,7 +2602,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
 
               {section === 'alerts' && (
                 <PageShell title="Alerts" sub="Review unresolved monitoring signals, acknowledge what you have seen, and resolve what is actually handled.">
-                  <AlertsInboxSection intelligenceUnlocked={tier === 'intelligence'} alerts={alerts} alertsLoading={alertsLoading} alertsError={alertsError} onRefreshAlerts={refreshAlerts} onUpdateAlert={updateAlertStatus} updatingAlertIds={updatingAlertIds} />
+                  <AlertsInboxSection intelligenceUnlocked={tier === 'intelligence'} alerts={alerts} alertsLoading={alertsLoading} alertsError={alertsError} onRefreshAlerts={refreshAlerts} onUpdateAlert={updateAlertStatus} updatingAlertIds={updatingAlertIds} userId={user?.id} />
                 </PageShell>
               )}
               {section === 'connectors' && <ConnectorsSection user={user} />}
@@ -3748,7 +3748,34 @@ function AlertsInboxSection({
   onRefreshAlerts,
   onUpdateAlert,
   updatingAlertIds,
+  userId,
 }) {
+  const [actionStates, setActionStates] = useState({}) // keyed by alert.id → { busy, error, done }
+
+  async function handleActionDecision(alert, decision) {
+    const pendingActionId = alert.evidence?.pending_action_id
+    if (!pendingActionId || !userId) return
+
+    setActionStates((prev) => ({ ...prev, [alert.id]: { busy: true, error: null, done: false } }))
+    try {
+      const sb = await initSupabase()
+      const { data: { session } } = await sb.auth.getSession()
+      const res = await fetch('/api/actions/execute', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+        },
+        body: JSON.stringify({ userId, pendingActionId, decision }),
+      })
+      const payload = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(payload?.error || 'Action failed')
+      setActionStates((prev) => ({ ...prev, [alert.id]: { busy: false, error: null, done: true } }))
+      onUpdateAlert(alert.id, decision === 'approve' ? 'resolved' : 'acknowledged')
+    } catch (err) {
+      setActionStates((prev) => ({ ...prev, [alert.id]: { busy: false, error: err.message, done: false } }))
+    }
+  }
   if (!intelligenceUnlocked) {
     return (
       <PanelCard title="alerts inbox">
@@ -3811,6 +3838,14 @@ function AlertsInboxSection({
             const severityTone = alertSeverityTone(alert.severity)
             const statusTone = alertStatusTone(alert.status)
             const busy = !!updatingAlertIds?.[alert.id]
+            const rootCause = alert.evidence?.rootCause || null
+            const impact    = alert.evidence?.impact    || null
+            const hasAction = !!(alert.execution_staged && alert.evidence?.pending_action_id)
+            const actionState = actionStates[alert.id] || {}
+            const actionBusy = actionState.busy || false
+            const actionDone = actionState.done || false
+            const actionError = actionState.error || null
+
             return (
               <div key={alert.id} style={styles.alertRow}>
                 <div style={styles.alertRowTop}>
@@ -3836,30 +3871,71 @@ function AlertsInboxSection({
                 </div>
 
                 {alert.description ? <div style={styles.alertDescription}>{alert.description}</div> : null}
+                {rootCause ? (
+                  <div style={styles.alertRootCause}>
+                    <span style={styles.alertRootCauseLabel}>Because:</span> {rootCause}
+                  </div>
+                ) : null}
+                {impact ? (
+                  <div style={styles.alertImpact}>
+                    <span style={styles.alertImpactLabel}>If ignored:</span> {impact}
+                  </div>
+                ) : null}
                 {alert.recommended_action ? (
                   <div style={styles.alertActionCopy}>
-                    <strong style={{ color: G.text }}>Recommended:</strong> {alert.recommended_action}
+                    <strong style={{ color: G.text }}>Fix:</strong> {alert.recommended_action}
                   </div>
                 ) : null}
 
-                <div style={styles.alertActionRow}>
-                  <button
-                    type="button"
-                    style={styles.alertInboxGhostBtn}
-                    disabled={busy || alert.status === 'acknowledged'}
-                    onClick={() => onUpdateAlert(alert.id, 'acknowledged')}
-                  >
-                    {busy && alert.status !== 'acknowledged' ? 'Saving…' : alert.status === 'acknowledged' ? 'Acknowledged' : 'Acknowledge'}
-                  </button>
-                  <button
-                    type="button"
-                    style={styles.alertInboxPrimaryBtn}
-                    disabled={busy}
-                    onClick={() => onUpdateAlert(alert.id, 'resolved')}
-                  >
-                    {busy ? 'Saving…' : 'Resolve'}
-                  </button>
-                </div>
+                {actionError ? (
+                  <div style={styles.alertActionError}>{actionError}</div>
+                ) : null}
+
+                {hasAction && !actionDone ? (
+                  <div style={styles.alertActionRow}>
+                    <button
+                      type="button"
+                      style={styles.alertInboxPrimaryBtn}
+                      disabled={actionBusy || busy}
+                      onClick={() => handleActionDecision(alert, 'approve')}
+                    >
+                      {actionBusy ? 'Sending…' : 'Approve action'}
+                    </button>
+                    <button
+                      type="button"
+                      style={styles.alertInboxGhostBtn}
+                      disabled={actionBusy || busy}
+                      onClick={() => handleActionDecision(alert, 'dismiss')}
+                    >
+                      Dismiss
+                    </button>
+                  </div>
+                ) : (
+                  <div style={styles.alertActionRow}>
+                    {actionDone ? (
+                      <span style={styles.alertActionDone}>Action sent</span>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          style={styles.alertInboxGhostBtn}
+                          disabled={busy || alert.status === 'acknowledged'}
+                          onClick={() => onUpdateAlert(alert.id, 'acknowledged')}
+                        >
+                          {busy && alert.status !== 'acknowledged' ? 'Saving…' : alert.status === 'acknowledged' ? 'Acknowledged' : 'Acknowledge'}
+                        </button>
+                        <button
+                          type="button"
+                          style={styles.alertInboxPrimaryBtn}
+                          disabled={busy}
+                          onClick={() => onUpdateAlert(alert.id, 'resolved')}
+                        >
+                          {busy ? 'Saving…' : 'Resolve'}
+                        </button>
+                      </>
+                    )}
+                  </div>
+                )}
               </div>
             )
           })}
@@ -7587,11 +7663,42 @@ const styles = {
     color: G.textSecondary,
     lineHeight: 1.65,
   },
+  alertRootCause: {
+    marginTop: 8,
+    fontSize: 12,
+    color: G.textSecondary,
+    lineHeight: 1.6,
+  },
+  alertRootCauseLabel: {
+    fontWeight: 600,
+    color: G.text,
+  },
+  alertImpact: {
+    marginTop: 5,
+    fontSize: 12,
+    color: G.textFaint,
+    lineHeight: 1.6,
+  },
+  alertImpactLabel: {
+    fontWeight: 600,
+    color: G.textSecondary,
+  },
   alertActionCopy: {
     marginTop: 10,
     fontSize: 12,
     color: G.textSecondary,
     lineHeight: 1.6,
+  },
+  alertActionError: {
+    marginTop: 8,
+    fontSize: 12,
+    color: G.redText,
+    lineHeight: 1.5,
+  },
+  alertActionDone: {
+    fontSize: 12,
+    color: G.greenText,
+    padding: '9px 0',
   },
   alertActionRow: {
     marginTop: 14,

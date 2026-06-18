@@ -56,6 +56,14 @@ async function loadOpenAlertIndex(sb, userId) {
   return index
 }
 
+function buildEvidence(risk) {
+  const raw = typeof risk.evidence === 'string' ? risk.evidence : null
+  const rootCause = risk.rootCause ?? null
+  const impact    = risk.impact    ?? null
+  if (!raw && !rootCause && !impact) return null
+  return { raw, rootCause, impact }
+}
+
 function buildAlertPayload(userId, healthCheckId, risk) {
   return {
     user_id: userId,
@@ -64,7 +72,7 @@ function buildAlertPayload(userId, healthCheckId, risk) {
     category: risk.category,
     title: risk.title,
     description: risk.description ?? null,
-    evidence: risk.evidence ? { raw: risk.evidence } : null,
+    evidence: buildEvidence(risk),
     recommended_action: risk.recommended_action ?? null,
     escalation_tier: mapFindingToEscalationTier(risk),
     finding_status: risk.status ?? null,
@@ -107,18 +115,18 @@ export async function createRiskAlertsFromHealthCheck(userId, healthCheck) {
       const { data: updated, error: updateError } = await sb
         .from('risk_alerts')
         .update({
-          severity: payload.severity,
-          description: payload.description,
-          evidence: payload.evidence,
+          severity:           payload.severity,
+          description:        payload.description,
+          evidence:           payload.evidence,
           recommended_action: payload.recommended_action,
-          escalation_tier: payload.escalation_tier,
-          finding_status: payload.finding_status,
-          metric_key: payload.metric_key,
-          metric_value: payload.metric_value,
-          threshold_value: payload.threshold_value,
-          comparator: payload.comparator,
-          health_check_id: payload.health_check_id,
-          notification_sent: false,
+          escalation_tier:    payload.escalation_tier,
+          finding_status:     payload.finding_status,
+          metric_key:         payload.metric_key,
+          metric_value:       payload.metric_value,
+          threshold_value:    payload.threshold_value,
+          comparator:         payload.comparator,
+          health_check_id:    payload.health_check_id,
+          notification_sent:  false,
         })
         .eq('id', existing.id)
         .eq('user_id', userId)

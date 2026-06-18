@@ -97,6 +97,8 @@ export function buildGovernanceAdvice(governance) {
       description:        item.summary,
       evidence:           item.evidence,
       recommended_action: item.recommendation,
+      rootCause:          item.rootCause  ?? null,
+      impact:             item.impact     ?? null,
       metricKey:          item.metricKey,
       metricValue:        item.metricValue,
       comparator:         item.comparator,

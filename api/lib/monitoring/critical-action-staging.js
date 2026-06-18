@@ -68,9 +68,21 @@ export async function stageCriticalAction(supabase, userId, alert) {
       return null
     }
 
+    // Fetch current evidence so we can merge without overwriting rootCause/impact
+    const { data: alertRow } = await supabase
+      .from('risk_alerts')
+      .select('evidence')
+      .eq('id', alert.id)
+      .single()
+
+    const mergedEvidence = {
+      ...(alertRow?.evidence ?? {}),
+      pending_action_id: data.id,
+    }
+
     await supabase
       .from('risk_alerts')
-      .update({ execution_staged: true })
+      .update({ execution_staged: true, evidence: mergedEvidence })
       .eq('id', alert.id)
       .eq('user_id', userId)
 

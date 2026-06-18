@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { initSupabase } from '../lib/supabase.js'
 
-// CSS vars from parent .sa-dash (theme-aware, no prop needed)
 const C = {
   bg:            'var(--bg)',
   surface:       'var(--surface)',
@@ -27,46 +26,31 @@ const C = {
   greenText:     'var(--green-text)',
 }
 
-const AREA_ICONS = {
-  'customer-service': (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-    </svg>
-  ),
-  'finance-accounting': (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-    </svg>
-  ),
-  'marketing-sales': (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>
-    </svg>
-  ),
-  'management-strategy': (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-    </svg>
-  ),
+const SERIF = '"Cormorant Garamond", "Times New Roman", serif'
+
+// escalate / alert / critical → full newspaper article with approve/skip
+const ACTIONABLE_TIERS = new Set(['escalate', 'alert', 'critical'])
+
+const STATUS_DOT_COLOR = {
+  bad:         'var(--red)',
+  watch:       'var(--amber)',
+  good:        'var(--green)',
+  'no-signal': 'var(--border2)',
 }
 
-const STATUS_STYLE = {
-  bad:        { color: 'var(--red-text)',   bg: 'var(--red-bg)',   border: 'var(--red)',   label: 'Concerned' },
-  watch:      { color: 'var(--amber-text)', bg: 'var(--amber-bg)', border: 'var(--amber)', label: 'Watch' },
-  good:       { color: 'var(--green-text)', bg: 'var(--green-bg)', border: 'var(--green)', label: 'Stable' },
-  'no-signal':{ color: 'var(--text-faint)', bg: 'transparent',     border: 'var(--border)', label: 'No data' },
+const STATUS_DOT_LABEL = {
+  bad: 'critical', watch: 'watch', good: 'good', 'no-signal': 'no signal',
 }
 
-const SEV_STYLE = {
-  critical: { color: 'var(--red-text)',   bg: 'var(--red-bg)',   border: 'var(--red)',   label: 'Critical' },
-  high:     { color: 'var(--red-text)',   bg: 'var(--red-bg)',   border: 'var(--red)',   label: 'High' },
-  medium:   { color: 'var(--amber-text)', bg: 'var(--amber-bg)', border: 'var(--amber)', label: 'Medium' },
-  low:      { color: 'var(--text-faint)', bg: 'transparent',     border: 'var(--border)', label: 'Low' },
+function sevStyle(severity) {
+  if (severity === 'critical') return { label: 'Critical', bg: C.redBg,   color: C.redText,   border: C.red   }
+  if (severity === 'high')     return { label: 'High',     bg: C.amberBg, color: C.amberText, border: C.amber }
+  return                              { label: 'Medium',   bg: C.amberBg, color: C.amberText, border: C.amber }
 }
 
 function timeAgo(isoStr) {
   if (!isoStr) return null
-  const diff = Date.now() - new Date(isoStr).getTime()
+  const diff  = Date.now() - new Date(isoStr).getTime()
   const mins  = Math.floor(diff / 60000)
   const hours = Math.floor(diff / 3600000)
   const days  = Math.floor(diff / 86400000)
@@ -76,25 +60,17 @@ function timeAgo(isoStr) {
   return `${days}d ago`
 }
 
-function Sparkline({ values, color = 'currentColor', width = 52, height = 24 }) {
-  if (!values || values.length < 2) return <div style={{ width, height }} />
-  const min = Math.min(...values)
-  const max = Math.max(...values)
-  const range = max - min || 1
-  const pad = 2
-  const w = width
-  const h = height
-  const points = values.map((v, i) => {
-    const x = pad + (i / (values.length - 1)) * (w - pad * 2)
-    const y = pad + ((max - v) / range) * (h - pad * 2)
-    return `${x.toFixed(1)},${y.toFixed(1)}`
-  }).join(' ')
-  return (
-    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} style={{ flexShrink: 0 }}>
-      <polyline points={points} fill="none" stroke={color} strokeWidth="1.5" strokeLinejoin="round" opacity="0.85"/>
-    </svg>
-  )
+function nextCheckLabel() {
+  const now  = new Date()
+  const next = new Date()
+  next.setUTCHours(8, 0, 0, 0)
+  if (next <= now) next.setUTCDate(next.getUTCDate() + 1)
+  const diffHours = Math.round((next - now) / 3600000)
+  if (diffHours <= 1) return 'Next check under 1h'
+  return `Next check in ${diffHours}h`
 }
+
+// ── Loading / empty states ──────────────────────────────────────────────────
 
 function EmptyState({ onRun, refreshing }) {
   return (
@@ -106,7 +82,7 @@ function EmptyState({ onRun, refreshing }) {
       <div style={{ textAlign: 'center' }}>
         <div style={{ fontSize: 15, fontWeight: 600, color: C.text, marginBottom: 6 }}>No analysis yet</div>
         <div style={{ fontSize: 13, color: C.textMuted, maxWidth: 340, lineHeight: 1.6 }}>
-          Run your first health check so the Chief of Staff can brief you on what's happening across your business.
+          Run your first health check to see a briefing on what's happening across your business.
         </div>
       </div>
       <button
@@ -117,9 +93,6 @@ function EmptyState({ onRun, refreshing }) {
       >
         {refreshing ? 'Running analysis…' : 'Run analysis now'}
       </button>
-      <div style={{ fontSize: 12, color: C.textFaint, maxWidth: 360, textAlign: 'center', lineHeight: 1.5 }}>
-        You can also add business context in the <strong style={{ color: C.textMuted }}>Context</strong> tab or connect tools via <strong style={{ color: C.textMuted }}>Connectors</strong> to get richer insights.
-      </div>
     </div>
   )
 }
@@ -129,215 +102,141 @@ function LoadingSkeleton() {
   return (
     <div style={{ padding: '20px 0', display: 'flex', flexDirection: 'column', gap: 14 }}>
       <style>{`@keyframes cockpit-shimmer { 0%,100%{opacity:.4} 50%{opacity:.8} }`}</style>
-      <div style={{ ...shimmer, height: 220 }} />
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12 }}>
-        {[0,1,2,3].map(i => <div key={i} style={{ ...shimmer, height: 200 }} />)}
-      </div>
-      <div style={{ ...shimmer, height: 56 }} />
-    </div>
-  )
-}
-
-// ─── Sub-components ────────────────────────────────────────────────────────────
-
-function PriorityItem({ item, index }) {
-  const sev = SEV_STYLE[item.severity] || SEV_STYLE.medium
-  return (
-    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 9, padding: '9px 12px', background: 'var(--panel)', border: "1px solid var(--d-border)", borderRadius: 8 }}>
-      <div style={{ width: 18, height: 18, borderRadius: '50%', background: C.surface3, display: 'grid', placeItems: 'center', fontSize: 10, fontWeight: 700, color: C.textFaint, flexShrink: 0, marginTop: 1 }}>
-        {index + 1}
-      </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 12.5, fontWeight: 500, color: C.text, lineHeight: 1.35, marginBottom: 2 }}>{item.title}</div>
-        {item.impact && <div style={{ fontSize: 11, color: C.textMuted }}>{item.impact}</div>}
-      </div>
-      <div style={{ padding: '2px 7px', borderRadius: 100, fontSize: 9.5, fontWeight: 700, color: sev.color, background: sev.bg, border: `1px solid ${sev.border}`, flexShrink: 0, marginTop: 1, letterSpacing: '0.03em' }}>
-        {sev.label}
+      <div style={{ ...shimmer, height: 88 }} />
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 220px', gap: 14 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ ...shimmer, height: 220 }} />
+          <div style={{ ...shimmer, height: 160 }} />
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ ...shimmer, height: 180 }} />
+          <div style={{ ...shimmer, height: 140 }} />
+        </div>
       </div>
     </div>
   )
 }
 
-const AREA_NAME = {
-  'customer-service':    'Support',
-  'marketing-sales':     'Sales & Mktg',
-  'finance-accounting':  'Finance',
-  'management-strategy': 'Strategy & Ops',
-}
+// ── Newspaper article (actionable alerts) ────────────────────────────────────
 
-function CalibrationPanel({ calibration, navigateSection }) {
-  const customisedCount = calibration.filter(a => a.customised).length
-  const allDone = customisedCount === calibration.length && calibration.length > 0
+function NewspaperArticle({ alert, userId, areaLabel, onDone }) {
+  const [busy, setBusy] = useState(false)
+  const [err, setErr]   = useState(null)
+
+  const sev             = sevStyle(alert.severity)
+  const hasPendingAction = alert.execution_staged && alert.evidence?.pending_action_id
+  const rootCause       = alert.evidence?.rootCause
+  const impact          = alert.evidence?.impact
+
+  async function doApprove() {
+    if (busy) return
+    setBusy(true); setErr(null)
+    try {
+      const sb = await initSupabase()
+      const { data: { session } } = await sb.auth.getSession()
+      const res = await fetch('/api/actions/execute', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}) },
+        body:    JSON.stringify({ userId, pendingActionId: alert.evidence.pending_action_id, decision: 'approve' }),
+      })
+      const payload = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(payload?.error || 'Action failed')
+      onDone(alert.id)
+    } catch (e) { setErr(e.message); setBusy(false) }
+  }
+
+  async function doSkip() {
+    if (busy) return
+    setBusy(true); setErr(null)
+    try {
+      const sb = await initSupabase()
+      const { data: { session } } = await sb.auth.getSession()
+      const res = await fetch('/api/update-risk-alert', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}) },
+        body:    JSON.stringify({ userId, alertId: alert.id, status: 'acknowledged' }),
+      })
+      const payload = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(payload?.error || 'Could not skip')
+      onDone(alert.id)
+    } catch (e) { setErr(e.message); setBusy(false) }
+  }
 
   return (
-    <div>
-      <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: C.textFaint, marginBottom: 8 }}>
-        Monitoring Standards
-      </div>
-      <div style={{ fontSize: 12, color: C.textMuted, lineHeight: 1.55, marginBottom: 14 }}>
-        {allDone
-          ? 'All areas calibrated. The briefing reflects your business.'
-          : 'Set your own thresholds so the briefing reflects your reality, not generic defaults.'}
+    <div style={{ paddingBottom: 20, borderBottom: `1px solid ${C.border}` }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 7 }}>
+        <span style={{ padding: '2px 7px', borderRadius: 4, background: sev.bg, color: sev.color, border: `1px solid ${sev.border}`, fontSize: 10, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+          {sev.label}
+        </span>
+        <span style={{ fontSize: 12, color: C.textMuted }}>{areaLabel}</span>
+        <span style={{ marginLeft: 'auto', fontSize: 11, color: C.textFaint }}>{timeAgo(alert.created_at)}</span>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-        {calibration.map(area => (
-          <button
-            key={area.id}
-            type="button"
-            onClick={() => navigateSection?.(`dept-${area.id}?view=standards`)}
-            style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              gap: 10, padding: '9px 12px',
-              background: 'var(--panel)',
-              border: `1px solid ${area.customised ? C.accent : C.border}`,
-              borderRadius: 8, cursor: 'pointer', textAlign: 'left', width: '100%',
-              transition: 'border-color 0.15s',
-            }}
-          >
-            <span style={{ fontSize: 12.5, fontWeight: 500, color: C.text }}>
-              {AREA_NAME[area.id] || area.id}
-            </span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-              {area.customised ? (
-                <span style={{ fontSize: 10.5, fontWeight: 600, color: C.greenText, background: C.greenBg, padding: '1px 7px', borderRadius: 100, border: `1px solid var(--green)` }}>
-                  Customised ✓
-                </span>
-              ) : (
-                <span style={{ fontSize: 10.5, color: C.textFaint }}>defaults →</span>
-              )}
-            </div>
+      <h3 style={{ fontFamily: SERIF, fontSize: 21, fontWeight: 500, color: C.text, lineHeight: 1.2, margin: '0 0 6px' }}>
+        {alert.title}
+      </h3>
+      {alert.description && (
+        <p style={{ fontFamily: SERIF, fontSize: 13, fontStyle: 'italic', color: C.textMuted, lineHeight: 1.65, margin: '0 0 12px' }}>
+          {alert.description}
+        </p>
+      )}
+
+      {rootCause && (
+        <p style={{ fontSize: 13, lineHeight: 1.7, color: C.text, margin: '0 0 7px' }}>
+          <span style={{ fontWeight: 600, color: C.textMuted, marginRight: 5 }}>Because</span>{rootCause}
+        </p>
+      )}
+      {impact && (
+        <p style={{ fontSize: 13, lineHeight: 1.7, color: C.text, margin: '0 0 7px' }}>
+          <span style={{ fontWeight: 600, color: C.textMuted, marginRight: 5 }}>If ignored</span>{impact}
+        </p>
+      )}
+
+      {alert.recommended_action && (
+        <div style={{ background: C.surface2, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 14px', margin: '12px 0', fontSize: 13, lineHeight: 1.65 }}>
+          <span style={{ fontWeight: 600, color: C.green, marginRight: 5 }}>Fix</span>
+          <span style={{ color: C.text }}>{alert.recommended_action}</span>
+        </div>
+      )}
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12 }}>
+        {hasPendingAction && (
+          <button type="button" onClick={doApprove} disabled={busy} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 13px', borderRadius: 6, border: `1px solid ${C.green}`, background: C.greenBg, color: C.greenText, fontSize: 12, fontWeight: 600, cursor: busy ? 'not-allowed' : 'pointer', opacity: busy ? 0.6 : 1 }}>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+            Approve action
           </button>
-        ))}
-      </div>
-
-      {!allDone && (
-        <div style={{ marginTop: 12, fontSize: 11, color: C.textFaint, lineHeight: 1.5 }}>
-          {customisedCount}/{calibration.length} areas customised.
-          Once you add financial data, this column shows your live metrics.
-        </div>
-      )}
-    </div>
-  )
-}
-
-function GlanceRow({ item }) {
-  const isGood = item.trend === 'up-good' || item.trend === 'down-good'
-  const isBad  = item.trend === 'up-bad'  || item.trend === 'down-bad'
-  const deltaColor = isGood ? C.greenText : isBad ? C.redText : C.amberText
-  const deltaBg    = isGood ? C.greenBg   : isBad ? C.redBg   : C.amberBg
-
-  const sparkColor = isGood ? 'var(--green)' : isBad ? 'var(--red)' : 'var(--amber)'
-
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 11px', background: 'var(--panel)', border: "1px solid var(--d-border)", borderRadius: 8 }}>
-      <div style={{ fontSize: 12, color: C.textMuted, flex: 1 }}>{item.label}</div>
-      {item.sparkline?.length >= 2 && <Sparkline values={item.sparkline} color={sparkColor} width={44} height={18} />}
-      <div style={{ fontSize: 13, fontWeight: 700, color: C.text, flexShrink: 0 }}>{item.value}</div>
-      {item.delta != null && (
-        <div style={{ padding: '1px 5px', borderRadius: 4, fontSize: 11, fontWeight: 600, color: deltaColor, background: deltaBg, flexShrink: 0 }}>
-          {item.delta > 0 ? '↑' : '↓'} {Math.abs(item.delta).toFixed(1)}
-        </div>
-      )}
-    </div>
-  )
-}
-
-function DeptCard({ dept, onViewDept }) {
-  const st = STATUS_STYLE[dept.status] || STATUS_STYLE['no-signal']
-  const metricDeltaColor = dept.key_metric?.delta != null
-    ? (dept.key_metric.delta > 0 ? C.redText : C.greenText)
-    : C.textFaint
-  const sparkColor = dept.key_metric?.delta != null
-    ? (dept.key_metric.delta > 0 ? 'var(--red)' : 'var(--green)')
-    : 'var(--text-secondary)'
-
-  return (
-    <div style={{ background: 'var(--d-surface)', border: '1px solid var(--d-border)', borderRadius: 10, padding: '15px 16px', display: 'flex', flexDirection: 'column', gap: 12, cursor: 'default', boxShadow: 'var(--d-shadow)' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 30, height: 30, borderRadius: 7, background: 'var(--panel)', border: "1px solid var(--d-border)", display: 'grid', placeItems: 'center', color: C.textMuted, flexShrink: 0 }}>
-            {AREA_ICONS[dept.id]}
-          </div>
-          <div>
-            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: C.text }}>{dept.name}</div>
-            <div style={{ fontSize: 10.5, color: C.textFaint }}>{dept.role}</div>
-          </div>
-        </div>
-        <div style={{ padding: '2px 7px', borderRadius: 100, fontSize: 9.5, fontWeight: 700, color: st.color, background: st.bg, border: `1px solid ${st.border}`, flexShrink: 0, letterSpacing: '0.03em' }}>
-          {st.label}
-        </div>
-      </div>
-
-      {/* Top Issue */}
-      <div>
-        <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textFaint, marginBottom: 3 }}>Top Issue</div>
-        {dept.top_issue ? (
-          <>
-            <div style={{ fontSize: 12.5, fontWeight: 600, color: C.text, lineHeight: 1.3, marginBottom: 2 }}>{dept.top_issue.title}</div>
-            {dept.top_issue.sub && <div style={{ fontSize: 11, color: C.textMuted, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{dept.top_issue.sub}</div>}
-          </>
-        ) : (
-          <div style={{ fontSize: 12, color: C.greenText }}>No issues detected</div>
         )}
-      </div>
-
-      {/* Key Metric */}
-      {dept.key_metric ? (
-        <div style={{ background: 'var(--panel)', border: "1px solid var(--d-border)", borderRadius: 7, padding: '8px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-          <div>
-            <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase', color: C.textFaint, marginBottom: 3 }}>{dept.key_metric.label}</div>
-            <div>
-              <span style={{ fontSize: 19, fontWeight: 700, color: C.text, lineHeight: 1 }}>{dept.key_metric.value}{dept.key_metric.unit}</span>
-              {dept.key_metric.delta != null && (
-                <span style={{ fontSize: 11, fontWeight: 600, color: metricDeltaColor, marginLeft: 5 }}>
-                  {dept.key_metric.delta > 0 ? '↑' : '↓'} {Math.abs(dept.key_metric.delta).toFixed(1)}{dept.key_metric.unit}
-                </span>
-              )}
-            </div>
-          </div>
-          {dept.key_metric.sparkline?.length >= 2 && (
-            <Sparkline values={dept.key_metric.sparkline} color={sparkColor} width={52} height={26} />
-          )}
-        </div>
-      ) : (
-        <div style={{ background: 'var(--panel)', border: "1px solid var(--d-border)", borderRadius: 7, padding: '8px 10px' }}>
-          <div style={{ fontSize: 11, color: C.textFaint }}>Connect tools or add context to see metrics</div>
-        </div>
-      )}
-
-      {/* Latest Insight */}
-      {dept.latest_insight && (
-        <div>
-          <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textFaint, marginBottom: 3 }}>Latest Insight</div>
-          <div style={{ fontSize: 11.5, color: C.textMuted, lineHeight: 1.5, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>
-            {dept.latest_insight}
-          </div>
-        </div>
-      )}
-
-      {/* View link */}
-      <div style={{ marginTop: 'auto', fontSize: 11.5, color: C.accentText, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}
-        onClick={() => onViewDept?.(dept.id)}>
-        View department
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M5 12h14M12 5l7 7-7 7"/>
-        </svg>
+        <button type="button" onClick={doSkip} disabled={busy} style={{ padding: '6px 10px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: C.textMuted, fontSize: 12, cursor: busy ? 'not-allowed' : 'pointer', opacity: busy ? 0.6 : 1 }}>
+          Skip for now
+        </button>
+        {err && <span style={{ fontSize: 11, color: C.redText, marginLeft: 4 }}>{err}</span>}
       </div>
     </div>
   )
 }
 
-// ─── Main component ────────────────────────────────────────────────────────────
+// ── Watching brief (lower-tier alerts) ──────────────────────────────────────
+
+function WatchBrief({ alert, areaLabel }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 9, padding: '9px 0', borderBottom: `1px solid ${C.border}` }}>
+      <div style={{ width: 7, height: 7, borderRadius: '50%', background: C.amber, flexShrink: 0, marginTop: 4 }} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 13, fontFamily: SERIF, fontWeight: 500, color: C.text, lineHeight: 1.3, marginBottom: 2 }}>{alert.title}</div>
+        <div style={{ fontSize: 11, color: C.textFaint }}>{areaLabel}</div>
+      </div>
+    </div>
+  )
+}
+
+// ── Main component ───────────────────────────────────────────────────────────
 
 export default function CockpitSection({ user, navigateSection }) {
-  const [data, setData]         = useState(null)
-  const [loading, setLoading]   = useState(true)
+  const [data, setData]             = useState(null)
+  const [loading, setLoading]       = useState(true)
   const [refreshing, setRefreshing] = useState(false)
-  const [error, setError]       = useState(null)
-
-  const userName = user?.user_metadata?.name || user?.email?.split('@')[0] || 'there'
+  const [error, setError]           = useState(null)
+  const [dismissed, setDismissed]   = useState(new Set())
 
   const fetchData = useCallback(async () => {
     if (!user?.id) return
@@ -369,34 +268,25 @@ export default function CockpitSection({ user, navigateSection }) {
       const { data: { session } } = await sb.auth.getSession()
       const token = session?.access_token || ''
       await fetch('/api/run-health-check', {
-        method: 'POST',
+        method:  'POST',
         headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-        body: JSON.stringify({ userId: user.id }),
+        body:    JSON.stringify({ userId: user.id }),
       })
+      setDismissed(new Set())
       await fetchData()
     } catch {
-      // non-blocking — just refresh
       await fetchData()
     } finally {
       setRefreshing(false)
     }
   }
 
-  const updatedLabel = data?.last_checked ? `Last updated ${timeAgo(data.last_checked)}` : null
-
-  // ── Render states ──
-  if (loading) return (
-    <div style={{ padding: '22px 24px' }}>
-      <LoadingSkeleton />
-    </div>
-  )
+  if (loading) return <div style={{ padding: '22px 24px' }}><LoadingSkeleton /></div>
 
   if (error) return (
     <div style={{ padding: '40px 24px', textAlign: 'center', color: C.textMuted }}>
       <div style={{ fontSize: 13, marginBottom: 12 }}>{error}</div>
-      <button type="button" onClick={fetchData} style={{ fontSize: 12, color: C.accentText, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>
-        Retry
-      </button>
+      <button type="button" onClick={fetchData} style={{ fontSize: 12, color: C.accentText, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>Retry</button>
     </div>
   )
 
@@ -406,191 +296,152 @@ export default function CockpitSection({ user, navigateSection }) {
     </div>
   )
 
-  const { cos, departments, cross_dept_insight, opportunities } = data
+  // ── Derived values ──────────────────────────────────────────────────────
+  const areaLabelById = new Map((data.selected_areas || []).map(a => [a.id, a.label]))
+  const getAreaLabel  = (id) => areaLabelById.get(id) || (id || '').replace(/-/g, ' ').replace(/^[a-z]/, c => c.toUpperCase())
 
-  // ── Full Cockpit render ────────────────────────────────────────────────────
+  const visibleAlerts = (data.alerts || []).filter(a => !dismissed.has(a.id))
+  const needsAction   = visibleAlerts.filter(a => ACTIONABLE_TIERS.has(a.escalation_tier))
+  const watching      = visibleAlerts.filter(a => !ACTIONABLE_TIERS.has(a.escalation_tier))
+
+  const summaryText = data.cross_dept_insight || 'No critical issues flagged from the latest health check.'
+  const checkLabel  = data.last_checked ? timeAgo(data.last_checked) : null
+  const metrics     = data.cos?.at_a_glance || []
+
+  function handleDone(alertId) {
+    setDismissed(prev => new Set([...prev, alertId]))
+  }
+
+  // ── Render ──────────────────────────────────────────────────────────────
   return (
     <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-      {/* ── Chief of Staff Block ─────────────────────────────────────────── */}
-      <div style={{ background: 'var(--d-surface)', border: '1px solid var(--d-border)', borderRadius: 12, overflow: 'hidden', boxShadow: 'var(--d-shadow)' }}>
-
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 18px', borderBottom: '1px solid var(--d-border)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 10.5, fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase', color: C.accentText }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--green)', display: 'inline-block', animation: 'cockpit-pulse 2.4s ease-in-out infinite' }} />
-            AI Chief of Staff
-            <style>{`@keyframes cockpit-pulse { 0%,100%{opacity:1} 50%{opacity:.35} }`}</style>
+      {/* Header — company identity + AI summary */}
+      <div style={{ background: 'var(--d-surface)', border: '1px solid var(--d-border)', borderRadius: 12, padding: '18px 22px', display: 'flex', alignItems: 'center', gap: 20 }}>
+        <div style={{ flexShrink: 0 }}>
+          <div style={{ fontFamily: SERIF, fontSize: 24, fontWeight: 500, color: C.text, lineHeight: 1.15 }}>
+            {data.company_name || 'My Business'}
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            {updatedLabel && <span style={{ fontSize: 11.5, color: C.textFaint }}>{updatedLabel}</span>}
-            <button
-              type="button"
-              onClick={runHealthCheck}
-              disabled={refreshing}
-              style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 10px', borderRadius: 6, background: 'transparent', border: "1px solid var(--d-border)", color: C.textMuted, fontSize: 11.5, fontWeight: 500, cursor: refreshing ? 'not-allowed' : 'pointer', opacity: refreshing ? 0.5 : 1 }}
-            >
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ ...(refreshing ? { animation: 'spin 1s linear infinite' } : {})}}>
-                <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-              </svg>
+          {(data.selected_areas || []).length > 0 && (
+            <div style={{ fontSize: 12, color: C.textFaint, marginTop: 3 }}>
+              {data.selected_areas.length} area{data.selected_areas.length !== 1 ? 's' : ''} monitored
+            </div>
+          )}
+        </div>
+
+        <div style={{ flex: 1, paddingLeft: 20, borderLeft: '1px solid var(--d-border)' }}>
+          <p style={{ fontSize: 14, color: C.text, lineHeight: 1.65, margin: '0 0 10px' }}>{summaryText}</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 12, color: C.textFaint, flexWrap: 'wrap' }}>
+            <span style={{ width: 7, height: 7, borderRadius: '50%', background: C.green, display: 'inline-block', animation: 'cockpit-pulse 2.4s ease-in-out infinite' }} />
+            <style>{`@keyframes cockpit-pulse { 0%,100%{opacity:1} 50%{opacity:.35} }`}</style>
+            {checkLabel ? `Checked ${checkLabel}` : 'No checks run yet'}
+            <span style={{ color: C.border2 }}>·</span>
+            <span>{nextCheckLabel()}</span>
+            <button type="button" onClick={runHealthCheck} disabled={refreshing} style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 6, background: 'transparent', border: '1px solid var(--d-border)', color: C.textMuted, fontSize: 11.5, fontWeight: 500, cursor: refreshing ? 'not-allowed' : 'pointer', opacity: refreshing ? 0.5 : 1 }}>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={refreshing ? { animation: 'spin 1s linear infinite' } : {}} aria-hidden="true"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
               <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
               {refreshing ? 'Running…' : 'Refresh'}
             </button>
           </div>
         </div>
+      </div>
 
-        {/* 3-column body */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr 0.85fr' }}>
+      {/* Body — newspaper feed (left) + sidebar (right) */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 220px', gap: 16, alignItems: 'start' }}>
 
-          {/* LEFT — Greeting + priorities */}
-          <div style={{ padding: '22px 22px', borderRight: '1px solid var(--d-border)' }}>
-            <div style={{ fontFamily: '"Cormorant Garamond", "Times New Roman", serif', fontSize: 26, fontWeight: 500, lineHeight: 1.15, marginBottom: 5, color: C.text }}>
-              Good morning, {userName}.
-            </div>
-            <div style={{ fontSize: 12.5, color: C.textMuted, lineHeight: 1.5, marginBottom: 18 }}>
-              {cos.priorities.length > 0
-                ? `After reviewing all departments, I found ${cos.priorities.length} issue${cos.priorities.length !== 1 ? 's' : ''} requiring your attention.`
-                : 'Everything looks stable across your departments.'}
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-              {cos.priorities.length > 0
-                ? cos.priorities.map((p, i) => <PriorityItem key={i} item={p} index={i} />)
-                : <div style={{ fontSize: 13, color: C.greenText, padding: '10px 12px', background: C.greenBg, borderRadius: 8, border: `1px solid var(--green)` }}>No active risks detected.</div>
-              }
-            </div>
+        {/* Left — alert feed */}
+        <div>
+          {/* Needs action */}
+          <div style={{ borderTop: `2px solid ${C.text}`, paddingTop: 8, marginBottom: 18, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+            <span style={{ fontSize: 13, fontWeight: 500, color: C.text }}>Needs action</span>
+            <span style={{ fontSize: 11, color: C.textFaint }}>{needsAction.length} {needsAction.length === 1 ? 'alert' : 'alerts'}</span>
           </div>
 
-          {/* MIDDLE — Recommended move */}
-          <div style={{ padding: '22px', borderRight: '1px solid var(--d-border)', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: C.textFaint, marginBottom: 10 }}>Recommended Move</div>
-            {cos.recommended_move ? (
-              <>
-                <div style={{ fontSize: 18, fontWeight: 700, color: C.text, lineHeight: 1.2, marginBottom: 14 }}>{cos.recommended_move.action}</div>
-                {cos.recommended_move.extras?.length > 0 && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 16 }}>
-                    {cos.recommended_move.extras.map((ex, i) => (
-                      <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 12, color: C.textMuted, lineHeight: 1.4 }}>
-                        <div style={{ width: 15, height: 15, borderRadius: '50%', background: C.greenBg, border: `1px solid var(--green)`, display: 'grid', placeItems: 'center', flexShrink: 0, marginTop: 1 }}>
-                          <svg width="7" height="7" viewBox="0 0 10 10" fill="none">
-                            <path d="M2 5l2.5 2.5L8 3" stroke="var(--green)" strokeWidth="1.5" strokeLinecap="round"/>
-                          </svg>
-                        </div>
-                        {ex}
-                      </div>
-                    ))}
+          {needsAction.length === 0 ? (
+            <div style={{ fontSize: 13, color: C.greenText, background: C.greenBg, border: `1px solid ${C.green}`, borderRadius: 8, padding: '10px 14px', marginBottom: 20 }}>
+              No critical alerts right now. Business is running clean.
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+              {needsAction.map(alert => (
+                <NewspaperArticle
+                  key={alert.id}
+                  alert={alert}
+                  userId={user?.id}
+                  areaLabel={getAreaLabel(alert.category)}
+                  onDone={handleDone}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Watching */}
+          {watching.length > 0 && (
+            <>
+              <div style={{ borderTop: `2px solid ${C.text}`, paddingTop: 8, marginTop: needsAction.length > 0 ? 24 : 4, marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                <span style={{ fontSize: 13, fontWeight: 500, color: C.text }}>Watching</span>
+                <span style={{ fontSize: 11, color: C.textFaint }}>{watching.length} signal{watching.length !== 1 ? 's' : ''}</span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 20px' }}>
+                {watching.map(alert => (
+                  <WatchBrief key={alert.id} alert={alert} areaLabel={getAreaLabel(alert.category)} />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Right — sidebar */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+
+          {/* Areas */}
+          <div style={{ background: 'var(--d-surface)', border: '1px solid var(--d-border)', borderRadius: 10, padding: '14px 16px' }}>
+            <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.textFaint, marginBottom: 10 }}>Areas</div>
+            {(data.selected_areas || []).length === 0 ? (
+              <div style={{ fontSize: 12, color: C.textFaint, lineHeight: 1.5 }}>Complete onboarding to see area status.</div>
+            ) : (
+              (data.selected_areas || []).map(area => (
+                <div key={area.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0', fontSize: 12 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: STATUS_DOT_COLOR[area.status] || STATUS_DOT_COLOR['no-signal'], flexShrink: 0 }} />
+                  <span style={{ color: C.text, flex: 1 }}>{area.label}</span>
+                  <span style={{ color: C.textFaint, fontSize: 11 }}>{STATUS_DOT_LABEL[area.status] || 'no signal'}</span>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Metrics */}
+          {metrics.length > 0 && (
+            <div style={{ background: 'var(--d-surface)', border: '1px solid var(--d-border)', borderRadius: 10, padding: '14px 16px' }}>
+              <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.textFaint, marginBottom: 10 }}>Metrics</div>
+              {metrics.map((item, i) => {
+                const isBad = item.trend === 'up-bad' || item.trend === 'down-bad'
+                const valColor = isBad ? C.redText : (item.trend !== 'flat' ? C.amberText : C.text)
+                return (
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', fontSize: 12, borderBottom: i < metrics.length - 1 ? '1px solid var(--d-border)' : 'none' }}>
+                    <span style={{ color: C.textMuted }}>{item.label}</span>
+                    <span style={{ fontWeight: 500, color: valColor }}>{item.value}</span>
                   </div>
-                )}
-                <button
-                  type="button"
-                  onClick={() => navigateSection?.('home')}
-                  style={{ marginTop: 'auto', width: '100%', padding: '9px 14px', background: C.accentLight, border: `1px solid ${C.accent}`, borderRadius: 8, color: C.accentText, fontSize: 12.5, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}
-                >
-                  Discuss with Chief of Staff →
-                </button>
-              </>
-            ) : (
-              <div style={{ fontSize: 13, color: C.textMuted, marginTop: 8 }}>No specific recommendation at this time.</div>
-            )}
-          </div>
-
-          {/* RIGHT — At a Glance */}
-          <div style={{ padding: '22px' }}>
-            <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: C.textFaint, marginBottom: 10 }}>At a Glance</div>
-            {cos.at_a_glance.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {cos.at_a_glance.map((item, i) => <GlanceRow key={i} item={item} />)}
-              </div>
-            ) : (
-              <div style={{ fontSize: 12, color: C.textMuted, lineHeight: 1.55 }}>
-                Connect your tools to see live metrics here.
-              </div>
-            )}
-          </div>
-
-        </div>
-
-        {/* Confidence bar */}
-        {data.confidence != null && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 18px', borderTop: '1px solid var(--d-border)', fontSize: 11.5, color: C.textFaint }}>
-            <span>Confidence in insights</span>
-            <div style={{ flex: 1, maxWidth: 130, height: 3, background: 'var(--panel)', borderRadius: 100, overflow: 'hidden' }}>
-              <div style={{ width: `${data.confidence}%`, height: '100%', background: C.accent, borderRadius: 100 }} />
+                )
+              })}
             </div>
-            <span>{data.confidence}%</span>
-          </div>
-        )}
-      </div>
+          )}
 
-      {/* ── Department Briefing ──────────────────────────────────────────────── */}
-      <div>
-        <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: C.textFaint, marginBottom: 10 }}>
-          Department Briefing
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
-          {departments.map(dept => (
-            <DeptCard key={dept.id} dept={dept} onViewDept={(id) => navigateSection?.(`dept-${id}?view=issues`)} />
-          ))}
-        </div>
-      </div>
-
-      {/* ── Bottom Bar ──────────────────────────────────────────────────────── */}
-      <div style={{ background: 'var(--d-surface)', border: '1px solid var(--d-border)', borderRadius: 10, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', overflow: 'hidden', boxShadow: 'var(--d-shadow)' }}>
-
-        {/* Cross-dept insight */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', borderRight: '1px solid var(--d-border)', cursor: 'pointer', minWidth: 0 }}
-          onClick={() => navigateSection?.('oversight')}>
-          <div style={{ width: 26, height: 26, borderRadius: 7, background: C.accentLight, display: 'grid', placeItems: 'center', color: C.accentText, flexShrink: 0 }}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="2" fill="currentColor"/><path d="M12 5V3M12 21v-2M5 12H3M21 12h-2M7.05 7.05L5.64 5.64M18.36 18.36l-1.41-1.41M7.05 16.95l-1.41 1.41M18.36 5.64l-1.41 1.41" strokeLinecap="round"/>
-            </svg>
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: C.text, marginBottom: 1 }}>Cross-department insight</div>
-            <div style={{ fontSize: 11, color: C.textMuted, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-              {cross_dept_insight || 'Run analysis to see how departments connect.'}
+          {/* Chat link */}
+          <button
+            type="button"
+            onClick={() => navigateSection?.('home')}
+            style={{ background: 'var(--d-surface)', border: '1px solid var(--d-border)', borderRadius: 10, padding: '14px 16px', textAlign: 'left', cursor: 'pointer', width: '100%' }}
+          >
+            <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.textFaint, marginBottom: 6 }}>Ask anything</div>
+            <div style={{ fontSize: 12, color: C.textMuted, lineHeight: 1.5, marginBottom: 10 }}>Deep-dive any alert or talk through what's going on.</div>
+            <div style={{ fontSize: 12, color: C.accentText, display: 'flex', alignItems: 'center', gap: 4, fontWeight: 500 }}>
+              Open chat
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </div>
-          </div>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: C.textFaint, flexShrink: 0 }}>
-            <path d="M5 12h14M12 5l7 7-7 7"/>
-          </svg>
-        </div>
+          </button>
 
-        {/* Opportunities */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', borderRight: '1px solid var(--d-border)', cursor: 'pointer', minWidth: 0 }}
-          onClick={() => navigateSection?.('intelligence')}>
-          <div style={{ width: 26, height: 26, borderRadius: 7, background: C.greenBg, display: 'grid', placeItems: 'center', color: C.greenText, flexShrink: 0 }}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-            </svg>
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: C.text, marginBottom: 1 }}>High-impact opportunities</div>
-            <div style={{ fontSize: 11, color: C.textMuted, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-              {opportunities.length > 0 ? `${opportunities.length} identified — ${opportunities[0]}` : 'No opportunities flagged yet.'}
-            </div>
-          </div>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: C.textFaint, flexShrink: 0 }}>
-            <path d="M5 12h14M12 5l7 7-7 7"/>
-          </svg>
         </div>
-
-        {/* Ask Chief of Staff */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', cursor: 'pointer', minWidth: 0 }}
-          onClick={() => navigateSection?.('home')}>
-          <div style={{ width: 26, height: 26, borderRadius: 7, background: C.accentLight, display: 'grid', placeItems: 'center', color: C.accentText, flexShrink: 0 }}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-            </svg>
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: C.text, marginBottom: 1 }}>Ask Chief of Staff</div>
-            <div style={{ fontSize: 11, color: C.textMuted, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>Ask anything. Backed by all department data.</div>
-          </div>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: C.textFaint, flexShrink: 0 }}>
-            <path d="M5 12h14M12 5l7 7-7 7"/>
-          </svg>
-        </div>
-
       </div>
     </div>
   )

@@ -4,6 +4,7 @@
 
 import { createClient } from '@supabase/supabase-js'
 import { validateUserToken } from './lib/auth.js'
+import { getIndustry } from './lib/blueprint/catalog/index.js'
 
 const AREA_META = {
   'customer-service':     { name: 'Support',        role: 'Head of Customer Support',  key_metric: 'first_response_time', metric_label: 'Avg. Response Time', unit: 'h' },
@@ -46,7 +47,7 @@ export default async function handler(req, res) {
 
   const sb = getSupabase()
 
-  const [hcRes, snapshotsRes, alertsRes, profileRes, briefRes, stateRes, overridesRes] = await Promise.allSettled([
+  const [hcRes, snapshotsRes, alertsRes, profileRes, briefRes, stateRes, overridesRes, schemaRes] = await Promise.allSettled([
     // Latest stored health check
     sb.from('business_health_checks')
       .select('checked_at, health_score, risks, recommended_actions, summary, evidence')
@@ -64,7 +65,7 @@ export default async function handler(req, res) {
 
     // Open risk alerts for per-area top issues
     sb.from('risk_alerts')
-      .select('severity, category, title, description, recommended_action')
+      .select('*')
       .eq('user_id', userId)
       .eq('status', 'open')
       .order('created_at', { ascending: false })
@@ -92,6 +93,12 @@ export default async function handler(req, res) {
     sb.from('user_rule_overrides')
       .select('rule_id')
       .eq('user_id', userId),
+
+    // Company schema — for company name and selected areas
+    sb.from('company_schemas')
+      .select('schema')
+      .eq('user_id', userId)
+      .single(),
   ])
 
   const hc        = hcRes.status        === 'fulfilled' ? hcRes.value.data            : null
@@ -160,6 +167,13 @@ export default async function handler(req, res) {
   const areaStatuses = hc?.evidence?.governance?.area_statuses ?? []
   const statusByArea = Object.fromEntries(areaStatuses.map(a => [a.area_id, a.status]))
 
+  // ── Company identity + dynamic area list from schema ─────────────────────
+  const schemaData    = schemaRes.status === 'fulfilled' ? schemaRes.value.data?.schema : null
+  const companyName   = schemaData?.customBusinessName || getIndustry(schemaData?.industryId)?.label || null
+  const selectedAreas = Array.isArray(schemaData?.areas)
+    ? schemaData.areas.map((a) => ({ id: a.id, label: a.label, status: statusByArea[a.id] ?? 'no-signal' }))
+    : []
+
   // ── Per-area top issues from risk_alerts ──────────────────────────────────
   const issuesByArea = {}
   for (const alert of alerts) {
@@ -216,6 +230,9 @@ export default async function handler(req, res) {
     || null
 
   return res.status(200).json({
+    company_name:       companyName,
+    selected_areas:     selectedAreas,
+    alerts:             alerts,
     last_checked:       hc?.checked_at ?? null,
     health_score:       hc?.health_score ?? null,
     confidence:         intel?.confidence_level ?? null,
