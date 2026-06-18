@@ -23,7 +23,6 @@ export {
   getArea,
   getAreasForIndustry,
 } from './areas.js'
-export { AREA_CATALOG_EXTENDED } from './areas-extended.js'
 export {
   INDUSTRY_CATALOG,
   getIndustry,
