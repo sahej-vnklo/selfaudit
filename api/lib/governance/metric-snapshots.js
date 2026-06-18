@@ -142,9 +142,20 @@ function buildSnapshotForArea(area, ctx, checkedAt) {
   const sources = [...new Set(valid.map((m) => m.source).filter(Boolean))]
   const metricsByKey = normalizeGovernanceMetrics(valid)
 
+  // metricOverrides: force-write (used by simulation to test hypothetical values)
   if (ctx.metricOverrides && typeof ctx.metricOverrides === 'object') {
     for (const [key, value] of Object.entries(ctx.metricOverrides)) {
       if (value != null && Number.isFinite(Number(value))) {
+        metricsByKey[key] = Number(value)
+      }
+    }
+  }
+
+  // userMetrics: fill-only — user-defined values from Logic page.
+  // Only applied when a connector or brain hasn't already resolved the key.
+  if (ctx.userMetrics && typeof ctx.userMetrics === 'object') {
+    for (const [key, value] of Object.entries(ctx.userMetrics)) {
+      if (value != null && Number.isFinite(Number(value)) && metricsByKey[key] == null) {
         metricsByKey[key] = Number(value)
       }
     }
@@ -161,15 +172,16 @@ function buildSnapshotForArea(area, ctx, checkedAt) {
 }
 
 export function buildAreaMetricSnapshots({
-  brain    = null,
-  brief    = null,
-  normalized = null,
-  checkedAt  = new Date().toISOString(),
-  schema   = null,
+  brain           = null,
+  brief           = null,
+  normalized      = null,
+  checkedAt       = new Date().toISOString(),
+  schema          = null,
   metricOverrides = null,
+  userMetrics     = null,
 } = {}) {
   const areas = schema?.areas?.length ? schema.areas : DEFAULT_AREAS
-  const ctx   = { brain, brief, normalized, metricOverrides }
+  const ctx   = { brain, brief, normalized, metricOverrides, userMetrics }
 
   return areas.map((area) => buildSnapshotForArea(area, ctx, checkedAt))
 }

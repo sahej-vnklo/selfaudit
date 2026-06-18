@@ -539,10 +539,26 @@ export async function runBusinessHealthCheck(userId) {
     ...analyzeOperationalRisk(brain),
   ].sort((a, b) => (SEVERITY_ORDER[a.severity] ?? 4) - (SEVERITY_ORDER[b.severity] ?? 4))
 
-  const health_score        = scoreFromRisks(allRisks)
-  const opportunities       = buildOpportunities(brain, normalized)
-  const summary             = buildSummary(allRisks, brain)
-  const governanceBase      = runGovernanceMonitoring({ brain, brief, normalized, checkedAt: checked_at, userOverrides, schema })
+  const health_score  = scoreFromRisks(allRisks)
+  const opportunities = buildOpportunities(brain, normalized)
+  const summary       = buildSummary(allRisks, brain)
+
+  // Load user-defined metrics from Logic page — fill-in values for keys
+  // not already resolved from connectors or brain.
+  const { data: customMetricRows } = await sb
+    .from('user_custom_metrics')
+    .select('name, value')
+    .eq('user_id', userId)
+
+  const userMetrics   = Object.fromEntries(
+    (customMetricRows ?? []).map((r) => [r.name, Number(r.value)])
+  )
+  const hasMetrics    = Object.keys(userMetrics).length > 0
+  const hasConnectors = !!normalized
+
+  const governanceBase = runGovernanceMonitoring({
+    brain, brief, normalized, checkedAt: checked_at, userOverrides, schema, userMetrics,
+  })
 
   // Persist metric snapshots non-blocking — do not await, never blocks health check
   persistMetricSnapshots(userId, governanceBase.snapshots, sb, checked_at, schemaVersion)
@@ -551,14 +567,6 @@ export async function runBusinessHealthCheck(userId) {
 
   // Gate: skip AI diagnosis when the user has no metrics and no connector data.
   // Without real input, Claude would invent narratives against thin air.
-  const { count: metricsCount } = await sb
-    .from('user_custom_metrics')
-    .select('id', { count: 'exact', head: true })
-    .eq('user_id', userId)
-
-  const hasMetrics    = (metricsCount ?? 0) > 0
-  const hasConnectors = !!normalized
-
   const deterministicGovernanceAdvice = buildGovernanceAdvice(governanceBase)
   const governanceAdvice = (hasMetrics || hasConnectors)
     ? await enrichGovernanceWithAI({

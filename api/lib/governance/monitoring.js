@@ -83,15 +83,16 @@ function toLegacyRisk(area, finding) {
 }
 
 export function runGovernanceMonitoring({
-  brain         = null,
-  brief         = null,
-  normalized    = null,
-  checkedAt     = new Date().toISOString(),
-  userOverrides = null,
-  schema        = null,
+  brain           = null,
+  brief           = null,
+  normalized      = null,
+  checkedAt       = new Date().toISOString(),
+  userOverrides   = null,
+  schema          = null,
   metricOverrides = null,
+  userMetrics     = null,
 } = {}) {
-  const snapshots = buildAreaMetricSnapshots({ brain, brief, normalized, checkedAt, schema, metricOverrides })
+  const snapshots = buildAreaMetricSnapshots({ brain, brief, normalized, checkedAt, schema, metricOverrides, userMetrics })
 
   // Build a lookup from schemaArea.id → schemaArea so evaluators use per-user rule packs if present
   const schemaAreaMap = Object.fromEntries(
