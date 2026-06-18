@@ -2499,63 +2499,6 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                 )
               })()}
 
-              {(actionFeedLoaded && (actionFeed.pending.length > 0 || actionFeed.history.length > 0)) && (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16, marginTop: 18 }}>
-                  {actionFeed.pending.length > 0 && (
-                    <section style={styles.actionQueueCard}>
-                      <div style={styles.actionQueueEyebrow}>Action Queue</div>
-                      <div style={styles.actionQueueTitle}>Waiting for approval</div>
-                      <div style={styles.actionQueueSub}>Approve the work SelfAudit is ready to push into your tools.</div>
-                      <div style={{ marginTop: 10 }}>
-                        {actionFeed.pending.map((action) => (
-                          <PendingActionCard
-                            key={action.id}
-                            action={action}
-                            userId={user.id}
-                            onResolved={fetchActionFeed}
-                          />
-                        ))}
-                      </div>
-                    </section>
-                  )}
-
-                  {actionFeed.history.length > 0 && (
-                    <section style={styles.executionHistoryCard}>
-                      <div style={styles.actionQueueEyebrow}>Execution History</div>
-                      <div style={styles.actionQueueTitle}>What already ran</div>
-                      <div style={styles.actionQueueSub}>A quick view of draft creation, posts, pushes, and anything that failed.</div>
-                      <div style={{ marginTop: 10 }}>
-                        {actionFeed.history.slice(0, 5).map((log) => (
-                          <div key={log.id} style={styles.executionHistoryRow}>
-                            <div>
-                              <div style={styles.executionHistoryAction}>{formatPendingActionType(log.action_type)}</div>
-                              <div style={styles.executionHistoryMeta}>{String(log.connector || '').toUpperCase() || 'APP'}</div>
-                            </div>
-                            <div style={{ textAlign: 'right' }}>
-                              <div style={{
-                                ...styles.executionHistoryOutcome,
-                                color: log.outcome === 'success'
-                                  ? 'var(--ember)'
-                                  : log.outcome === 'failed'
-                                    ? 'var(--red-text)'
-                                    : 'var(--text-muted)',
-                              }}
-                              >
-                                {log.outcome}
-                              </div>
-                              <div style={styles.executionHistoryDate}>
-                                {log.executed_at
-                                  ? new Date(log.executed_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-                                  : ''}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </section>
-                  )}
-                </div>
-              )}
             </>
           )}
 

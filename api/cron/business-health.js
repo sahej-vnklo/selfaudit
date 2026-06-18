@@ -219,8 +219,9 @@ export default async function handler(req, res) {
           .eq('user_id', user.id)
           .maybeSingle()
 
+        const STAGE_TIERS = new Set(['critical', 'alert', 'escalate'])
         for (const alert of newAlerts) {
-          if (alert?.escalation_tier === 'critical' && !alert?.execution_staged) {
+          if (STAGE_TIERS.has(alert?.escalation_tier) && !alert?.execution_staged) {
             stageCriticalAction(sb, user.id, alert).catch(() => {})
           }
         }

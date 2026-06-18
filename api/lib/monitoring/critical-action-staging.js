@@ -30,7 +30,8 @@ export async function stageCriticalAction(supabase, userId, alert) {
   try {
     if (!supabase || !userId || !alert?.id) return null
     if (alert.execution_staged) return null
-    if (String(alert.escalation_tier || '').toLowerCase() !== 'critical') return null
+    const ACTIONABLE = new Set(['critical', 'alert', 'escalate'])
+    if (!ACTIONABLE.has(String(alert.escalation_tier || '').toLowerCase())) return null
 
     const action = getActionForArtifact('ACTION_PLAN')
     if (!action) return null
