@@ -4,7 +4,7 @@
 
 import { createClient } from '@supabase/supabase-js'
 import { validateUserToken } from './lib/auth.js'
-import { getIndustry } from './lib/blueprint/catalog/index.js'
+import { getIndustry, getArea } from './lib/blueprint/catalog/index.js'
 
 const AREA_META = {
   'customer-service':     { name: 'Support',        role: 'Head of Customer Support',  key_metric: 'first_response_time', metric_label: 'Avg. Response Time', unit: 'h' },
@@ -170,9 +170,13 @@ export default async function handler(req, res) {
   // ── Company identity + dynamic area list from schema ─────────────────────
   const schemaData    = schemaRes.status === 'fulfilled' ? schemaRes.value.data?.schema : null
   const companyName   = schemaData?.customBusinessName || getIndustry(schemaData?.industryId)?.label || null
-  const selectedAreas = Array.isArray(schemaData?.areas)
-    ? schemaData.areas.map((a) => ({ id: a.id, label: a.label, status: statusByArea[a.id] ?? 'no-signal' }))
-    : []
+
+  // If the schema has no areas (old schema saved before area selection was wired in),
+  // fall back to the industry's default area list from the catalog.
+  const rawAreas = Array.isArray(schemaData?.areas) && schemaData.areas.length > 0
+    ? schemaData.areas
+    : (getIndustry(schemaData?.industryId)?.defaultAreas ?? []).map(id => getArea(id)).filter(Boolean)
+  const selectedAreas = rawAreas.map((a) => ({ id: a.id, label: a.label, status: statusByArea[a.id] ?? 'no-signal' }))
 
   // ── Per-area top issues from risk_alerts ──────────────────────────────────
   const issuesByArea = {}
