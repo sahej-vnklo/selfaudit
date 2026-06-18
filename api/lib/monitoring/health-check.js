@@ -507,11 +507,26 @@ export async function runBusinessHealthCheck(userId) {
     console.warn('[health-check] brief fetch error:', briefRes.value.error.message)
   }
 
-  // 5: Pull data from all connected apps — non-blocking, failures skip gracefully
+  // 5: Pull connector data — use pre-fetched snapshot (< 4h old) when available,
+  //    fall back to live Composio call if snapshot is missing or stale
   let normalized = null
   try {
-    const connectorData = await fetchAllConnectedData(userId)
-    if (Object.keys(connectorData).length) normalized = normalizeConnectorData(connectorData)
+    const { data: snap } = await sb
+      .from('connector_snapshots')
+      .select('normalized_data, fetched_at')
+      .eq('user_id', userId)
+      .single()
+
+    const snapAgeMs = snap?.fetched_at
+      ? Date.now() - new Date(snap.fetched_at).getTime()
+      : Infinity
+
+    if (snap?.normalized_data && snapAgeMs < 4 * 60 * 60 * 1000) {
+      normalized = snap.normalized_data
+    } else {
+      const connectorData = await fetchAllConnectedData(userId)
+      if (Object.keys(connectorData).length) normalized = normalizeConnectorData(connectorData)
+    }
   } catch { /* non-blocking */ }
 
   // 7: Run all analyzers

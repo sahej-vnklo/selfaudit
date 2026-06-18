@@ -160,7 +160,7 @@ function extractFromMemory(memoryRows) {
   }
 }
 
-function extractConnectorState(profile, syncLogs) {
+function extractConnectorState(profile, syncLogs, connectorSnapshot = null) {
   const integrations = profile?.integrations || {}
   const connectedProviders = Object.entries(integrations)
     .filter(([, value]) => bool(value?.access_token))
@@ -168,10 +168,16 @@ function extractConnectorState(profile, syncLogs) {
 
   const latestLog = Array.isArray(syncLogs) && syncLogs.length > 0 ? syncLogs[0] : null
 
+  // If a connector_snapshots row exists, use it as the authoritative source for
+  // whether live data has been fetched and when — more reliable than sync_logs metadata
+  const snapshotProviders = connectorSnapshot?.providers ?? []
+  const hasSnapshotData   = snapshotProviders.length > 0
+  const latestSync        = connectorSnapshot?.fetched_at || latestLog?.synced_at || null
+
   return {
-    connectedProviders,
-    hasLiveConnectors: connectedProviders.length > 0,
-    latestConnectorSync: latestLog?.synced_at || null,
+    connectedProviders: hasSnapshotData ? snapshotProviders : connectedProviders,
+    hasLiveConnectors: hasSnapshotData || connectedProviders.length > 0,
+    latestConnectorSync: latestSync,
     recentConnectorSignals: latestLog
       ? [`${latestLog.provider} sync ${latestLog.status}${latestLog.records_fetched ? ` (${latestLog.records_fetched} records)` : ''}`]
       : [],
@@ -269,6 +275,7 @@ export async function synthesizeUserIntelligence(userId, options = {}) {
     syncLogsResult,
     previousProfileResult,
     existingPrefsResult,
+    connectorSnapshotResult,
   ] = await Promise.all([
     supabase
       .from('reports')
@@ -308,6 +315,11 @@ export async function synthesizeUserIntelligence(userId, options = {}) {
       .select('id')
       .eq('user_id', userId)
       .maybeSingle(),
+    supabase
+      .from('connector_snapshots')
+      .select('providers, fetched_at')
+      .eq('user_id', userId)
+      .maybeSingle(),
   ])
 
   if (reportsResult.error)         console.warn('[synthesize] reports fetch error:', reportsResult.error.message)
@@ -323,10 +335,11 @@ export async function synthesizeUserIntelligence(userId, options = {}) {
   const syncLogs        = syncLogsResult.data        ?? []
   const previousProfile = previousProfileResult.data ?? null
   const existingPrefs   = existingPrefsResult.data   ?? null
+  const connectorSnapshot = connectorSnapshotResult.data ?? null
 
   const reportData = extractFromReports(reports)
   const memoryData = extractFromMemory(memoryRows)
-  const connectorData = extractConnectorState(profile, syncLogs)
+  const connectorData = extractConnectorState(profile, syncLogs, connectorSnapshot)
   const combinedDomains = uniq([...reportData.domainsAudited, ...memoryData.domainsAudited]).slice(0, 12)
   // Use raw arrays so countTop sees true frequencies — merging the already-summarised
   // repeatedBlockers arrays would discard frequency data and double-count items

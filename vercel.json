@@ -12,6 +12,7 @@
     "api/dual-agent.js":                  { "memory": 512, "maxDuration": 60 }
   },
   "crons": [
+    { "path": "/api/cron/sync-connectors",      "schedule": "30 5 * * *" },
     { "path": "/api/intelligence-synthesis",    "schedule": "0 6 * * *" },
     { "path": "/api/cron/business-health",      "schedule": "0 8 * * *" },
     { "path": "/api/cron/weekly-digest",        "schedule": "0 9 * * 1" }
