@@ -17,6 +17,7 @@ function applyOverrides(unit, customizations) {
   return {
     ...unit,
     label: overrides.label || unit.label,
+    description: overrides.description !== undefined ? overrides.description : unit.description,
     properties: [
       ...(unit.properties || []).map(p => ({
         ...p,
@@ -42,6 +43,7 @@ function applyOverrides(unit, customizations) {
 
 function EditUnitModal({ unit, onSave, onClose }) {
   const [label, setLabel] = useState(unit.label)
+  const [description, setDescription] = useState(unit.description || '')
   const [properties, setProperties] = useState(
     (unit.properties || []).map(p => ({ ...p }))
   )
@@ -88,6 +90,7 @@ function EditUnitModal({ unit, onSave, onClose }) {
 
     await onSave(unit.id, {
       label,
+      description,
       properties: propOverrides,
       links: linkOverrides,
       customProperties,
@@ -126,11 +129,21 @@ function EditUnitModal({ unit, onSave, onClose }) {
         </div>
 
         {/* Label */}
-        <Field label="Label">
+        <Field label="Name">
           <input
             value={label}
             onChange={e => setLabel(e.target.value)}
             style={inputStyle}
+          />
+        </Field>
+
+        {/* Definition */}
+        <Field label="Definition">
+          <textarea
+            value={description}
+            onChange={e => setDescription(e.target.value)}
+            rows={3}
+            style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.5 }}
           />
         </Field>
 

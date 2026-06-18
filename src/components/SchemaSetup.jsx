@@ -27,78 +27,131 @@ async function getSessionToken() {
   return session?.access_token || ''
 }
 
-function UnitDrawer({ unit, areaLabel, customLabel, onSave, onClose, allUnits }) {
-  const [name, setName] = useState(customLabel || unit.label)
+function UnitDrawer({ unit, areaLabel, pendingOverride, onSave, onClose, allUnits }) {
+  const [name, setName] = useState(pendingOverride?.label || unit.label)
+  const [description, setDescription] = useState(
+    pendingOverride?.description !== undefined ? pendingOverride.description : (unit.description || '')
+  )
+  const [properties, setProperties] = useState(() => {
+    const propOverrides = pendingOverride?.properties || {}
+    const customProps = pendingOverride?.customProperties || {}
+    return [
+      ...(unit.properties || []).map(p => ({
+        ...p,
+        label: propOverrides[p.key]?.label || p.label,
+        _core: true,
+      })),
+      ...Object.entries(customProps).map(([key, val]) => ({
+        key,
+        label: val.label || key,
+        type: val.type || 'string',
+        _core: false,
+      })),
+    ]
+  })
+  const [links, setLinks] = useState(() => {
+    const linkOverrides = pendingOverride?.links || {}
+    return (unit.links || []).map(l => ({
+      ...l,
+      label: linkOverrides[l.id]?.label || l.label,
+    }))
+  })
+  const [newPropKey, setNewPropKey] = useState('')
+  const [newPropLabel, setNewPropLabel] = useState('')
 
   const SectionLabel = ({ text }) => (
-    <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.09em', color: CARD.label, marginBottom: 6, marginTop: 18 }}>{text}</div>
+    <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.09em', color: CARD.label, marginBottom: 6, marginTop: 16 }}>{text}</div>
   )
+
+  const inputStyle = {
+    width: '100%', background: CARD.inputBg, border: `1px solid ${CARD.border}`,
+    color: CARD.heading, fontSize: 12, padding: '6px 9px', boxSizing: 'border-box',
+  }
+
+  const updatePropLabel = (key, val) =>
+    setProperties(prev => prev.map(p => p.key === key ? { ...p, label: val } : p))
+
+  const updateLinkLabel = (id, val) =>
+    setLinks(prev => prev.map(l => l.id === id ? { ...l, label: val } : l))
+
+  const removeCustomProp = (key) =>
+    setProperties(prev => prev.filter(p => p.key !== key))
+
+  const addCustomProp = () => {
+    const k = newPropKey.trim().toLowerCase().replace(/\s+/g, '_')
+    if (!k || !newPropLabel.trim()) return
+    if (properties.find(p => p.key === k)) return
+    setProperties(prev => [...prev, { key: k, label: newPropLabel.trim(), type: 'string', _core: false }])
+    setNewPropKey('')
+    setNewPropLabel('')
+  }
+
+  const handleSave = () => {
+    const propOverrides = {}
+    properties.filter(p => p._core).forEach(p => { propOverrides[p.key] = { label: p.label } })
+    const customProperties = {}
+    properties.filter(p => !p._core).forEach(p => { customProperties[p.key] = { label: p.label, type: p.type || 'string' } })
+    const linkOverrides = {}
+    links.forEach(l => { linkOverrides[l.id] = { label: l.label } })
+    onSave(unit.id, { label: name.trim() || unit.label, description, properties: propOverrides, links: linkOverrides, customProperties })
+    onClose()
+  }
 
   return (
     <div style={{
-      position: 'absolute', top: 0, right: 0, bottom: 0, width: 280,
+      position: 'absolute', top: 0, right: 0, bottom: 0, width: 320,
       background: CARD.bg, borderLeft: `1px solid ${CARD.border}`,
       padding: 20, overflowY: 'auto', zIndex: 10,
       animation: 'slideInRight 0.2s ease',
     }}>
       <style>{`@keyframes slideInRight { from { transform: translateX(20px); opacity: 0 } to { transform: none; opacity: 1 } }`}</style>
 
-      <button onClick={onClose} style={{ background: 'none', border: 'none', color: CARD.label, fontSize: 12, cursor: 'pointer', marginBottom: 16, padding: 0, display: 'flex', alignItems: 'center', gap: 4 }}>
+      <button onClick={onClose} style={{ background: 'none', border: 'none', color: CARD.label, fontSize: 12, cursor: 'pointer', marginBottom: 12, padding: 0 }}>
         ← back
       </button>
 
-      <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.09em', color: C.accentText, marginBottom: 4 }}>{areaLabel}</div>
-      <div style={{ fontSize: 16, fontWeight: 700, color: CARD.heading, marginBottom: 4 }}>{unit.label}</div>
-      <div style={{ fontSize: 12, color: CARD.body, lineHeight: 1.6, marginBottom: 4 }}>{unit.description}</div>
+      <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.09em', color: C.accentText, marginBottom: 2 }}>{areaLabel}</div>
+      <div style={{ fontSize: 11, color: CARD.label, fontFamily: 'monospace', marginBottom: 14 }}>{unit.id}</div>
 
-      <SectionLabel text="Rename" />
-      <input
-        value={name}
-        onChange={e => setName(e.target.value)}
-        style={{
-          width: '100%', background: CARD.inputBg, border: `1px solid ${CARD.border}`,
-          color: CARD.heading, fontSize: 13, padding: '7px 10px',
-        }}
+      <SectionLabel text="Name" />
+      <input value={name} onChange={e => setName(e.target.value)} style={inputStyle} />
+
+      <SectionLabel text="Definition" />
+      <textarea
+        value={description}
+        onChange={e => setDescription(e.target.value)}
+        rows={3}
+        style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.5 }}
       />
 
-      {unit.interfaces?.length > 0 && (
-        <>
-          <SectionLabel text="Capabilities" />
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-            {unit.interfaces.map(i => (
-              <span key={i} style={{ fontSize: 10, padding: '3px 8px', border: `1px solid ${CARD.pillBorder}`, color: CARD.body, background: '#fff' }}>{i}</span>
-            ))}
+      <SectionLabel text="Properties" />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+        {properties.map(p => (
+          <div key={p.key} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <div style={{ fontSize: 10, color: CARD.label, width: 72, flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.key}</div>
+            <input value={p.label} onChange={e => updatePropLabel(p.key, e.target.value)} style={{ ...inputStyle, flex: 1 }} />
+            {!p._core && (
+              <button onClick={() => removeCustomProp(p.key)} style={{ background: 'none', border: 'none', color: CARD.label, cursor: 'pointer', fontSize: 15, padding: '0 2px', lineHeight: 1, flexShrink: 0 }}>×</button>
+            )}
           </div>
-        </>
-      )}
+        ))}
+      </div>
+      <div style={{ display: 'flex', gap: 5, marginTop: 7 }}>
+        <input value={newPropKey} onChange={e => setNewPropKey(e.target.value)} placeholder="key" style={{ ...inputStyle, flex: 1, fontSize: 11 }} />
+        <input value={newPropLabel} onChange={e => setNewPropLabel(e.target.value)} placeholder="label" style={{ ...inputStyle, flex: 1, fontSize: 11 }} />
+        <button onClick={addCustomProp} style={{ background: C.accent, border: 'none', color: '#fff', padding: '6px 10px', fontSize: 11, cursor: 'pointer', flexShrink: 0 }}>+</button>
+      </div>
 
-      {unit.properties?.length > 0 && (
-        <>
-          <SectionLabel text="Properties tracked" />
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            {unit.properties.map(p => (
-              <div key={p.key} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: `1px solid ${CARD.border}`, fontSize: 12 }}>
-                <span style={{ color: CARD.heading, fontWeight: 500 }}>{p.label}</span>
-                <span style={{ color: CARD.label, fontSize: 10, background: CARD.inputBg, padding: '1px 6px' }}>{p.type}</span>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-
-      {unit.links?.length > 0 && (
+      {links.length > 0 && (
         <>
           <SectionLabel text="Relations" />
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            {unit.links.map(l => {
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {links.map(l => {
               const targetLabel = allUnits?.[l.to]?.label || l.to
               return (
-                <div key={l.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: `1px solid ${CARD.border}`, fontSize: 12 }}>
-                  <div>
-                    <div style={{ color: CARD.heading, fontWeight: 500 }}>{l.label}</div>
-                    <div style={{ color: CARD.label, fontSize: 10, marginTop: 1 }}>→ {targetLabel}</div>
-                  </div>
-                  <span style={{ color: CARD.label, fontSize: 10, background: CARD.inputBg, padding: '1px 6px', flexShrink: 0 }}>{l.cardinality}</span>
+                <div key={l.id}>
+                  <div style={{ fontSize: 10, color: CARD.label, marginBottom: 3 }}>→ {targetLabel} <span style={{ opacity: 0.6 }}>({l.cardinality})</span></div>
+                  <input value={l.label} onChange={e => updateLinkLabel(l.id, e.target.value)} style={inputStyle} />
                 </div>
               )
             })}
@@ -107,7 +160,7 @@ function UnitDrawer({ unit, areaLabel, customLabel, onSave, onClose, allUnits })
       )}
 
       <button
-        onClick={() => { onSave(unit.id, name.trim() || unit.label); onClose() }}
+        onClick={handleSave}
         style={{
           marginTop: 24, width: '100%', background: C.accent, border: 'none',
           color: '#fff', padding: '10px', fontSize: 13, fontWeight: 600, cursor: 'pointer',
@@ -127,7 +180,7 @@ export default function SchemaSetup({ user, onComplete }) {
   const [selectedIndustry, setSelectedIndustry] = useState(null)
   const [selectedAreas, setSelectedAreas]       = useState([])
   const [selectedUnits, setSelectedUnits]       = useState({})
-  const [customLabels, setCustomLabels]         = useState({})
+  const [pendingOverrides, setPendingOverrides] = useState({})
   const [editingUnit, setEditingUnit]           = useState(null) // { areaId, unitId }
   const [saving, setSaving]             = useState(false)
   const [error, setError]               = useState('')
@@ -198,6 +251,16 @@ export default function SchemaSetup({ user, onComplete }) {
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data?.error || 'Could not save your blueprint.')
+
+      // Apply any unit customizations made during onboarding
+      if (Object.keys(pendingOverrides).length > 0) {
+        await fetch('/api/schema-customizations', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ userId: user.id, customizations: { unitTypes: pendingOverrides } }),
+        })
+      }
+
       onComplete()
     } catch (err) {
       setError(err?.message || 'Could not save your blueprint.')
@@ -376,7 +439,7 @@ export default function SchemaSetup({ user, onComplete }) {
                       </div>
                       {units.map(unit => {
                         const on = selUnits.includes(unit.id)
-                        const displayLabel = customLabels[unit.id] || unit.label
+                        const displayLabel = pendingOverrides[unit.id]?.label || unit.label
                         return (
                           <div
                             key={unit.id}
@@ -428,9 +491,9 @@ export default function SchemaSetup({ user, onComplete }) {
                   <UnitDrawer
                     unit={unit}
                     areaLabel={area.label}
-                    customLabel={customLabels[unit.id]}
+                    pendingOverride={pendingOverrides[unit.id]}
                     allUnits={catalog.units}
-                    onSave={(unitId, newLabel) => setCustomLabels(prev => ({ ...prev, [unitId]: newLabel }))}
+                    onSave={(unitId, overrides) => setPendingOverrides(prev => ({ ...prev, [unitId]: overrides }))}
                     onClose={() => setEditingUnit(null)}
                   />
                 )
