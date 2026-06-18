@@ -184,6 +184,9 @@ export default function SchemaSetup({ user, onComplete }) {
   const [editingUnit, setEditingUnit]           = useState(null) // { areaId, unitId }
   const [saving, setSaving]             = useState(false)
   const [error, setError]               = useState('')
+  const [showCustomPanel, setShowCustomPanel]   = useState(false)
+  const [customBizName, setCustomBizName]       = useState('')
+  const [customBizDesc, setCustomBizDesc]       = useState('')
 
   useEffect(() => {
     fetch('/api/catalog')
@@ -202,8 +205,22 @@ export default function SchemaSetup({ user, onComplete }) {
   }
 
   const pickIndustry = (industryId) => {
+    if (industryId === 'other') {
+      setShowCustomPanel(true)
+      return
+    }
     transitionTo('areas', () => {
       setSelectedIndustry(industryId)
+      setSelectedAreas([])
+      setSelectedUnits({})
+    })
+  }
+
+  const submitCustomBusiness = () => {
+    if (!customBizName.trim()) return
+    setShowCustomPanel(false)
+    transitionTo('areas', () => {
+      setSelectedIndustry('other')
       setSelectedAreas([])
       setSelectedUnits({})
     })
@@ -270,7 +287,9 @@ export default function SchemaSetup({ user, onComplete }) {
   }
 
   const areasForIndustry = catalog
-    ? Object.values(catalog.areas).filter(a => a.industries.includes(selectedIndustry))
+    ? (selectedIndustry === 'other'
+        ? Object.values(catalog.areas)
+        : Object.values(catalog.areas).filter(a => a.industries.includes(selectedIndustry)))
     : []
 
   const unitsForArea = (areaId) => {
@@ -280,9 +299,11 @@ export default function SchemaSetup({ user, onComplete }) {
     return area.unitIds.map(uid => catalog.units[uid]).filter(Boolean)
   }
 
-  const industryLabel = selectedIndustry && catalog
-    ? catalog.industries.find(i => i.id === selectedIndustry)?.label || ''
-    : ''
+  const industryLabel = selectedIndustry === 'other'
+    ? (customBizName.trim() || 'Something else')
+    : (selectedIndustry && catalog
+        ? catalog.industries.find(i => i.id === selectedIndustry)?.label || ''
+        : '')
 
   const phaseStyle = {
     opacity: phaseVisible ? 1 : 0,
@@ -301,7 +322,7 @@ export default function SchemaSetup({ user, onComplete }) {
 
         {/* ── Phase: Industry ─────────────────────────────────────────── */}
         {phase === 'industry' && (
-          <div style={{ ...phaseStyle, flex: 1, padding: 24, overflowY: 'auto' }}>
+          <div style={{ ...phaseStyle, flex: 1, padding: 24, overflowY: 'auto', position: 'relative' }}>
             {catalogLoading ? (
               <div style={{ color: '#888', fontSize: 14, padding: 40 }}>Loading…</div>
             ) : (
@@ -336,74 +357,197 @@ export default function SchemaSetup({ user, onComplete }) {
                 </div>
               </>
             )}
+
+            {/* ── Custom business panel ──────────────────────────────── */}
+            {showCustomPanel && (
+              <div style={{
+                position: 'absolute', top: 0, right: 0, bottom: 0, width: 320,
+                background: CARD.bg, borderLeft: `1px solid ${CARD.border}`,
+                padding: 24, display: 'flex', flexDirection: 'column', gap: 20,
+                animation: 'slideInRight 0.2s ease', zIndex: 10,
+              }}>
+                <button onClick={() => setShowCustomPanel(false)} style={{ background: 'none', border: 'none', color: CARD.label, fontSize: 12, cursor: 'pointer', padding: 0, alignSelf: 'flex-start' }}>
+                  ← back
+                </button>
+
+                <div>
+                  <div style={{ fontSize: 18, fontWeight: 700, color: CARD.heading, marginBottom: 6 }}>Tell us about your business</div>
+                  <div style={{ fontSize: 12, color: CARD.body, lineHeight: 1.5 }}>We'll use this to personalise your setup.</div>
+                </div>
+
+                <div>
+                  <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.09em', color: CARD.label, marginBottom: 6 }}>Business name</div>
+                  <input
+                    value={customBizName}
+                    onChange={e => setCustomBizName(e.target.value)}
+                    placeholder="e.g. Acme Logistics"
+                    autoFocus
+                    onKeyDown={e => e.key === 'Enter' && submitCustomBusiness()}
+                    style={{ width: '100%', background: CARD.inputBg, border: `1px solid ${CARD.border}`, color: CARD.heading, fontSize: 13, padding: '8px 10px', boxSizing: 'border-box' }}
+                  />
+                </div>
+
+                <div>
+                  <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.09em', color: CARD.label, marginBottom: 6 }}>What do you do? <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span></div>
+                  <textarea
+                    value={customBizDesc}
+                    onChange={e => setCustomBizDesc(e.target.value)}
+                    placeholder="One or two lines about your business"
+                    rows={3}
+                    style={{ width: '100%', background: CARD.inputBg, border: `1px solid ${CARD.border}`, color: CARD.heading, fontSize: 13, padding: '8px 10px', boxSizing: 'border-box', resize: 'none', lineHeight: 1.5 }}
+                  />
+                </div>
+
+                <button
+                  onClick={submitCustomBusiness}
+                  disabled={!customBizName.trim()}
+                  style={{
+                    marginTop: 'auto', background: customBizName.trim() ? C.accent : CARD.inputBg,
+                    border: 'none', color: customBizName.trim() ? '#fff' : CARD.label,
+                    padding: '11px', fontSize: 13, fontWeight: 600,
+                    cursor: customBizName.trim() ? 'pointer' : 'not-allowed', transition: 'background 0.15s',
+                  }}
+                >
+                  Continue →
+                </button>
+              </div>
+            )}
           </div>
         )}
 
         {/* ── Phase: Areas ────────────────────────────────────────────── */}
         {phase === 'areas' && (
-          <div style={{ ...phaseStyle, flex: 1, padding: 24, overflowY: 'auto' }}>
-            <div style={{ fontSize: 13, color: '#AAAAAA', marginBottom: 20 }}>
-              Select the areas you want to monitor
-            </div>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-              gap: 8,
-            }}>
-              {areasForIndustry.map(area => {
-                const on = selectedAreas.includes(area.id)
-                return (
-                  <button
-                    key={area.id}
-                    onClick={() => toggleArea(area.id)}
-                    className={on ? 'sa-area-card sa-area-on' : 'sa-area-card'}
-                    style={{
-                      textAlign: 'left',
-                      background: on ? '#111' : CARD.bg,
-                      border: `1px solid ${on ? C.accent : CARD.border}`,
-                      padding: '16px',
-                      cursor: 'pointer',
-                      minHeight: 90,
-                      transition: 'border-color 0.15s, background 0.15s',
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-                      <div className="sa-area-label" style={{ fontSize: 13, fontWeight: 700, color: CARD.heading, transition: 'color 0.15s' }}>{area.label}</div>
-                      <div style={{
-                        width: 14, height: 14, flexShrink: 0, marginTop: 1,
-                        border: `1px solid ${on ? C.accent : CARD.pillBorder}`,
-                        background: on ? C.accent : 'transparent',
-                        transition: 'background 0.15s, border-color 0.15s',
-                      }} />
-                    </div>
-                    <div className="sa-area-desc" style={{ fontSize: 11, color: CARD.body, lineHeight: 1.5, transition: 'color 0.15s' }}>{area.objective}</div>
-                  </button>
-                )
-              })}
-            </div>
+          selectedIndustry === 'other' ? (
+            /* ── "Something else": single tall scrollable card ────────── */
+            <div style={{ ...phaseStyle, flex: 1, padding: 24, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+              <div style={{ fontSize: 13, color: '#AAAAAA', marginBottom: 16 }}>
+                Select the areas you want to monitor
+              </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 24, flexWrap: 'wrap', gap: 12 }}>
-              <button
-                onClick={() => transitionTo('industry', () => { setSelectedIndustry(null) })}
-                style={{ background: 'none', border: `1px solid #444`, color: '#AAAAAA', padding: '9px 16px', fontSize: 12, cursor: 'pointer' }}
-              >
-                Back
-              </button>
-              <button
-                onClick={confirmAreas}
-                disabled={!selectedAreas.length}
-                style={{
-                  background: selectedAreas.length ? C.accent : '#2A2A2A',
-                  border: 'none', color: selectedAreas.length ? '#fff' : '#666',
-                  padding: '10px 20px', fontSize: 13, fontWeight: 600,
-                  cursor: selectedAreas.length ? 'pointer' : 'not-allowed',
-                  transition: 'background 0.15s',
-                }}
-              >
-                Continue →
-              </button>
+              <div style={{ flex: 1, overflow: 'hidden', display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+                {/* Tall single card — all 46 areas */}
+                <div style={{
+                  width: 220, flexShrink: 0, height: '100%',
+                  background: CARD.bg, border: `1px solid ${CARD.border}`,
+                  overflowY: 'auto', display: 'flex', flexDirection: 'column',
+                }}>
+                  {areasForIndustry.map(area => {
+                    const on = selectedAreas.includes(area.id)
+                    return (
+                      <button
+                        key={area.id}
+                        onClick={() => toggleArea(area.id)}
+                        style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                          gap: 10, padding: '10px 14px', textAlign: 'left',
+                          background: on ? '#111' : 'transparent',
+                          border: 'none', borderBottom: `1px solid ${CARD.border}`,
+                          cursor: 'pointer', transition: 'background 0.12s', flexShrink: 0,
+                        }}
+                        onMouseEnter={e => { if (!on) e.currentTarget.style.background = CARD.bgHover }}
+                        onMouseLeave={e => { if (!on) e.currentTarget.style.background = 'transparent' }}
+                      >
+                        <span style={{ fontSize: 12, fontWeight: 600, color: on ? '#E8E4DC' : CARD.heading, transition: 'color 0.12s' }}>{area.label}</span>
+                        <div style={{
+                          width: 12, height: 12, flexShrink: 0,
+                          border: `1px solid ${on ? C.accent : CARD.pillBorder}`,
+                          background: on ? C.accent : 'transparent',
+                          transition: 'background 0.12s, border-color 0.12s',
+                        }} />
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 }}>
+                <button
+                  onClick={() => transitionTo('industry', () => { setSelectedIndustry(null) })}
+                  style={{ background: 'none', border: `1px solid #444`, color: '#AAAAAA', padding: '9px 16px', fontSize: 12, cursor: 'pointer' }}
+                >
+                  Back
+                </button>
+                <button
+                  onClick={confirmAreas}
+                  disabled={!selectedAreas.length}
+                  style={{
+                    background: selectedAreas.length ? C.accent : '#2A2A2A',
+                    border: 'none', color: selectedAreas.length ? '#fff' : '#666',
+                    padding: '10px 20px', fontSize: 13, fontWeight: 600,
+                    cursor: selectedAreas.length ? 'pointer' : 'not-allowed',
+                    transition: 'background 0.15s',
+                  }}
+                >
+                  Continue →
+                </button>
+              </div>
             </div>
-          </div>
+          ) : (
+            /* ── Regular industry: grid of area cards ─────────────────── */
+            <div style={{ ...phaseStyle, flex: 1, padding: 24, overflowY: 'auto' }}>
+              <div style={{ fontSize: 13, color: '#AAAAAA', marginBottom: 20 }}>
+                Select the areas you want to monitor
+              </div>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                gap: 8,
+              }}>
+                {areasForIndustry.map(area => {
+                  const on = selectedAreas.includes(area.id)
+                  return (
+                    <button
+                      key={area.id}
+                      onClick={() => toggleArea(area.id)}
+                      className={on ? 'sa-area-card sa-area-on' : 'sa-area-card'}
+                      style={{
+                        textAlign: 'left',
+                        background: on ? '#111' : CARD.bg,
+                        border: `1px solid ${on ? C.accent : CARD.border}`,
+                        padding: '16px',
+                        cursor: 'pointer',
+                        minHeight: 90,
+                        transition: 'border-color 0.15s, background 0.15s',
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                        <div className="sa-area-label" style={{ fontSize: 13, fontWeight: 700, color: CARD.heading, transition: 'color 0.15s' }}>{area.label}</div>
+                        <div style={{
+                          width: 14, height: 14, flexShrink: 0, marginTop: 1,
+                          border: `1px solid ${on ? C.accent : CARD.pillBorder}`,
+                          background: on ? C.accent : 'transparent',
+                          transition: 'background 0.15s, border-color 0.15s',
+                        }} />
+                      </div>
+                      <div className="sa-area-desc" style={{ fontSize: 11, color: CARD.body, lineHeight: 1.5, transition: 'color 0.15s' }}>{area.objective}</div>
+                    </button>
+                  )
+                })}
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 24, flexWrap: 'wrap', gap: 12 }}>
+                <button
+                  onClick={() => transitionTo('industry', () => { setSelectedIndustry(null) })}
+                  style={{ background: 'none', border: `1px solid #444`, color: '#AAAAAA', padding: '9px 16px', fontSize: 12, cursor: 'pointer' }}
+                >
+                  Back
+                </button>
+                <button
+                  onClick={confirmAreas}
+                  disabled={!selectedAreas.length}
+                  style={{
+                    background: selectedAreas.length ? C.accent : '#2A2A2A',
+                    border: 'none', color: selectedAreas.length ? '#fff' : '#666',
+                    padding: '10px 20px', fontSize: 13, fontWeight: 600,
+                    cursor: selectedAreas.length ? 'pointer' : 'not-allowed',
+                    transition: 'background 0.15s',
+                  }}
+                >
+                  Continue →
+                </button>
+              </div>
+            </div>
+          )
         )}
 
         {/* ── Phase: Units ────────────────────────────────────────────── */}
