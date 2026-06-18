@@ -255,6 +255,7 @@ export default function SchemaSetup({ user, onComplete }) {
                     <button
                       key={ind.id}
                       onClick={() => pickIndustry(ind.id)}
+                      className="sa-ind-card"
                       style={{
                         textAlign: 'left',
                         background: CARD.bg,
@@ -262,13 +263,11 @@ export default function SchemaSetup({ user, onComplete }) {
                         padding: '18px 16px',
                         cursor: 'pointer',
                         minHeight: 80,
-                        transition: 'border-color 0.15s, background 0.15s',
+                        transition: 'border-color 0.15s, background 0.15s, color 0.15s',
                       }}
-                      onMouseEnter={e => { e.currentTarget.style.borderColor = C.accent; e.currentTarget.style.background = CARD.bgHover }}
-                      onMouseLeave={e => { e.currentTarget.style.borderColor = CARD.border; e.currentTarget.style.background = CARD.bg }}
                     >
-                      <div style={{ fontSize: 14, fontWeight: 700, color: CARD.heading, lineHeight: 1.3 }}>{ind.label}</div>
-                      <div style={{ fontSize: 11, color: CARD.body, marginTop: 6, lineHeight: 1.4 }}>{ind.description}</div>
+                      <div className="sa-ind-label" style={{ fontSize: 14, fontWeight: 700, color: CARD.heading, lineHeight: 1.3, transition: 'color 0.15s' }}>{ind.label}</div>
+                      <div className="sa-ind-desc" style={{ fontSize: 11, color: CARD.body, marginTop: 6, lineHeight: 1.4, transition: 'color 0.15s' }}>{ind.description}</div>
                     </button>
                   ))}
                 </div>
@@ -294,10 +293,11 @@ export default function SchemaSetup({ user, onComplete }) {
                   <button
                     key={area.id}
                     onClick={() => toggleArea(area.id)}
+                    className={on ? 'sa-area-card sa-area-on' : 'sa-area-card'}
                     style={{
                       textAlign: 'left',
-                      background: on ? CARD.bgSelected : CARD.bg,
-                      border: `1px solid ${on ? CARD.borderSelected : CARD.border}`,
+                      background: on ? '#111' : CARD.bg,
+                      border: `1px solid ${on ? C.accent : CARD.border}`,
                       padding: '16px',
                       cursor: 'pointer',
                       minHeight: 90,
@@ -305,7 +305,7 @@ export default function SchemaSetup({ user, onComplete }) {
                     }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: CARD.heading }}>{area.label}</div>
+                      <div className="sa-area-label" style={{ fontSize: 13, fontWeight: 700, color: CARD.heading, transition: 'color 0.15s' }}>{area.label}</div>
                       <div style={{
                         width: 14, height: 14, flexShrink: 0, marginTop: 1,
                         border: `1px solid ${on ? C.accent : CARD.pillBorder}`,
@@ -313,7 +313,7 @@ export default function SchemaSetup({ user, onComplete }) {
                         transition: 'background 0.15s, border-color 0.15s',
                       }} />
                     </div>
-                    <div style={{ fontSize: 11, color: CARD.body, lineHeight: 1.5 }}>{area.objective}</div>
+                    <div className="sa-area-desc" style={{ fontSize: 11, color: CARD.body, lineHeight: 1.5, transition: 'color 0.15s' }}>{area.objective}</div>
                   </button>
                 )
               })}
@@ -514,9 +514,17 @@ export default function SchemaSetup({ user, onComplete }) {
         </div>
       )}
 
-      {/* Show edit button on hover via global style */}
       <style>{`
         div:hover > .unit-edit-btn { opacity: 1 !important; }
+
+        /* Industry cards: dark bg + white text on hover */
+        .sa-ind-card:hover { background: #111111 !important; border-color: var(--accent) !important; }
+        .sa-ind-card:hover .sa-ind-label { color: #E8E4DC !important; }
+        .sa-ind-card:hover .sa-ind-desc  { color: #888888 !important; }
+
+        /* Area cards: white text when selected (dark bg) */
+        .sa-area-on .sa-area-label { color: #E8E4DC !important; }
+        .sa-area-on .sa-area-desc  { color: #888888 !important; }
       `}</style>
     </div>
   )
