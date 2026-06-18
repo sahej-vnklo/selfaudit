@@ -75,9 +75,11 @@ export async function stageCriticalAction(supabase, userId, alert) {
       .eq('id', alert.id)
       .single()
 
+    const ACTION_TYPE_LABELS = { ACTION_PLAN: 'Action Plan', EMAIL: 'Email Draft', TEAM_BRIEF: 'Team Brief' }
     const mergedEvidence = {
       ...(alertRow?.evidence ?? {}),
-      pending_action_id: data.id,
+      pending_action_id:    data.id,
+      pending_action_label: ACTION_TYPE_LABELS[data.action_type] ?? 'Action Plan',
     }
 
     await supabase

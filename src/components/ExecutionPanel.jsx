@@ -527,9 +527,10 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
   const [copiedSection, setCopiedSection] = useState(null)
   const [pastArtifacts, setPastArtifacts] = useState([])
   const [expandedPast, setExpandedPast]   = useState(null)
-  const [stagingAction, setStagingAction] = useState(false)
-  const [stagedAction, setStagedAction] = useState(null)
-  const [stageError, setStageError] = useState(null)
+  const [showSendPopup, setShowSendPopup]     = useState(false)
+  const [sendingArtifact, setSendingArtifact] = useState(false)
+  const [sendArtifactErr, setSendArtifactErr] = useState(null)
+  const [sendArtifactDone, setSendArtifactDone] = useState(false)
 
   useEffect(() => {
     if (reportOptions.some((item) => item.id === selectedReportId)) return
@@ -576,8 +577,10 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
     setCurrentArtifactId(null)
     setCurrentArtifactType(null)
     setCopiedSection(null)
-    setStagedAction(null)
-    setStageError(null)
+    setShowSendPopup(false)
+    setSendingArtifact(false)
+    setSendArtifactErr(null)
+    setSendArtifactDone(false)
   }, [activeReport?.id])
 
   useEffect(() => {
@@ -666,8 +669,8 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
       if (data.recommendations?.recommended?.length) {
         setRecommendations(data.recommendations.recommended)
       }
-      setStagedAction(null)
-      setStageError(null)
+      setSendArtifactDone(false)
+      setSendArtifactErr(null)
       setArtifact(data.artifact)
       setCurrentArtifactId(data.savedArtifact?.id ?? null)
       setCurrentArtifactType(selectedType)
@@ -718,8 +721,69 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
     )
   }
 
+  async function doSendArtifact() {
+    if (!artifact || !scopedUserInfo?.userId || !scopedUserInfo?.email) return
+    setSendingArtifact(true)
+    setSendArtifactErr(null)
+    try {
+      const sb = await initSupabase()
+      const { data: { session } } = await sb.auth.getSession()
+      const headers = { 'Content-Type': 'application/json', ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}) }
+      const res = await fetch('/api/actions/notify', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          userId:       scopedUserInfo.userId,
+          channelType:  'email',
+          params:       { email: scopedUserInfo.email },
+          artifactData: { title: artifact.title, type: currentArtifactType, sections: artifact.sections ?? [], summary: artifact.summary ?? null },
+          savePref: false,
+        }),
+      })
+      const payload = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(payload?.error || 'Could not send')
+      setSendArtifactDone(true)
+      setShowSendPopup(false)
+    } catch (e) {
+      setSendArtifactErr(e.message)
+    } finally {
+      setSendingArtifact(false)
+    }
+  }
+
   return (
     <div style={{ ...themeVars, ...(variant === 'dashboard' ? ep.cardWrapper : ep.wrapper) }} data-pdf-hide>
+
+      {/* Send artifact popup */}
+      {showSendPopup && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)' }} onClick={() => { if (!sendingArtifact) setShowSendPopup(false) }} />
+          <div style={{ position: 'relative', background: 'var(--rich-panel-surface, var(--surface, #1a1a1a))', border: '1px solid var(--border, #333)', borderRadius: 12, padding: '22px 24px', width: '100%', maxWidth: 340, boxShadow: '0 16px 48px rgba(0,0,0,0.4)' }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>Send this artifact</div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 18, lineHeight: 1.5 }}>
+              Clicking Send emails this directly to you. No queues.
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 8, border: '1.5px solid var(--accent)', background: 'rgba(200,98,42,0.08)', marginBottom: 18 }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--accent)', flexShrink: 0 }}><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Account Email</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{scopedUserInfo?.email || 'your email'}</div>
+              </div>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--accent)', marginLeft: 'auto', flexShrink: 0 }}><path d="M20 6L9 17l-5-5"/></svg>
+            </div>
+            {sendArtifactErr && <div style={{ fontSize: 11, color: 'var(--error)', marginBottom: 10 }}>{sendArtifactErr}</div>}
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button type="button" onClick={doSendArtifact} disabled={sendingArtifact} style={{ flex: 1, padding: '8px 0', borderRadius: 7, border: 'none', background: 'var(--accent)', color: '#fff', fontSize: 13, fontWeight: 600, cursor: sendingArtifact ? 'not-allowed' : 'pointer', opacity: sendingArtifact ? 0.6 : 1 }}>
+                {sendingArtifact ? 'Sending…' : 'Send →'}
+              </button>
+              <button type="button" onClick={() => setShowSendPopup(false)} disabled={sendingArtifact} style={{ padding: '8px 14px', borderRadius: 7, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', fontSize: 13, cursor: sendingArtifact ? 'not-allowed' : 'pointer' }}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div style={ep.header}>
         <h2 style={ep.sectionTitle}>Turn This Into Action</h2>
         <p style={ep.subtitle}>SelfAudit&apos;s strongest next move from your audit findings.</p>
@@ -909,52 +973,16 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
               {PUSH_ACTIONS[currentArtifactType] && (
                 <button
                   type="button"
-                  style={{ ...ep.copyAllBtn, background: 'var(--accent)', border: '1px solid var(--accent)', color: 'var(--button-text)' }}
-                  disabled={stagingAction || !!stagedAction || !scopedUserInfo?.userId}
-                  onClick={async () => {
-                    setStagingAction(true)
-                    setStageError(null)
-                    try {
-                      let artifactToken = ''
-                      if (scopedUserInfo?.userId) {
-                        const sb = await initSupabase()
-                        const { data: { session } } = await sb.auth.getSession()
-                        artifactToken = session?.access_token || ''
-                      }
-
-                      const response = await fetch('/api/actions/stage', {
-                        method: 'POST',
-                        headers: {
-                          'Content-Type': 'application/json',
-                          ...(artifactToken ? { Authorization: `Bearer ${artifactToken}` } : {}),
-                        },
-                        body: JSON.stringify({
-                          userId: scopedUserInfo?.userId ?? null,
-                          artifactId: currentArtifactId,
-                          artifactType: currentArtifactType,
-                          artifact,
-                          ...(stageFinding ? { finding: stageFinding } : {}),
-                        }),
-                      })
-                      const data = await response.json().catch(() => ({}))
-                      if (!response.ok) throw new Error(data.error || 'Could not add this action to the queue.')
-
-                      setStagedAction({ id: data.action?.id || '', label: PUSH_ACTIONS[currentArtifactType]?.label || 'Queued' })
-                      if (typeof onActionStaged === 'function') onActionStaged()
-                    } catch (stageErr) {
-                      setStageError(stageErr?.message || 'Could not add this action to the queue.')
-                    } finally {
-                      setStagingAction(false)
-                    }
-                  }}
+                  style={{ ...ep.copyAllBtn, background: sendArtifactDone ? 'transparent' : 'var(--accent)', border: sendArtifactDone ? '1px solid var(--border)' : '1px solid var(--accent)', color: sendArtifactDone ? 'var(--text-muted)' : 'var(--button-text)' }}
+                  disabled={sendArtifactDone || !scopedUserInfo?.userId}
+                  onClick={() => setShowSendPopup(true)}
                 >
-                  {stagingAction ? '...' : stagedAction ? 'Queued ✓' : PUSH_ACTIONS[currentArtifactType]?.label}
+                  {sendArtifactDone ? 'Sent ✓' : 'Send'}
                 </button>
               )}
             </div>
           </div>
-          {stageError && <p style={ep.stageError}>{stageError}</p>}
-          {stagedAction && <p style={ep.stageNotice}>Added to your action queue. Approve it from dashboard home.</p>}
+          {sendArtifactErr && !showSendPopup && <p style={ep.stageError}>{sendArtifactErr}</p>}
           {(artifact.sections || []).map((section, idx, arr) => (
             <div key={idx} style={idx === arr.length - 1 ? ep.sectionCardLast : ep.sectionCard}>
               <div style={ep.sectionCardHeader}>

@@ -151,17 +151,34 @@ function ApprovePopup({ lead, userId, userEmail, commChannels, savedCommPref, on
     if (busy) return
     setBusy(true); setErr(null)
     try {
-      const ch      = channels.find(c => c.type === selected) ?? channels[0]
-      const params  = ch.type === 'email' ? { email: userEmail } : (ch.params ?? {})
-      const alertData = {
-        title:              lead.title,
-        description:        lead.description,
-        rootCause:          lead.evidence?.rootCause,
-        impact:             lead.evidence?.impact,
-        recommended_action: lead.recommended_action,
-        severity:           lead.severity,
-        category:           lead.category,
-        escalation_tier:    lead.escalation_tier,
+      const ch     = channels.find(c => c.type === selected) ?? channels[0]
+      const params = ch.type === 'email' ? { email: userEmail } : (ch.params ?? {})
+
+      const hasStagedArtifact = lead.execution_staged && lead.evidence?.pending_action_id
+
+      const body = {
+        userId,
+        alertId:     lead.id,
+        channelType: ch.type,
+        params,
+        savePref:    true,
+        // If a specific artifact was staged by the system, send that.
+        // Otherwise fall back to sending the alert summary.
+        ...(hasStagedArtifact
+          ? { pendingActionId: lead.evidence.pending_action_id }
+          : {
+              alertData: {
+                title:              lead.title,
+                description:        lead.description,
+                rootCause:          lead.evidence?.rootCause,
+                impact:             lead.evidence?.impact,
+                recommended_action: lead.recommended_action,
+                severity:           lead.severity,
+                category:           lead.category,
+                escalation_tier:    lead.escalation_tier,
+              }
+            }
+        ),
       }
 
       const sb = await initSupabase()
@@ -171,7 +188,7 @@ function ApprovePopup({ lead, userId, userEmail, commChannels, savedCommPref, on
       const res = await fetch('/api/actions/notify', {
         method: 'POST',
         headers,
-        body: JSON.stringify({ userId, alertId: lead.id, channelType: ch.type, params, alertData, savePref: true }),
+        body: JSON.stringify(body),
       })
       const payload = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(payload?.error || 'Could not send')
@@ -254,10 +271,14 @@ function StrategicPriorityCard({ priority, userId, userEmail, commChannels, save
   const [showPopup, setShowPopup] = useState(false)
 
   const { lead, theme_label, covered_count, covered_titles } = priority
-  const sev         = sevStyle(lead.severity)
-  const rootCause   = lead.evidence?.rootCause
-  const impact      = lead.evidence?.impact
-  const isRecurring = lead.evidence?.recurring === true
+  const sev              = sevStyle(lead.severity)
+  const rootCause        = lead.evidence?.rootCause
+  const impact           = lead.evidence?.impact
+  const isRecurring      = lead.evidence?.recurring === true
+  const hasStagedArtifact = lead.execution_staged && !!lead.evidence?.pending_action_id
+  const approveLabel     = hasStagedArtifact
+    ? `Approve: ${lead.evidence?.pending_action_label ?? 'Action Plan'}`
+    : 'Approve action'
 
   async function doSkip() {
     if (busy) return
@@ -359,7 +380,7 @@ function StrategicPriorityCard({ priority, userId, userEmail, commChannels, save
             style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 13px', borderRadius: 6, border: `1px solid ${C.green}`, background: C.greenBg, color: C.greenText, fontSize: 12, fontWeight: 600, cursor: busy ? 'not-allowed' : 'pointer', opacity: busy ? 0.6 : 1 }}
           >
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
-            Approve action
+            {approveLabel}
           </button>
           <button type="button" onClick={doSkip} disabled={busy} style={{ padding: '6px 10px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: C.textMuted, fontSize: 12, cursor: busy ? 'not-allowed' : 'pointer', opacity: busy ? 0.6 : 1 }}>
             Skip for now
