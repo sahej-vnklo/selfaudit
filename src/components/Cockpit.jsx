@@ -117,16 +117,18 @@ function LoadingSkeleton() {
   )
 }
 
-// ── Newspaper article (actionable alerts) ────────────────────────────────────
+// ── Strategic priority card (clusters of actionable alerts) ─────────────────
 
-function NewspaperArticle({ alert, userId, areaLabel, onDone }) {
-  const [busy, setBusy] = useState(false)
-  const [err, setErr]   = useState(null)
+function StrategicPriorityCard({ priority, userId, onDone }) {
+  const [busy, setBusy]       = useState(false)
+  const [err, setErr]         = useState(null)
+  const [expanded, setExpanded] = useState(false)
 
-  const sev             = sevStyle(alert.severity)
-  const hasPendingAction = alert.execution_staged && alert.evidence?.pending_action_id
-  const rootCause       = alert.evidence?.rootCause
-  const impact          = alert.evidence?.impact
+  const { lead, theme_label, covered_count, covered_titles } = priority
+  const sev              = sevStyle(lead.severity)
+  const hasPendingAction = lead.execution_staged && lead.evidence?.pending_action_id
+  const rootCause        = lead.evidence?.rootCause
+  const impact           = lead.evidence?.impact
 
   async function doApprove() {
     if (busy) return
@@ -137,11 +139,11 @@ function NewspaperArticle({ alert, userId, areaLabel, onDone }) {
       const res = await fetch('/api/actions/execute', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json', ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}) },
-        body:    JSON.stringify({ userId, pendingActionId: alert.evidence.pending_action_id, decision: 'approve' }),
+        body:    JSON.stringify({ userId, pendingActionId: lead.evidence.pending_action_id, decision: 'approve' }),
       })
       const payload = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(payload?.error || 'Action failed')
-      onDone(alert.id)
+      onDone(lead.id)
     } catch (e) { setErr(e.message); setBusy(false) }
   }
 
@@ -154,11 +156,11 @@ function NewspaperArticle({ alert, userId, areaLabel, onDone }) {
       const res = await fetch('/api/update-risk-alert', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json', ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}) },
-        body:    JSON.stringify({ userId, alertId: alert.id, status: 'acknowledged' }),
+        body:    JSON.stringify({ userId, alertId: lead.id, status: 'acknowledged' }),
       })
       const payload = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(payload?.error || 'Could not skip')
-      onDone(alert.id)
+      onDone(lead.id)
     } catch (e) { setErr(e.message); setBusy(false) }
   }
 
@@ -168,16 +170,16 @@ function NewspaperArticle({ alert, userId, areaLabel, onDone }) {
         <span style={{ padding: '2px 7px', borderRadius: 4, background: sev.bg, color: sev.color, border: `1px solid ${sev.border}`, fontSize: 10, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
           {sev.label}
         </span>
-        <span style={{ fontSize: 12, color: C.textMuted }}>{areaLabel}</span>
-        <span style={{ marginLeft: 'auto', fontSize: 11, color: C.textFaint }}>{timeAgo(alert.created_at)}</span>
+        <span style={{ fontSize: 12, color: C.textMuted }}>{theme_label}</span>
+        <span style={{ marginLeft: 'auto', fontSize: 11, color: C.textFaint }}>{timeAgo(lead.created_at)}</span>
       </div>
 
       <h3 style={{ fontFamily: SERIF, fontSize: 21, fontWeight: 500, color: C.text, lineHeight: 1.2, margin: '0 0 6px' }}>
-        {alert.title}
+        {lead.title}
       </h3>
-      {alert.description && (
+      {lead.description && (
         <p style={{ fontFamily: SERIF, fontSize: 13, fontStyle: 'italic', color: C.textMuted, lineHeight: 1.65, margin: '0 0 12px' }}>
-          {alert.description}
+          {lead.description}
         </p>
       )}
 
@@ -192,10 +194,30 @@ function NewspaperArticle({ alert, userId, areaLabel, onDone }) {
         </p>
       )}
 
-      {alert.recommended_action && (
+      {lead.recommended_action && (
         <div style={{ background: C.surface2, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 14px', margin: '12px 0', fontSize: 13, lineHeight: 1.65 }}>
           <span style={{ fontWeight: 600, color: C.green, marginRight: 5 }}>Fix</span>
-          <span style={{ color: C.text }}>{alert.recommended_action}</span>
+          <span style={{ color: C.text }}>{lead.recommended_action}</span>
+        </div>
+      )}
+
+      {covered_count > 1 && (
+        <div style={{ marginTop: 10, marginBottom: 4 }}>
+          <button
+            type="button"
+            onClick={() => setExpanded(e => !e)}
+            style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: 11, color: C.textFaint, display: 'flex', alignItems: 'center', gap: 4 }}
+          >
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: expanded ? 'rotate(90deg)' : 'none', transition: 'transform 0.15s' }} aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+            Covers {covered_count} alerts in this area
+          </button>
+          {expanded && covered_titles.length > 0 && (
+            <div style={{ marginTop: 6, paddingLeft: 14, display: 'flex', flexDirection: 'column', gap: 3 }}>
+              {covered_titles.map((title, i) => (
+                <div key={i} style={{ fontSize: 11, color: C.textFaint }}>· {title}</div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -300,9 +322,9 @@ export default function CockpitSection({ user, navigateSection }) {
   const areaLabelById = new Map((data.selected_areas || []).map(a => [a.id, a.label]))
   const getAreaLabel  = (id) => areaLabelById.get(id) || (id || '').replace(/-/g, ' ').replace(/^[a-z]/, c => c.toUpperCase())
 
-  const visibleAlerts = (data.alerts || []).filter(a => !dismissed.has(a.id))
-  const needsAction   = visibleAlerts.filter(a => ACTIONABLE_TIERS.has(a.escalation_tier))
-  const watching      = visibleAlerts.filter(a => !ACTIONABLE_TIERS.has(a.escalation_tier))
+  const priorities        = (data.strategic_priorities || []).filter(p => !dismissed.has(p.lead.id))
+  const totalAlertsCovered = priorities.reduce((sum, p) => sum + p.covered_count, 0)
+  const watching          = (data.alerts || []).filter(a => !dismissed.has(a.id) && !ACTIONABLE_TIERS.has(a.escalation_tier))
 
   const summaryText = data.cross_dept_insight || 'No critical issues flagged from the latest health check.'
   const checkLabel  = data.last_checked ? timeAgo(data.last_checked) : null
@@ -351,24 +373,25 @@ export default function CockpitSection({ user, navigateSection }) {
 
         {/* Left — alert feed */}
         <div>
-          {/* Needs action */}
+          {/* Top priorities */}
           <div style={{ borderTop: `2px solid ${C.text}`, paddingTop: 8, marginBottom: 18, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-            <span style={{ fontSize: 13, fontWeight: 500, color: C.text }}>Needs action</span>
-            <span style={{ fontSize: 11, color: C.textFaint }}>{needsAction.length} {needsAction.length === 1 ? 'alert' : 'alerts'}</span>
+            <span style={{ fontSize: 13, fontWeight: 500, color: C.text }}>Top priorities</span>
+            {totalAlertsCovered > 0 && (
+              <span style={{ fontSize: 11, color: C.textFaint }}>{totalAlertsCovered} alert{totalAlertsCovered !== 1 ? 's' : ''} distilled</span>
+            )}
           </div>
 
-          {needsAction.length === 0 ? (
+          {priorities.length === 0 ? (
             <div style={{ fontSize: 13, color: C.greenText, background: C.greenBg, border: `1px solid ${C.green}`, borderRadius: 8, padding: '10px 14px', marginBottom: 20 }}>
-              No critical alerts right now. Business is running clean.
+              No critical issues right now. Business is running clean.
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-              {needsAction.map(alert => (
-                <NewspaperArticle
-                  key={alert.id}
-                  alert={alert}
+              {priorities.map(priority => (
+                <StrategicPriorityCard
+                  key={priority.lead.id}
+                  priority={priority}
                   userId={user?.id}
-                  areaLabel={getAreaLabel(alert.category)}
                   onDone={handleDone}
                 />
               ))}
@@ -378,7 +401,7 @@ export default function CockpitSection({ user, navigateSection }) {
           {/* Watching */}
           {watching.length > 0 && (
             <>
-              <div style={{ borderTop: `2px solid ${C.text}`, paddingTop: 8, marginTop: needsAction.length > 0 ? 24 : 4, marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+              <div style={{ borderTop: `2px solid ${C.text}`, paddingTop: 8, marginTop: priorities.length > 0 ? 24 : 4, marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                 <span style={{ fontSize: 13, fontWeight: 500, color: C.text }}>Watching</span>
                 <span style={{ fontSize: 11, color: C.textFaint }}>{watching.length} signal{watching.length !== 1 ? 's' : ''}</span>
               </div>

@@ -178,6 +178,69 @@ export default async function handler(req, res) {
     : (getIndustry(schemaData?.industryId)?.defaultAreas ?? []).map(id => getArea(id)).filter(Boolean)
   const selectedAreas = rawAreas.map((a) => ({ id: a.id, label: a.label, status: statusByArea[a.id] ?? 'no-signal' }))
 
+  // ── Strategic priorities — cluster actionable alerts into max 3 themes ───
+  function buildStrategicPriorities(rawAlerts) {
+    const THEME_MAP = {
+      'finance-accounting':  'finance',
+      'revenue':             'finance',
+      'marketing-sales':     'growth',
+      'pipeline':            'growth',
+      'customer':            'customer',
+      'customer-service':    'customer',
+      'execution':           'execution',
+      'management-strategy': 'execution',
+      'goal':                'execution',
+      'operations':          'execution',
+      'product':             'product',
+      'product-engineering': 'product',
+    }
+    const THEME_LABELS = {
+      finance:   'Finance & Runway',
+      growth:    'Pipeline & Growth',
+      customer:  'Customer & Support',
+      execution: 'Execution & Strategy',
+      product:   'Product & Engineering',
+    }
+    const SEV_RANK  = { critical: 5, high: 4, medium: 3, low: 2, info: 1 }
+    const TIER_RANK = { critical: 5, alert: 4, escalate: 3, flag: 2, watch: 1 }
+    const ACTIONABLE = new Set(['critical', 'alert', 'escalate'])
+
+    const actionable = rawAlerts.filter(a => ACTIONABLE.has(a.escalation_tier))
+
+    const byTheme = new Map()
+    for (const alert of actionable) {
+      const theme = THEME_MAP[alert.category] || 'other'
+      if (!byTheme.has(theme)) byTheme.set(theme, [])
+      byTheme.get(theme).push(alert)
+    }
+
+    const themes = []
+    for (const [theme, themeAlerts] of byTheme) {
+      const lead = themeAlerts.reduce((best, a) => {
+        const aScore = (TIER_RANK[a.escalation_tier] || 0) * 10 + (SEV_RANK[a.severity] || 0)
+        const bScore = (TIER_RANK[best.escalation_tier] || 0) * 10 + (SEV_RANK[best.severity] || 0)
+        return aScore > bScore ? a : best
+      })
+      themes.push({
+        theme,
+        theme_label: THEME_LABELS[theme] || theme,
+        lead,
+        covered_count: themeAlerts.length,
+        covered_titles: themeAlerts.filter(a => a.id !== lead.id).map(a => a.title),
+      })
+    }
+
+    themes.sort((a, b) => {
+      const aScore = (TIER_RANK[a.lead.escalation_tier] || 0) * 10 + (SEV_RANK[a.lead.severity] || 0)
+      const bScore = (TIER_RANK[b.lead.escalation_tier] || 0) * 10 + (SEV_RANK[b.lead.severity] || 0)
+      return bScore - aScore
+    })
+
+    return themes.slice(0, 3)
+  }
+
+  const strategicPriorities = buildStrategicPriorities(alerts)
+
   // ── Per-area top issues from risk_alerts ──────────────────────────────────
   const issuesByArea = {}
   for (const alert of alerts) {
@@ -234,9 +297,10 @@ export default async function handler(req, res) {
     || null
 
   return res.status(200).json({
-    company_name:       companyName,
-    selected_areas:     selectedAreas,
-    alerts:             alerts,
+    company_name:         companyName,
+    selected_areas:       selectedAreas,
+    alerts:               alerts,
+    strategic_priorities: strategicPriorities,
     last_checked:       hc?.checked_at ?? null,
     health_score:       hc?.health_score ?? null,
     confidence:         intel?.confidence_level ?? null,
