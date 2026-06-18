@@ -7,29 +7,29 @@ const INDUSTRY_ALIASES = {
   saas: 'saas-software',
   ecommerce: 'ecommerce-d2c',
   professional_services: 'professional-services',
-  marketplace: 'saas-software',
-  consumer_app: 'saas-software',
-  fintech: 'saas-software',
+  marketplace: 'marketplace-platform',
+  consumer_app: 'consumer-app',
+  fintech: 'fintech-finance',
   healthcare: 'healthcare',
-  media_content: 'other',
+  media_content: 'media-creator',
 }
 
+// Areas now in the catalog — pass through as real area IDs
 const AREA_ALIASES = {
-  'marketing-sales': 'marketing-sales',
-  'finance-accounting': 'finance-accounting',
-  'customer-service': 'customer-service',
-  'management-strategy': 'management-strategy',
+  'marketing-sales':       'marketing-sales',
+  'finance-accounting':    'finance-accounting',
+  'customer-service':      'customer-service',
+  'management-strategy':   'management-strategy',
+  'product-engineering':   'product-engineering',
+  'people-hr':             'people-hr',
+  'revenue-sales':         'revenue-sales',
+  'inventory-operations':  'inventory-operations',
+  'production':            'production',
+  'client-delivery':       'client-delivery',
 }
 
+// Areas not yet in the catalog — built as lightweight custom areas
 const CUSTOM_AREA_DEFS = {
-  'product-engineering': {
-    label: 'Product & Engineering',
-    description: 'Build velocity, debt, uptime',
-  },
-  'people-hr': {
-    label: 'People & HR',
-    description: 'Team health, hiring, capacity',
-  },
   operations: {
     label: 'Operations',
     description: 'Process efficiency, delivery',
@@ -56,19 +56,24 @@ function buildAreaSelection(areaIds = [], industryId = 'other') {
     }
 
     const customArea = CUSTOM_AREA_DEFS[rawAreaId]
-    if (!customArea) continue
+    if (customArea) {
+      customAreas.push(createArea({
+        id: rawAreaId,
+        label: customArea.label,
+        description: customArea.description,
+        industries: [industryId],
+        connectors: [],
+        businessLogic: {},
+        metricFamilies: [],
+        defaultRulePack: { defaults: [], notes: [] },
+        metricMappings: [],
+      }))
+      continue
+    }
 
-    customAreas.push(createArea({
-      id: rawAreaId,
-      label: customArea.label,
-      description: customArea.description,
-      industries: [industryId],
-      connectors: [],
-      businessLogic: {},
-      metricFamilies: [],
-      defaultRulePack: { defaults: [], notes: [] },
-      metricMappings: [],
-    }))
+    // Fall through: treat as a catalog area ID directly.
+    // schema-builder does getArea(id).filter(Boolean) so invalid IDs are harmless.
+    selectedAreaIds.push(rawAreaId)
   }
 
   return { selectedAreaIds, customAreas }

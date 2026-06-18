@@ -8,6 +8,7 @@ import DashboardWelcomeTour from './DashboardWelcomeTour.jsx'
 import CockpitSection from './Cockpit.jsx'
 import DepartmentPage from './DepartmentPage.jsx'
 import SchemaSetup from './SchemaSetup.jsx'
+import SchemaManager from './SchemaManager.jsx'
 import SimulationPage from './SimulationPage.jsx'
 import { OPERATIONAL_AREAS } from '../lib/governance/areaRegistry.js'
 import './Dashboard.css'
@@ -361,7 +362,7 @@ const LEGACY_NOTIFICATION_AREA_MAP = {
   customer_experience: 'customer_health',
 }
 const GOVERNANCE_AREA_LABELS = Object.fromEntries(OPERATIONAL_AREAS.map((area) => [area.id, area.label]))
-const SECTIONS = ['home', 'oversight', 'reports', 'intelligence', 'business-state', 'alerts', 'connectors', 'simulate', 'agent', 'billing', 'account']
+const SECTIONS = ['home', 'oversight', 'reports', 'intelligence', 'business-state', 'alerts', 'connectors', 'simulate', 'agent', 'schema', 'billing', 'account']
 const INTELLIGENCE_ONLY_SECTIONS = new Set(['oversight', 'alerts', 'connectors', 'agent'])
 const WELCOME_TOUR_ROLLOUT_AT = Date.parse('2026-05-24T00:30:00-04:00')
 
@@ -2043,6 +2044,15 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
               </svg>
               <span className="navlabel">Simulate</span>
             </button>
+            <button className={`dash-navbtn${section === 'schema' ? ' active' : ''}`} data-label="Schema" aria-label="Schema" type="button" onClick={() => navigateSection('schema')}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+                <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+                <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+                <path d="M17.5 14v7M14 17.5h7"/>
+              </svg>
+              <span className="navlabel">Schema</span>
+            </button>
           </nav>
 
           <div className="dash-side-foot">
@@ -2602,6 +2612,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                 </PageShell>
               )}
               {section === 'agent'      && <AgentSection user={user} />}
+              {section === 'schema'     && <SchemaManager user={user} />}
               {section === 'cockpit'    && <CockpitSection user={user} navigateSection={navigateSection} />}
               {section === 'dept-customer-service'    && <DepartmentPage areaId="customer-service"    user={user} navigateSection={navigateSection} view={deptView} />}
               {section === 'dept-marketing-sales'     && <DepartmentPage areaId="marketing-sales"     user={user} navigateSection={navigateSection} view={deptView} />}

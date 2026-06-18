@@ -1,11 +1,20 @@
 import { createArea, createMetricDefinition, createThresholdRule, createRulePack, createCompoundRule, createMetricMapping } from '../schema.js'
+import { AREA_CATALOG_EXTENDED } from './areas-extended.js'
+
+const ALL_INDUSTRY_IDS = [
+  'saas-software', 'ecommerce-d2c', 'marketplace-platform', 'consumer-app',
+  'professional-services', 'life-sciences', 'manufacturing', 'wholesale-distribution',
+  'logistics-freight', 'retail', 'retail-hospitality', 'hospitality-fb', 'healthcare',
+  'real-estate', 'construction', 'agriculture', 'fintech-finance', 'insurance',
+  'telecommunications', 'media-creator', 'education', 'energy-utilities', 'other',
+]
 
 // ─── SaaS / Software ──────────────────────────────────────────────────────────
 
 export const AREA_CUSTOMER_SERVICE = createArea({
   id: 'customer-service',
   label: 'Customer Service',
-  industries: ['saas-software', 'ecommerce-d2c', 'professional-services'],
+  industries: ['saas-software', 'ecommerce-d2c', 'professional-services', 'retail', 'retail-hospitality'],
   connectors: ['zendesk', 'gmail'],
   businessLogic: {
     objective: 'Protect customer trust by keeping support fast, reliable, and free of repeating failures.',
@@ -43,7 +52,7 @@ export const AREA_CUSTOMER_SERVICE = createArea({
 export const AREA_FINANCE_ACCOUNTING = createArea({
   id: 'finance-accounting',
   label: 'Finance & Accounting',
-  industries: ['saas-software', 'ecommerce-d2c', 'professional-services', 'manufacturing'],
+  industries: ALL_INDUSTRY_IDS,
   connectors: ['stripe', 'quickbooks'],
   businessLogic: {
     objective: 'Protect cash, margins, and unit economics so the business can keep executing without hidden financial fragility.',
@@ -87,7 +96,7 @@ export const AREA_FINANCE_ACCOUNTING = createArea({
 export const AREA_MANAGEMENT_STRATEGY = createArea({
   id: 'management-strategy',
   label: 'Management & Strategy',
-  industries: ['saas-software', 'ecommerce-d2c', 'professional-services', 'manufacturing'],
+  industries: ALL_INDUSTRY_IDS,
   connectors: ['notion', 'google-drive', 'slack'],
   businessLogic: {
     objective: 'Keep leadership focus clear and execution disciplined so growth is not slowed by indecision or follow-through gaps.',
@@ -129,7 +138,7 @@ export const AREA_MANAGEMENT_STRATEGY = createArea({
 export const AREA_MARKETING_SALES = createArea({
   id: 'marketing-sales',
   label: 'Marketing & Sales',
-  industries: ['saas-software', 'professional-services'],
+  industries: ['saas-software', 'professional-services', 'real-estate'],
   connectors: ['hubspot', 'zoho'],
   businessLogic: {
     objective: 'Keep demand creation and revenue generation healthy enough that growth does not stall silently.',
@@ -173,7 +182,7 @@ export const AREA_MARKETING_SALES = createArea({
 export const AREA_REVENUE_SALES = createArea({
   id: 'revenue-sales',
   label: 'Revenue & Sales',
-  industries: ['ecommerce-d2c'],
+  industries: ['ecommerce-d2c', 'retail', 'retail-hospitality'],
   connectors: ['shopify', 'stripe', 'woocommerce'],
   businessLogic: {
     objective: 'Keep revenue creation healthy by watching order flow, AOV, and repeat purchase rate.',
@@ -211,7 +220,7 @@ export const AREA_REVENUE_SALES = createArea({
 export const AREA_INVENTORY_OPERATIONS = createArea({
   id: 'inventory-operations',
   label: 'Inventory & Operations',
-  industries: ['ecommerce-d2c', 'manufacturing'],
+  industries: ['ecommerce-d2c', 'manufacturing', 'retail', 'retail-hospitality', 'wholesale-distribution'],
   connectors: ['shopify', 'linnworks', 'skuvault'],
   businessLogic: {
     objective: 'Protect fulfilment speed and stock health so operations do not become a ceiling on revenue.',
@@ -361,6 +370,7 @@ export const AREA_CATALOG = {
   'inventory-operations': AREA_INVENTORY_OPERATIONS,
   'production':           AREA_PRODUCTION,
   'client-delivery':      AREA_CLIENT_DELIVERY,
+  ...AREA_CATALOG_EXTENDED,
 }
 
 export function getArea(id) {
