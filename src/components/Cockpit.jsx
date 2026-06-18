@@ -174,7 +174,7 @@ function StrategicPriorityCard({ priority, userId, onDone }) {
         <span style={{ marginLeft: 'auto', fontSize: 11, color: C.textFaint }}>{timeAgo(lead.created_at)}</span>
       </div>
 
-      <h3 style={{ fontFamily: SERIF, fontSize: 21, fontWeight: 500, color: C.text, lineHeight: 1.2, margin: '0 0 6px' }}>
+      <h3 style={{ fontFamily: SERIF, fontSize: 30, fontWeight: 600, color: C.text, lineHeight: 1.15, margin: '0 0 8px' }}>
         {lead.title}
       </h3>
       {lead.description && (
