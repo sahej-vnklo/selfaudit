@@ -34,6 +34,7 @@ export default function handler(req, res) {
         description: unit.description || '',
         interfaces: unit.interfaces || [],
         properties: (unit.properties || []).map(p => ({ key: p.key, label: p.label, type: p.type })),
+        links: (unit.links || []).map(l => ({ id: l.id, label: l.label, to: l.toUnitTypeId, cardinality: l.cardinality })),
       }
     }
 

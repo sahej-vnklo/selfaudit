@@ -3,16 +3,22 @@ import { initSupabase } from '../lib/supabase.js'
 
 const C = {
   bg:       'var(--black)',
-  surface:  'var(--surface)',
-  surface2: 'var(--surface-2)',
-  border:   'var(--border)',
-  border2:  'var(--border-2)',
-  text:     'var(--text-primary)',
-  muted:    'var(--text-secondary)',
-  faint:    'var(--text-tertiary)',
   accent:   'var(--accent)',
   accentText: 'var(--accent-text)',
-  accentLight: 'var(--accent-light)',
+}
+
+// All cards, panels, drawer → light surface with jet-black text
+const CARD = {
+  bg:             '#F9F8F6',
+  bgHover:        '#F1F0EE',
+  bgSelected:     'rgba(107,92,231,0.07)',
+  border:         '#DEDAD5',
+  borderSelected: 'var(--accent)',
+  heading:        '#111111',
+  body:           '#555555',
+  label:          '#888888',
+  inputBg:        '#EDECE9',
+  pillBorder:     '#CCCAC5',
 }
 
 async function getSessionToken() {
@@ -21,42 +27,46 @@ async function getSessionToken() {
   return session?.access_token || ''
 }
 
-function UnitDrawer({ unit, areaLabel, customLabel, onSave, onClose }) {
+function UnitDrawer({ unit, areaLabel, customLabel, onSave, onClose, allUnits }) {
   const [name, setName] = useState(customLabel || unit.label)
+
+  const SectionLabel = ({ text }) => (
+    <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.09em', color: CARD.label, marginBottom: 6, marginTop: 18 }}>{text}</div>
+  )
 
   return (
     <div style={{
-      position: 'absolute', top: 0, right: 0, bottom: 0, width: 260,
-      background: C.surface, borderLeft: `1px solid ${C.border2}`,
+      position: 'absolute', top: 0, right: 0, bottom: 0, width: 280,
+      background: CARD.bg, borderLeft: `1px solid ${CARD.border}`,
       padding: 20, overflowY: 'auto', zIndex: 10,
       animation: 'slideInRight 0.2s ease',
     }}>
       <style>{`@keyframes slideInRight { from { transform: translateX(20px); opacity: 0 } to { transform: none; opacity: 1 } }`}</style>
 
-      <button onClick={onClose} style={{ background: 'none', border: 'none', color: C.muted, fontSize: 12, cursor: 'pointer', marginBottom: 16, padding: 0, display: 'flex', alignItems: 'center', gap: 4 }}>
+      <button onClick={onClose} style={{ background: 'none', border: 'none', color: CARD.label, fontSize: 12, cursor: 'pointer', marginBottom: 16, padding: 0, display: 'flex', alignItems: 'center', gap: 4 }}>
         ← back
       </button>
 
       <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.09em', color: C.accentText, marginBottom: 4 }}>{areaLabel}</div>
-      <div style={{ fontSize: 16, fontWeight: 600, color: C.text, marginBottom: 4 }}>{unit.label}</div>
-      <div style={{ fontSize: 12, color: C.muted, lineHeight: 1.5, marginBottom: 20 }}>{unit.description}</div>
+      <div style={{ fontSize: 16, fontWeight: 700, color: CARD.heading, marginBottom: 4 }}>{unit.label}</div>
+      <div style={{ fontSize: 12, color: CARD.body, lineHeight: 1.6, marginBottom: 4 }}>{unit.description}</div>
 
-      <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: C.faint, marginBottom: 6 }}>Rename</div>
+      <SectionLabel text="Rename" />
       <input
         value={name}
         onChange={e => setName(e.target.value)}
         style={{
-          width: '100%', background: C.surface2, border: `1px solid ${C.border2}`,
-          color: C.text, fontSize: 13, padding: '7px 10px', marginBottom: 20,
+          width: '100%', background: CARD.inputBg, border: `1px solid ${CARD.border}`,
+          color: CARD.heading, fontSize: 13, padding: '7px 10px',
         }}
       />
 
       {unit.interfaces?.length > 0 && (
         <>
-          <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: C.faint, marginBottom: 6 }}>Capabilities</div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 20 }}>
+          <SectionLabel text="Capabilities" />
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
             {unit.interfaces.map(i => (
-              <span key={i} style={{ fontSize: 10, padding: '2px 8px', border: `1px solid ${C.border2}`, color: C.muted }}>{i}</span>
+              <span key={i} style={{ fontSize: 10, padding: '3px 8px', border: `1px solid ${CARD.pillBorder}`, color: CARD.body, background: '#fff' }}>{i}</span>
             ))}
           </div>
         </>
@@ -64,14 +74,34 @@ function UnitDrawer({ unit, areaLabel, customLabel, onSave, onClose }) {
 
       {unit.properties?.length > 0 && (
         <>
-          <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: C.faint, marginBottom: 6 }}>Properties tracked</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+          <SectionLabel text="Properties tracked" />
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
             {unit.properties.map(p => (
-              <div key={p.key} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: `1px solid ${C.border}`, fontSize: 12 }}>
-                <span style={{ color: C.text }}>{p.label}</span>
-                <span style={{ color: C.faint, fontSize: 10 }}>{p.type}</span>
+              <div key={p.key} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: `1px solid ${CARD.border}`, fontSize: 12 }}>
+                <span style={{ color: CARD.heading, fontWeight: 500 }}>{p.label}</span>
+                <span style={{ color: CARD.label, fontSize: 10, background: CARD.inputBg, padding: '1px 6px' }}>{p.type}</span>
               </div>
             ))}
+          </div>
+        </>
+      )}
+
+      {unit.links?.length > 0 && (
+        <>
+          <SectionLabel text="Relations" />
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {unit.links.map(l => {
+              const targetLabel = allUnits?.[l.to]?.label || l.to
+              return (
+                <div key={l.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: `1px solid ${CARD.border}`, fontSize: 12 }}>
+                  <div>
+                    <div style={{ color: CARD.heading, fontWeight: 500 }}>{l.label}</div>
+                    <div style={{ color: CARD.label, fontSize: 10, marginTop: 1 }}>→ {targetLabel}</div>
+                  </div>
+                  <span style={{ color: CARD.label, fontSize: 10, background: CARD.inputBg, padding: '1px 6px', flexShrink: 0 }}>{l.cardinality}</span>
+                </div>
+              )
+            })}
           </div>
         </>
       )}
@@ -79,8 +109,8 @@ function UnitDrawer({ unit, areaLabel, customLabel, onSave, onClose }) {
       <button
         onClick={() => { onSave(unit.id, name.trim() || unit.label); onClose() }}
         style={{
-          marginTop: 20, width: '100%', background: C.accent, border: 'none',
-          color: '#fff', padding: '9px', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+          marginTop: 24, width: '100%', background: C.accent, border: 'none',
+          color: '#fff', padding: '10px', fontSize: 13, fontWeight: 600, cursor: 'pointer',
         }}
       >
         Save
@@ -210,10 +240,10 @@ export default function SchemaSetup({ user, onComplete }) {
         {phase === 'industry' && (
           <div style={{ ...phaseStyle, flex: 1, padding: 24, overflowY: 'auto' }}>
             {catalogLoading ? (
-              <div style={{ color: C.muted, fontSize: 14, padding: 40 }}>Loading…</div>
+              <div style={{ color: '#888', fontSize: 14, padding: 40 }}>Loading…</div>
             ) : (
               <>
-                <div style={{ fontSize: 13, color: C.muted, marginBottom: 20 }}>
+                <div style={{ fontSize: 13, color: '#AAAAAA', marginBottom: 20 }}>
                   What type of business are you?
                 </div>
                 <div style={{
@@ -227,19 +257,18 @@ export default function SchemaSetup({ user, onComplete }) {
                       onClick={() => pickIndustry(ind.id)}
                       style={{
                         textAlign: 'left',
-                        background: C.surface,
-                        border: `1px solid ${C.border}`,
-                        color: C.text,
+                        background: CARD.bg,
+                        border: `1px solid ${CARD.border}`,
                         padding: '18px 16px',
                         cursor: 'pointer',
                         minHeight: 80,
                         transition: 'border-color 0.15s, background 0.15s',
                       }}
-                      onMouseEnter={e => { e.currentTarget.style.borderColor = C.border2; e.currentTarget.style.background = C.surface2 }}
-                      onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.background = C.surface }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = C.accent; e.currentTarget.style.background = CARD.bgHover }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = CARD.border; e.currentTarget.style.background = CARD.bg }}
                     >
-                      <div style={{ fontSize: 14, fontWeight: 600, color: C.text, lineHeight: 1.3 }}>{ind.label}</div>
-                      <div style={{ fontSize: 11, color: C.muted, marginTop: 6, lineHeight: 1.4 }}>{ind.description}</div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: CARD.heading, lineHeight: 1.3 }}>{ind.label}</div>
+                      <div style={{ fontSize: 11, color: CARD.body, marginTop: 6, lineHeight: 1.4 }}>{ind.description}</div>
                     </button>
                   ))}
                 </div>
@@ -251,7 +280,7 @@ export default function SchemaSetup({ user, onComplete }) {
         {/* ── Phase: Areas ────────────────────────────────────────────── */}
         {phase === 'areas' && (
           <div style={{ ...phaseStyle, flex: 1, padding: 24, overflowY: 'auto' }}>
-            <div style={{ fontSize: 13, color: C.muted, marginBottom: 20 }}>
+            <div style={{ fontSize: 13, color: '#AAAAAA', marginBottom: 20 }}>
               Select the areas you want to monitor
             </div>
             <div style={{
@@ -267,9 +296,8 @@ export default function SchemaSetup({ user, onComplete }) {
                     onClick={() => toggleArea(area.id)}
                     style={{
                       textAlign: 'left',
-                      background: on ? 'rgba(107,92,231,0.08)' : C.surface,
-                      border: `1px solid ${on ? C.accent : C.border}`,
-                      color: C.text,
+                      background: on ? CARD.bgSelected : CARD.bg,
+                      border: `1px solid ${on ? CARD.borderSelected : CARD.border}`,
                       padding: '16px',
                       cursor: 'pointer',
                       minHeight: 90,
@@ -277,15 +305,15 @@ export default function SchemaSetup({ user, onComplete }) {
                     }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{area.label}</div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: CARD.heading }}>{area.label}</div>
                       <div style={{
                         width: 14, height: 14, flexShrink: 0, marginTop: 1,
-                        border: `1px solid ${on ? C.accent : C.border2}`,
+                        border: `1px solid ${on ? C.accent : CARD.pillBorder}`,
                         background: on ? C.accent : 'transparent',
                         transition: 'background 0.15s, border-color 0.15s',
                       }} />
                     </div>
-                    <div style={{ fontSize: 11, color: C.muted, lineHeight: 1.5 }}>{area.objective}</div>
+                    <div style={{ fontSize: 11, color: CARD.body, lineHeight: 1.5 }}>{area.objective}</div>
                   </button>
                 )
               })}
@@ -294,7 +322,7 @@ export default function SchemaSetup({ user, onComplete }) {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 24, flexWrap: 'wrap', gap: 12 }}>
               <button
                 onClick={() => transitionTo('industry', () => { setSelectedIndustry(null) })}
-                style={{ background: 'none', border: `1px solid ${C.border}`, color: C.muted, padding: '9px 16px', fontSize: 12, cursor: 'pointer' }}
+                style={{ background: 'none', border: `1px solid #444`, color: '#AAAAAA', padding: '9px 16px', fontSize: 12, cursor: 'pointer' }}
               >
                 Back
               </button>
@@ -302,8 +330,8 @@ export default function SchemaSetup({ user, onComplete }) {
                 onClick={confirmAreas}
                 disabled={!selectedAreas.length}
                 style={{
-                  background: selectedAreas.length ? C.accent : C.surface,
-                  border: 'none', color: selectedAreas.length ? '#fff' : C.muted,
+                  background: selectedAreas.length ? C.accent : '#2A2A2A',
+                  border: 'none', color: selectedAreas.length ? '#fff' : '#666',
                   padding: '10px 20px', fontSize: 13, fontWeight: 600,
                   cursor: selectedAreas.length ? 'pointer' : 'not-allowed',
                   transition: 'background 0.15s',
@@ -321,7 +349,7 @@ export default function SchemaSetup({ user, onComplete }) {
 
             {/* Canvas */}
             <div style={{ flex: 1, padding: 24, overflowY: 'auto', position: 'relative' }}>
-              <div style={{ fontSize: 13, color: C.muted, marginBottom: 20 }}>
+              <div style={{ fontSize: 13, color: '#AAAAAA', marginBottom: 20 }}>
                 Select the units to track in each area
               </div>
               <div style={{
@@ -338,12 +366,12 @@ export default function SchemaSetup({ user, onComplete }) {
                     <div
                       key={areaId}
                       style={{
-                        background: C.surface, border: `1px solid ${C.border}`,
+                        background: CARD.bg, border: `1px solid ${CARD.border}`,
                         padding: 14,
                         animation: `fadeUp 0.3s ease ${i * 0.06}s both`,
                       }}
                     >
-                      <div style={{ fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.09em', color: C.accentText, marginBottom: 10 }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.09em', color: C.accentText, marginBottom: 10 }}>
                         {area.label}
                       </div>
                       {units.map(unit => {
@@ -356,22 +384,22 @@ export default function SchemaSetup({ user, onComplete }) {
                             style={{
                               display: 'flex', alignItems: 'flex-start', gap: 8,
                               padding: '6px 8px', cursor: 'pointer', marginBottom: 2,
-                              background: on ? 'rgba(107,92,231,0.07)' : 'transparent',
-                              border: `1px solid ${on ? 'rgba(107,92,231,0.25)' : 'transparent'}`,
+                              background: on ? CARD.bgSelected : 'transparent',
+                              border: `1px solid ${on ? 'rgba(107,92,231,0.3)' : 'transparent'}`,
                               transition: 'background 0.12s, border-color 0.12s',
                             }}
-                            onMouseEnter={e => { if (!on) e.currentTarget.style.background = C.surface2 }}
+                            onMouseEnter={e => { if (!on) e.currentTarget.style.background = CARD.bgHover }}
                             onMouseLeave={e => { if (!on) e.currentTarget.style.background = 'transparent' }}
                           >
                             <div style={{
                               width: 11, height: 11, flexShrink: 0, marginTop: 3,
-                              border: `1px solid ${on ? C.accent : C.border2}`,
+                              border: `1px solid ${on ? C.accent : CARD.pillBorder}`,
                               background: on ? C.accent : 'transparent',
                               transition: 'background 0.12s',
                             }} />
                             <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ fontSize: 12, fontWeight: 500, color: C.text }}>{displayLabel}</div>
-                              <div style={{ fontSize: 11, color: C.muted, marginTop: 1, lineHeight: 1.4 }}>{unit.description}</div>
+                              <div style={{ fontSize: 12, fontWeight: 600, color: CARD.heading }}>{displayLabel}</div>
+                              <div style={{ fontSize: 11, color: CARD.body, marginTop: 1, lineHeight: 1.4 }}>{unit.description}</div>
                             </div>
                             <div
                               onClick={e => { e.stopPropagation(); setEditingUnit({ areaId, unitId: unit.id }) }}
@@ -401,6 +429,7 @@ export default function SchemaSetup({ user, onComplete }) {
                     unit={unit}
                     areaLabel={area.label}
                     customLabel={customLabels[unit.id]}
+                    allUnits={catalog.units}
                     onSave={(unitId, newLabel) => setCustomLabels(prev => ({ ...prev, [unitId]: newLabel }))}
                     onClose={() => setEditingUnit(null)}
                   />
@@ -410,25 +439,25 @@ export default function SchemaSetup({ user, onComplete }) {
 
             {/* Right panel */}
             <div style={{
-              width: 200, flexShrink: 0, borderLeft: `1px solid ${C.border}`,
+              width: 200, flexShrink: 0, borderLeft: `1px solid ${CARD.border}`,
               padding: 20, display: 'flex', flexDirection: 'column', gap: 12,
-              background: C.surface,
+              background: CARD.bg,
             }}>
               <div>
-                <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.09em', color: C.faint, marginBottom: 12 }}>Summary</div>
+                <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.09em', color: CARD.label, marginBottom: 12 }}>Summary</div>
                 {[
                   { key: 'Industry', val: industryLabel.split(' / ')[0] },
                   { key: 'Areas', val: selectedAreas.length },
                   { key: 'Units', val: totalUnits },
                 ].map(row => (
-                  <div key={row.key} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: `1px solid ${C.border}` }}>
-                    <span style={{ fontSize: 12, color: C.muted }}>{row.key}</span>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: C.text }}>{row.val}</span>
+                  <div key={row.key} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: `1px solid ${CARD.border}` }}>
+                    <span style={{ fontSize: 12, color: CARD.body }}>{row.key}</span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: CARD.heading }}>{row.val}</span>
                   </div>
                 ))}
               </div>
 
-              <div style={{ fontSize: 11, color: C.muted, lineHeight: 1.6, marginTop: 'auto' }}>
+              <div style={{ fontSize: 11, color: CARD.body, lineHeight: 1.6, marginTop: 'auto' }}>
                 {!totalUnits
                   ? 'Select units inside each area card.'
                   : `${totalUnits} unit${totalUnits !== 1 ? 's' : ''} selected. Ready to confirm.`
@@ -436,7 +465,7 @@ export default function SchemaSetup({ user, onComplete }) {
               </div>
 
               {error && (
-                <div style={{ fontSize: 11, color: 'var(--red-text)', background: 'var(--red-bg)', border: '1px solid var(--red)', padding: '8px 10px', lineHeight: 1.5 }}>
+                <div style={{ fontSize: 11, color: '#C05050', background: '#FDF0F0', border: '1px solid #E8C0C0', padding: '8px 10px', lineHeight: 1.5 }}>
                   {error}
                 </div>
               )}
@@ -445,8 +474,8 @@ export default function SchemaSetup({ user, onComplete }) {
                 onClick={saveBlueprint}
                 disabled={!totalUnits || saving}
                 style={{
-                  background: totalUnits && !saving ? C.accent : C.surface2,
-                  border: 'none', color: totalUnits && !saving ? '#fff' : C.muted,
+                  background: totalUnits && !saving ? C.accent : CARD.inputBg,
+                  border: 'none', color: totalUnits && !saving ? '#fff' : CARD.label,
                   padding: '10px', fontSize: 12, fontWeight: 600,
                   cursor: totalUnits && !saving ? 'pointer' : 'not-allowed',
                   transition: 'background 0.15s',
@@ -457,7 +486,7 @@ export default function SchemaSetup({ user, onComplete }) {
 
               <button
                 onClick={() => transitionTo('areas', () => {})}
-                style={{ background: 'none', border: 'none', color: C.muted, fontSize: 11, cursor: 'pointer', padding: 0 }}
+                style={{ background: 'none', border: 'none', color: CARD.label, fontSize: 11, cursor: 'pointer', padding: 0 }}
               >
                 ← Change areas
               </button>
@@ -469,16 +498,16 @@ export default function SchemaSetup({ user, onComplete }) {
       {/* ── Bottom bar — shows selected industry once picked ────────── */}
       {selectedIndustry && phase !== 'industry' && (
         <div style={{
-          borderTop: `1px solid ${C.border}`,
-          padding: '12px 24px',
+          borderTop: `1px solid ${CARD.border}`,
+          padding: '14px 24px',
           display: 'flex', alignItems: 'center', gap: 16,
-          background: C.surface,
+          background: CARD.bg,
           animation: 'fadeUp 0.25s ease',
         }}>
-          <span style={{ fontSize: 18, fontWeight: 600, color: C.text }}>{industryLabel}</span>
+          <span style={{ fontSize: 20, fontWeight: 700, color: CARD.heading }}>{industryLabel}</span>
           <button
             onClick={() => transitionTo('industry', () => { setSelectedIndustry(null); setSelectedAreas([]); setSelectedUnits({}) })}
-            style={{ background: 'none', border: `1px solid ${C.border}`, color: C.muted, fontSize: 11, padding: '3px 10px', cursor: 'pointer' }}
+            style={{ background: 'none', border: `1px solid ${CARD.pillBorder}`, color: CARD.label, fontSize: 11, padding: '3px 10px', cursor: 'pointer' }}
           >
             change
           </button>
