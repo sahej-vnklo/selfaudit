@@ -41,6 +41,7 @@ Your rules:
 - Be direct, founder-level, and operational. No filler. No motivational language.
 - Preserve the structure you are asked for and output only valid JSON.
 - Areas listed in zero_coverage_areas have NO measured data at all. Do not reference them, do not generate diagnoses or alert_candidates for them, and do not mention them in the summary.
+- Set recurring: true on a diagnosis or alert_candidate when its pattern clearly matches something in repeated_blockers. Set recurring: false otherwise.
 
 Return JSON in this exact shape:
 {
@@ -52,7 +53,8 @@ Return JSON in this exact shape:
       "summary": "Sharper explanation of what is happening.",
       "rootCause": "Why this is likely happening.",
       "impact": "Why it matters if ignored.",
-      "recommendation": "Best next move."
+      "recommendation": "Best next move.",
+      "recurring": false
     }
   ],
   "recommended_actions": ["Action 1", "Action 2"],
@@ -61,7 +63,8 @@ Return JSON in this exact shape:
       "category": "finance-accounting",
       "title": "Runway is critical",
       "description": "Sharper alert description.",
-      "recommended_action": "Best next move."
+      "recommended_action": "Best next move.",
+      "recurring": false
     }
   ]
 }`
@@ -75,6 +78,7 @@ function buildBusinessSnapshot(brain, intelligenceBrief) {
     top_priorities: brain?.top_priorities?.slice(0, 5) ?? [],
     repeated_blockers: brain?.repeated_blockers?.slice(0, 5) ?? [],
     watchouts: brain?.watchouts?.slice(0, 5) ?? [],
+    changes_since_last: brain?.changes_since_last?.slice(0, 5) ?? [],
     retention_signals: brain?.retention_signals?.slice(0, 5) ?? [],
     last_session: brain?.last_session
       ? {
@@ -213,6 +217,7 @@ function mergeDiagnoses(base, enriched) {
       recommendation: typeof overlay.recommendation === 'string' && overlay.recommendation.trim()
         ? overlay.recommendation.trim()
         : item.recommendation,
+      recurring: typeof overlay.recurring === 'boolean' ? overlay.recurring : (item.recurring ?? false),
     }
   })
 }
@@ -232,6 +237,7 @@ function mergeAlertCandidates(base, enriched) {
       recommended_action: typeof overlay.recommended_action === 'string' && overlay.recommended_action.trim()
         ? overlay.recommended_action.trim()
         : item.recommended_action,
+      recurring: typeof overlay.recurring === 'boolean' ? overlay.recurring : (item.recurring ?? false),
     }
   })
 }

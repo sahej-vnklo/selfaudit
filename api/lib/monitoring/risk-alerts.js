@@ -57,11 +57,12 @@ async function loadOpenAlertIndex(sb, userId) {
 }
 
 function buildEvidence(risk) {
-  const raw = typeof risk.evidence === 'string' ? risk.evidence : null
+  const raw       = typeof risk.evidence === 'string' ? risk.evidence : null
   const rootCause = risk.rootCause ?? null
   const impact    = risk.impact    ?? null
-  if (!raw && !rootCause && !impact) return null
-  return { raw, rootCause, impact }
+  const recurring = typeof risk.recurring === 'boolean' ? risk.recurring : null
+  if (!raw && !rootCause && !impact && recurring === null) return null
+  return { raw, rootCause, impact, ...(recurring !== null ? { recurring } : {}) }
 }
 
 function buildAlertPayload(userId, healthCheckId, risk) {

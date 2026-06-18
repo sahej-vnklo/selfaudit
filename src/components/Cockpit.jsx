@@ -129,6 +129,7 @@ function StrategicPriorityCard({ priority, userId, onDone }) {
   const hasPendingAction = lead.execution_staged && lead.evidence?.pending_action_id
   const rootCause        = lead.evidence?.rootCause
   const impact           = lead.evidence?.impact
+  const isRecurring      = lead.evidence?.recurring === true
 
   async function doApprove() {
     if (busy) return
@@ -171,6 +172,11 @@ function StrategicPriorityCard({ priority, userId, onDone }) {
           {sev.label}
         </span>
         <span style={{ fontSize: 12, color: C.textMuted }}>{theme_label}</span>
+        {isRecurring && (
+          <span style={{ padding: '2px 7px', borderRadius: 4, background: 'rgba(251,146,60,0.1)', color: '#f97316', border: '1px solid rgba(251,146,60,0.25)', fontSize: 10, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+            Recurring
+          </span>
+        )}
         <span style={{ marginLeft: 'auto', fontSize: 11, color: C.textFaint }}>{timeAgo(lead.created_at)}</span>
       </div>
 
