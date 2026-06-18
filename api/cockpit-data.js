@@ -47,7 +47,7 @@ export default async function handler(req, res) {
 
   const sb = getSupabase()
 
-  const [hcRes, snapshotsRes, alertsRes, profileRes, briefRes, stateRes, overridesRes, schemaRes] = await Promise.allSettled([
+  const [hcRes, snapshotsRes, alertsRes, profileRes, briefRes, stateRes, overridesRes, schemaRes, metricsCountRes] = await Promise.allSettled([
     // Latest stored health check
     sb.from('business_health_checks')
       .select('checked_at, health_score, risks, recommended_actions, summary, evidence')
@@ -99,6 +99,11 @@ export default async function handler(req, res) {
       .select('schema')
       .eq('user_id', userId)
       .single(),
+
+    // Metrics count — to know if user has configured their Logic
+    sb.from('user_custom_metrics')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId),
   ])
 
   const hc        = hcRes.status        === 'fulfilled' ? hcRes.value.data            : null
@@ -107,7 +112,8 @@ export default async function handler(req, res) {
   const intel     = profileRes.status   === 'fulfilled' ? profileRes.value.data           : null
   const brief     = briefRes.status     === 'fulfilled' ? briefRes.value.data              : null
   const state     = stateRes.status     === 'fulfilled' ? stateRes.value.data              : null
-  const overrideRows = overridesRes.status === 'fulfilled' ? (overridesRes.value.data ?? []) : []
+  const overrideRows  = overridesRes.status    === 'fulfilled' ? (overridesRes.value.data ?? []) : []
+  const metricsCount  = metricsCountRes.status === 'fulfilled' ? (metricsCountRes.value.count ?? 0) : 0
 
   // Per-area calibration status — count overrides per area prefix
   const AREA_IDS = ['customer-service', 'marketing-sales', 'finance-accounting', 'management-strategy']
@@ -312,9 +318,10 @@ export default async function handler(req, res) {
     departments,
     cross_dept_insight: crossDeptInsight,
     opportunities:      Array.isArray(intel?.opportunities) ? intel.opportunities.slice(0, 3) : [],
-    active_goal:        state?.active_goal ?? null,
-    goal_score:         state?.goal_score ?? null,
+    active_goal:          state?.active_goal ?? null,
+    goal_score:           state?.goal_score ?? null,
     calibration,
-    has_data:           !!hc,
+    metrics_configured:   metricsCount > 0,
+    has_data:             !!hc,
   })
 }

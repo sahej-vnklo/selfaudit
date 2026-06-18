@@ -549,14 +549,26 @@ export async function runBusinessHealthCheck(userId) {
     .then(() => recomputeCompanyDNA(sb, userId))
     .catch(() => {})
 
+  // Gate: skip AI diagnosis when the user has no metrics and no connector data.
+  // Without real input, Claude would invent narratives against thin air.
+  const { count: metricsCount } = await sb
+    .from('user_custom_metrics')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+
+  const hasMetrics    = (metricsCount ?? 0) > 0
+  const hasConnectors = !!normalized
+
   const deterministicGovernanceAdvice = buildGovernanceAdvice(governanceBase)
-  const governanceAdvice    = await enrichGovernanceWithAI({
-    userId,
-    governance: governanceBase,
-    brain,
-    intelligenceBrief: brief,
-    deterministicAdvice: deterministicGovernanceAdvice,
-  })
+  const governanceAdvice = (hasMetrics || hasConnectors)
+    ? await enrichGovernanceWithAI({
+        userId,
+        governance: governanceBase,
+        brain,
+        intelligenceBrief: brief,
+        deterministicAdvice: deterministicGovernanceAdvice,
+      })
+    : deterministicGovernanceAdvice
   const governance          = {
     ...governanceBase,
     advice_summary: governanceAdvice.summary,
