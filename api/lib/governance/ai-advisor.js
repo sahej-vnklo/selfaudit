@@ -40,6 +40,7 @@ Your rules:
 - Give root cause when evidence supports it. If it does not, say what is most likely and why.
 - Be direct, founder-level, and operational. No filler. No motivational language.
 - Preserve the structure you are asked for and output only valid JSON.
+- Areas listed in zero_coverage_areas have NO measured data at all. Do not reference them, do not generate diagnoses or alert_candidates for them, and do not mention them in the summary.
 
 Return JSON in this exact shape:
 {
@@ -128,10 +129,15 @@ function buildFindingsByArea(governance) {
 }
 
 function buildUserMessage({ governance, brain, intelligenceBrief, deterministicAdvice, decisionMemory = [] }) {
+  const zeroCoverageAreas = (governance?.areas ?? [])
+    .filter((a) => !a.coverage || a.coverage === 0)
+    .map((a) => a.areaId)
+
   const payload = {
     business_snapshot: buildBusinessSnapshot(brain, intelligenceBrief),
     governance_summary: governance?.summary ?? {},
     findings_by_area: buildFindingsByArea(governance),
+    ...(zeroCoverageAreas.length > 0 ? { zero_coverage_areas: zeroCoverageAreas } : {}),
     current_output: {
       summary: deterministicAdvice.summary,
       diagnoses: deterministicAdvice.diagnoses.map((item) => ({
@@ -174,6 +180,7 @@ Rules:
 - Keep advice practical and founder-level.
 - If data is thin, say what is likely instead of pretending certainty.
 - Recommended actions should be specific and non-duplicative.
+- Do not generate any diagnoses or alert_candidates for areas listed in zero_coverage_areas — no data was collected for them.
 
 Input:
 ${JSON.stringify(payload, null, 2)}`
@@ -261,10 +268,13 @@ function applyDiagnosisRootCauseToAlerts(alertCandidates, diagnoses) {
   })
 }
 
-function mergeAdvice(base, parsed) {
+function mergeAdvice(base, parsed, zeroCoverageAreas = []) {
+  const blocked = new Set(zeroCoverageAreas)
   const diagnoses = mergeDiagnoses(base.diagnoses, parsed?.diagnoses)
+    .filter((d) => !blocked.has(d.areaId))
   const alertCandidates = applyDiagnosisRootCauseToAlerts(
-    mergeAlertCandidates(base.alert_candidates, parsed?.alert_candidates),
+    mergeAlertCandidates(base.alert_candidates, parsed?.alert_candidates)
+      .filter((a) => !blocked.has(a.category)),
     diagnoses,
   )
   const recommendedActions = Array.isArray(parsed?.recommended_actions) && parsed.recommended_actions.length
@@ -331,8 +341,11 @@ export async function enrichGovernanceWithAI({
     const raw = data?.content?.[0]?.text ?? ''
     if (!raw) return baseAdvice
 
+    const zeroCoverageAreas = (governance?.areas ?? [])
+      .filter((a) => !a.coverage || a.coverage === 0)
+      .map((a) => a.areaId)
     const parsed = JSON.parse(cleanJson(raw))
-    return mergeAdvice(baseAdvice, parsed)
+    return mergeAdvice(baseAdvice, parsed, zeroCoverageAreas)
   } catch {
     return baseAdvice
   }
