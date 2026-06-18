@@ -246,12 +246,28 @@ function StrategicPriorityCard({ priority, userId, onDone }) {
 // ── Watching brief (lower-tier alerts) ──────────────────────────────────────
 
 function WatchBrief({ alert, areaLabel }) {
+  const metricDisplay = alert.metric_key && alert.metric_value != null
+    ? `${alert.metric_key.replace(/_/g, ' ')}: ${alert.metric_value}`
+    : null
+  const subtitle = metricDisplay || (alert.description ? alert.description.slice(0, 80) : null) || areaLabel
+
   return (
     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 9, padding: '9px 0', borderBottom: `1px solid ${C.border}` }}>
       <div style={{ width: 7, height: 7, borderRadius: '50%', background: C.amber, flexShrink: 0, marginTop: 4 }} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 13, fontFamily: SERIF, fontWeight: 500, color: C.text, lineHeight: 1.3, marginBottom: 2 }}>{alert.title}</div>
-        <div style={{ fontSize: 11, color: C.textFaint }}>{areaLabel}</div>
+        <div style={{ fontSize: 11, color: C.textFaint }}>{subtitle}</div>
+      </div>
+    </div>
+  )
+}
+
+function OpportunityBrief({ text }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 9, padding: '9px 0', borderBottom: `1px solid ${C.border}` }}>
+      <div style={{ width: 7, height: 7, borderRadius: '50%', background: C.green, flexShrink: 0, marginTop: 4 }} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 13, fontFamily: SERIF, fontWeight: 500, color: C.text, lineHeight: 1.4 }}>{text}</div>
       </div>
     </div>
   )
@@ -404,10 +420,25 @@ export default function CockpitSection({ user, navigateSection }) {
             </div>
           )}
 
+          {/* Opportunities */}
+          {(data.opportunities || []).length > 0 && (
+            <>
+              <div style={{ borderTop: `2px solid ${C.green}`, paddingTop: 8, marginTop: priorities.length > 0 ? 24 : 4, marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                <span style={{ fontSize: 13, fontWeight: 500, color: C.greenText }}>Opportunities</span>
+                <span style={{ fontSize: 11, color: C.textFaint }}>{data.opportunities.length} signal{data.opportunities.length !== 1 ? 's' : ''}</span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 20px' }}>
+                {data.opportunities.map((text, i) => (
+                  <OpportunityBrief key={i} text={text} />
+                ))}
+              </div>
+            </>
+          )}
+
           {/* Watching */}
           {watching.length > 0 && (
             <>
-              <div style={{ borderTop: `2px solid ${C.text}`, paddingTop: 8, marginTop: priorities.length > 0 ? 24 : 4, marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+              <div style={{ borderTop: `2px solid ${C.text}`, paddingTop: 8, marginTop: ((data.opportunities || []).length > 0 || priorities.length > 0) ? 24 : 4, marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                 <span style={{ fontSize: 13, fontWeight: 500, color: C.text }}>Watching</span>
                 <span style={{ fontSize: 11, color: C.textFaint }}>{watching.length} signal{watching.length !== 1 ? 's' : ''}</span>
               </div>
