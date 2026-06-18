@@ -47,7 +47,7 @@ export default async function handler(req, res) {
 
   const sb = getSupabase()
 
-  const [hcRes, snapshotsRes, alertsRes, profileRes, briefRes, stateRes, overridesRes, schemaRes, metricsCountRes] = await Promise.allSettled([
+  const [hcRes, snapshotsRes, alertsRes, profileRes, briefRes, stateRes, overridesRes, schemaRes, metricsCountRes, connSnapRes, commPrefsRes] = await Promise.allSettled([
     // Latest stored health check
     sb.from('business_health_checks')
       .select('checked_at, health_score, risks, recommended_actions, summary, evidence')
@@ -104,16 +104,42 @@ export default async function handler(req, res) {
     sb.from('user_custom_metrics')
       .select('id', { count: 'exact', head: true })
       .eq('user_id', userId),
+
+    // Connector snapshot — to know which integrations are active (for comm channel list)
+    sb.from('connector_snapshots')
+      .select('providers')
+      .eq('user_id', userId)
+      .single(),
+
+    // Saved communication preferences
+    sb.from('user_connector_prefs')
+      .select('channel_type, params')
+      .eq('user_id', userId),
   ])
 
-  const hc        = hcRes.status        === 'fulfilled' ? hcRes.value.data            : null
+  const hc           = hcRes.status        === 'fulfilled' ? hcRes.value.data            : null
   const snapshots = snapshotsRes.status === 'fulfilled' ? (snapshotsRes.value.data ?? []) : []
   const alerts    = alertsRes.status    === 'fulfilled' ? (alertsRes.value.data ?? [])    : []
   const intel     = profileRes.status   === 'fulfilled' ? profileRes.value.data           : null
   const brief     = briefRes.status     === 'fulfilled' ? briefRes.value.data              : null
   const state     = stateRes.status     === 'fulfilled' ? stateRes.value.data              : null
-  const overrideRows  = overridesRes.status    === 'fulfilled' ? (overridesRes.value.data ?? []) : []
-  const metricsCount  = metricsCountRes.status === 'fulfilled' ? (metricsCountRes.value.count ?? 0) : 0
+  const overrideRows      = overridesRes.status    === 'fulfilled' ? (overridesRes.value.data ?? []) : []
+  const metricsCount      = metricsCountRes.status === 'fulfilled' ? (metricsCountRes.value.count ?? 0) : 0
+  const connProviders     = connSnapRes.status     === 'fulfilled' ? (connSnapRes.value.data?.providers ?? []) : []
+  const savedPrefs        = commPrefsRes.status    === 'fulfilled' ? (commPrefsRes.value.data ?? []) : []
+
+  // Communication channels — email is always available; Slack/Gmail show if connected
+  const COMM_CONNECTORS = ['slack', 'gmail']
+  const savedPrefMap = Object.fromEntries(savedPrefs.map(p => [p.channel_type, p.params]))
+  const commChannels = [
+    { type: 'email', label: 'Account Email', params: savedPrefMap['email'] ?? null },
+    ...COMM_CONNECTORS
+      .filter(c => connProviders.includes(c))
+      .map(c => ({ type: c, label: c === 'slack' ? 'Slack' : 'Gmail', params: savedPrefMap[c] ?? null })),
+  ]
+  const savedCommPref = savedPrefs.length > 0
+    ? savedPrefs.sort((a, b) => (b.updated_at ?? '') > (a.updated_at ?? '') ? 1 : -1)[0]
+    : null
 
   // Per-area calibration status — count overrides per area prefix
   const AREA_IDS = ['customer-service', 'marketing-sales', 'finance-accounting', 'management-strategy']
@@ -323,5 +349,7 @@ export default async function handler(req, res) {
     calibration,
     metrics_configured:   metricsCount > 0,
     has_data:             !!hc,
+    comm_channels:        commChannels,
+    saved_comm_pref:      savedCommPref,
   })
 }

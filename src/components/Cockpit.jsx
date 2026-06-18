@@ -117,36 +117,147 @@ function LoadingSkeleton() {
   )
 }
 
-// ── Strategic priority card (clusters of actionable alerts) ─────────────────
+// ── Approve popup — channel picker shown when user clicks Approve ────────────
 
-function StrategicPriorityCard({ priority, userId, onDone }) {
-  const [busy, setBusy]       = useState(false)
-  const [err, setErr]         = useState(null)
-  const [expanded, setExpanded] = useState(false)
+function ApprovePopup({ lead, userId, userEmail, commChannels, savedCommPref, onSuccess, onClose }) {
+  const defaultChannel = savedCommPref?.channel_type ?? 'email'
+  const [selected, setSelected]   = useState(defaultChannel)
+  const [busy, setBusy]           = useState(false)
+  const [err, setErr]             = useState(null)
 
-  const { lead, theme_label, covered_count, covered_titles } = priority
-  const sev              = sevStyle(lead.severity)
-  const hasPendingAction = lead.execution_staged && lead.evidence?.pending_action_id
-  const rootCause        = lead.evidence?.rootCause
-  const impact           = lead.evidence?.impact
-  const isRecurring      = lead.evidence?.recurring === true
+  const channels = commChannels?.length > 0 ? commChannels : [{ type: 'email', label: 'Account Email', params: null }]
+  const isFirstTime = !savedCommPref
 
-  async function doApprove() {
+  const CHANNEL_ICON = {
+    email: (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+    ),
+    slack: (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="4"/><path d="M9 9h6M9 15h6M9 9v6M15 9v6"/></svg>
+    ),
+    gmail: (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+    ),
+  }
+
+  function getChannelSubtitle(ch) {
+    if (ch.type === 'email') return userEmail || 'your account email'
+    if (ch.type === 'slack') return ch.params?.channel ? `#${ch.params.channel}` : 'Slack workspace'
+    if (ch.type === 'gmail') return ch.params?.recipient || 'Gmail draft'
+    return ch.type
+  }
+
+  async function doSend() {
     if (busy) return
     setBusy(true); setErr(null)
     try {
+      const ch      = channels.find(c => c.type === selected) ?? channels[0]
+      const params  = ch.type === 'email' ? { email: userEmail } : (ch.params ?? {})
+      const alertData = {
+        title:              lead.title,
+        description:        lead.description,
+        rootCause:          lead.evidence?.rootCause,
+        impact:             lead.evidence?.impact,
+        recommended_action: lead.recommended_action,
+        severity:           lead.severity,
+        category:           lead.category,
+        escalation_tier:    lead.escalation_tier,
+      }
+
       const sb = await initSupabase()
       const { data: { session } } = await sb.auth.getSession()
-      const res = await fetch('/api/actions/execute', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json', ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}) },
-        body:    JSON.stringify({ userId, pendingActionId: lead.evidence.pending_action_id, decision: 'approve' }),
+      const headers = { 'Content-Type': 'application/json', ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}) }
+
+      const res = await fetch('/api/actions/notify', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ userId, alertId: lead.id, channelType: ch.type, params, alertData, savePref: true }),
       })
       const payload = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(payload?.error || 'Action failed')
-      onDone(lead.id)
+      if (!res.ok) throw new Error(payload?.error || 'Could not send')
+      onSuccess()
     } catch (e) { setErr(e.message); setBusy(false) }
   }
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+      {/* backdrop */}
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.45)' }} onClick={onClose} />
+      <div style={{ position: 'relative', background: C.surface, border: `1px solid ${C.border2}`, borderRadius: 12, padding: '22px 24px', width: '100%', maxWidth: 340, boxShadow: '0 16px 48px rgba(0,0,0,0.28)' }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: C.text, marginBottom: 4 }}>Send this action</div>
+        <div style={{ fontSize: 12, color: C.textMuted, marginBottom: 18, lineHeight: 1.5 }}>
+          {isFirstTime ? 'Pick where you want this sent. We\'ll remember your choice.' : 'Send to your saved channel, or pick a different one.'}
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 18 }}>
+          {channels.map(ch => {
+            const isSelected = selected === ch.type
+            return (
+              <button
+                key={ch.type}
+                type="button"
+                onClick={() => setSelected(ch.type)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  padding: '10px 14px', borderRadius: 8, cursor: 'pointer', textAlign: 'left',
+                  border: isSelected ? `1.5px solid ${C.accent}` : `1px solid ${C.border}`,
+                  background: isSelected ? C.accentLight : C.surface2,
+                  transition: 'border-color 0.12s, background 0.12s',
+                }}
+              >
+                <span style={{ color: isSelected ? C.accentText : C.textMuted, flexShrink: 0 }}>
+                  {CHANNEL_ICON[ch.type] ?? CHANNEL_ICON.email}
+                </span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: isSelected ? C.accentText : C.text }}>{ch.label}</div>
+                  <div style={{ fontSize: 11, color: C.textFaint, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{getChannelSubtitle(ch)}</div>
+                </div>
+                {isSelected && (
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: C.accentText, flexShrink: 0 }}><path d="M20 6L9 17l-5-5"/></svg>
+                )}
+              </button>
+            )
+          })}
+        </div>
+
+        {err && <div style={{ fontSize: 11, color: C.redText, marginBottom: 10 }}>{err}</div>}
+
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button
+            type="button"
+            onClick={doSend}
+            disabled={busy}
+            style={{ flex: 1, padding: '8px 0', borderRadius: 7, border: `1px solid ${C.green}`, background: C.greenBg, color: C.greenText, fontSize: 13, fontWeight: 600, cursor: busy ? 'not-allowed' : 'pointer', opacity: busy ? 0.6 : 1 }}
+          >
+            {busy ? 'Sending…' : 'Send →'}
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={busy}
+            style={{ padding: '8px 14px', borderRadius: 7, border: `1px solid ${C.border}`, background: 'transparent', color: C.textMuted, fontSize: 13, cursor: busy ? 'not-allowed' : 'pointer' }}
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Strategic priority card (clusters of actionable alerts) ─────────────────
+
+function StrategicPriorityCard({ priority, userId, userEmail, commChannels, savedCommPref, onDone }) {
+  const [busy, setBusy]         = useState(false)
+  const [err, setErr]           = useState(null)
+  const [expanded, setExpanded] = useState(false)
+  const [showPopup, setShowPopup] = useState(false)
+
+  const { lead, theme_label, covered_count, covered_titles } = priority
+  const sev         = sevStyle(lead.severity)
+  const rootCause   = lead.evidence?.rootCause
+  const impact      = lead.evidence?.impact
+  const isRecurring = lead.evidence?.recurring === true
 
   async function doSkip() {
     if (busy) return
@@ -166,80 +277,97 @@ function StrategicPriorityCard({ priority, userId, onDone }) {
   }
 
   return (
-    <div style={{ paddingBottom: 20, borderBottom: `1px solid ${C.border}` }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 7 }}>
-        <span style={{ padding: '2px 7px', borderRadius: 4, background: sev.bg, color: sev.color, border: `1px solid ${sev.border}`, fontSize: 10, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-          {sev.label}
-        </span>
-        <span style={{ fontSize: 12, color: C.textMuted }}>{theme_label}</span>
-        {isRecurring && (
-          <span style={{ padding: '2px 7px', borderRadius: 4, background: 'rgba(251,146,60,0.1)', color: '#f97316', border: '1px solid rgba(251,146,60,0.25)', fontSize: 10, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-            Recurring
+    <>
+      {showPopup && (
+        <ApprovePopup
+          lead={lead}
+          userId={userId}
+          userEmail={userEmail}
+          commChannels={commChannels}
+          savedCommPref={savedCommPref}
+          onSuccess={() => { setShowPopup(false); onDone(lead.id) }}
+          onClose={() => setShowPopup(false)}
+        />
+      )}
+
+      <div style={{ paddingBottom: 20, borderBottom: `1px solid ${C.border}` }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 7 }}>
+          <span style={{ padding: '2px 7px', borderRadius: 4, background: sev.bg, color: sev.color, border: `1px solid ${sev.border}`, fontSize: 10, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+            {sev.label}
           </span>
-        )}
-        <span style={{ marginLeft: 'auto', fontSize: 11, color: C.textFaint }}>{timeAgo(lead.created_at)}</span>
-      </div>
-
-      <h3 style={{ fontFamily: SERIF, fontSize: 30, fontWeight: 600, color: C.text, lineHeight: 1.15, margin: '0 0 8px' }}>
-        {lead.title}
-      </h3>
-      {lead.description && (
-        <p style={{ fontFamily: SERIF, fontSize: 13, fontStyle: 'italic', color: C.textMuted, lineHeight: 1.65, margin: '0 0 12px' }}>
-          {lead.description}
-        </p>
-      )}
-
-      {rootCause && (
-        <p style={{ fontSize: 13, lineHeight: 1.7, color: C.text, margin: '0 0 7px' }}>
-          <span style={{ fontWeight: 600, color: C.textMuted, marginRight: 5 }}>Because</span>{rootCause}
-        </p>
-      )}
-      {impact && (
-        <p style={{ fontSize: 13, lineHeight: 1.7, color: C.text, margin: '0 0 7px' }}>
-          <span style={{ fontWeight: 600, color: C.textMuted, marginRight: 5 }}>If ignored</span>{impact}
-        </p>
-      )}
-
-      {lead.recommended_action && (
-        <div style={{ background: C.surface2, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 14px', margin: '12px 0', fontSize: 13, lineHeight: 1.65 }}>
-          <span style={{ fontWeight: 600, color: C.green, marginRight: 5 }}>Fix</span>
-          <span style={{ color: C.text }}>{lead.recommended_action}</span>
+          <span style={{ fontSize: 12, color: C.textMuted }}>{theme_label}</span>
+          {isRecurring && (
+            <span style={{ padding: '2px 7px', borderRadius: 4, background: 'rgba(251,146,60,0.1)', color: '#f97316', border: '1px solid rgba(251,146,60,0.25)', fontSize: 10, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+              Recurring
+            </span>
+          )}
+          <span style={{ marginLeft: 'auto', fontSize: 11, color: C.textFaint }}>{timeAgo(lead.created_at)}</span>
         </div>
-      )}
 
-      {covered_count > 1 && (
-        <div style={{ marginTop: 10, marginBottom: 4 }}>
+        <h3 style={{ fontFamily: SERIF, fontSize: 30, fontWeight: 600, color: C.text, lineHeight: 1.15, margin: '0 0 8px' }}>
+          {lead.title}
+        </h3>
+        {lead.description && (
+          <p style={{ fontFamily: SERIF, fontSize: 13, fontStyle: 'italic', color: C.textMuted, lineHeight: 1.65, margin: '0 0 12px' }}>
+            {lead.description}
+          </p>
+        )}
+
+        {rootCause && (
+          <p style={{ fontSize: 13, lineHeight: 1.7, color: C.text, margin: '0 0 7px' }}>
+            <span style={{ fontWeight: 600, color: C.textMuted, marginRight: 5 }}>Because</span>{rootCause}
+          </p>
+        )}
+        {impact && (
+          <p style={{ fontSize: 13, lineHeight: 1.7, color: C.text, margin: '0 0 7px' }}>
+            <span style={{ fontWeight: 600, color: C.textMuted, marginRight: 5 }}>If ignored</span>{impact}
+          </p>
+        )}
+
+        {lead.recommended_action && (
+          <div style={{ background: C.surface2, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 14px', margin: '12px 0', fontSize: 13, lineHeight: 1.65 }}>
+            <span style={{ fontWeight: 600, color: C.green, marginRight: 5 }}>Fix</span>
+            <span style={{ color: C.text }}>{lead.recommended_action}</span>
+          </div>
+        )}
+
+        {covered_count > 1 && (
+          <div style={{ marginTop: 10, marginBottom: 4 }}>
+            <button
+              type="button"
+              onClick={() => setExpanded(e => !e)}
+              style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: 11, color: C.textFaint, display: 'flex', alignItems: 'center', gap: 4 }}
+            >
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: expanded ? 'rotate(90deg)' : 'none', transition: 'transform 0.15s' }} aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+              Covers {covered_count} alerts in this area
+            </button>
+            {expanded && covered_titles.length > 0 && (
+              <div style={{ marginTop: 6, paddingLeft: 14, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                {covered_titles.map((title, i) => (
+                  <div key={i} style={{ fontSize: 11, color: C.textFaint }}>· {title}</div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12 }}>
           <button
             type="button"
-            onClick={() => setExpanded(e => !e)}
-            style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: 11, color: C.textFaint, display: 'flex', alignItems: 'center', gap: 4 }}
+            onClick={() => setShowPopup(true)}
+            disabled={busy}
+            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 13px', borderRadius: 6, border: `1px solid ${C.green}`, background: C.greenBg, color: C.greenText, fontSize: 12, fontWeight: 600, cursor: busy ? 'not-allowed' : 'pointer', opacity: busy ? 0.6 : 1 }}
           >
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: expanded ? 'rotate(90deg)' : 'none', transition: 'transform 0.15s' }} aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
-            Covers {covered_count} alerts in this area
-          </button>
-          {expanded && covered_titles.length > 0 && (
-            <div style={{ marginTop: 6, paddingLeft: 14, display: 'flex', flexDirection: 'column', gap: 3 }}>
-              {covered_titles.map((title, i) => (
-                <div key={i} style={{ fontSize: 11, color: C.textFaint }}>· {title}</div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12 }}>
-        {hasPendingAction && (
-          <button type="button" onClick={doApprove} disabled={busy} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 13px', borderRadius: 6, border: `1px solid ${C.green}`, background: C.greenBg, color: C.greenText, fontSize: 12, fontWeight: 600, cursor: busy ? 'not-allowed' : 'pointer', opacity: busy ? 0.6 : 1 }}>
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
             Approve action
           </button>
-        )}
-        <button type="button" onClick={doSkip} disabled={busy} style={{ padding: '6px 10px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: C.textMuted, fontSize: 12, cursor: busy ? 'not-allowed' : 'pointer', opacity: busy ? 0.6 : 1 }}>
-          Skip for now
-        </button>
-        {err && <span style={{ fontSize: 11, color: C.redText, marginLeft: 4 }}>{err}</span>}
+          <button type="button" onClick={doSkip} disabled={busy} style={{ padding: '6px 10px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: C.textMuted, fontSize: 12, cursor: busy ? 'not-allowed' : 'pointer', opacity: busy ? 0.6 : 1 }}>
+            Skip for now
+          </button>
+          {err && <span style={{ fontSize: 11, color: C.redText, marginLeft: 4 }}>{err}</span>}
+        </div>
       </div>
-    </div>
+    </>
   )
 }
 
@@ -431,6 +559,9 @@ export default function CockpitSection({ user, navigateSection }) {
                   key={priority.lead.id}
                   priority={priority}
                   userId={user?.id}
+                  userEmail={user?.email}
+                  commChannels={data.comm_channels}
+                  savedCommPref={data.saved_comm_pref}
                   onDone={handleDone}
                 />
               ))}
