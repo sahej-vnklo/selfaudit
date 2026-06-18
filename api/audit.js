@@ -234,6 +234,53 @@ async function fetchUserMemory(userId) {
   }
 }
 
+async function fetchSchemaContext(userId) {
+  if (!userId) return ''
+  try {
+    const { data } = await supabase
+      .from('company_schemas')
+      .select('schema')
+      .eq('user_id', userId)
+      .single()
+
+    if (!data?.schema) return ''
+
+    const schema = data.schema
+    const lines = []
+
+    if (schema.customBusinessName) {
+      lines.push(`BUSINESS TYPE: ${schema.customBusinessName}`)
+      if (schema.customBusinessDescription) {
+        lines.push(`Description: ${schema.customBusinessDescription}`)
+      }
+    }
+
+    const customizations = schema.customizations?.unitTypes || {}
+    const customEntries = Object.entries(customizations).filter(([, v]) =>
+      v.label || v.description || Object.keys(v.customProperties || {}).length > 0
+    )
+
+    if (customEntries.length > 0) {
+      lines.push('')
+      lines.push('BUSINESS UNIT DEFINITIONS (personalised by this user):')
+      for (const [unitId, overrides] of customEntries) {
+        const label = overrides.label || unitId
+        const desc = overrides.description
+        const customProps = Object.values(overrides.customProperties || {}).map(p => p.label).filter(Boolean)
+        let line = `  ${label}`
+        if (desc) line += `: ${desc}`
+        if (customProps.length) line += ` [tracks: ${customProps.join(', ')}]`
+        lines.push(line)
+      }
+      lines.push('Use these definitions when auditing — they reflect how this business actually operates.')
+    }
+
+    return lines.length > 0 ? lines.join('\n') : ''
+  } catch {
+    return ''
+  }
+}
+
 async function fetchGovernanceContext(userId) {
   if (!userId) return ''
   try {
@@ -326,7 +373,7 @@ function buildSessionContinuity(messages) {
   return lines.join('\n')
 }
 
-function buildSystemPrompt(industry, domain, intelligenceBrief, userMemory, goalMode, goal, goalTimeline, goalBaseline, businessState, patterns, connectorContext, sessionContinuity, governanceContext) {
+function buildSystemPrompt(industry, domain, intelligenceBrief, userMemory, goalMode, goal, goalTimeline, goalBaseline, businessState, patterns, connectorContext, sessionContinuity, governanceContext, schemaContext) {
   const base = `You are SelfAudit — a brutally honest, senior-level business and life advisor. Your job is to audit any situation a user brings — business, startup, side project, personal goals, career, anything.
 
 CORE RULES:
@@ -459,6 +506,7 @@ Do NOT open with "How can I help", "What are you working on", or any generic que
   const patternsBlock      = patterns      ? `\n\n---\n${patterns}`       : ''
   const connectorBlock = connectorContext ? `\n\n---\nCONNECTOR DATA\n${connectorContext}` : ''
   const governanceBlock = governanceContext ? `\n\n---\n${governanceContext}` : ''
+  const schemaBlock = schemaContext ? `\n\n---\n${schemaContext}` : ''
   const sessionContinuityBlock = sessionContinuity ? `\n\n---\n${sessionContinuity}` : ''
   const contextPriorityBlock = `
 
@@ -471,7 +519,7 @@ CONTEXT PRIORITY:
 
 If two sources conflict, do not ignore it. Name the contradiction and ask one direct clarifying question.`
 
-  return base + goalBlock + scopeBlock + intelligenceBriefBlock + businessStateBlock + memoryBlock + patternsBlock + connectorBlock + governanceBlock + sessionContinuityBlock + contextPriorityBlock + openingRule
+  return base + goalBlock + scopeBlock + schemaBlock + intelligenceBriefBlock + businessStateBlock + memoryBlock + patternsBlock + connectorBlock + governanceBlock + sessionContinuityBlock + contextPriorityBlock + openingRule
 }
 
 function buildReportPrompt(goalMode) {
@@ -808,12 +856,13 @@ export default async function handler(req, res) {
     'anthropic-version': '2023-06-01',
   }
 
-  const [intelligenceBrief, userMemory, businessState, patterns, governanceContext] = await Promise.all([
+  const [intelligenceBrief, userMemory, businessState, patterns, governanceContext, schemaContext] = await Promise.all([
     fetchIntelligenceBrief(userId),
     fetchUserMemory(userId),
     fetchBusinessState(userId),
     fetchPatterns(industry, domain),
     fetchGovernanceContext(userId),
+    fetchSchemaContext(userId),
   ])
   const connectorContext = await fetchConnectorContext(userId, supabase)
   const sessionContinuity = buildSessionContinuity(messages)
@@ -825,7 +874,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
         max_tokens: isReport ? (goalMode ? 4000 : 3200) : 1024,
-        system: buildSystemPrompt(industry, domain, intelligenceBrief, userMemory, goalMode, goal, goalTimeline, goalBaseline, businessState, patterns, connectorContext, sessionContinuity, governanceContext),
+        system: buildSystemPrompt(industry, domain, intelligenceBrief, userMemory, goalMode, goal, goalTimeline, goalBaseline, businessState, patterns, connectorContext, sessionContinuity, governanceContext, schemaContext),
         messages: finalMessages,
       }),
     })
@@ -894,7 +943,7 @@ export default async function handler(req, res) {
               body: JSON.stringify({
                 model: 'claude-sonnet-4-6',
                 max_tokens: goalMode ? 4000 : 3200,
-                system: buildSystemPrompt(industry, domain, intelligenceBrief, userMemory, goalMode, goal, goalTimeline, goalBaseline, businessState, patterns, connectorContext, sessionContinuity, governanceContext),
+                system: buildSystemPrompt(industry, domain, intelligenceBrief, userMemory, goalMode, goal, goalTimeline, goalBaseline, businessState, patterns, connectorContext, sessionContinuity, governanceContext, schemaContext),
                 messages: retryMessages,
               }),
             })

@@ -1,5 +1,5 @@
 import { buildSchemaFromSelections } from './lib/blueprint/schema-builder.js'
-import { loadSchema } from './lib/blueprint/schema-registry.js'
+import { loadSchema, saveSchema } from './lib/blueprint/schema-registry.js'
 import { createArea } from './lib/blueprint/schema.js'
 import { validateUserToken } from './lib/auth.js'
 
@@ -102,12 +102,30 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Missing industryId or areaIds' })
     }
 
+    const customBusinessName = typeof req.body?.customBusinessName === 'string'
+      ? req.body.customBusinessName.slice(0, 100).trim()
+      : undefined
+    const customBusinessDescription = typeof req.body?.customBusinessDescription === 'string'
+      ? req.body.customBusinessDescription.slice(0, 500).trim()
+      : undefined
+
     const { selectedAreaIds, customAreas } = buildAreaSelection(areaIds, industryId)
-    const schema = await buildSchemaFromSelections(userId, {
+    const builtSchema = await buildSchemaFromSelections(userId, {
       industryId,
       selectedAreaIds,
       customAreas,
     })
+
+    const schema = {
+      ...builtSchema,
+      ...(customBusinessName ? { customBusinessName } : {}),
+      ...(customBusinessDescription ? { customBusinessDescription } : {}),
+    }
+
+    // Re-save with custom name if present (buildSchemaFromSelections already saved once)
+    if (customBusinessName || customBusinessDescription) {
+      await saveSchema(userId, schema)
+    }
 
     return res.status(200).json({ success: true, schema })
   } catch (error) {

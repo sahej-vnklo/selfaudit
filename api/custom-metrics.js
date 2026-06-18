@@ -17,7 +17,9 @@
 import { createClient } from '@supabase/supabase-js'
 import { validateUserToken } from './lib/auth.js'
 
-const VALID_AREAS = new Set(['customer-service', 'marketing-sales', 'finance-accounting', 'management-strategy'])
+function isValidAreaId(id) {
+  return typeof id === 'string' && id.length > 0 && id.length <= 80 && /^[a-z0-9-]+$/.test(id)
+}
 
 function getSupabase() {
   return createClient(
@@ -40,7 +42,7 @@ export default async function handler(req, res) {
   // ── GET — list custom metrics for an area ─────────────────────────────────
   if (req.method === 'GET') {
     const { area } = req.query
-    if (!area || !VALID_AREAS.has(area)) return res.status(400).json({ error: 'Invalid area' })
+    if (!area || !isValidAreaId(area)) return res.status(400).json({ error: 'Invalid area' })
 
     const { data, error } = await sb
       .from('user_custom_metrics')
@@ -57,7 +59,7 @@ export default async function handler(req, res) {
   if (req.method === 'POST') {
     const { area_id, name, value, unit = '' } = req.body ?? {}
 
-    if (!area_id || !VALID_AREAS.has(area_id))  return res.status(400).json({ error: 'Invalid area_id' })
+    if (!area_id || !isValidAreaId(area_id))  return res.status(400).json({ error: 'Invalid area_id' })
     if (!name || typeof name !== 'string' || name.trim().length === 0) return res.status(400).json({ error: 'name is required' })
     if (value == null || isNaN(Number(value))) return res.status(400).json({ error: 'value must be a number' })
     if (name.trim().length > 80) return res.status(400).json({ error: 'name too long (max 80 chars)' })

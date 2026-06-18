@@ -264,6 +264,8 @@ export default function SchemaSetup({ user, onComplete }) {
           industryId: selectedIndustry,
           areaIds: selectedAreas,
           unitIds: Object.values(selectedUnits).flat(),
+          customBusinessName: selectedIndustry === 'other' ? customBizName.trim() : undefined,
+          customBusinessDescription: selectedIndustry === 'other' ? customBizDesc.trim() : undefined,
         }),
       })
       const data = await res.json().catch(() => ({}))
