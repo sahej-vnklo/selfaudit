@@ -29,6 +29,8 @@ const SUPPORTED_PROVIDERS = [
   'square', 'lodgify', 'planyo',
   'detrack', 'optimoroute', 'route4me',
   'youtubeanalytics', 'spotify', 'webflow', 'gumroad',
+  'zohocrm', 'zohobigin', 'zohbooks', 'zohoinventory', 'zohodesk', 'zohomail',
+  'freshdesk', 'freshservice',
 ]
 
 function getSupabase() {

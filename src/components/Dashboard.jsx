@@ -5483,6 +5483,72 @@ const CONNECTOR_LOGOS = {
       <path d="M18 22l-2 5 4-4-2-1z" fill="white"/>
     </svg>
   ),
+  // ── Zoho + Freshworks ──────────────────────────────────────────────────────
+  zohocrm: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#E42527"/>
+      <path d="M11 14h10l-7 5h7v5H11l7-5h-7v-5z" fill="white"/>
+      <rect x="23" y="14" width="4" height="10" rx="2" fill="white"/>
+    </svg>
+  ),
+  zohobigin: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#E42527"/>
+      <path d="M11 15h10l-7 4h7v4H11l7-4h-7v-4z" fill="white" opacity="0.9"/>
+      <text x="28" y="26" textAnchor="middle" fill="white" fontSize="7" fontWeight="700" fontFamily="sans-serif">B</text>
+    </svg>
+  ),
+  zohbooks: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#E42527"/>
+      <rect x="11" y="12" width="16" height="15" rx="2" fill="white" opacity="0.9"/>
+      <rect x="14" y="16" width="10" height="1.5" rx="0.75" fill="#E42527"/>
+      <rect x="14" y="19" width="7" height="1.5" rx="0.75" fill="#E42527"/>
+      <rect x="14" y="22" width="10" height="1.5" rx="0.75" fill="#E42527"/>
+    </svg>
+  ),
+  zohoinventory: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#E42527"/>
+      <rect x="10" y="16" width="7" height="7" rx="1" fill="white"/>
+      <rect x="19" y="16" width="7" height="7" rx="1" fill="white" opacity="0.7"/>
+      <rect x="10" y="25" width="7" height="3" rx="1" fill="white" opacity="0.5"/>
+      <rect x="19" y="25" width="7" height="3" rx="1" fill="white" opacity="0.3"/>
+    </svg>
+  ),
+  zohodesk: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#E42527"/>
+      <path d="M10 14h18v10a2 2 0 0 1-2 2H12a2 2 0 0 1-2-2V14z" fill="white" opacity="0.9"/>
+      <path d="M14 29l5-3 5 3v-3H14v3z" fill="white" opacity="0.7"/>
+      <rect x="13" y="17" width="8" height="1.5" rx="0.75" fill="#E42527"/>
+      <rect x="13" y="20" width="5" height="1.5" rx="0.75" fill="#E42527"/>
+    </svg>
+  ),
+  zohomail: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#E42527"/>
+      <rect x="10" y="13" width="18" height="13" rx="2" fill="white" opacity="0.9"/>
+      <path d="M10 15l9 6 9-6" stroke="#E42527" strokeWidth="1.5" fill="none"/>
+    </svg>
+  ),
+  freshdesk: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#25C16F"/>
+      <path d="M10 14h18v10a2 2 0 0 1-2 2H12a2 2 0 0 1-2-2V14z" fill="white" opacity="0.9"/>
+      <path d="M14 29l5-3 5 3v-3H14v3z" fill="white" opacity="0.7"/>
+      <rect x="13" y="17" width="8" height="1.5" rx="0.75" fill="#25C16F"/>
+      <rect x="13" y="20" width="5" height="1.5" rx="0.75" fill="#25C16F"/>
+    </svg>
+  ),
+  freshservice: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#25C16F"/>
+      <circle cx="19" cy="17" r="6" fill="white" opacity="0.9"/>
+      <path d="M16 17l2 2 4-4" stroke="#25C16F" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+      <rect x="13" y="25" width="12" height="2" rx="1" fill="white" opacity="0.7"/>
+    </svg>
+  ),
   // ── New connectors ─────────────────────────────────────────────────────────
   maxio: (
     <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">

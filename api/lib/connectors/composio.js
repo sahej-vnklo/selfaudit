@@ -47,6 +47,12 @@ const TOOLKIT_SLUGS = {
   zohoinvoice:     'zoho_invoice',
   dropboxsign:     'dropbox_sign',
   planyo:          'planyo_online_booking',
+  zohocrm:         'zoho',
+  zohbooks:        'zoho_books',
+  zohoinventory:   'zoho_inventory',
+  zohobigin:       'zoho_bigin',
+  zohodesk:        'zoho_desk',
+  zohomail:        'zoho_mail',
 }
 
 // Returns the OAuth redirect URL for a user to connect a specific toolkit.

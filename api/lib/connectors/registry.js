@@ -52,6 +52,35 @@ export const CONNECTOR_REGISTRY = [
     required_tier: 'intelligence',
   },
   {
+    id:          'zohocrm',
+    name:        'Zoho CRM',
+    category:    'CRM',
+    status:      'available',
+    auth_type:   'oauth',
+    description: 'Pull pipeline, deal stages, and contact data from Zoho CRM for sales health diagnostics.',
+    data_types:  ['deals', 'contacts', 'pipeline_stages', 'leads', 'close_rate'],
+    intelligence_use_cases: [
+      'Pipeline health and deal velocity',
+      'Sales conversion and win rate analysis',
+      'Lead funnel and contact growth trend',
+    ],
+    required_tier: 'intelligence',
+  },
+  {
+    id:          'zohobigin',
+    name:        'Zoho Bigin',
+    category:    'CRM',
+    status:      'available',
+    auth_type:   'oauth',
+    description: 'Lightweight CRM — pull pipeline and deal data for small business sales diagnostics.',
+    data_types:  ['deals', 'pipeline_stages', 'contacts', 'activities'],
+    intelligence_use_cases: [
+      'Pipeline health and deal velocity',
+      'Sales activity and follow-up gap detection',
+    ],
+    required_tier: 'intelligence',
+  },
+  {
     id:          'dynamics365',
     name:        'Dynamics 365',
     category:    'CRM',
@@ -146,6 +175,21 @@ export const CONNECTOR_REGISTRY = [
   },
 
   // ── Finance / Accounting ──────────────────────────────────────────────────────
+  {
+    id:          'zohbooks',
+    name:        'Zoho Books',
+    category:    'Finance',
+    status:      'available',
+    auth_type:   'oauth',
+    description: 'Pull P&L, cash flow, invoices, and bank reconciliation for financial health diagnostics.',
+    data_types:  ['profit_loss', 'cash_flow', 'invoices', 'bank_reconciliation', 'expenses'],
+    intelligence_use_cases: [
+      'Cash flow and burn rate monitoring',
+      'Invoice aging and collections gap',
+      'P&L trend analysis',
+    ],
+    required_tier: 'intelligence',
+  },
   {
     id:          'quickbooks',
     name:        'QuickBooks',
@@ -344,6 +388,21 @@ export const CONNECTOR_REGISTRY = [
     intelligence_use_cases: [
       'Instant artifact delivery to Telegram',
       'Action plan push notifications',
+    ],
+    required_tier: 'intelligence',
+  },
+  {
+    id:           'zohomail',
+    name:         'Zoho Mail',
+    category:     'Comms',
+    status:       'available',
+    auth_type:    'oauth',
+    description:  'Surface email volume, response patterns, and communication health from Zoho Mail.',
+    data_types:   ['email_volume', 'response_time', 'thread_patterns'],
+    intelligence_use_cases: [
+      'Customer communication health',
+      'Sales follow-up gap detection',
+      'Response time benchmarking',
     ],
     required_tier: 'intelligence',
   },
@@ -547,6 +606,36 @@ export const CONNECTOR_REGISTRY = [
   },
 
   // ── Support ───────────────────────────────────────────────────────────────────
+  {
+    id:          'zohodesk',
+    name:        'Zoho Desk',
+    category:    'Support',
+    status:      'available',
+    auth_type:   'oauth',
+    description: 'Pull ticket volume, resolution time, and CSAT for customer support health diagnostics.',
+    data_types:  ['ticket_volume', 'resolution_time', 'csat', 'first_response_time'],
+    intelligence_use_cases: [
+      'Support load and capacity analysis',
+      'Resolution time and CSAT trend',
+      'Recurring issue pattern detection',
+    ],
+    required_tier: 'intelligence',
+  },
+  {
+    id:          'freshdesk',
+    name:        'Freshdesk',
+    category:    'Support',
+    status:      'available',
+    auth_type:   'oauth',
+    description: 'Pull ticket volume, resolution time, and CSAT for helpdesk health diagnostics.',
+    data_types:  ['ticket_volume', 'resolution_time', 'csat', 'first_response_time'],
+    intelligence_use_cases: [
+      'Support load and team capacity analysis',
+      'Resolution time benchmarking',
+      'Customer satisfaction trend monitoring',
+    ],
+    required_tier: 'intelligence',
+  },
   {
     id:          'zendesk',
     name:        'Zendesk',
@@ -886,6 +975,21 @@ export const CONNECTOR_REGISTRY = [
     required_tier: 'intelligence',
   },
   {
+    id:          'freshservice',
+    name:        'Freshservice',
+    category:    'Engineering',
+    status:      'available',
+    auth_type:   'oauth',
+    description: 'Pull IT ticket volume, resolution time, and SLA adherence for IT ops health diagnostics.',
+    data_types:  ['ticket_volume', 'resolution_time', 'sla_adherence', 'change_requests'],
+    intelligence_use_cases: [
+      'IT support load and resolution efficiency',
+      'SLA adherence and breach rate',
+      'Change request volume and risk monitoring',
+    ],
+    required_tier: 'intelligence',
+  },
+  {
     id:          'cloudflare',
     name:        'Cloudflare',
     category:    'Engineering',
@@ -932,6 +1036,21 @@ export const CONNECTOR_REGISTRY = [
   },
 
   // ── E-commerce / Shipping ─────────────────────────────────────────────────────
+  {
+    id:          'zohoinventory',
+    name:        'Zoho Inventory',
+    category:    'Ecommerce',
+    status:      'available',
+    auth_type:   'oauth',
+    description: 'Pull stock levels, fulfilment rate, and inventory turnover for operations health.',
+    data_types:  ['stock_levels', 'fulfilment_rate', 'inventory_turnover', 'low_stock_alerts'],
+    intelligence_use_cases: [
+      'Inventory turnover and dead stock detection',
+      'Fulfilment rate and stock-out risk',
+      'Reorder point and demand trend analysis',
+    ],
+    required_tier: 'intelligence',
+  },
   {
     id:          'shopify',
     name:        'Shopify',
