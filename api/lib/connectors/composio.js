@@ -36,19 +36,33 @@ async function composioFetch(path, options = {}) {
   return res.json()
 }
 
+// Composio toolkit slugs — maps our connector IDs to Composio's toolkit names.
+// Only needed when our connector ID differs from the Composio slug.
+const TOOLKIT_SLUGS = {
+  googledrive:     'googledrive',
+  googleanalytics: 'googleanalytics4',
+  googleads:       'googleads',
+  metaads:         'facebook_ads',
+  bamboohr:        'bamboohr',
+  clickup:         'clickup',
+}
+
 // Returns the OAuth redirect URL for a user to connect a specific toolkit.
-// userId must be the Supabase user ID so Composio connections map to our users.
+// Uses a custom auth_config_id if one is configured (for our own OAuth apps),
+// otherwise falls back to Composio's shared OAuth for that toolkit.
 export async function getComposioAuthLink(userId, toolkit, redirectUrl) {
   const authConfigId = AUTH_CONFIGS[toolkit]
-  if (!authConfigId) throw new Error(`Unsupported toolkit: ${toolkit}`)
+  const toolkitSlug  = TOOLKIT_SLUGS[toolkit] ?? toolkit
+
+  const body = {
+    user_id:      userId,
+    redirect_url: redirectUrl,
+    ...(authConfigId ? { auth_config_id: authConfigId } : { toolkit: toolkitSlug }),
+  }
 
   const data = await composioFetch('/api/v3/connected_accounts/link', {
     method: 'POST',
-    body: JSON.stringify({
-      auth_config_id: authConfigId,
-      user_id: userId,
-      redirect_url: redirectUrl,
-    }),
+    body: JSON.stringify(body),
   })
 
   return {

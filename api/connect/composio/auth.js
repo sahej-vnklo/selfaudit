@@ -10,7 +10,13 @@ import { getComposioAuthLink } from '../../lib/connectors/composio.js'
 
 const APP_URL = process.env.APP_URL || 'https://tryselfaudit.com'
 
-const SUPPORTED_PROVIDERS = ['hubspot', 'stripe', 'gmail', 'slack', 'notion', 'zendesk', 'googledrive']
+const SUPPORTED_PROVIDERS = [
+  'hubspot', 'stripe', 'gmail', 'slack', 'notion', 'zendesk', 'googledrive',
+  'salesforce', 'pipedrive', 'quickbooks', 'xero', 'googleanalytics', 'googleads',
+  'metaads', 'mailchimp', 'klaviyo', 'confluence', 'gusto', 'rippling', 'bamboohr',
+  'intercom', 'asana', 'monday', 'clickup', 'airtable', 'jira', 'linear', 'deel',
+  'multiplier',
+]
 
 function getSupabase() {
   return createClient(
