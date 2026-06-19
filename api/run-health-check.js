@@ -17,6 +17,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { runBusinessHealthCheck } from './lib/monitoring/health-check.js'
 import { createRiskAlertsFromHealthCheck } from './lib/monitoring/risk-alerts.js'
+import { stageCriticalAction } from './lib/monitoring/critical-action-staging.js'
 import { upsertCompanyBrain } from './lib/intelligence/company-brain.js'
 import { validateUserToken } from './lib/auth.js'
 import { observeDecisionOutcomes } from './lib/decisions/service.js'
@@ -68,13 +69,22 @@ export default async function handler(req, res) {
     observeDecisionOutcomes(supabase, userId, healthCheckId, result?.governance?.findings || []).catch(() => {})
 
     // 3. Create risk alerts for medium/high/critical risks (deduped)
+    let newAlerts = []
     try {
-      await createRiskAlertsFromHealthCheck(userId, { ...result, id: healthCheckId })
+      newAlerts = await createRiskAlertsFromHealthCheck(userId, { ...result, id: healthCheckId })
     } catch (alertErr) {
       console.warn('[run-health-check] alert creation failed:', alertErr.message)
     }
 
-    // 4. Propagate new risk/opportunity signals into intelligence_profiles
+    // 4. Stage Claude-generated artifacts for actionable alerts (same as 8am cron)
+    const STAGE_TIERS = new Set(['critical', 'alert', 'escalate'])
+    for (const alert of newAlerts) {
+      if (STAGE_TIERS.has(alert?.escalation_tier) && !alert?.execution_staged) {
+        stageCriticalAction(supabase, userId, alert).catch(() => {})
+      }
+    }
+
+    // 5. Propagate new risk/opportunity signals into intelligence_profiles
     //    so the company brain stays current without a full re-audit.
     //    watchouts ← critical+high risk titles
     //    opportunities ← opportunity titles from this run
