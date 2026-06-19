@@ -184,8 +184,8 @@ export default function SchemaSetup({ user, onComplete }) {
   const [editingUnit, setEditingUnit]           = useState(null) // { areaId, unitId }
   const [saving, setSaving]             = useState(false)
   const [error, setError]               = useState('')
+  const [companyName, setCompanyName]           = useState('')
   const [showCustomPanel, setShowCustomPanel]   = useState(false)
-  const [customBizName, setCustomBizName]       = useState('')
   const [customBizDesc, setCustomBizDesc]       = useState('')
 
   useEffect(() => {
@@ -217,7 +217,6 @@ export default function SchemaSetup({ user, onComplete }) {
   }
 
   const submitCustomBusiness = () => {
-    if (!customBizName.trim()) return
     setShowCustomPanel(false)
     transitionTo('areas', () => {
       setSelectedIndustry('other')
@@ -264,7 +263,7 @@ export default function SchemaSetup({ user, onComplete }) {
           industryId: selectedIndustry,
           areaIds: selectedAreas,
           unitIds: Object.values(selectedUnits).flat(),
-          customBusinessName: selectedIndustry === 'other' ? customBizName.trim() : undefined,
+          customBusinessName: companyName.trim() || undefined,
           customBusinessDescription: selectedIndustry === 'other' ? customBizDesc.trim() : undefined,
         }),
       })
@@ -301,11 +300,12 @@ export default function SchemaSetup({ user, onComplete }) {
     return area.unitIds.map(uid => catalog.units[uid]).filter(Boolean)
   }
 
-  const industryLabel = selectedIndustry === 'other'
-    ? (customBizName.trim() || 'Something else')
-    : (selectedIndustry && catalog
-        ? catalog.industries.find(i => i.id === selectedIndustry)?.label || ''
-        : '')
+  const industryLabel = companyName.trim()
+    || (selectedIndustry === 'other'
+        ? 'Something else'
+        : (selectedIndustry && catalog
+            ? catalog.industries.find(i => i.id === selectedIndustry)?.label || ''
+            : ''))
 
   const phaseStyle = {
     opacity: phaseVisible ? 1 : 0,
@@ -324,17 +324,61 @@ export default function SchemaSetup({ user, onComplete }) {
 
         {/* ── Phase: Industry ─────────────────────────────────────────── */}
         {phase === 'industry' && (
-          <div style={{ ...phaseStyle, flex: 1, padding: 24, overflowY: 'auto', position: 'relative' }}>
-            {catalogLoading ? (
-              <div style={{ color: '#888', fontSize: 14, padding: 40 }}>Loading…</div>
-            ) : (
-              <>
-                <div style={{ fontSize: 13, color: '#AAAAAA', marginBottom: 20 }}>
-                  What type of business are you?
-                </div>
+          <div style={{ ...phaseStyle, flex: 1, display: 'flex', overflow: 'hidden' }}>
+
+            {/* Left — heading + company name input */}
+            <div style={{
+              width: '40%', flexShrink: 0,
+              display: 'flex', flexDirection: 'column', justifyContent: 'center',
+              padding: '48px 52px',
+              borderRight: `1px solid ${CARD.border}`,
+            }}>
+              <h1 style={{
+                fontFamily: '"Cormorant Garamond", "Times New Roman", serif',
+                fontSize: 'clamp(36px, 4vw, 56px)',
+                fontWeight: 500,
+                lineHeight: 1.1,
+                letterSpacing: '-0.02em',
+                color: CARD.heading,
+                margin: '0 0 36px',
+              }}>
+                What type of<br />business are<br />you?
+              </h1>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <label style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', color: CARD.label, fontWeight: 600 }}>
+                  Company name
+                </label>
+                <input
+                  type="text"
+                  value={companyName}
+                  onChange={e => setCompanyName(e.target.value)}
+                  placeholder="e.g. Acme Logistics"
+                  style={{
+                    width: '100%', height: 48, padding: '0 14px',
+                    background: CARD.inputBg, border: `1px solid ${CARD.border}`,
+                    color: CARD.heading, fontSize: 15,
+                    boxSizing: 'border-box', outline: 'none',
+                    fontFamily: 'inherit',
+                    transition: 'border-color 0.15s',
+                  }}
+                  onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
+                  onBlur={e => { e.target.style.borderColor = CARD.border }}
+                />
+                <p style={{ fontSize: 12, color: CARD.label, margin: 0, lineHeight: 1.5 }}>
+                  This will appear on your Cockpit dashboard.
+                </p>
+              </div>
+            </div>
+
+            {/* Right — 4-column industry grid, scrollable */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '32px 28px', position: 'relative' }}>
+              {catalogLoading ? (
+                <div style={{ color: '#888', fontSize: 14, padding: 40 }}>Loading…</div>
+              ) : (
                 <div style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
+                  gridTemplateColumns: 'repeat(4, 1fr)',
                   gap: 8,
                 }}>
                   {(catalog?.industries || []).map(ind => (
@@ -346,74 +390,63 @@ export default function SchemaSetup({ user, onComplete }) {
                         textAlign: 'left',
                         background: CARD.bg,
                         border: `1px solid ${CARD.border}`,
-                        padding: '18px 16px',
+                        padding: '16px 14px',
                         cursor: 'pointer',
-                        minHeight: 80,
+                        minHeight: 90,
                         transition: 'border-color 0.15s, background 0.15s, color 0.15s',
                       }}
                     >
-                      <div className="sa-ind-label" style={{ fontSize: 14, fontWeight: 700, color: CARD.heading, lineHeight: 1.3, transition: 'color 0.15s' }}>{ind.label}</div>
-                      <div className="sa-ind-desc" style={{ fontSize: 11, color: CARD.body, marginTop: 6, lineHeight: 1.4, transition: 'color 0.15s' }}>{ind.description}</div>
+                      <div className="sa-ind-label" style={{ fontSize: 13, fontWeight: 700, color: CARD.heading, lineHeight: 1.3, transition: 'color 0.15s' }}>{ind.label}</div>
+                      <div className="sa-ind-desc" style={{ fontSize: 11, color: CARD.body, marginTop: 5, lineHeight: 1.4, transition: 'color 0.15s' }}>{ind.description}</div>
                     </button>
                   ))}
                 </div>
-              </>
-            )}
+              )}
 
-            {/* ── Custom business panel ──────────────────────────────── */}
-            {showCustomPanel && (
-              <div style={{
-                position: 'absolute', top: 0, right: 0, bottom: 0, width: 320,
-                background: CARD.bg, borderLeft: `1px solid ${CARD.border}`,
-                padding: 24, display: 'flex', flexDirection: 'column', gap: 20,
-                animation: 'slideInRight 0.2s ease', zIndex: 10,
-              }}>
-                <button onClick={() => setShowCustomPanel(false)} style={{ background: 'none', border: 'none', color: CARD.label, fontSize: 12, cursor: 'pointer', padding: 0, alignSelf: 'flex-start' }}>
-                  ← back
-                </button>
+              {/* ── Custom business description panel (for "Something else") */}
+              {showCustomPanel && (
+                <div style={{
+                  position: 'absolute', top: 0, right: 0, bottom: 0, width: 300,
+                  background: CARD.bg, borderLeft: `1px solid ${CARD.border}`,
+                  padding: 24, display: 'flex', flexDirection: 'column', gap: 20,
+                  animation: 'slideInRight 0.2s ease', zIndex: 10,
+                }}>
+                  <button onClick={() => setShowCustomPanel(false)} style={{ background: 'none', border: 'none', color: CARD.label, fontSize: 12, cursor: 'pointer', padding: 0, alignSelf: 'flex-start' }}>
+                    ← back
+                  </button>
 
-                <div>
-                  <div style={{ fontSize: 18, fontWeight: 700, color: CARD.heading, marginBottom: 6 }}>Tell us about your business</div>
-                  <div style={{ fontSize: 12, color: CARD.body, lineHeight: 1.5 }}>We'll use this to personalise your setup.</div>
+                  <div>
+                    <div style={{ fontSize: 16, fontWeight: 700, color: CARD.heading, marginBottom: 6 }}>Tell us more</div>
+                    <div style={{ fontSize: 12, color: CARD.body, lineHeight: 1.5 }}>What does your business do?</div>
+                  </div>
+
+                  <div>
+                    <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.09em', color: CARD.label, marginBottom: 6 }}>
+                      Description <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span>
+                    </div>
+                    <textarea
+                      value={customBizDesc}
+                      onChange={e => setCustomBizDesc(e.target.value)}
+                      placeholder="One or two lines about your business"
+                      rows={4}
+                      style={{ width: '100%', background: CARD.inputBg, border: `1px solid ${CARD.border}`, color: CARD.heading, fontSize: 13, padding: '8px 10px', boxSizing: 'border-box', resize: 'none', lineHeight: 1.5 }}
+                    />
+                  </div>
+
+                  <button
+                    onClick={submitCustomBusiness}
+                    style={{
+                      marginTop: 'auto', background: C.accent,
+                      border: 'none', color: '#fff',
+                      padding: '11px', fontSize: 13, fontWeight: 600,
+                      cursor: 'pointer', transition: 'background 0.15s',
+                    }}
+                  >
+                    Continue →
+                  </button>
                 </div>
-
-                <div>
-                  <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.09em', color: CARD.label, marginBottom: 6 }}>Business name</div>
-                  <input
-                    value={customBizName}
-                    onChange={e => setCustomBizName(e.target.value)}
-                    placeholder="e.g. Acme Logistics"
-                    autoFocus
-                    onKeyDown={e => e.key === 'Enter' && submitCustomBusiness()}
-                    style={{ width: '100%', background: CARD.inputBg, border: `1px solid ${CARD.border}`, color: CARD.heading, fontSize: 13, padding: '8px 10px', boxSizing: 'border-box' }}
-                  />
-                </div>
-
-                <div>
-                  <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.09em', color: CARD.label, marginBottom: 6 }}>What do you do? <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span></div>
-                  <textarea
-                    value={customBizDesc}
-                    onChange={e => setCustomBizDesc(e.target.value)}
-                    placeholder="One or two lines about your business"
-                    rows={3}
-                    style={{ width: '100%', background: CARD.inputBg, border: `1px solid ${CARD.border}`, color: CARD.heading, fontSize: 13, padding: '8px 10px', boxSizing: 'border-box', resize: 'none', lineHeight: 1.5 }}
-                  />
-                </div>
-
-                <button
-                  onClick={submitCustomBusiness}
-                  disabled={!customBizName.trim()}
-                  style={{
-                    marginTop: 'auto', background: customBizName.trim() ? C.accent : CARD.inputBg,
-                    border: 'none', color: customBizName.trim() ? '#fff' : CARD.label,
-                    padding: '11px', fontSize: 13, fontWeight: 600,
-                    cursor: customBizName.trim() ? 'pointer' : 'not-allowed', transition: 'background 0.15s',
-                  }}
-                >
-                  Continue →
-                </button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         )}
 
