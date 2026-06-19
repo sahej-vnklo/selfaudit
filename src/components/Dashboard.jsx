@@ -363,7 +363,7 @@ const LEGACY_NOTIFICATION_AREA_MAP = {
   customer_experience: 'customer_health',
 }
 const GOVERNANCE_AREA_LABELS = Object.fromEntries(OPERATIONAL_AREAS.map((area) => [area.id, area.label]))
-const SECTIONS = ['home', 'oversight', 'reports', 'intelligence', 'business-state', 'alerts', 'connectors', 'simulate', 'agent', 'schema', 'logic', 'billing', 'account']
+const SECTIONS = ['home', 'oversight', 'reports', 'intelligence', 'alerts', 'connectors', 'simulate', 'agent', 'logic', 'billing', 'account']
 const INTELLIGENCE_ONLY_SECTIONS = new Set(['oversight', 'alerts', 'connectors', 'agent'])
 const WELCOME_TOUR_ROLLOUT_AT = Date.parse('2026-05-24T00:30:00-04:00')
 
@@ -2025,13 +2025,6 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
               </svg>
               <span className="navlabel">Sessions</span>
             </button>
-            <button className={`dash-navbtn${section === 'business-state' ? ' active' : ''}`} data-label="Context" aria-label="Context" type="button" onClick={() => navigateSection('business-state')}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/>
-                <path d="M14 3v5h5M9 13h6M9 17h6"/>
-              </svg>
-              <span className="navlabel">Context</span>
-            </button>
             <button className={`dash-navbtn${section === 'connectors' ? ' active' : ''}`} data-label="Connectors" aria-label="Connectors" type="button" onClick={() => navigateSection('connectors')}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="6" cy="6" r="2.4"/><circle cx="18" cy="6" r="2.4"/><circle cx="12" cy="18" r="2.4"/>
@@ -2044,15 +2037,6 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                 <path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/>
               </svg>
               <span className="navlabel">Simulate</span>
-            </button>
-            <button className={`dash-navbtn${section === 'schema' ? ' active' : ''}`} data-label="Schema" aria-label="Schema" type="button" onClick={() => navigateSection('schema')}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="3" width="7" height="7" rx="1.5"/>
-                <rect x="14" y="3" width="7" height="7" rx="1.5"/>
-                <rect x="3" y="14" width="7" height="7" rx="1.5"/>
-                <path d="M17.5 14v7M14 17.5h7"/>
-              </svg>
-              <span className="navlabel">Schema</span>
             </button>
             <button className={`dash-navbtn${section === 'logic' ? ' active' : ''}`} data-label="Logic" aria-label="Logic" type="button" onClick={() => navigateSection('logic')}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
@@ -2543,16 +2527,6 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
               )}
 
               {/* ── Context → Intelligence brief ─────────────────────────── */}
-              {section === 'business-state' && (
-                <PageShell title="Context" sub="Your intelligence brief and operating picture in one place.">
-                  <IntelligenceBrief
-                    user={user}
-                    profile={profile}
-                    theme={theme}
-                    onProfileChange={(updated) => setProfile((prev) => ({ ...prev, ...updated }))}
-                  />
-                </PageShell>
-              )}
 
               {section === 'alerts' && (
                 <PageShell title="Alerts" sub="Review unresolved monitoring signals, acknowledge what you have seen, and resolve what is actually handled.">
@@ -2566,7 +2540,6 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                 </PageShell>
               )}
               {section === 'agent'      && <AgentSection user={user} />}
-              {section === 'schema'     && <SchemaManager user={user} />}
               {section === 'logic'      && <LogicPage user={user} />}
               {section === 'cockpit'    && <CockpitSection user={user} navigateSection={navigateSection} />}
               {section === 'dept-customer-service'    && <DepartmentPage areaId="customer-service"    user={user} navigateSection={navigateSection} view={deptView} />}
@@ -2579,25 +2552,31 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                 <div>
                   {/* Tab switcher */}
                   <div style={{ display: 'flex', gap: 4, padding: '20px 28px 0', borderBottom: `1px solid ${G.border}` }}>
-                    {['profile', 'billing', 'data'].map(tab => (
+                    {[
+                      { id: 'profile', label: 'Profile' },
+                      { id: 'billing', label: 'Billing' },
+                      { id: 'setup',   label: 'Business Setup' },
+                      { id: 'intelligence', label: 'Intelligence' },
+                      { id: 'data',    label: 'Data' },
+                    ].map(({ id, label }) => (
                       <button
-                        key={tab}
+                        key={id}
                         type="button"
-                        onClick={() => setAccountTab(tab)}
+                        onClick={() => setAccountTab(id)}
                         style={{
                           padding: '8px 18px', borderRadius: '8px 8px 0 0',
-                          border: `1px solid ${accountTab === tab ? G.border2 : 'transparent'}`,
-                          borderBottom: accountTab === tab ? `1px solid ${G.surface}` : 'transparent',
-                          background: accountTab === tab ? G.surface : 'transparent',
-                          color: accountTab === tab ? G.text : G.textMuted,
-                          fontSize: 13, fontWeight: accountTab === tab ? 600 : 500,
-                          cursor: 'pointer', textTransform: 'capitalize',
-                          marginBottom: accountTab === tab ? -1 : 0,
+                          border: `1px solid ${accountTab === id ? G.border2 : 'transparent'}`,
+                          borderBottom: accountTab === id ? `1px solid ${G.surface}` : 'transparent',
+                          background: accountTab === id ? G.surface : 'transparent',
+                          color: accountTab === id ? G.text : G.textMuted,
+                          fontSize: 13, fontWeight: accountTab === id ? 600 : 500,
+                          cursor: 'pointer',
+                          marginBottom: accountTab === id ? -1 : 0,
                           fontFamily: 'inherit',
                           transition: 'all 0.12s',
                         }}
                       >
-                        {tab}
+                        {label}
                       </button>
                     ))}
                   </div>
@@ -2642,6 +2621,34 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                       onSignOut={onSignOut}
                       dataOnly
                     />
+                  )}
+
+                  {/* Business Setup tab — areas & units editor */}
+                  {accountTab === 'setup' && (
+                    <div style={{ padding: '28px 28px 0' }}>
+                      <div style={{ marginBottom: 24 }}>
+                        <h2 style={{ fontSize: 22, fontWeight: 700, color: G.text, margin: 0 }}>Business Setup</h2>
+                        <p style={{ fontSize: 14, color: G.textMuted, marginTop: 6 }}>Manage the areas and units SelfAudit monitors for your business.</p>
+                      </div>
+                      <SchemaManager user={user} />
+                    </div>
+                  )}
+
+                  {/* Intelligence tab — synthesized intelligence profile */}
+                  {accountTab === 'intelligence' && (
+                    <div style={{ padding: '28px 28px 0' }}>
+                      <div style={{ marginBottom: 24 }}>
+                        <h2 style={{ fontSize: 22, fontWeight: 700, color: G.text, margin: 0 }}>Intelligence</h2>
+                        <p style={{ fontSize: 14, color: G.textMuted, marginTop: 6 }}>What the system has learned about your business so far.</p>
+                      </div>
+                      <IntelligenceBrief
+                        user={user}
+                        profile={profile}
+                        theme={theme}
+                        onProfileChange={(updated) => setProfile((prev) => ({ ...prev, ...updated }))}
+                        synthOnly
+                      />
+                    </div>
                   )}
                 </div>
               )}

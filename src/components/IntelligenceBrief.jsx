@@ -259,7 +259,73 @@ function hasAnyBriefData(financialFields, financial, operational, context) {
   return visibleFields.some(isFilled)
 }
 
-export default function IntelligenceBrief({ user, profile, theme: themeProp, onProfileChange }) {
+function SynthCard({ synthProfile, openSections, setOpenSections }) {
+  return (
+    <SectionCard
+      title="Synthesized intelligence"
+      isOpen={openSections.synthesized}
+      onToggle={() => setOpenSections((prev) => ({ ...prev, synthesized: !prev.synthesized }))}
+      showSave={false}
+    >
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 16 }}>
+        {synthProfile ? (
+          <>
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+              <div style={{ flex: 1, minWidth: 260 }}>
+                <div style={{ fontSize: 16, color: COLORS.text, marginBottom: 8 }}>What the system now believes</div>
+                <div style={{ fontSize: 13, color: COLORS.textSecondary, lineHeight: 1.7 }}>
+                  {synthProfile.summary || 'Still gathering enough signal to synthesize a reliable view.'}
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+                <div style={summaryBadge}>{String(synthProfile.confidence || 'low').toUpperCase()} confidence</div>
+                <div style={summaryBadge}>Updated {synthProfile.last_synthesized_at ? new Date(synthProfile.last_synthesized_at).toLocaleDateString() : 'just now'}</div>
+              </div>
+            </div>
+            {typeof synthProfile.goal_score === 'number' && (
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <span style={fieldLabel}>Goal score</span>
+                  <span style={{ fontSize: 12, color: COLORS.accentText }}>{Math.round(synthProfile.goal_score || 0)} / 100</span>
+                </div>
+                <ProgressBar value={synthProfile.goal_score || 0} />
+              </div>
+            )}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
+              <div>
+                <div style={fieldLabel}>Focus areas</div>
+                <div style={badgeWrap}>
+                  {(synthProfile.focus_areas || []).length > 0
+                    ? synthProfile.focus_areas.map((area) => <SummaryBadge key={area}>{area}</SummaryBadge>)
+                    : <EmptyInline>Still learning where to focus.</EmptyInline>}
+                </div>
+              </div>
+              <div>
+                <div style={fieldLabel}>Domains audited</div>
+                <div style={badgeWrap}>
+                  {(synthProfile.domains_audited || []).length > 0
+                    ? synthProfile.domains_audited.map((area) => <SummaryBadge key={area}>{area}</SummaryBadge>)
+                    : <EmptyInline>No domain history yet.</EmptyInline>}
+                </div>
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
+              <SummaryList title="Repeated blockers" items={synthProfile.repeated_blockers} empty="No repeated blockers yet." />
+              <SummaryList title="Top priorities" items={synthProfile.top_priorities} empty="No clear priorities yet." />
+            </div>
+            <SummaryList title="Watchouts" items={synthProfile.watchouts} empty="No urgent watchouts right now." />
+          </>
+        ) : (
+          <div style={{ fontSize: 13, color: COLORS.textSecondary, lineHeight: 1.7 }}>
+            Your intelligence profile will start compounding after audits, reports, brief data, and connector signals accumulate.
+          </div>
+        )}
+      </div>
+    </SectionCard>
+  )
+}
+
+export default function IntelligenceBrief({ user, profile, theme: themeProp, onProfileChange, synthOnly = false }) {
   const theme = themeProp || localStorage.getItem('sa-theme') || 'dark'
   const themeVars = getThemeVars(theme)
   const [financial, setFinancial] = useState({})
@@ -449,6 +515,22 @@ export default function IntelligenceBrief({ user, profile, theme: themeProp, onP
         {field.prefix && <span style={fieldAffixStyle('left')}>{field.prefix}</span>}
         {field.suffix && <span style={fieldAffixStyle('right')}>{field.suffix}</span>}
         {control}
+      </div>
+    )
+  }
+
+  if (synthOnly) {
+    return (
+      <div style={{ ...themeVars, maxWidth: 980 }}>
+        {loading ? (
+          <div style={loadingCard}>Loading…</div>
+        ) : intelligenceUnlocked ? (
+          <SynthCard synthProfile={synthProfile} openSections={openSections} setOpenSections={setOpenSections} />
+        ) : (
+          <div style={{ fontSize: 14, color: COLORS.textSecondary, padding: '20px 0' }}>
+            Intelligence synthesis is available on the Intelligence plan. Upgrade to see your compounded business profile.
+          </div>
+        )}
       </div>
     )
   }
