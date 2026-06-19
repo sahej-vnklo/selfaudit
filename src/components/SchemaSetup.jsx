@@ -478,8 +478,8 @@ export default function SchemaSetup({ user, onComplete }) {
               {/* Left — heading */}
               <div style={{
                 width: '40%', flexShrink: 0,
-                display: 'flex', flexDirection: 'column', justifyContent: 'center',
-                padding: '48px 44px',
+                display: 'flex', flexDirection: 'column', justifyContent: 'flex-start',
+                padding: '60px 44px 48px',
               }}>
                 <h1 style={{
                   fontFamily: '"Cormorant Garamond", "Times New Roman", serif',
@@ -491,7 +491,7 @@ export default function SchemaSetup({ user, onComplete }) {
                   margin: 0,
                   whiteSpace: 'nowrap',
                 }}>
-                  Which areas do you<br />want to monitor?
+                  Tell us where<br />to look.
                 </h1>
                 {selectedAreas.length > 0 && (
                   <p style={{ marginTop: 20, fontSize: 13, color: 'rgba(255,255,255,0.45)', fontWeight: 500 }}>
