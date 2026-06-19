@@ -341,7 +341,7 @@ export default function SchemaSetup({ user, onComplete }) {
                 color: '#ffffff',
                 margin: '0 0 36px',
               }}>
-                what type of business<br />are you ?
+                What type of business<br />are you ?
               </h1>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
