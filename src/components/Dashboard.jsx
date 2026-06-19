@@ -5084,7 +5084,7 @@ function ConnectorsSection({ user }) {
       {loading ? (
         <div style={{ color: 'var(--fg-mute)', fontSize: 13, padding: '24px 0' }}>Checking connector status…</div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
           {filtered.length === 0 && (
             <div style={{ color: 'var(--fg-mute)', fontSize: 13, padding: '24px 0', gridColumn: '1/-1' }}>No connectors match.</div>
           )}
@@ -5101,13 +5101,13 @@ function ConnectorsSection({ user }) {
                   gap: 12,
                   padding: '16px',
                   borderRadius: 12,
-                  border: `1px solid ${connected ? 'rgba(76,175,80,0.3)' : 'var(--d-border, rgba(255,255,255,0.07))'}`,
+                  border: `1px solid ${connected ? 'rgba(76,175,80,0.5)' : 'rgba(255,255,255,0.15)'}`,
                   background: connected ? 'rgba(76,175,80,0.05)' : 'var(--d-card, rgba(255,255,255,0.04))',
                   transition: 'border-color 0.15s, box-shadow 0.15s',
                   cursor: 'default',
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,0,0,0.06)'; e.currentTarget.style.borderColor = connected ? 'rgba(76,175,80,0.4)' : 'var(--accent, #C8622A)33' }}
-                onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = connected ? 'rgba(76,175,80,0.25)' : 'var(--d-border, rgba(0,0,0,0.1))' }}
+                onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,0,0,0.12)'; e.currentTarget.style.borderColor = connected ? 'rgba(76,175,80,0.7)' : 'rgba(200,98,42,0.5)' }}
+                onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = connected ? 'rgba(76,175,80,0.5)' : 'rgba(255,255,255,0.15)' }}
               >
                 {/* Top row: avatar + category + action */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

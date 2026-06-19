@@ -531,6 +531,9 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
   const [sendingArtifact, setSendingArtifact] = useState(false)
   const [sendArtifactErr, setSendArtifactErr] = useState(null)
   const [sendArtifactDone, setSendArtifactDone] = useState(false)
+  const [commChannels, setCommChannels]         = useState([{ type: 'email', label: 'Account Email', params: null }])
+  const [savedCommPref, setSavedCommPref]       = useState(null)
+  const [selectedChannel, setSelectedChannel]   = useState('email')
 
   useEffect(() => {
     if (reportOptions.some((item) => item.id === selectedReportId)) return
@@ -601,6 +604,35 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
       } catch { /* non-blocking */ }
     }
     loadPast()
+    return () => { cancelled = true }
+  }, [userInfo?.userId])
+
+  // Fetch available communication channels for this user
+  useEffect(() => {
+    const userId = userInfo?.userId
+    if (!userId) return
+    let cancelled = false
+    async function loadChannels() {
+      try {
+        const sb = await initSupabase()
+        const { data: { session: s } } = await sb.auth.getSession()
+        const token = s?.access_token || ''
+        const res = await fetch(`/api/comm-channels?userId=${userId}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        })
+        if (!res.ok || cancelled) return
+        const data = await res.json()
+        if (cancelled) return
+        if (Array.isArray(data.channels) && data.channels.length > 0) {
+          setCommChannels(data.channels)
+        }
+        if (data.savedPref) {
+          setSavedCommPref(data.savedPref)
+          setSelectedChannel(data.savedPref.channel_type ?? 'email')
+        }
+      } catch { /* non-blocking */ }
+    }
+    loadChannels()
     return () => { cancelled = true }
   }, [userInfo?.userId])
 
@@ -722,10 +754,15 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
   }
 
   async function doSendArtifact() {
-    if (!artifact || !scopedUserInfo?.userId || !scopedUserInfo?.email) return
+    if (!artifact || !scopedUserInfo?.userId) return
     setSendingArtifact(true)
     setSendArtifactErr(null)
     try {
+      const ch = commChannels.find(c => c.type === selectedChannel) ?? commChannels[0]
+      const params = ch.type === 'email'
+        ? { email: scopedUserInfo.email }
+        : (ch.params ?? {})
+
       const sb = await initSupabase()
       const { data: { session } } = await sb.auth.getSession()
       const headers = { 'Content-Type': 'application/json', ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}) }
@@ -734,14 +771,15 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
         headers,
         body: JSON.stringify({
           userId:       scopedUserInfo.userId,
-          channelType:  'email',
-          params:       { email: scopedUserInfo.email },
+          channelType:  ch.type,
+          params,
           artifactData: { title: artifact.title, type: currentArtifactType, sections: artifact.sections ?? [], summary: artifact.summary ?? null },
-          savePref: false,
+          savePref: true,
         }),
       })
       const payload = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(payload?.error || 'Could not send')
+      setSavedCommPref({ channel_type: ch.type, params })
       setSendArtifactDone(true)
       setShowSendPopup(false)
     } catch (e) {
@@ -754,35 +792,63 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
   return (
     <div style={{ ...themeVars, ...(variant === 'dashboard' ? ep.cardWrapper : ep.wrapper) }} data-pdf-hide>
 
-      {/* Send artifact popup */}
-      {showSendPopup && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)' }} onClick={() => { if (!sendingArtifact) setShowSendPopup(false) }} />
-          <div style={{ position: 'relative', background: 'var(--rich-panel-surface, var(--surface, #1a1a1a))', border: '1px solid var(--border, #333)', borderRadius: 12, padding: '22px 24px', width: '100%', maxWidth: 340, boxShadow: '0 16px 48px rgba(0,0,0,0.4)' }}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>Send this artifact</div>
-            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 18, lineHeight: 1.5 }}>
-              Clicking Send emails this directly to you. No queues.
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 8, border: '1.5px solid var(--accent)', background: 'rgba(200,98,42,0.08)', marginBottom: 18 }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--accent)', flexShrink: 0 }}><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Account Email</div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{scopedUserInfo?.email || 'your email'}</div>
+      {/* Send artifact popup — channel picker */}
+      {showSendPopup && (() => {
+        const CHANNEL_ICON = {
+          email: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>,
+          slack: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="4"/><path d="M9 9h6M9 15h6M9 9v6M15 9v6"/></svg>,
+          gmail: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>,
+        }
+        function channelSubtitle(ch) {
+          if (ch.type === 'email') return scopedUserInfo?.email || 'your account email'
+          if (ch.type === 'slack') return ch.params?.channel ? `#${ch.params.channel}` : 'Slack workspace'
+          if (ch.type === 'gmail') return ch.params?.recipient || 'Gmail draft'
+          return ch.type
+        }
+        const isFirstTime = !savedCommPref
+        const accent = 'var(--accent, #c8622a)'
+        const accentBg = 'rgba(200,98,42,0.08)'
+        return (
+          <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+            <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)' }} onClick={() => { if (!sendingArtifact) setShowSendPopup(false) }} />
+            <div style={{ position: 'relative', background: 'var(--rich-panel-surface, var(--surface, #1a1a1a))', border: '1px solid var(--border, #333)', borderRadius: 12, padding: '22px 24px', width: '100%', maxWidth: 340, boxShadow: '0 16px 48px rgba(0,0,0,0.4)' }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>Send this artifact</div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 18, lineHeight: 1.5 }}>
+                {isFirstTime ? 'Pick where you want this sent. We\'ll remember your choice.' : 'Send to your saved channel, or pick a different one.'}
               </div>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--accent)', marginLeft: 'auto', flexShrink: 0 }}><path d="M20 6L9 17l-5-5"/></svg>
-            </div>
-            {sendArtifactErr && <div style={{ fontSize: 11, color: 'var(--error)', marginBottom: 10 }}>{sendArtifactErr}</div>}
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button type="button" onClick={doSendArtifact} disabled={sendingArtifact} style={{ flex: 1, padding: '8px 0', borderRadius: 7, border: 'none', background: 'var(--accent)', color: '#fff', fontSize: 13, fontWeight: 600, cursor: sendingArtifact ? 'not-allowed' : 'pointer', opacity: sendingArtifact ? 0.6 : 1 }}>
-                {sendingArtifact ? 'Sending…' : 'Send →'}
-              </button>
-              <button type="button" onClick={() => setShowSendPopup(false)} disabled={sendingArtifact} style={{ padding: '8px 14px', borderRadius: 7, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', fontSize: 13, cursor: sendingArtifact ? 'not-allowed' : 'pointer' }}>
-                Cancel
-              </button>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 18 }}>
+                {commChannels.map(ch => {
+                  const isSel = selectedChannel === ch.type
+                  return (
+                    <button
+                      key={ch.type}
+                      type="button"
+                      onClick={() => setSelectedChannel(ch.type)}
+                      style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 8, cursor: 'pointer', textAlign: 'left', border: isSel ? `1.5px solid ${accent}` : '1px solid var(--border, #333)', background: isSel ? accentBg : 'var(--surface2, rgba(255,255,255,0.04))', transition: 'border-color 0.12s, background 0.12s' }}
+                    >
+                      <span style={{ color: isSel ? accent : 'var(--text-muted)', flexShrink: 0 }}>{CHANNEL_ICON[ch.type] ?? CHANNEL_ICON.email}</span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: isSel ? accent : 'var(--text)' }}>{ch.label}</div>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{channelSubtitle(ch)}</div>
+                      </div>
+                      {isSel && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: accent, flexShrink: 0 }}><path d="M20 6L9 17l-5-5"/></svg>}
+                    </button>
+                  )
+                })}
+              </div>
+              {sendArtifactErr && <div style={{ fontSize: 11, color: 'var(--error, #f87171)', marginBottom: 10 }}>{sendArtifactErr}</div>}
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button type="button" onClick={doSendArtifact} disabled={sendingArtifact} style={{ flex: 1, padding: '8px 0', borderRadius: 7, border: 'none', background: accent, color: '#fff', fontSize: 13, fontWeight: 600, cursor: sendingArtifact ? 'not-allowed' : 'pointer', opacity: sendingArtifact ? 0.6 : 1 }}>
+                  {sendingArtifact ? 'Sending…' : 'Send →'}
+                </button>
+                <button type="button" onClick={() => setShowSendPopup(false)} disabled={sendingArtifact} style={{ padding: '8px 14px', borderRadius: 7, border: '1px solid var(--border, #333)', background: 'transparent', color: 'var(--text-muted)', fontSize: 13, cursor: sendingArtifact ? 'not-allowed' : 'pointer' }}>
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      })()}
 
       <div style={ep.header}>
         <h2 style={ep.sectionTitle}>Turn This Into Action</h2>
