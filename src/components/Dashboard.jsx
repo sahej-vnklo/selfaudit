@@ -4883,6 +4883,169 @@ const CONNECTOR_LOGOS = {
       <path d="M25 22l-12 0 6-8 6 8z" fill="white" opacity="0.8"/>
     </svg>
   ),
+  salesforce: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#00A1E0"/>
+      <path d="M16 13a4 4 0 0 1 7.4-2.1A3.5 3.5 0 0 1 27 14.5a3.5 3.5 0 0 1-1 6.8H13a3 3 0 0 1-.4-6 4 4 0 0 1 3.4-2.3z" fill="white"/>
+    </svg>
+  ),
+  pipedrive: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#1A1A2E"/>
+      <circle cx="19" cy="17" r="5" stroke="#27AE60" strokeWidth="2.5"/>
+      <line x1="19" y1="22" x2="19" y2="30" stroke="#27AE60" strokeWidth="2.5" strokeLinecap="round"/>
+    </svg>
+  ),
+  quickbooks: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#2CA01C"/>
+      <circle cx="19" cy="19" r="8" stroke="white" strokeWidth="2"/>
+      <path d="M15 19h6M19 15v8" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+    </svg>
+  ),
+  xero: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#13B5EA"/>
+      <path d="M12 13l7 6-7 6M26 13l-7 6 7 6" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  ),
+  googleanalytics: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#F9AB00"/>
+      <rect x="10" y="22" width="5" height="8" rx="2" fill="white"/>
+      <rect x="17" y="16" width="5" height="14" rx="2" fill="white"/>
+      <rect x="24" y="10" width="5" height="20" rx="2" fill="white"/>
+    </svg>
+  ),
+  googleads: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#4285F4"/>
+      <circle cx="13" cy="22" r="4" fill="#34A853"/>
+      <circle cx="25" cy="22" r="4" fill="#FBBC04"/>
+      <circle cx="19" cy="13" r="4" fill="#EA4335"/>
+    </svg>
+  ),
+  metaads: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#0081FB"/>
+      <path d="M9 20c0-4 2-8 5-8 2 0 3.5 2 5 5 1.5-3 3-5 5-5 3 0 5 4 5 8s-2 6-5 6c-2 0-3.5-2-5-5-1.5 3-3 5-5 5-3 0-5-2-5-6z" stroke="white" strokeWidth="2" fill="none"/>
+    </svg>
+  ),
+  mailchimp: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#FFE01B"/>
+      <path d="M19 10c-4 0-7 2.5-7 6 0 2 1 3.5 2.5 4.5-.3.5-.5 1-.5 1.5 0 1.5 1.5 2.5 3 3-.5.5-.5 1-.5 1.5 0 1.7 2 3 4.5 3s4.5-1.3 4.5-3c0-.5-.2-1-.5-1.5 1.5-.5 3-1.5 3-3 0-.5-.2-1-.5-1.5C29 18.5 30 17 30 15c0-3.5-3-5-5.5-5H19z" fill="#1F1F1F"/>
+      <circle cx="16.5" cy="16" r="1" fill="white"/>
+      <circle cx="21.5" cy="16" r="1" fill="white"/>
+    </svg>
+  ),
+  klaviyo: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#1A1A1A"/>
+      <path d="M12 10h4v18h-4zM18 19l8-9h5l-8 9 8 9h-5z" fill="white"/>
+    </svg>
+  ),
+  confluence: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#0052CC"/>
+      <path d="M9 26c3-4 6-6 10-6s7 2 10 6" stroke="white" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+      <path d="M9 12c3 4 6 6 10 6s7-2 10-6" stroke="#4BADE8" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+    </svg>
+  ),
+  gusto: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#F45D48"/>
+      <path d="M19 11a8 8 0 0 1 8 8h-4a4 4 0 0 0-4-4v-4zM19 27a8 8 0 0 1-8-8h4a4 4 0 0 0 4 4v4z" fill="white"/>
+    </svg>
+  ),
+  rippling: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#F5A623"/>
+      <circle cx="15" cy="15" r="3" fill="white"/>
+      <circle cx="23" cy="15" r="3" fill="white"/>
+      <circle cx="19" cy="23" r="3" fill="white"/>
+    </svg>
+  ),
+  bamboohr: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#73B341"/>
+      <rect x="17" y="9" width="4" height="20" rx="2" fill="white"/>
+      <path d="M21 14c2-2 5-2 5 0s-3 3-5 2M17 20c-2-2-5-2-5 0s3 3 5 2" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  ),
+  intercom: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#286EFA"/>
+      <rect x="10" y="10" width="18" height="14" rx="3" fill="white"/>
+      <path d="M14 28l4-4h8a2 2 0 0 0 2-2V12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+      <rect x="13" y="14" width="3" height="2" rx="1" fill="#286EFA"/>
+      <rect x="18" y="14" width="3" height="2" rx="1" fill="#286EFA"/>
+      <rect x="13" y="18" width="8" height="2" rx="1" fill="#286EFA"/>
+    </svg>
+  ),
+  asana: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#F06A6A"/>
+      <circle cx="19" cy="14" r="5" fill="white"/>
+      <circle cx="12" cy="24" r="4" fill="white"/>
+      <circle cx="26" cy="24" r="4" fill="white"/>
+    </svg>
+  ),
+  monday: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#F62B54"/>
+      <circle cx="12" cy="19" r="4" fill="#FFCB00"/>
+      <circle cx="20" cy="19" r="4" fill="#00CA72"/>
+      <circle cx="28" cy="19" r="4" fill="#FF7575"/>
+    </svg>
+  ),
+  clickup: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#7B68EE"/>
+      <path d="M10 22l5-6 4 4 4-5 5 7" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+    </svg>
+  ),
+  airtable: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#FCB400"/>
+      <rect x="9" y="10" width="20" height="7" rx="2" fill="white"/>
+      <rect x="9" y="20" width="9" height="9" rx="2" fill="white"/>
+      <rect x="20" y="20" width="9" height="9" rx="2" fill="white" opacity="0.6"/>
+    </svg>
+  ),
+  jira: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#0052CC"/>
+      <path d="M19 9L9 19l10 10 10-10L19 9z" fill="url(#jg)" opacity="0.3"/>
+      <path d="M19 9l-8 10 8 4 8-4L19 9z" fill="white"/>
+      <path d="M11 19l8 4 8-4-8 10-8-10z" fill="#4BADE8"/>
+      <defs>
+        <linearGradient id="jg" x1="9" y1="19" x2="29" y2="19">
+          <stop stopColor="#0052CC"/>
+          <stop offset="1" stopColor="#4BADE8"/>
+        </linearGradient>
+      </defs>
+    </svg>
+  ),
+  linear: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#5E6AD2"/>
+      <path d="M10 28L28 10M10 20l8-10M18 28l10-8M10 28h10M28 10v10" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+    </svg>
+  ),
+  deel: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#1A1A1A"/>
+      <path d="M12 19a7 7 0 0 1 7-7v4a3 3 0 0 0 0 6v4a7 7 0 0 1-7-7z" fill="white"/>
+      <path d="M19 12a7 7 0 0 1 7 7h-4a3 3 0 0 0-3-3v-4z" fill="white" opacity="0.5"/>
+    </svg>
+  ),
+  multiplier: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#6C47FF"/>
+      <path d="M13 13l12 12M25 13L13 25" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+    </svg>
+  ),
 }
 
 function ConnectorsSection({ user }) {
@@ -5130,6 +5293,10 @@ function ConnectorsSection({ user }) {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: '#4CAF50', fontWeight: 500 }}>
                       <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#4CAF50' }} />
                       Connected
+                    </div>
+                  ) : connector.status === 'coming_soon' ? (
+                    <div style={{ fontSize: 10, color: 'var(--fg-mute)', background: 'var(--d-border, rgba(255,255,255,0.07))', borderRadius: 6, padding: '3px 8px', whiteSpace: 'nowrap', fontWeight: 500, letterSpacing: '0.03em' }}>
+                      Soon
                     </div>
                   ) : (
                     <button

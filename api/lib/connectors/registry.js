@@ -1,7 +1,13 @@
 // Connector registry — single source of truth for all connectors TSA supports.
 // Dashboard UI, /api/connectors endpoint, and future automation all read from here.
+//
+// status: 'available'    → Composio auth config set up, user can connect now
+// status: 'coming_soon'  → Not yet wired to Composio auth config
+//
+// comm_channel: true → connector can receive artifact pushes (appears in channel picker)
 
 export const CONNECTOR_REGISTRY = [
+  // ── CRM ──────────────────────────────────────────────────────────────────────
   {
     id:          'hubspot',
     name:        'HubSpot',
@@ -19,6 +25,38 @@ export const CONNECTOR_REGISTRY = [
     required_tier: 'intelligence',
   },
   {
+    id:          'salesforce',
+    name:        'Salesforce',
+    category:    'CRM',
+    status:      'coming_soon',
+    auth_type:   'oauth',
+    description: 'Enterprise CRM — pull pipeline, deal stages, lead velocity, and account health.',
+    data_types:  ['opportunities', 'leads', 'accounts', 'pipeline_stages'],
+    intelligence_use_cases: [
+      'Pipeline health and deal velocity',
+      'Sales conversion and win rate analysis',
+      'Account expansion and churn signals',
+    ],
+    required_tier: 'intelligence',
+  },
+  {
+    id:          'pipedrive',
+    name:        'Pipedrive',
+    category:    'CRM',
+    status:      'coming_soon',
+    auth_type:   'oauth',
+    description: 'Pull pipeline health, close rates, and deal age to diagnose sales execution.',
+    data_types:  ['deals', 'pipeline_stages', 'activities', 'close_rate'],
+    intelligence_use_cases: [
+      'Pipeline health and deal velocity',
+      'Close rate trend analysis',
+      'Sales activity coverage gaps',
+    ],
+    required_tier: 'intelligence',
+  },
+
+  // ── Revenue / Finance ─────────────────────────────────────────────────────────
+  {
     id:          'stripe',
     name:        'Stripe',
     category:    'Revenue',
@@ -35,13 +73,46 @@ export const CONNECTOR_REGISTRY = [
     required_tier: 'intelligence',
   },
   {
-    id:          'gmail',
-    name:        'Gmail',
-    category:    'Email',
-    status:      'available',
+    id:          'quickbooks',
+    name:        'QuickBooks',
+    category:    'Finance',
+    status:      'coming_soon',
     auth_type:   'oauth',
-    description: 'Surface email volume, response patterns, and customer communication signals.',
-    data_types:  ['email_volume', 'response_time', 'thread_patterns'],
+    description: 'Pull P&L, cash flow, outstanding invoices, and burn rate for financial diagnostics.',
+    data_types:  ['profit_loss', 'cash_flow', 'invoices', 'burn_rate'],
+    intelligence_use_cases: [
+      'Cash flow and burn rate monitoring',
+      'Invoice aging and collections gap',
+      'P&L trend analysis',
+    ],
+    required_tier: 'intelligence',
+  },
+  {
+    id:          'xero',
+    name:        'Xero',
+    category:    'Finance',
+    status:      'coming_soon',
+    auth_type:   'oauth',
+    description: 'Same as QuickBooks — P&L, cash flow, and invoices for a different accounting user base.',
+    data_types:  ['profit_loss', 'cash_flow', 'invoices', 'bank_reconciliation'],
+    intelligence_use_cases: [
+      'Cash flow and burn rate monitoring',
+      'Invoice aging and collections gap',
+      'P&L trend analysis',
+    ],
+    required_tier: 'intelligence',
+  },
+
+  // ── Communication ─────────────────────────────────────────────────────────────
+  {
+    id:           'gmail',
+    name:         'Gmail',
+    category:     'Email',
+    status:       'available',
+    auth_type:    'oauth',
+    comm_channel: true,
+    description:  'Surface email volume, response patterns, and customer communication signals.',
+    data_types:   ['email_volume', 'response_time', 'thread_patterns'],
     intelligence_use_cases: [
       'Customer communication health',
       'Sales follow-up gap detection',
@@ -49,6 +120,101 @@ export const CONNECTOR_REGISTRY = [
     ],
     required_tier: 'intelligence',
   },
+  {
+    id:           'slack',
+    name:         'Slack',
+    category:     'Comms',
+    status:       'available',
+    auth_type:    'oauth',
+    comm_channel: true,
+    description:  'Analyse team communication patterns and operational signal from Slack activity.',
+    data_types:   ['channel_activity', 'response_times', 'team_patterns'],
+    intelligence_use_cases: [
+      'Team velocity and bottleneck signals',
+      'Cross-functional communication gaps',
+      'Operational noise vs signal ratio',
+    ],
+    required_tier: 'intelligence',
+  },
+
+  // ── Marketing ─────────────────────────────────────────────────────────────────
+  {
+    id:          'googleanalytics',
+    name:        'Google Analytics',
+    category:    'Analytics',
+    status:      'coming_soon',
+    auth_type:   'oauth',
+    description: 'Pull traffic, conversion rate, bounce rate, and source breakdown for growth diagnostics.',
+    data_types:  ['sessions', 'conversion_rate', 'bounce_rate', 'traffic_sources'],
+    intelligence_use_cases: [
+      'Traffic trend and acquisition channel analysis',
+      'Conversion funnel gap detection',
+      'Audience retention monitoring',
+    ],
+    required_tier: 'intelligence',
+  },
+  {
+    id:          'googleads',
+    name:        'Google Ads',
+    category:    'Marketing',
+    status:      'coming_soon',
+    auth_type:   'oauth',
+    description: 'Pull spend, CAC, ROAS, and CTR to diagnose paid acquisition performance.',
+    data_types:  ['spend', 'cac', 'roas', 'ctr', 'impressions'],
+    intelligence_use_cases: [
+      'CAC trend and payback period analysis',
+      'ROAS by campaign and audience',
+      'Ad spend efficiency vs revenue growth',
+    ],
+    required_tier: 'intelligence',
+  },
+  {
+    id:          'metaads',
+    name:        'Meta Ads',
+    category:    'Marketing',
+    status:      'coming_soon',
+    auth_type:   'oauth',
+    description: 'Pull Facebook and Instagram ad spend, CAC, ROAS, and CTR for paid social diagnostics.',
+    data_types:  ['spend', 'cac', 'roas', 'ctr', 'reach'],
+    intelligence_use_cases: [
+      'Paid social CAC and ROAS analysis',
+      'Audience fatigue and creative performance',
+      'Ad spend efficiency vs pipeline',
+    ],
+    required_tier: 'intelligence',
+  },
+  {
+    id:          'mailchimp',
+    name:        'Mailchimp',
+    category:    'Marketing',
+    status:      'coming_soon',
+    auth_type:   'oauth',
+    description: 'Pull email open rate, unsubscribe rate, and campaign performance for audience health.',
+    data_types:  ['open_rate', 'unsubscribe_rate', 'click_rate', 'list_growth'],
+    intelligence_use_cases: [
+      'Email list engagement health',
+      'Campaign performance benchmarking',
+      'Unsubscribe and churn signal detection',
+    ],
+    required_tier: 'intelligence',
+  },
+  {
+    id:          'klaviyo',
+    name:        'Klaviyo',
+    category:    'Marketing',
+    status:      'coming_soon',
+    auth_type:   'oauth',
+    description: 'Pull email and SMS campaign performance, open rates, and revenue attribution.',
+    data_types:  ['open_rate', 'revenue_per_email', 'flow_performance', 'list_growth'],
+    intelligence_use_cases: [
+      'Email-driven revenue analysis',
+      'Retention campaign effectiveness',
+      'List health and churn signals',
+    ],
+    required_tier: 'intelligence',
+  },
+
+  // ── Docs / Knowledge ──────────────────────────────────────────────────────────
   {
     id:          'googledrive',
     name:        'Google Drive',
@@ -61,21 +227,6 @@ export const CONNECTOR_REGISTRY = [
       'SOP coverage gap detection',
       'Playbook consistency analysis',
       'Documentation debt surfacing',
-    ],
-    required_tier: 'intelligence',
-  },
-  {
-    id:          'slack',
-    name:        'Slack',
-    category:    'Comms',
-    status:      'available',
-    auth_type:   'oauth',
-    description: 'Analyse team communication patterns and operational signal from Slack activity.',
-    data_types:  ['channel_activity', 'response_times', 'team_patterns'],
-    intelligence_use_cases: [
-      'Team velocity and bottleneck signals',
-      'Cross-functional communication gaps',
-      'Operational noise vs signal ratio',
     ],
     required_tier: 'intelligence',
   },
@@ -94,6 +245,23 @@ export const CONNECTOR_REGISTRY = [
     required_tier: 'intelligence',
   },
   {
+    id:          'confluence',
+    name:        'Confluence',
+    category:    'Docs',
+    status:      'coming_soon',
+    auth_type:   'oauth',
+    description: 'Index team wikis, SOPs, and process documentation to detect coverage gaps.',
+    data_types:  ['pages', 'spaces', 'process_docs'],
+    intelligence_use_cases: [
+      'Process documentation coverage gap',
+      'SOP consistency analysis',
+      'Knowledge management health',
+    ],
+    required_tier: 'intelligence',
+  },
+
+  // ── Support ───────────────────────────────────────────────────────────────────
+  {
     id:          'zendesk',
     name:        'Zendesk',
     category:    'Support',
@@ -108,6 +276,193 @@ export const CONNECTOR_REGISTRY = [
     ],
     required_tier: 'intelligence',
   },
+  {
+    id:          'intercom',
+    name:        'Intercom',
+    category:    'Support',
+    status:      'coming_soon',
+    auth_type:   'oauth',
+    description: 'Pull response time, CSAT, open ticket count, and conversation volume for support health.',
+    data_types:  ['response_time', 'csat', 'open_conversations', 'resolution_time'],
+    intelligence_use_cases: [
+      'Support response time benchmarking',
+      'Customer engagement and retention signals',
+      'Conversation volume trend analysis',
+    ],
+    required_tier: 'intelligence',
+  },
+
+  // ── HR / People ───────────────────────────────────────────────────────────────
+  {
+    id:          'gusto',
+    name:        'Gusto',
+    category:    'HR',
+    status:      'coming_soon',
+    auth_type:   'oauth',
+    description: 'Pull headcount, payroll burn, and turnover rate for people and cost diagnostics.',
+    data_types:  ['headcount', 'payroll_burn', 'turnover_rate'],
+    intelligence_use_cases: [
+      'Payroll burn vs revenue ratio',
+      'Turnover rate and hiring gap detection',
+      'Headcount growth vs productivity',
+    ],
+    required_tier: 'intelligence',
+  },
+  {
+    id:          'rippling',
+    name:        'Rippling',
+    category:    'HR',
+    status:      'coming_soon',
+    auth_type:   'oauth',
+    description: 'Pull headcount, payroll burn, and turnover rate across departments.',
+    data_types:  ['headcount', 'payroll_burn', 'turnover_rate', 'department_breakdown'],
+    intelligence_use_cases: [
+      'Payroll burn vs revenue ratio',
+      'Headcount planning and gap analysis',
+      'Turnover pattern detection',
+    ],
+    required_tier: 'intelligence',
+  },
+  {
+    id:          'bamboohr',
+    name:        'BambooHR',
+    category:    'HR',
+    status:      'coming_soon',
+    auth_type:   'oauth',
+    description: 'Pull headcount, turnover rate, and HR data for people health diagnostics.',
+    data_types:  ['headcount', 'turnover_rate', 'time_to_hire', 'satisfaction'],
+    intelligence_use_cases: [
+      'Turnover rate and retention risk',
+      'Time-to-hire and recruiting efficiency',
+      'Team satisfaction signals',
+    ],
+    required_tier: 'intelligence',
+  },
+  {
+    id:          'deel',
+    name:        'Deel',
+    category:    'HR',
+    status:      'coming_soon',
+    auth_type:   'oauth',
+    description: 'Pull contractor headcount and payroll by country for global team cost analysis.',
+    data_types:  ['contractor_count', 'payroll_by_country', 'contract_types'],
+    intelligence_use_cases: [
+      'Global payroll burn analysis',
+      'Contractor vs employee cost split',
+      'Geographic team distribution risk',
+    ],
+    required_tier: 'intelligence',
+  },
+  {
+    id:          'multiplier',
+    name:        'Multiplier',
+    category:    'HR',
+    status:      'coming_soon',
+    auth_type:   'oauth',
+    description: 'Pull international payroll and headcount data for global workforce diagnostics.',
+    data_types:  ['headcount', 'payroll_by_country', 'employment_types'],
+    intelligence_use_cases: [
+      'Global payroll burn analysis',
+      'International hiring cost benchmarking',
+    ],
+    required_tier: 'intelligence',
+  },
+
+  // ── Project Management ────────────────────────────────────────────────────────
+  {
+    id:          'asana',
+    name:        'Asana',
+    category:    'PM',
+    status:      'coming_soon',
+    auth_type:   'oauth',
+    description: 'Pull task completion rate, overdue tasks, and project health for execution diagnostics.',
+    data_types:  ['task_completion', 'overdue_tasks', 'project_health', 'workload'],
+    intelligence_use_cases: [
+      'Execution velocity and delivery gap',
+      'Overdue task pattern detection',
+      'Project health and team capacity',
+    ],
+    required_tier: 'intelligence',
+  },
+  {
+    id:          'monday',
+    name:        'Monday',
+    category:    'PM',
+    status:      'coming_soon',
+    auth_type:   'oauth',
+    description: 'Pull task completion, overdue items, and project health across boards.',
+    data_types:  ['task_completion', 'overdue_tasks', 'board_health'],
+    intelligence_use_cases: [
+      'Execution velocity and delivery gap',
+      'Cross-team workload imbalance',
+      'Project health monitoring',
+    ],
+    required_tier: 'intelligence',
+  },
+  {
+    id:          'clickup',
+    name:        'ClickUp',
+    category:    'PM',
+    status:      'coming_soon',
+    auth_type:   'oauth',
+    description: 'Pull task completion rate, overdue tasks, and project health from workspaces.',
+    data_types:  ['task_completion', 'overdue_tasks', 'sprint_health'],
+    intelligence_use_cases: [
+      'Delivery velocity and execution gap',
+      'Overdue task pattern detection',
+      'Sprint health and team capacity',
+    ],
+    required_tier: 'intelligence',
+  },
+
+  // ── Operations ────────────────────────────────────────────────────────────────
+  {
+    id:          'airtable',
+    name:        'Airtable',
+    category:    'Ops',
+    status:      'coming_soon',
+    auth_type:   'oauth',
+    description: 'Pull custom ops data, inventory records, and client tracking for operational diagnostics.',
+    data_types:  ['custom_records', 'inventory', 'client_tracking'],
+    intelligence_use_cases: [
+      'Inventory and fulfilment health',
+      'Client delivery tracking',
+      'Custom operational metric analysis',
+    ],
+    required_tier: 'intelligence',
+  },
+
+  // ── Engineering ───────────────────────────────────────────────────────────────
+  {
+    id:          'jira',
+    name:        'Jira',
+    category:    'Engineering',
+    status:      'coming_soon',
+    auth_type:   'oauth',
+    description: 'Pull sprint velocity, bug count, and open issues for engineering health diagnostics.',
+    data_types:  ['sprint_velocity', 'bug_count', 'open_issues', 'cycle_time'],
+    intelligence_use_cases: [
+      'Sprint velocity and delivery gap',
+      'Bug accumulation and tech debt signals',
+      'Engineering throughput analysis',
+    ],
+    required_tier: 'intelligence',
+  },
+  {
+    id:          'linear',
+    name:        'Linear',
+    category:    'Engineering',
+    status:      'coming_soon',
+    auth_type:   'oauth',
+    description: 'Pull sprint velocity, open issues, and cycle time for engineering execution analysis.',
+    data_types:  ['sprint_velocity', 'open_issues', 'cycle_time', 'priorities'],
+    intelligence_use_cases: [
+      'Engineering velocity and throughput',
+      'Issue backlog health',
+      'Priority alignment vs execution',
+    ],
+    required_tier: 'intelligence',
+  },
 ]
 
 // Returns the full registry
@@ -118,6 +473,11 @@ export function getConnectorRegistry() {
 // Returns only connectors with status === 'available'
 export function getAvailableConnectors() {
   return CONNECTOR_REGISTRY.filter(c => c.status === 'available')
+}
+
+// Returns connector IDs that can be used as communication push channels
+export function getCommChannelProviders() {
+  return CONNECTOR_REGISTRY.filter(c => c.comm_channel === true).map(c => c.id)
 }
 
 // Returns a single connector definition by id, or null

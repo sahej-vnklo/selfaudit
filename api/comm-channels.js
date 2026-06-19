@@ -5,10 +5,13 @@
 
 import { createClient } from '@supabase/supabase-js'
 import { validateUserToken } from './lib/auth.js'
+import { CONNECTOR_REGISTRY, getCommChannelProviders } from './lib/connectors/registry.js'
 
-const COMM_PROVIDERS = ['slack', 'gmail']
+const COMM_PROVIDERS = getCommChannelProviders()
 
-const PROVIDER_LABEL = { slack: 'Slack', gmail: 'Gmail' }
+const PROVIDER_LABEL = Object.fromEntries(
+  CONNECTOR_REGISTRY.filter(c => c.comm_channel).map(c => [c.id, c.name])
+)
 
 function getSupabase() {
   return createClient(

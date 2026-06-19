@@ -5,6 +5,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { validateUserToken } from './lib/auth.js'
 import { getIndustry, getArea } from './lib/blueprint/catalog/index.js'
+import { getCommChannelProviders } from './lib/connectors/registry.js'
 
 const AREA_META = {
   'customer-service':     { name: 'Support',        role: 'Head of Customer Support',  key_metric: 'first_response_time', metric_label: 'Avg. Response Time', unit: 'h' },
@@ -129,7 +130,7 @@ export default async function handler(req, res) {
   const savedPrefs        = commPrefsRes.status    === 'fulfilled' ? (commPrefsRes.value.data ?? []) : []
 
   // Communication channels — email is always available; Slack/Gmail show if connected
-  const COMM_CONNECTORS = ['slack', 'gmail']
+  const COMM_CONNECTORS = getCommChannelProviders()
   const savedPrefMap = Object.fromEntries(savedPrefs.map(p => [p.channel_type, p.params]))
   const commChannels = [
     { type: 'email', label: 'Account Email', params: savedPrefMap['email'] ?? null },
