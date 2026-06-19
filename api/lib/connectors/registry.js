@@ -107,7 +107,7 @@ export const CONNECTOR_REGISTRY = [
   {
     id:           'gmail',
     name:         'Gmail',
-    category:     'Email',
+    category:     'Comms',
     status:       'available',
     auth_type:    'oauth',
     comm_channel: true,
