@@ -5483,6 +5483,275 @@ const CONNECTOR_LOGOS = {
       <path d="M18 22l-2 5 4-4-2-1z" fill="white"/>
     </svg>
   ),
+  // ── New connectors ─────────────────────────────────────────────────────────
+  maxio: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#7C3AED"/>
+      <text x="19" y="24" textAnchor="middle" fill="white" fontSize="12" fontWeight="700" fontFamily="sans-serif">M</text>
+      <path d="M10 27h18" stroke="white" strokeWidth="2" strokeOpacity="0.4"/>
+    </svg>
+  ),
+  freshbooks: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#1C8F4C"/>
+      <rect x="10" y="12" width="18" height="3" rx="1.5" fill="white"/>
+      <rect x="10" y="18" width="13" height="3" rx="1.5" fill="white" opacity="0.8"/>
+      <rect x="10" y="24" width="16" height="3" rx="1.5" fill="white" opacity="0.6"/>
+    </svg>
+  ),
+  zohoinvoice: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#E42527"/>
+      <text x="19" y="25" textAnchor="middle" fill="white" fontSize="11" fontWeight="700" fontFamily="sans-serif">ZI</text>
+    </svg>
+  ),
+  taxjar: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#1A56DB"/>
+      <path d="M12 14h14l-2 3H14l-2-3z" fill="white"/>
+      <path d="M15 17l-3 7h14l-3-7H15z" fill="white" opacity="0.7"/>
+      <circle cx="19" cy="21" r="2" fill="#1A56DB"/>
+    </svg>
+  ),
+  brex: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#0F1923"/>
+      <path d="M10 14h8c3 0 5 1.5 5 4s-2 4-5 4h-5v4H10V14z" fill="white"/>
+      <path d="M13 18h5c1 0 2-.5 2-1.5S19 15 18 15h-5v3z" fill="#0F1923"/>
+    </svg>
+  ),
+  ramp: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#00D632"/>
+      <rect x="10" y="16" width="18" height="8" rx="2" fill="white"/>
+      <rect x="13" y="19" width="6" height="2" rx="1" fill="#00D632"/>
+    </svg>
+  ),
+  coupa: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#E5232A"/>
+      <circle cx="19" cy="19" r="8" stroke="white" strokeWidth="2.5" fill="none"/>
+      <path d="M15 19c0-2.2 1.8-4 4-4" stroke="white" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+    </svg>
+  ),
+  bench: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#0D4474"/>
+      <rect x="10" y="22" width="18" height="3" rx="1.5" fill="white"/>
+      <rect x="13" y="14" width="3" height="8" rx="1.5" fill="white"/>
+      <rect x="22" y="14" width="3" height="8" rx="1.5" fill="white"/>
+    </svg>
+  ),
+  discord: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#5865F2"/>
+      <path d="M25 13a16 16 0 0 0-4-1.2l-.2.4c1.4.3 2.6.9 3.7 1.6A14.5 14.5 0 0 0 14 13.8c1.1-.7 2.4-1.3 3.8-1.6l-.2-.4A16 16 0 0 0 13 13c-2.1 3.2-3.1 6.3-2.8 9.3 1.6 1.1 3.1 1.8 4.6 2.3l.9-1.2a9 9 0 0 1-1.4-.7l.3-.3c2.8 1.3 5.8 1.3 8.6 0l.3.3c-.4.3-.9.5-1.4.7l.9 1.2c1.5-.5 3-1.2 4.6-2.3.4-3.3-.6-6.3-2.6-9.3zM16 20.5c-.9 0-1.7-.8-1.7-1.8s.8-1.8 1.7-1.8 1.7.8 1.7 1.8-.7 1.8-1.7 1.8zm6 0c-.9 0-1.7-.8-1.7-1.8s.8-1.8 1.7-1.8 1.7.8 1.7 1.8-.7 1.8-1.7 1.8z" fill="white"/>
+    </svg>
+  ),
+  mailerlite: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#09C269"/>
+      <rect x="10" y="13" width="18" height="13" rx="2" fill="white" opacity="0.9"/>
+      <path d="M10 15l9 6 9-6" stroke="#09C269" strokeWidth="1.5" fill="none"/>
+    </svg>
+  ),
+  egnyte: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#00A539"/>
+      <path d="M10 19h9v-9l9 9-9 9v-9H10z" fill="white"/>
+    </svg>
+  ),
+  workday: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#F5A623"/>
+      <circle cx="19" cy="15" r="4" fill="white"/>
+      <path d="M11 27c0-4.4 3.6-8 8-8s8 3.6 8 8H11z" fill="white"/>
+    </svg>
+  ),
+  greenhouse: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#24A860"/>
+      <circle cx="19" cy="16" r="6" stroke="white" strokeWidth="2" fill="none"/>
+      <path d="M19 22v7" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+      <path d="M15 26h8" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+    </svg>
+  ),
+  lever: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#007AFF"/>
+      <path d="M10 28L19 10l9 18H10z" fill="white" opacity="0.9"/>
+      <path d="M14 28l5-10 5 10H14z" fill="#007AFF"/>
+    </svg>
+  ),
+  basecamp: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#1D2D35"/>
+      <path d="M19 10c-5.5 0-10 4-10 9 0 3 1.5 5.6 3.8 7.2L12 29l4-2c1 .3 2 .4 3 .4 5.5 0 10-4 10-9s-4.5-8.4-10-8.4z" fill="#5EBD3E"/>
+      <circle cx="15" cy="19" r="1.5" fill="white"/>
+      <circle cx="19" cy="19" r="1.5" fill="white"/>
+      <circle cx="23" cy="19" r="1.5" fill="white"/>
+    </svg>
+  ),
+  wrike: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#00B548"/>
+      <path d="M10 14l3 10 3-6 3 6 3-10" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+      <path d="M22 14l3 7" stroke="white" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+    </svg>
+  ),
+  calendly: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#006BFF"/>
+      <rect x="11" y="13" width="16" height="14" rx="2" fill="white" opacity="0.9"/>
+      <rect x="11" y="13" width="16" height="4" rx="2" fill="#006BFF" opacity="0.8"/>
+      <rect x="14" y="21" width="3" height="3" rx="0.5" fill="#006BFF"/>
+      <rect x="20" y="21" width="3" height="3" rx="0.5" fill="#006BFF"/>
+    </svg>
+  ),
+  cloudflare: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#F38020"/>
+      <path d="M26 22.5c0-2.5-2-4.5-4.5-4.5-.2 0-.4 0-.6.1C20.4 16.1 18.6 15 16.5 15c-3 0-5.5 2.5-5.5 5.5 0 .2 0 .3.1.5H11c-1.1 0-2 .9-2 2s.9 2 2 2h13.5c1.4 0 2.5-1.1 2.5-2.5z" fill="white"/>
+    </svg>
+  ),
+  vercel: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#000000"/>
+      <path d="M19 10L30 29H8L19 10z" fill="white"/>
+    </svg>
+  ),
+  circleci: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#343434"/>
+      <circle cx="19" cy="19" r="8" stroke="#04D361" strokeWidth="2" fill="none"/>
+      <circle cx="19" cy="19" r="3" fill="#04D361"/>
+    </svg>
+  ),
+  wix: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#FAAD00"/>
+      <text x="19" y="24" textAnchor="middle" fill="white" fontSize="13" fontWeight="900" fontFamily="sans-serif">Wix</text>
+    </svg>
+  ),
+  shippo: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#7B2FBE"/>
+      <rect x="10" y="15" width="18" height="11" rx="2" fill="white" opacity="0.9"/>
+      <path d="M10 19h18" stroke="#7B2FBE" strokeWidth="1.5"/>
+      <path d="M15 22l2 2 4-4" stroke="#7B2FBE" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  ),
+  shipengine: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#0C7CE6"/>
+      <path d="M10 22h18l-4-8H14l-4 8z" fill="white" opacity="0.9"/>
+      <path d="M14 22v3M24 22v3" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+      <circle cx="16" cy="25.5" r="1.5" fill="white"/>
+      <circle cx="22" cy="25.5" r="1.5" fill="white"/>
+    </svg>
+  ),
+  docusign: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#FFCC00"/>
+      <rect x="11" y="11" width="16" height="20" rx="2" fill="white"/>
+      <rect x="14" y="15" width="10" height="1.5" rx="0.75" fill="#FFCC00"/>
+      <rect x="14" y="18" width="10" height="1.5" rx="0.75" fill="#FFCC00"/>
+      <path d="M14 23l2 2 4-4" stroke="#FFCC00" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  ),
+  pandadoc: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#3DCA85"/>
+      <circle cx="19" cy="17" r="5" fill="white"/>
+      <circle cx="16.5" cy="16" r="1.2" fill="#3DCA85"/>
+      <circle cx="21.5" cy="16" r="1.2" fill="#3DCA85"/>
+      <path d="M16 19.5c.8.8 2.4 1 3 0" stroke="#3DCA85" strokeWidth="1" strokeLinecap="round" fill="none"/>
+      <path d="M13 24c0-3.3 2.7-6 6-6s6 2.7 6 6" fill="white" opacity="0.6"/>
+    </svg>
+  ),
+  dropboxsign: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#0061FF"/>
+      <path d="M14 11l-4 4 4 4 5-3-5-5zM24 11l-5 5 5 3 4-4-4-4zM14 19l-4 4 4 4 5-3-5-5zM19 22l5 3 4-4-4-4-5 5z" fill="white" opacity="0.9"/>
+    </svg>
+  ),
+  commcare: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#E74C3C"/>
+      <path d="M19 11c-4.4 0-8 3.1-8 7 0 2.5 1.4 4.8 3.6 6.1l-.6 3.9 4-2.2c.3.1.7.1 1 .1 4.4 0 8-3.1 8-7s-3.6-6.9-8-6.9z" fill="white" opacity="0.9"/>
+      <path d="M15 18h8M16 21h5" stroke="#E74C3C" strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  ),
+  jotform: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#FF6100"/>
+      <rect x="11" y="11" width="16" height="19" rx="2" fill="white" opacity="0.9"/>
+      <rect x="14" y="15" width="10" height="1.5" rx="0.75" fill="#FF6100"/>
+      <rect x="14" y="18" width="7" height="1.5" rx="0.75" fill="#FF6100"/>
+      <rect x="14" y="21" width="10" height="1.5" rx="0.75" fill="#FF6100"/>
+      <rect x="14" y="24" width="5" height="1.5" rx="0.75" fill="#FF6100"/>
+    </svg>
+  ),
+  typeform: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#262627"/>
+      <path d="M13 15h12M19 15v12" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+    </svg>
+  ),
+  lodgify: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#F7BC2B"/>
+      <path d="M9 24l10-12 10 12H9z" fill="white"/>
+      <rect x="15" y="19" width="8" height="6" rx="1" fill="#F7BC2B"/>
+    </svg>
+  ),
+  planyo: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#4A90D9"/>
+      <rect x="10" y="12" width="18" height="16" rx="2" fill="white" opacity="0.9"/>
+      <rect x="10" y="12" width="18" height="5" rx="2" fill="#4A90D9" opacity="0.8"/>
+      <circle cx="16" cy="22" r="2" fill="#4A90D9"/>
+      <circle cx="22" cy="22" r="2" fill="#4A90D9"/>
+    </svg>
+  ),
+  detrack: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#2196F3"/>
+      <path d="M10 24l4-10h10l4 10H10z" fill="white" opacity="0.9"/>
+      <circle cx="15.5" cy="24.5" r="2" fill="#2196F3"/>
+      <circle cx="22.5" cy="24.5" r="2" fill="#2196F3"/>
+      <path d="M22 14v4h6" stroke="white" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+    </svg>
+  ),
+  optimoroute: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#00A86B"/>
+      <circle cx="13" cy="14" r="3" fill="white"/>
+      <circle cx="25" cy="24" r="3" fill="white"/>
+      <path d="M13 14 Q19 14 19 19 Q19 24 25 24" stroke="white" strokeWidth="2" fill="none" strokeLinecap="round"/>
+    </svg>
+  ),
+  route4me: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#FF5722"/>
+      <path d="M12 26l4-14 6 8 4-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+      <circle cx="12" cy="26" r="2" fill="white"/>
+      <circle cx="26" cy="14" r="2" fill="white"/>
+    </svg>
+  ),
+  webflow: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#4353FF"/>
+      <path d="M10 14h4l3 8 2-5h2l2 5 3-8h4l-5 12h-4l-1.5-4-1.5 4H14L10 14z" fill="white"/>
+    </svg>
+  ),
+  gumroad: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#FF90E8"/>
+      <circle cx="19" cy="19" r="8" fill="white"/>
+      <path d="M20 16h3v3h-3v3h-2v-3h-3v-2h3v-3h2v2z" fill="#FF90E8"/>
+    </svg>
+  ),
 }
 
 function ConnectorsSection({ user }) {
