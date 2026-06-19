@@ -346,7 +346,7 @@ function StrategicPriorityCard({ priority, userId, userEmail, commChannels, save
         )}
 
         {lead.recommended_action && (
-          <div style={{ background: C.surface2, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 14px', margin: '12px 0', fontSize: 13, lineHeight: 1.65 }}>
+          <div style={{ background: C.surface3, border: `1px solid ${C.border2}`, borderRadius: 8, padding: '10px 14px', margin: '12px 0', fontSize: 13, lineHeight: 1.65 }}>
             <span style={{ fontWeight: 600, color: C.green, marginRight: 5 }}>Fix</span>
             <span style={{ color: C.text }}>{lead.recommended_action}</span>
           </div>
