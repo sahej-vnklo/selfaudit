@@ -5468,6 +5468,21 @@ const CONNECTOR_LOGOS = {
       <path d="M14 28h14l-8-9-6 9z" fill="white" opacity="0.7"/>
     </svg>
   ),
+  whatsapp: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#25D366"/>
+      <path d="M19 9a10 10 0 0 0-8.6 15L9 29l5.2-1.4A10 10 0 1 0 19 9z" fill="white" opacity="0.9"/>
+      <path d="M15 16c.2.5 1.2 2.4 2.6 3.4 1.4 1 2.8 1.4 3.2 1.5.4 0 .7-.1.9-.4l.6-.8c.2-.2.1-.5-.1-.6l-1.8-.8c-.2-.1-.5 0-.6.2l-.4.5c-.8-.4-2-1.4-2.5-2.2l.4-.5c.2-.2.2-.4.1-.6l-.8-1.7c-.1-.3-.4-.4-.6-.2-.3.1-.7.4-.9.7-.2.4-.2 1 0 1.5z" fill="#25D366"/>
+    </svg>
+  ),
+  telegram: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#26A5E4"/>
+      <path d="M9 19l20-8-7 18-4-7-9-3z" fill="white" opacity="0.3"/>
+      <path d="M9 19l9 3 2 7 4-10L9 19z" fill="white" opacity="0.9"/>
+      <path d="M18 22l-2 5 4-4-2-1z" fill="white"/>
+    </svg>
+  ),
 }
 
 function ConnectorsSection({ user }) {

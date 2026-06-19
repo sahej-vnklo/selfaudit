@@ -231,12 +231,13 @@ export const CONNECTOR_REGISTRY = [
     required_tier: 'intelligence',
   },
   {
-    id:          'notion',
-    name:        'Notion',
-    category:    'Docs',
-    status:      'available',
-    auth_type:   'oauth',
-    description: 'Pull strategy docs, OKRs, and wikis into the intelligence layer for context.',
+    id:           'notion',
+    name:         'Notion',
+    category:     'Docs',
+    status:       'available',
+    auth_type:    'oauth',
+    comm_channel: true,
+    description:  'Pull strategy docs, OKRs, and wikis into the intelligence layer for context.',
     data_types:  ['pages', 'databases', 'okrs'],
     intelligence_use_cases: [
       'Goal alignment between stated OKRs and audit findings',
@@ -1294,6 +1295,37 @@ export const CONNECTOR_REGISTRY = [
     ],
     required_tier: 'intelligence',
   },
+  {
+    id:           'whatsapp',
+    name:         'WhatsApp Business',
+    category:     'Comms',
+    status:       'available',
+    auth_type:    'oauth',
+    comm_channel: true,
+    description:  'Send artifacts and action plans directly to WhatsApp Business for instant delivery.',
+    data_types:   ['messages', 'notifications'],
+    intelligence_use_cases: [
+      'Instant artifact delivery to WhatsApp',
+      'Action plan push notifications',
+    ],
+    required_tier: 'intelligence',
+  },
+  {
+    id:           'telegram',
+    name:         'Telegram',
+    category:     'Comms',
+    status:       'available',
+    auth_type:    'oauth',
+    comm_channel: true,
+    description:  'Send artifacts and action plans directly to a Telegram chat or channel.',
+    data_types:   ['messages', 'notifications'],
+    intelligence_use_cases: [
+      'Instant artifact delivery to Telegram',
+      'Action plan push notifications',
+    ],
+    required_tier: 'intelligence',
+  },
+
   // ── Microsoft ─────────────────────────────────────────────────────────────────
   {
     id:           'outlook',

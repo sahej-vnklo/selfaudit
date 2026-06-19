@@ -27,6 +27,7 @@ const SUPPORTED_PROVIDERS = [
   'youtubeanalytics', 'spotify', 'podbean', 'teachable', 'kajabi', 'thinkific',
   'patreon', 'substack', 'salesforceenergy',
   'outlook', 'teams', 'sharepoint', 'onedrive', 'dynamics365', 'azure',
+  'whatsapp', 'telegram',
 ]
 
 function getSupabase() {
