@@ -205,21 +205,17 @@ export default function SchemaSetup({ user, onComplete }) {
   }
 
   const pickIndustry = (industryId) => {
-    if (industryId === 'other') {
-      setShowCustomPanel(true)
-      return
-    }
-    transitionTo('areas', () => {
-      setSelectedIndustry(industryId)
-      setSelectedAreas([])
-      setSelectedUnits({})
-    })
+    setSelectedIndustry(industryId)
+    if (industryId === 'other') setShowCustomPanel(true)
   }
 
   const submitCustomBusiness = () => {
     setShowCustomPanel(false)
+  }
+
+  const confirmIndustry = () => {
+    if (!selectedIndustry || !companyName.trim()) return
     transitionTo('areas', () => {
-      setSelectedIndustry('other')
       setSelectedAreas([])
       setSelectedUnits({})
     })
@@ -364,8 +360,27 @@ export default function SchemaSetup({ user, onComplete }) {
                   }}
                   onFocus={e => { e.target.style.borderColor = 'rgba(255,255,255,0.4)' }}
                   onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.15)' }}
+                  onKeyDown={e => { if (e.key === 'Enter') confirmIndustry() }}
                 />
               </div>
+
+              <button
+                onClick={confirmIndustry}
+                disabled={!selectedIndustry || !companyName.trim()}
+                style={{
+                  marginTop: 28,
+                  width: '100%', height: 48,
+                  background: selectedIndustry && companyName.trim() ? '#ffffff' : 'rgba(255,255,255,0.08)',
+                  color: selectedIndustry && companyName.trim() ? '#111111' : 'rgba(255,255,255,0.25)',
+                  border: 'none', borderRadius: 4,
+                  fontSize: 14, fontWeight: 600, letterSpacing: '0.04em',
+                  cursor: selectedIndustry && companyName.trim() ? 'pointer' : 'not-allowed',
+                  fontFamily: 'inherit',
+                  transition: 'background 0.2s, color 0.2s',
+                }}
+              >
+                {selectedIndustry && companyName.trim() ? 'Next →' : !companyName.trim() ? 'Enter company name' : 'Select a business type'}
+              </button>
             </div>
 
             {/* Right — 3×5 visible industry grid, padded box */}
@@ -387,19 +402,19 @@ export default function SchemaSetup({ user, onComplete }) {
                     <button
                       key={ind.id}
                       onClick={() => pickIndustry(ind.id)}
-                      className="sa-ind-card"
+                      className={selectedIndustry === ind.id ? 'sa-ind-card sa-ind-selected' : 'sa-ind-card'}
                       style={{
                         textAlign: 'left',
-                        background: CARD.bg,
-                        border: `1px solid ${CARD.border}`,
+                        background: selectedIndustry === ind.id ? '#111111' : CARD.bg,
+                        border: `1px solid ${selectedIndustry === ind.id ? C.accent : CARD.border}`,
                         padding: '16px 14px',
                         cursor: 'pointer',
                         minHeight: 90,
                         transition: 'border-color 0.15s, background 0.15s, color 0.15s',
                       }}
                     >
-                      <div className="sa-ind-label" style={{ fontSize: 13, fontWeight: 700, color: CARD.heading, lineHeight: 1.3, transition: 'color 0.15s' }}>{ind.label}</div>
-                      <div className="sa-ind-desc" style={{ fontSize: 11, color: CARD.body, marginTop: 5, lineHeight: 1.4, transition: 'color 0.15s' }}>{ind.description}</div>
+                      <div className="sa-ind-label" style={{ fontSize: 13, fontWeight: 700, color: selectedIndustry === ind.id ? '#E8E4DC' : CARD.heading, lineHeight: 1.3, transition: 'color 0.15s' }}>{ind.label}</div>
+                      <div className="sa-ind-desc" style={{ fontSize: 11, color: selectedIndustry === ind.id ? '#888888' : CARD.body, marginTop: 5, lineHeight: 1.4, transition: 'color 0.15s' }}>{ind.description}</div>
                     </button>
                   ))}
                 </div>
