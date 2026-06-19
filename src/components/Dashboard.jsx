@@ -5422,6 +5422,52 @@ const CONNECTOR_LOGOS = {
       <path d="M19 9l-4 9h3l-3 11 9-12h-4z" fill="white"/>
     </svg>
   ),
+  outlook: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#0078D4"/>
+      <rect x="8" y="11" width="14" height="16" rx="2" fill="#1B6EC2"/>
+      <circle cx="15" cy="19" r="4" fill="white"/>
+      <rect x="22" y="14" width="9" height="11" rx="1" fill="white" opacity="0.9"/>
+      <path d="M22 17l4.5 3 4.5-3" stroke="#0078D4" strokeWidth="1.2" strokeLinecap="round"/>
+    </svg>
+  ),
+  teams: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#464EB8"/>
+      <circle cx="23" cy="13" r="3.5" fill="white"/>
+      <path d="M17 19a5 5 0 0 1 10 0v5H17v-5z" fill="white" opacity="0.9"/>
+      <circle cx="14" cy="15" r="3" fill="#7B83EB"/>
+      <path d="M9 21a5 5 0 0 1 10 0v4H9v-4z" fill="#7B83EB"/>
+    </svg>
+  ),
+  sharepoint: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#038387"/>
+      <circle cx="16" cy="16" r="6" fill="white" opacity="0.9"/>
+      <circle cx="26" cy="22" r="5" fill="white" opacity="0.7"/>
+      <circle cx="14" cy="26" r="4" fill="white" opacity="0.5"/>
+    </svg>
+  ),
+  onedrive: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#0078D4"/>
+      <path d="M8 23a5 5 0 0 1 4.5-5 7 7 0 0 1 13.5-1A5 5 0 0 1 30 22a5 5 0 0 1-5 5H13a5 5 0 0 1-5-4z" fill="white" opacity="0.9"/>
+    </svg>
+  ),
+  dynamics365: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#002050"/>
+      <path d="M10 19L19 10l9 9-9 9-9-9z" fill="#00B4F0" opacity="0.8"/>
+      <path d="M14 19l5-5 5 5-5 5-5-5z" fill="white"/>
+    </svg>
+  ),
+  azure: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#0078D4"/>
+      <path d="M16 9l-8 19h6l10-9-4-1 5-9H16z" fill="white" opacity="0.9"/>
+      <path d="M14 28h14l-8-9-6 9z" fill="white" opacity="0.7"/>
+    </svg>
+  ),
 }
 
 function ConnectorsSection({ user }) {

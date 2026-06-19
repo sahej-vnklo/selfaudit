@@ -26,6 +26,7 @@ const SUPPORTED_PROVIDERS = [
   'plaid', 'experian', 'equifax', 'guidewire', 'duckcreek', 'netsuite',
   'youtubeanalytics', 'spotify', 'podbean', 'teachable', 'kajabi', 'thinkific',
   'patreon', 'substack', 'salesforceenergy',
+  'outlook', 'teams', 'sharepoint', 'onedrive', 'dynamics365', 'azure',
 ]
 
 function getSupabase() {
