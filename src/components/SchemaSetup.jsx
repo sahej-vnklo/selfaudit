@@ -367,12 +367,12 @@ export default function SchemaSetup({ user, onComplete }) {
               </div>
             </div>
 
-            {/* Right — 3-column industry grid in a padded scrollable box */}
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px 32px 32px 0', position: 'relative' }}>
+            {/* Right — 3×5 visible industry grid, padded box */}
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', padding: '0 48px 0 0', position: 'relative' }}>
               <div className="sa-ind-scroll" style={{
-                width: '100%', height: '100%',
+                width: '100%',
+                height: 'calc(100% - 80px)',
                 overflowY: 'scroll',
-                paddingRight: 8,
               }}>
               {catalogLoading ? (
                 <div style={{ color: '#888', fontSize: 14, padding: 40 }}>Loading…</div>
@@ -381,7 +381,6 @@ export default function SchemaSetup({ user, onComplete }) {
                   display: 'grid',
                   gridTemplateColumns: 'repeat(3, 1fr)',
                   gap: 8,
-                  padding: '4px 4px 4px 4px',
                 }}>
                   {(catalog?.industries || []).map(ind => (
                     <button
