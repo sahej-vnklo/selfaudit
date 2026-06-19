@@ -331,7 +331,6 @@ export default function SchemaSetup({ user, onComplete }) {
               width: '40%', flexShrink: 0,
               display: 'flex', flexDirection: 'column', justifyContent: 'center',
               padding: '48px 52px',
-              borderRight: `1px solid ${CARD.border}`,
             }}>
               <h1 style={{
                 fontFamily: '"Cormorant Garamond", "Times New Roman", serif',
@@ -339,14 +338,14 @@ export default function SchemaSetup({ user, onComplete }) {
                 fontWeight: 500,
                 lineHeight: 1.1,
                 letterSpacing: '-0.02em',
-                color: CARD.heading,
+                color: '#ffffff',
                 margin: '0 0 36px',
               }}>
-                What type of<br />business are<br />you?
+                what type of business<br />are you ?
               </h1>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <label style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', color: CARD.label, fontWeight: 600 }}>
+                <label style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.45)', fontWeight: 600 }}>
                   Company name
                 </label>
                 <input
@@ -356,30 +355,33 @@ export default function SchemaSetup({ user, onComplete }) {
                   placeholder="e.g. Acme Logistics"
                   style={{
                     width: '100%', height: 48, padding: '0 14px',
-                    background: CARD.inputBg, border: `1px solid ${CARD.border}`,
-                    color: CARD.heading, fontSize: 15,
+                    background: 'rgba(255,255,255,0.06)', border: `1px solid rgba(255,255,255,0.15)`,
+                    color: '#ffffff', fontSize: 15,
                     boxSizing: 'border-box', outline: 'none',
                     fontFamily: 'inherit',
                     transition: 'border-color 0.15s',
                   }}
-                  onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
-                  onBlur={e => { e.target.style.borderColor = CARD.border }}
+                  onFocus={e => { e.target.style.borderColor = 'rgba(255,255,255,0.4)' }}
+                  onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.15)' }}
                 />
-                <p style={{ fontSize: 12, color: CARD.label, margin: 0, lineHeight: 1.5 }}>
-                  This will appear on your Cockpit dashboard.
-                </p>
               </div>
             </div>
 
-            {/* Right — 4-column industry grid, scrollable */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '32px 28px', position: 'relative' }}>
+            {/* Right — 3-column industry grid in a padded scrollable box */}
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px 32px 32px 0', position: 'relative' }}>
+              <div className="sa-ind-scroll" style={{
+                width: '100%', height: '100%',
+                overflowY: 'scroll',
+                paddingRight: 8,
+              }}>
               {catalogLoading ? (
                 <div style={{ color: '#888', fontSize: 14, padding: 40 }}>Loading…</div>
               ) : (
                 <div style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(4, 1fr)',
+                  gridTemplateColumns: 'repeat(3, 1fr)',
                   gap: 8,
+                  padding: '4px 4px 4px 4px',
                 }}>
                   {(catalog?.industries || []).map(ind => (
                     <button
@@ -446,6 +448,7 @@ export default function SchemaSetup({ user, onComplete }) {
                   </button>
                 </div>
               )}
+              </div>
             </div>
           </div>
         )}
@@ -767,6 +770,12 @@ export default function SchemaSetup({ user, onComplete }) {
         /* Area cards: white text when selected (dark bg) */
         .sa-area-on .sa-area-label { color: #E8E4DC !important; }
         .sa-area-on .sa-area-desc  { color: #888888 !important; }
+
+        /* Visible scrollbar on the industry grid */
+        .sa-ind-scroll::-webkit-scrollbar { width: 6px; }
+        .sa-ind-scroll::-webkit-scrollbar-track { background: rgba(255,255,255,0.04); border-radius: 3px; }
+        .sa-ind-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.22); border-radius: 3px; }
+        .sa-ind-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.38); }
       `}</style>
     </div>
   )
