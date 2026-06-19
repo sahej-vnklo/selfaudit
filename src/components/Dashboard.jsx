@@ -5046,6 +5046,150 @@ const CONNECTOR_LOGOS = {
       <path d="M13 13l12 12M25 13L13 25" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
     </svg>
   ),
+  github: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#1A1A1A"/>
+      <path d="M19 8a11 11 0 0 0-3.48 21.43c.55.1.75-.24.75-.53v-1.85c-3.06.66-3.7-1.48-3.7-1.48-.5-1.27-1.22-1.61-1.22-1.61-1-.68.08-.67.08-.67 1.1.08 1.68 1.13 1.68 1.13.98 1.68 2.57 1.19 3.2.91.1-.71.38-1.19.7-1.46-2.44-.28-5.01-1.22-5.01-5.43 0-1.2.43-2.18 1.13-2.95-.11-.28-.49-1.4.11-2.91 0 0 .92-.3 3.02 1.13a10.5 10.5 0 0 1 5.5 0c2.1-1.43 3.02-1.13 3.02-1.13.6 1.51.22 2.63.11 2.91.7.77 1.13 1.75 1.13 2.95 0 4.22-2.57 5.15-5.02 5.42.4.34.75 1 .75 2.03v3c0 .29.2.63.76.52A11 11 0 0 0 19 8z" fill="white"/>
+    </svg>
+  ),
+  datadog: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#632CA6"/>
+      <path d="M10 24l4-8 4 5 3-6 4 9" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+      <circle cx="26" cy="14" r="3" fill="#F7D44C"/>
+    </svg>
+  ),
+  sentry: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#362D59"/>
+      <path d="M19 9l-9 16h6a12 12 0 0 0 11.5-8.5" stroke="#F55459" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+      <path d="M23 25h6" stroke="#F55459" strokeWidth="2" strokeLinecap="round"/>
+    </svg>
+  ),
+  shopify: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#96BF48"/>
+      <path d="M25 12s-.1-.7-.7-.7c-.3 0-1.8-.3-1.8-.3s-1.2-1.2-1.3-1.3c-.2-.2-.5-.1-.6-.1L19 10s-.5-1.5-2-1.5c-1.3 0-2 1-2.3 1.6l-2.2.7c-.7.2-.7.3-.8.9L10 26l11 2 6-1.5L25 12zm-5.5-1.5c-.4.1-.9.3-1.4.4.1-.5.4-1.5 1-1.8.4.3.7.9.4 1.4zm-1.3-2.2c.2 0 .3.1.5.2-.8.4-1.2 1.6-1.3 2.4l-1.7.5c.3-1.4 1.2-3.1 2.5-3.1z" fill="white"/>
+    </svg>
+  ),
+  woocommerce: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#7F54B3"/>
+      <path d="M9 13h20v10a2 2 0 0 1-2 2H11a2 2 0 0 1-2-2V13z" fill="white" opacity="0.2"/>
+      <path d="M9 13h20v4H9z" fill="white" opacity="0.3"/>
+      <path d="M13 20l2 3 2-3 2 3 2-3" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+    </svg>
+  ),
+  gorgias: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#1C2B5E"/>
+      <path d="M19 11a8 8 0 1 0 8 8 8 8 0 0 0-8-8zm0 14a6 6 0 1 1 6-6 6 6 0 0 1-6 6z" fill="white" opacity="0.9"/>
+      <path d="M19 16v3l2 2" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
+    </svg>
+  ),
+  shipstation: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#00A8E1"/>
+      <path d="M8 22l4-8h14l4 8H8z" fill="white" opacity="0.9"/>
+      <path d="M10 22v3h18v-3" stroke="white" strokeWidth="1.5" fill="none"/>
+      <circle cx="14" cy="27" r="2" fill="white"/>
+      <circle cx="24" cy="27" r="2" fill="white"/>
+    </svg>
+  ),
+  easypost: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#FF6B35"/>
+      <rect x="10" y="13" width="18" height="13" rx="2" fill="white" opacity="0.9"/>
+      <path d="M10 18h18" stroke="#FF6B35" strokeWidth="1.5"/>
+      <path d="M15 13v5M23 13v5" stroke="#FF6B35" strokeWidth="1.5"/>
+    </svg>
+  ),
+  mixpanel: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#7856FF"/>
+      <circle cx="13" cy="19" r="3" fill="white"/>
+      <circle cx="25" cy="19" r="3" fill="white"/>
+      <path d="M16 19h6" stroke="white" strokeWidth="2"/>
+      <path d="M10 14l3 5M25 19l3-5M10 24l3-5M25 19l3 5" stroke="white" strokeWidth="1.5" strokeLinecap="round" opacity="0.6"/>
+    </svg>
+  ),
+  amplitude: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#1B1B1B"/>
+      <path d="M9 22l5-10 4 7 3-5 4 8" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+    </svg>
+  ),
+  posthog: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#1D4AFF"/>
+      <path d="M12 19a7 7 0 0 1 14 0" stroke="white" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+      <circle cx="19" cy="19" r="3" fill="white"/>
+      <path d="M19 22v5" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+    </svg>
+  ),
+  chargebee: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#F45F00"/>
+      <path d="M23 14a6 6 0 1 0 0 10" stroke="white" strokeWidth="2.2" strokeLinecap="round" fill="none"/>
+      <path d="M20 17h6M20 21h6" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
+    </svg>
+  ),
+  recurly: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#4A20AA"/>
+      <path d="M14 13h5a5 5 0 0 1 0 10h-5V13z" fill="white" opacity="0.9"/>
+      <path d="M19 23l5 6" stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
+    </svg>
+  ),
+  profitwell: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#00C875"/>
+      <path d="M10 26l5-8 4 4 4-6 5 4" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+    </svg>
+  ),
+  paddle: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#0B2239"/>
+      <path d="M13 13h6a6 6 0 0 1 0 12h-6V13z" fill="white" opacity="0.9"/>
+    </svg>
+  ),
+  harvest: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#FA5A28"/>
+      <circle cx="19" cy="19" r="7" stroke="white" strokeWidth="2" fill="none"/>
+      <path d="M19 12v7l4 4" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+    </svg>
+  ),
+  toggl: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#E01B22"/>
+      <circle cx="19" cy="19" r="7" fill="white" opacity="0.9"/>
+      <circle cx="19" cy="19" r="4" fill="#E01B22"/>
+    </svg>
+  ),
+  forecast: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#6C3FC5"/>
+      <rect x="10" y="22" width="4" height="6" rx="1" fill="white"/>
+      <rect x="17" y="17" width="4" height="11" rx="1" fill="white"/>
+      <rect x="24" y="12" width="4" height="16" rx="1" fill="white"/>
+      <path d="M12 18l7-5 7-3" stroke="white" strokeWidth="1.5" strokeLinecap="round" opacity="0.6"/>
+    </svg>
+  ),
+  clio: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#0070D2"/>
+      <path d="M24 15a7 7 0 1 0 0 8" stroke="white" strokeWidth="2.2" strokeLinecap="round" fill="none"/>
+    </svg>
+  ),
+  mycase: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#2C5F8A"/>
+      <rect x="11" y="13" width="16" height="14" rx="2" fill="white" opacity="0.9"/>
+      <path d="M15 13v-2h8v2" stroke="#2C5F8A" strokeWidth="1.5" strokeLinecap="round"/>
+      <path d="M15 19h8M15 23h5" stroke="#2C5F8A" strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  ),
 }
 
 function ConnectorsSection({ user }) {

@@ -15,7 +15,9 @@ const SUPPORTED_PROVIDERS = [
   'salesforce', 'pipedrive', 'quickbooks', 'xero', 'googleanalytics', 'googleads',
   'metaads', 'mailchimp', 'klaviyo', 'confluence', 'gusto', 'rippling', 'bamboohr',
   'intercom', 'asana', 'monday', 'clickup', 'airtable', 'jira', 'linear', 'deel',
-  'multiplier',
+  'multiplier', 'github', 'datadog', 'sentry', 'shopify', 'woocommerce', 'gorgias',
+  'shipstation', 'easypost', 'mixpanel', 'amplitude', 'posthog', 'chargebee',
+  'recurly', 'profitwell', 'paddle', 'harvest', 'toggl', 'forecast', 'clio', 'mycase',
 ]
 
 function getSupabase() {
