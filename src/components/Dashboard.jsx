@@ -5323,6 +5323,105 @@ const CONNECTOR_LOGOS = {
       <path d="M13 22h12v3a2 2 0 0 1-2 2H15a2 2 0 0 1-2-2v-3z" fill="white" opacity="0.7"/>
     </svg>
   ),
+  plaid: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#1A1A1A"/>
+      <rect x="10" y="10" width="8" height="8" rx="1" fill="white"/>
+      <rect x="20" y="10" width="8" height="8" rx="1" fill="white" opacity="0.6"/>
+      <rect x="10" y="20" width="8" height="8" rx="1" fill="white" opacity="0.6"/>
+      <rect x="20" y="20" width="8" height="8" rx="1" fill="white" opacity="0.3"/>
+    </svg>
+  ),
+  experian: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#C00000"/>
+      <path d="M12 14h14M12 19h10M12 24h14" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+    </svg>
+  ),
+  equifax: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#003DA5"/>
+      <path d="M12 14h14M12 19h10M12 24h14" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+    </svg>
+  ),
+  guidewire: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#FF6900"/>
+      <path d="M24 15a7 7 0 1 0 0 8h-5v-4h9" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+    </svg>
+  ),
+  duckcreek: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#004B8D"/>
+      <path d="M12 22c0-3 2-6 5-7l2 4c-1.5.5-2.5 1.7-2.5 3H12z" fill="white"/>
+      <path d="M17 15c1-2 3-3 5-3a7 7 0 0 1 4 12.5" stroke="white" strokeWidth="2" strokeLinecap="round" fill="none"/>
+    </svg>
+  ),
+  netsuite: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#009EDB"/>
+      <path d="M11 26V12l16 14V12" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+    </svg>
+  ),
+  youtubeanalytics: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#FF0000"/>
+      <rect x="9" y="13" width="20" height="13" rx="3" fill="white" opacity="0.2"/>
+      <path d="M16 15.5l8 4.5-8 4.5v-9z" fill="white"/>
+    </svg>
+  ),
+  spotify: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#1DB954"/>
+      <path d="M12 16c4-2 10-2 14 0M12 20c3-1.5 8-1.5 12 0M13 24c2.5-1 7-1 10 0" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+    </svg>
+  ),
+  podbean: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#F46D3C"/>
+      <circle cx="19" cy="17" r="5" stroke="white" strokeWidth="2" fill="none"/>
+      <path d="M15 21c0 2 2 4 4 4s4-2 4-4M19 26v3" stroke="white" strokeWidth="2" strokeLinecap="round" fill="none"/>
+    </svg>
+  ),
+  teachable: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#00A78E"/>
+      <path d="M10 20l9-8 9 8M14 18v9h10v-9" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+    </svg>
+  ),
+  kajabi: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#1A1A1A"/>
+      <path d="M13 12v14M13 19l10-7v14L13 19z" fill="white" opacity="0.9"/>
+    </svg>
+  ),
+  thinkific: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#5B2AE0"/>
+      <path d="M19 10v18M12 14h14M12 24h14" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+    </svg>
+  ),
+  patreon: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#FF424D"/>
+      <circle cx="22" cy="17" r="6" fill="white"/>
+      <rect x="10" y="10" width="4" height="18" rx="2" fill="white"/>
+    </svg>
+  ),
+  substack: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#FF6719"/>
+      <rect x="10" y="12" width="18" height="3" rx="1" fill="white"/>
+      <rect x="10" y="17" width="18" height="3" rx="1" fill="white"/>
+      <path d="M10 22h18v7l-9-4-9 4v-7z" fill="white"/>
+    </svg>
+  ),
+  salesforceenergy: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#00A1E0"/>
+      <path d="M19 9l-4 9h3l-3 11 9-12h-4z" fill="white"/>
+    </svg>
+  ),
 }
 
 function ConnectorsSection({ user }) {

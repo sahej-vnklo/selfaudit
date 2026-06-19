@@ -23,6 +23,9 @@ const SUPPORTED_PROVIDERS = [
   'toast', 'square', 'opentable', 'resy', 'lightspeed',
   'buildium', 'appfolio', 'yardi',
   'samsara', 'verizonconnect', 'freightpop', 'shipwell',
+  'plaid', 'experian', 'equifax', 'guidewire', 'duckcreek', 'netsuite',
+  'youtubeanalytics', 'spotify', 'podbean', 'teachable', 'kajabi', 'thinkific',
+  'patreon', 'substack', 'salesforceenergy',
 ]
 
 function getSupabase() {
