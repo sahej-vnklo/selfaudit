@@ -470,137 +470,106 @@ export default function SchemaSetup({ user, onComplete }) {
 
         {/* ── Phase: Areas ────────────────────────────────────────────── */}
         {phase === 'areas' && (
-          selectedIndustry === 'other' ? (
-            /* ── "Something else": single tall scrollable card ────────── */
-            <div style={{ ...phaseStyle, flex: 1, padding: 24, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-              <div style={{ fontSize: 13, color: '#AAAAAA', marginBottom: 16 }}>
-                Select the areas you want to monitor
+          <div style={{ ...phaseStyle, flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+
+            {/* Split row — left label + right grid */}
+            <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+
+              {/* Left — heading */}
+              <div style={{
+                width: '40%', flexShrink: 0,
+                display: 'flex', flexDirection: 'column', justifyContent: 'center',
+                padding: '48px 44px',
+              }}>
+                <h1 style={{
+                  fontFamily: '"Cormorant Garamond", "Times New Roman", serif',
+                  fontSize: 'clamp(28px, 2.8vw, 40px)',
+                  fontWeight: 500,
+                  lineHeight: 1.15,
+                  letterSpacing: '-0.02em',
+                  color: '#ffffff',
+                  margin: 0,
+                  whiteSpace: 'nowrap',
+                }}>
+                  Which areas do you<br />want to monitor?
+                </h1>
+                {selectedAreas.length > 0 && (
+                  <p style={{ marginTop: 20, fontSize: 13, color: 'rgba(255,255,255,0.45)', fontWeight: 500 }}>
+                    {selectedAreas.length} area{selectedAreas.length !== 1 ? 's' : ''} selected
+                  </p>
+                )}
               </div>
 
-              <div style={{ flex: 1, overflow: 'hidden', display: 'flex', gap: 16, alignItems: 'flex-start' }}>
-                {/* Tall single card — all 46 areas */}
-                <div style={{
-                  width: 220, flexShrink: 0, height: '100%',
-                  background: CARD.bg, border: `1px solid ${CARD.border}`,
-                  overflowY: 'auto', display: 'flex', flexDirection: 'column',
+              {/* Right — scrollable area cards */}
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', padding: '0 60px 0 0', position: 'relative' }}>
+                <div className="sa-ind-scroll" style={{
+                  width: '100%',
+                  height: 'calc(100% - 120px)',
+                  overflowY: 'scroll',
                 }}>
-                  {areasForIndustry.map(area => {
-                    const on = selectedAreas.includes(area.id)
-                    return (
-                      <button
-                        key={area.id}
-                        onClick={() => toggleArea(area.id)}
-                        style={{
-                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                          gap: 10, padding: '10px 14px', textAlign: 'left',
-                          background: on ? '#111' : 'transparent',
-                          border: 'none', borderBottom: `1px solid ${CARD.border}`,
-                          cursor: 'pointer', transition: 'background 0.12s', flexShrink: 0,
-                        }}
-                        onMouseEnter={e => { if (!on) e.currentTarget.style.background = CARD.bgHover }}
-                        onMouseLeave={e => { if (!on) e.currentTarget.style.background = 'transparent' }}
-                      >
-                        <span style={{ fontSize: 12, fontWeight: 600, color: on ? '#E8E4DC' : CARD.heading, transition: 'color 0.12s' }}>{area.label}</span>
-                        <div style={{
-                          width: 12, height: 12, flexShrink: 0,
-                          border: `1px solid ${on ? C.accent : CARD.pillBorder}`,
-                          background: on ? C.accent : 'transparent',
-                          transition: 'background 0.12s, border-color 0.12s',
-                        }} />
-                      </button>
-                    )
-                  })}
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(3, 1fr)',
+                    gap: 8,
+                  }}>
+                    {areasForIndustry.map(area => {
+                      const on = selectedAreas.includes(area.id)
+                      return (
+                        <button
+                          key={area.id}
+                          onClick={() => toggleArea(area.id)}
+                          className={on ? 'sa-area-card sa-area-on' : 'sa-area-card'}
+                          style={{
+                            textAlign: 'left',
+                            background: on ? '#111111' : CARD.bg,
+                            border: `1px solid ${on ? C.accent : CARD.border}`,
+                            padding: '16px 14px',
+                            cursor: 'pointer',
+                            minHeight: 90,
+                            transition: 'border-color 0.15s, background 0.15s',
+                          }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                            <div className="sa-area-label" style={{ fontSize: 13, fontWeight: 700, color: on ? '#E8E4DC' : CARD.heading, lineHeight: 1.3, transition: 'color 0.15s' }}>{area.label}</div>
+                            <div style={{
+                              width: 14, height: 14, flexShrink: 0, marginTop: 1,
+                              border: `1px solid ${on ? C.accent : CARD.pillBorder}`,
+                              background: on ? C.accent : 'transparent',
+                              transition: 'background 0.15s, border-color 0.15s',
+                            }} />
+                          </div>
+                          <div className="sa-area-desc" style={{ fontSize: 11, color: on ? '#888888' : CARD.body, lineHeight: 1.5, transition: 'color 0.15s' }}>{area.objective}</div>
+                        </button>
+                      )
+                    })}
+                  </div>
                 </div>
               </div>
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 }}>
-                <button
-                  onClick={() => transitionTo('industry', () => { setSelectedIndustry(null) })}
-                  style={{ background: 'none', border: `1px solid #444`, color: '#AAAAAA', padding: '9px 16px', fontSize: 12, cursor: 'pointer' }}
-                >
-                  Back
-                </button>
-                <button
-                  onClick={confirmAreas}
-                  disabled={!selectedAreas.length}
-                  style={{
-                    background: selectedAreas.length ? C.accent : '#2A2A2A',
-                    border: 'none', color: selectedAreas.length ? '#fff' : '#666',
-                    padding: '10px 20px', fontSize: 13, fontWeight: 600,
-                    cursor: selectedAreas.length ? 'pointer' : 'not-allowed',
-                    transition: 'background 0.15s',
-                  }}
-                >
-                  Continue →
-                </button>
-              </div>
             </div>
-          ) : (
-            /* ── Regular industry: grid of area cards ─────────────────── */
-            <div style={{ ...phaseStyle, flex: 1, padding: 24, overflowY: 'auto' }}>
-              <div style={{ fontSize: 13, color: '#AAAAAA', marginBottom: 20 }}>
-                Select the areas you want to monitor
-              </div>
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-                gap: 8,
-              }}>
-                {areasForIndustry.map(area => {
-                  const on = selectedAreas.includes(area.id)
-                  return (
-                    <button
-                      key={area.id}
-                      onClick={() => toggleArea(area.id)}
-                      className={on ? 'sa-area-card sa-area-on' : 'sa-area-card'}
-                      style={{
-                        textAlign: 'left',
-                        background: on ? '#111' : CARD.bg,
-                        border: `1px solid ${on ? C.accent : CARD.border}`,
-                        padding: '16px',
-                        cursor: 'pointer',
-                        minHeight: 90,
-                        transition: 'border-color 0.15s, background 0.15s',
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-                        <div className="sa-area-label" style={{ fontSize: 13, fontWeight: 700, color: CARD.heading, transition: 'color 0.15s' }}>{area.label}</div>
-                        <div style={{
-                          width: 14, height: 14, flexShrink: 0, marginTop: 1,
-                          border: `1px solid ${on ? C.accent : CARD.pillBorder}`,
-                          background: on ? C.accent : 'transparent',
-                          transition: 'background 0.15s, border-color 0.15s',
-                        }} />
-                      </div>
-                      <div className="sa-area-desc" style={{ fontSize: 11, color: CARD.body, lineHeight: 1.5, transition: 'color 0.15s' }}>{area.objective}</div>
-                    </button>
-                  )
-                })}
-              </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 24, flexWrap: 'wrap', gap: 12 }}>
-                <button
-                  onClick={() => transitionTo('industry', () => { setSelectedIndustry(null) })}
-                  style={{ background: 'none', border: `1px solid #444`, color: '#AAAAAA', padding: '9px 16px', fontSize: 12, cursor: 'pointer' }}
-                >
-                  Back
-                </button>
-                <button
-                  onClick={confirmAreas}
-                  disabled={!selectedAreas.length}
-                  style={{
-                    background: selectedAreas.length ? C.accent : '#2A2A2A',
-                    border: 'none', color: selectedAreas.length ? '#fff' : '#666',
-                    padding: '10px 20px', fontSize: 13, fontWeight: 600,
-                    cursor: selectedAreas.length ? 'pointer' : 'not-allowed',
-                    transition: 'background 0.15s',
-                  }}
-                >
-                  Continue →
-                </button>
-              </div>
+            {/* Bottom bar — Back + Continue */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px', borderTop: `1px solid ${CARD.border}` }}>
+              <button
+                onClick={() => transitionTo('industry', () => { setSelectedIndustry(null) })}
+                style={{ background: 'none', border: `1px solid #444`, color: '#AAAAAA', padding: '9px 16px', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}
+              >
+                Back
+              </button>
+              <button
+                onClick={confirmAreas}
+                disabled={!selectedAreas.length}
+                style={{
+                  background: selectedAreas.length ? C.accent : '#2A2A2A',
+                  border: 'none', color: selectedAreas.length ? '#fff' : '#666',
+                  padding: '10px 20px', fontSize: 13, fontWeight: 600,
+                  cursor: selectedAreas.length ? 'pointer' : 'not-allowed',
+                  transition: 'background 0.15s', fontFamily: 'inherit',
+                }}
+              >
+                Continue →
+              </button>
             </div>
-          )
+          </div>
         )}
 
         {/* ── Phase: Units ────────────────────────────────────────────── */}
