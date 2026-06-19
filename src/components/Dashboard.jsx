@@ -2635,13 +2635,14 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                     </div>
                   )}
 
-                  {/* What We Know tab — business state memory auto-filled from audits */}
+                  {/* What We Know tab — synthesized intelligence from all audits */}
                   {accountTab === 'know' && (
                     <div style={{ padding: '28px 28px 0' }}>
-                      <BusinessStateCard
+                      <IntelligenceBrief
                         user={user}
-                        businessState={businessState}
-                        loading={businessStateLoading}
+                        profile={profile}
+                        theme={theme}
+                        synthOnly
                       />
                     </div>
                   )}
