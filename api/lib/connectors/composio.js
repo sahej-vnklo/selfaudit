@@ -39,12 +39,14 @@ async function composioFetch(path, options = {}) {
 // Composio toolkit slugs — maps our connector IDs to Composio's toolkit names.
 // Only needed when our connector ID differs from the Composio slug.
 const TOOLKIT_SLUGS = {
-  googledrive:     'googledrive',
-  googleanalytics: 'googleanalytics4',
-  googleads:       'googleads',
-  metaads:         'facebook_ads',
-  bamboohr:        'bamboohr',
-  clickup:         'clickup',
+  googleanalytics: 'google_analytics',
+  metaads:         'facebook',
+  teams:           'microsoft_teams',
+  sharepoint:      'share_point',
+  onedrive:        'one_drive',
+  zohoinvoice:     'zoho_invoice',
+  dropboxsign:     'dropbox_sign',
+  planyo:          'planyo_online_booking',
 }
 
 // Returns the OAuth redirect URL for a user to connect a specific toolkit.
