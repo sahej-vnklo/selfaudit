@@ -363,7 +363,7 @@ const LEGACY_NOTIFICATION_AREA_MAP = {
   customer_experience: 'customer_health',
 }
 const GOVERNANCE_AREA_LABELS = Object.fromEntries(OPERATIONAL_AREAS.map((area) => [area.id, area.label]))
-const SECTIONS = ['home', 'oversight', 'reports', 'intelligence', 'alerts', 'connectors', 'simulate', 'agent', 'logic', 'billing', 'account']
+const SECTIONS = ['home', 'oversight', 'intelligence', 'alerts', 'connectors', 'simulate', 'agent', 'logic', 'billing', 'account']
 const INTELLIGENCE_ONLY_SECTIONS = new Set(['oversight', 'alerts', 'connectors', 'agent'])
 const WELCOME_TOUR_ROLLOUT_AT = Date.parse('2026-05-24T00:30:00-04:00')
 
@@ -2019,12 +2019,6 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
               </svg>
               <span className="navlabel">Command</span>
             </button>
-            <button className={`dash-navbtn${section === 'reports' ? ' active' : ''}`} data-label="Sessions" aria-label="Sessions" type="button" onClick={() => navigateSection('reports')}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M4 19V10M10 19V5M16 19v-7M22 19H2"/>
-              </svg>
-              <span className="navlabel">Sessions</span>
-            </button>
             <button className={`dash-navbtn${section === 'connectors' ? ' active' : ''}`} data-label="Connectors" aria-label="Connectors" type="button" onClick={() => navigateSection('connectors')}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="6" cy="6" r="2.4"/><circle cx="18" cy="6" r="2.4"/><circle cx="12" cy="18" r="2.4"/>
@@ -2507,11 +2501,6 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
               )}
 
               {/* ── Sessions → Audit report history ─────────────────────── */}
-              {section === 'reports' && (
-                <PageShell title="Sessions" sub="Your saved audit reports.">
-                  {reportsLoading ? <ReportSkeletons /> : reports.length > 0 ? <ReportList reports={reports} userId={user?.id} /> : <EmptyReports onStartAudit={startAudit} />}
-                </PageShell>
-              )}
 
               {/* ── AI Opportunities → ranked opportunity items ──────────── */}
               {section === 'intelligence' && (
@@ -2553,11 +2542,12 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                   {/* Tab switcher */}
                   <div style={{ display: 'flex', gap: 4, padding: '20px 28px 0', borderBottom: `1px solid ${G.border}` }}>
                     {[
-                      { id: 'profile', label: 'Profile' },
-                      { id: 'billing', label: 'Billing' },
-                      { id: 'setup',   label: 'Business Setup' },
+                      { id: 'profile',      label: 'Profile' },
+                      { id: 'billing',      label: 'Billing' },
+                      { id: 'history',      label: 'History' },
+                      { id: 'setup',        label: 'Business Setup' },
                       { id: 'intelligence', label: 'Intelligence' },
-                      { id: 'data',    label: 'Data' },
+                      { id: 'data',         label: 'Data' },
                     ].map(({ id, label }) => (
                       <button
                         key={id}
@@ -2621,6 +2611,17 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                       onSignOut={onSignOut}
                       dataOnly
                     />
+                  )}
+
+                  {/* History tab — saved audit reports */}
+                  {accountTab === 'history' && (
+                    <div style={{ padding: '28px 28px 0' }}>
+                      <div style={{ marginBottom: 24 }}>
+                        <h2 style={{ fontSize: 22, fontWeight: 700, color: G.text, margin: 0 }}>History</h2>
+                        <p style={{ fontSize: 14, color: G.textMuted, marginTop: 6 }}>Your saved audit reports.</p>
+                      </div>
+                      {reportsLoading ? <ReportSkeletons /> : reports.length > 0 ? <ReportList reports={reports} userId={user?.id} /> : <EmptyReports onStartAudit={startAudit} />}
+                    </div>
                   )}
 
                   {/* Business Setup tab — areas & units editor */}
