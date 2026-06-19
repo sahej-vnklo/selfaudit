@@ -68,8 +68,8 @@ async function persistMetricSnapshots(userId, snapshots, sb, capturedAt, schemaV
   }
 }
 
-function risk(severity, category, title, description, evidence, recommended_action, source) {
-  return { severity, category, title, description, evidence, recommended_action, source }
+function risk(severity, category, title, description, evidence, recommended_action, source, rootCause, impact) {
+  return { severity, category, title, description, evidence, recommended_action, source, rootCause: rootCause ?? null, impact: impact ?? null }
 }
 
 function scoreFromRisks(risks) {
@@ -99,6 +99,8 @@ function analyzePipelineRisk(normalized) {
       'open_deals = 0 in HubSpot',
       'Run an outbound sprint immediately. Review lead sources and qualification rate.',
       'hubspot',
+      'Lead flow has dried up and no new deals have been opened in CRM.',
+      'Without pipeline, revenue generation will stall completely within 30–60 days.',
     ))
   } else if (openDeals !== null && openDeals < 3) {
     risks.push(risk(
@@ -108,6 +110,8 @@ function analyzePipelineRisk(normalized) {
       `open_deals = ${openDeals}`,
       'Actively add new deals. Check lead flow and qualification rate.',
       'hubspot',
+      'Not enough deals are being created to build a funnel with enough fallout buffer.',
+      'If even one deal slips, there is no backup — revenue becomes unpredictable immediately.',
     ))
   }
 
@@ -119,6 +123,8 @@ function analyzePipelineRisk(normalized) {
       highValueSoon.map((d) => `${d.label} $${d.amount} by ${d.closedate}`).join('; '),
       'Review each deal status. Schedule closing calls and resolve any open objections.',
       'hubspot',
+      'High-value deals are approaching close date and may stall without active follow-through.',
+      'Missing these deals creates a significant revenue gap that is hard to recover in the same quarter.',
     ))
   }
 
@@ -130,6 +136,8 @@ function analyzePipelineRisk(normalized) {
       `leads = ${leads}, sqls = 0`,
       'Audit lead qualification criteria and the SDR-to-AE handoff process.',
       'hubspot',
+      'Lead qualification process is not converting inbound interest into sales-qualified conversations.',
+      'Top-of-funnel effort is wasted — leads sit idle, go cold, and conversion rate approaches zero.',
     ))
   }
 
@@ -159,6 +167,8 @@ function analyzeRevenueRisk(brief) {
       `churn = ${churn}%`,
       'Run a churn post-mortem on the last 90 days. Identify the top 3 cancellation reasons and build counter-playbooks.',
       'intelligence_brief',
+      'More than 5% of revenue is leaving every month — customers are not finding lasting value.',
+      'At this rate, the business loses over 60% of its revenue base annually before counting new sales.',
     ))
   } else if (churn !== null && churn > 2) {
     risks.push(risk(
@@ -168,6 +178,8 @@ function analyzeRevenueRisk(brief) {
       `churn = ${churn}%`,
       'Survey churned customers. Add health-score monitoring for at-risk accounts.',
       'intelligence_brief',
+      'Monthly churn above the healthy threshold is quietly suppressing net revenue growth.',
+      'Even strong new sales are partially offset — compounding over 12 months caps total growth potential.',
     ))
   }
 
@@ -179,6 +191,8 @@ function analyzeRevenueRisk(brief) {
       `runway = ${runway} months${burn ? `, burn = $${burn}/mo` : ''}`,
       'Extend runway immediately — cut non-essential spend and/or accelerate revenue. Begin fundraise conversations now.',
       'intelligence_brief',
+      'Current burn rate is consuming cash faster than revenue can replenish it.',
+      'Without immediate action, the business runs out of operating capital and cannot pay its obligations.',
     ))
   } else if (runway !== null && runway < 12) {
     risks.push(risk(
@@ -188,6 +202,8 @@ function analyzeRevenueRisk(brief) {
       `runway = ${runway} months`,
       'Begin fundraising or reach profitability planning now — do not wait until under 6 months.',
       'intelligence_brief',
+      'Cash reserves are being drawn down faster than revenue growth can offset burn.',
+      'A slow quarter or unexpected cost spike could force immediate cuts or a distressed raise.',
     ))
   }
 
@@ -201,6 +217,8 @@ function analyzeRevenueRisk(brief) {
         `ltv = ${ltv}, cac = ${cac}, ratio = ${ratio.toFixed(2)}x`,
         'Stop growth spend immediately. Fix either CAC (cheaper acquisition) or LTV (better retention/pricing) before scaling.',
         'intelligence_brief',
+        'The cost of acquiring a customer exceeds the lifetime revenue that customer generates.',
+        'Every new customer added loses money — growth makes the economics worse, not better.',
       ))
     } else if (ratio < 3) {
       risks.push(risk(
@@ -210,6 +228,8 @@ function analyzeRevenueRisk(brief) {
         `ltv = ${ltv}, cac = ${cac}, ratio = ${ratio.toFixed(2)}x`,
         'Focus on reducing acquisition cost or improving retention and expansion revenue.',
         'intelligence_brief',
+        'Customer acquisition cost is high relative to the revenue each customer returns over their lifetime.',
+        'Thin margins leave little room for error and make profitable scaling very difficult.',
       ))
     }
   }
@@ -237,6 +257,8 @@ function analyzeCustomerRisk(brain, normalized) {
         negativeSignals.slice(0, 2).join('; '),
         'Proactively reach out to at-risk accounts. Assign an owner to each flagged account.',
         'company_brain',
+        'Recent audit history flagged churn risk, cancellations, or escalation signals across accounts.',
+        'Unaddressed at-risk accounts are likely to churn — quietly eroding the revenue base.',
       ))
     }
   }
@@ -254,6 +276,8 @@ function analyzeCustomerRisk(brain, normalized) {
         `customers = 0, leads = ${leads}`,
         'Audit CRM data hygiene. Verify closed-won deals are being marked correctly in HubSpot.',
         'hubspot',
+        'Either deals are closing but not being recorded, or conversion from lead to customer is broken.',
+        'CRM data cannot be trusted for forecasting or pipeline management — decisions are being made blind.',
       ))
     }
   }
@@ -279,6 +303,8 @@ function analyzeExecutionRisk(brain) {
       `top_priorities count = ${priorities.length}`,
       'Time-box a weekly review session. Pick 3 actions, assign owners, set a 7-day deadline.',
       'company_brain',
+      'Too many audit-identified actions are accumulating without being closed out or assigned.',
+      'Execution slows as the team loses focus — critical fixes get delayed and eventually forgotten.',
     ))
   } else if (priorities.length >= 3) {
     risks.push(risk(
@@ -288,6 +314,8 @@ function analyzeExecutionRisk(brain) {
       `top_priorities count = ${priorities.length}`,
       'Assign each action an owner and deadline before the next audit.',
       'company_brain',
+      'More actions are being identified than are being completed between sessions.',
+      'Without a clear owner and deadline for each action, important work quietly gets deprioritised.',
     ))
   }
 
@@ -299,6 +327,8 @@ function analyzeExecutionRisk(brain) {
       `repeated_blockers count = ${blockers.length}`,
       'These are systemic — address the root cause, not just the symptom each time.',
       'company_brain',
+      'The same obstacles keep surfacing session after session without being resolved at the root.',
+      'Systemic blockers compound — they slow execution across multiple areas simultaneously.',
     ))
   }
 
@@ -310,6 +340,8 @@ function analyzeExecutionRisk(brain) {
       `watchouts count = ${watchouts.length}`,
       'Review each watchout. Close out resolved ones so the signal stays clean.',
       'company_brain',
+      'Several signals flagged for monitoring have not been resolved or closed out.',
+      'Active watchouts are risks one bad week away from becoming full alerts.',
     ))
   }
 
@@ -321,6 +353,8 @@ function analyzeExecutionRisk(brain) {
       `last_session headline: "${brain.last_session.headline}"`,
       'Mark each action as done, carried forward, or deprioritised — do not leave it in limbo.',
       'company_brain',
+      'The previous audit produced action items that were never marked completed, carried forward, or deprioritised.',
+      'Without accountability on prior actions, audits lose their value — plans do not translate to execution.',
     ))
   }
 
@@ -344,6 +378,8 @@ function analyzeGoalRisk(brain) {
       `goal_score = ${score}, goal = "${brain.active_goal}"`,
       'Reassess goal feasibility and timeline. Break into smaller milestones with weekly check-ins.',
       'company_brain',
+      'Current execution pace is far below what is needed to hit the stated goal on time.',
+      'At this trajectory, the goal will be missed — and the gap will widen the longer it goes unaddressed.',
     ))
   } else if (score < 50) {
     risks.push(risk(
@@ -353,6 +389,8 @@ function analyzeGoalRisk(brain) {
       `goal_score = ${score}, goal = "${brain.active_goal}"`,
       'Identify the single biggest blocker to goal achievement and address it this week.',
       'company_brain',
+      'Progress is happening but not fast enough to meet the goal by the current deadline.',
+      'Missing the goal affects investor confidence, team morale, and planning for the next cycle.',
     ))
   }
 
@@ -365,6 +403,8 @@ function analyzeGoalRisk(brain) {
       `goal_timeline = "${timeline}"`,
       'Renegotiate the goal or the timeline based on current capacity and constraints.',
       'company_brain',
+      'The most recent audit identified the timeline as beyond what current capacity can deliver.',
+      'Pursuing an unrealistic timeline creates pressure without progress — the team burns out chasing a moving target.',
     ))
   } else if (tl.includes('tight')) {
     risks.push(risk(
@@ -374,6 +414,8 @@ function analyzeGoalRisk(brain) {
       `goal_timeline = "${timeline}"`,
       'Identify the single biggest risk to the timeline and build a mitigation plan now.',
       'company_brain',
+      'The timeline is achievable but relies on everything going right with no room for error.',
+      'Any unexpected delay or setback will put the deadline at risk — there is no recovery buffer built in.',
     ))
   }
 
@@ -398,6 +440,8 @@ function analyzeOperationalRisk(brain) {
       `operational_blockers = ${JSON.stringify(blockers.slice(0, 3))}`,
       'Pick the highest-impact blocker and dedicate focused capacity to clearing it this sprint.',
       'company_brain',
+      'Several operational constraints are simultaneously limiting throughput and progress.',
+      'Multiple blockers compound each other — removing one still leaves the others in place.',
     ))
   }
 
@@ -409,6 +453,8 @@ function analyzeOperationalRisk(brain) {
       `conversion_bottlenecks = ${JSON.stringify(bottlenecks.slice(0, 3))}`,
       'Map the full customer journey and instrument each stage to find where drop-off concentrates.',
       'company_brain',
+      'Known friction points in the customer journey are reducing conversion at multiple stages.',
+      'Every untreated bottleneck silently reduces the yield from marketing and sales spend.',
     ))
   }
 
@@ -420,6 +466,8 @@ function analyzeOperationalRisk(brain) {
       `current_constraints count = ${constraints.length}`,
       'Identify which constraint is the binding one and focus there — the others likely resolve downstream.',
       'company_brain',
+      'Multiple simultaneous constraints are creating compounding drag across the operation.',
+      'Stacked constraints reduce throughput more than the sum of their parts — they interact and amplify each other.',
     ))
   }
 
