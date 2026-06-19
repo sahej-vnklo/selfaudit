@@ -5190,6 +5190,139 @@ const CONNECTOR_LOGOS = {
       <path d="M15 19h8M15 23h5" stroke="#2C5F8A" strokeWidth="1.5" strokeLinecap="round"/>
     </svg>
   ),
+  simplepractice: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#2ECC71"/>
+      <path d="M12 19h14M19 12v14" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+      <circle cx="19" cy="19" r="6" stroke="white" strokeWidth="2" fill="none"/>
+    </svg>
+  ),
+  jane: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#4ECDC4"/>
+      <circle cx="19" cy="15" r="4" fill="white"/>
+      <path d="M11 28c0-4.4 3.6-8 8-8s8 3.6 8 8" stroke="white" strokeWidth="2" strokeLinecap="round" fill="none"/>
+    </svg>
+  ),
+  mindbody: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#E8145C"/>
+      <circle cx="19" cy="14" r="4" fill="white"/>
+      <path d="M13 22c0-1 .5-2 1.5-2.5l2-1a5 5 0 0 1 5 0l2 1c1 .5 1.5 1.5 1.5 2.5v4H13v-4z" fill="white"/>
+    </svg>
+  ),
+  practicefusion: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#005EB8"/>
+      <path d="M12 19h14M19 12v7" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+      <circle cx="19" cy="22" r="3" fill="white"/>
+    </svg>
+  ),
+  kareo: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#00A3E0"/>
+      <path d="M13 12v14M13 19l10-7M13 19l10 7" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+    </svg>
+  ),
+  procore: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#F26522"/>
+      <path d="M10 27L19 10l9 17H10z" fill="white" opacity="0.9"/>
+      <path d="M14 27l5-9 5 9" fill="#F26522"/>
+    </svg>
+  ),
+  buildertrend: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#0072CE"/>
+      <rect x="10" y="20" width="5" height="8" rx="1" fill="white"/>
+      <rect x="17" y="15" width="5" height="13" rx="1" fill="white"/>
+      <rect x="24" y="10" width="5" height="18" rx="1" fill="white"/>
+    </svg>
+  ),
+  toast: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#FF4D00"/>
+      <rect x="10" y="16" width="18" height="12" rx="2" fill="white" opacity="0.9"/>
+      <path d="M14 16v-3a5 5 0 0 1 10 0v3" stroke="white" strokeWidth="2" strokeLinecap="round" fill="none"/>
+    </svg>
+  ),
+  square: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#1A1A1A"/>
+      <rect x="11" y="11" width="16" height="16" rx="3" fill="white"/>
+      <rect x="15" y="15" width="8" height="8" rx="1" fill="#1A1A1A"/>
+    </svg>
+  ),
+  opentable: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#DA3743"/>
+      <circle cx="19" cy="19" r="7" stroke="white" strokeWidth="2" fill="none"/>
+      <path d="M19 14v5l3 3" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+    </svg>
+  ),
+  resy: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#1A1A2E"/>
+      <path d="M12 14h8a4 4 0 0 1 0 8h-8V14z" fill="white" opacity="0.9"/>
+      <path d="M20 22l6 6" stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
+    </svg>
+  ),
+  lightspeed: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#CC2229"/>
+      <path d="M21 9l-8 11h7l-3 10 8-13h-7z" fill="white"/>
+    </svg>
+  ),
+  buildium: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#0D7B3E"/>
+      <rect x="10" y="18" width="8" height="10" rx="1" fill="white"/>
+      <rect x="20" y="13" width="8" height="15" rx="1" fill="white"/>
+      <path d="M10 18h18" stroke="#0D7B3E" strokeWidth="1"/>
+    </svg>
+  ),
+  appfolio: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#0057B8"/>
+      <circle cx="19" cy="18" r="6" stroke="white" strokeWidth="2" fill="none"/>
+      <path d="M19 24v5M15 29h8" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+    </svg>
+  ),
+  yardi: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#003087"/>
+      <path d="M12 13l7 8v7M26 13l-7 8" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+    </svg>
+  ),
+  samsara: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#00B4D8"/>
+      <path d="M10 22c2-5 5-8 9-8s7 3 9 8" stroke="white" strokeWidth="2.2" strokeLinecap="round" fill="none"/>
+      <circle cx="19" cy="22" r="3" fill="white"/>
+    </svg>
+  ),
+  verizonconnect: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#CD040B"/>
+      <path d="M12 13l7 14 7-14" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+    </svg>
+  ),
+  freightpop: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#2D3A8C"/>
+      <rect x="9" y="16" width="14" height="10" rx="2" fill="white" opacity="0.9"/>
+      <path d="M23 19h4l3 4v3h-7V19z" fill="white" opacity="0.9"/>
+      <circle cx="14" cy="28" r="2" fill="#2D3A8C" stroke="white" strokeWidth="1.5"/>
+      <circle cx="24" cy="28" r="2" fill="#2D3A8C" stroke="white" strokeWidth="1.5"/>
+    </svg>
+  ),
+  shipwell: (
+    <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="38" height="38" rx="10" fill="#0A2463"/>
+      <path d="M19 10l7 12H12L19 10z" fill="white" opacity="0.9"/>
+      <path d="M13 22h12v3a2 2 0 0 1-2 2H15a2 2 0 0 1-2-2v-3z" fill="white" opacity="0.7"/>
+    </svg>
+  ),
 }
 
 function ConnectorsSection({ user }) {

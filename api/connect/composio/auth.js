@@ -18,6 +18,11 @@ const SUPPORTED_PROVIDERS = [
   'multiplier', 'github', 'datadog', 'sentry', 'shopify', 'woocommerce', 'gorgias',
   'shipstation', 'easypost', 'mixpanel', 'amplitude', 'posthog', 'chargebee',
   'recurly', 'profitwell', 'paddle', 'harvest', 'toggl', 'forecast', 'clio', 'mycase',
+  'simplepractice', 'jane', 'mindbody', 'practicefusion', 'kareo',
+  'procore', 'buildertrend',
+  'toast', 'square', 'opentable', 'resy', 'lightspeed',
+  'buildium', 'appfolio', 'yardi',
+  'samsara', 'verizonconnect', 'freightpop', 'shipwell',
 ]
 
 function getSupabase() {
