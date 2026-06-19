@@ -1,42 +1,60 @@
 import { getActionForArtifact } from '../actions/registry.js'
+import { ARTIFACT_SYSTEM_PROMPT, ARTIFACT_TYPE_INSTRUCTIONS, ARTIFACT_JSON_SCHEMA } from '../artifacts/instructions.js'
 
 const CLAUDE_API = 'https://api.anthropic.com/v1/messages'
 
-const HEALTH_CHECK_SYSTEM_PROMPT = `You are SelfAudit's execution engine. Your job is to generate a single, specific, ready-to-use Action Plan from a daily business health check alert.
+// ── Artifact type routing ─────────────────────────────────────────────────────
 
-RULES:
-1. The plan must be generated FROM the alert findings — not generic
-2. Reference the specific risk, root cause, and metric in the alert
-3. Every action must be immediately usable — no placeholders like [INSERT NAME]
-4. Use the business context provided throughout
-5. Artifacts must be copy-paste ready — the operator should be able to use this today
+function pickArtifactType(alert) {
+  const cat = String(alert?.category || '').toLowerCase()
 
-QUALITY TEST:
-- Is this specific to their situation? No generic templates.
-- Can they act on it today without editing?
-- Does it reference actual findings from the alert? Must be grounded.
+  // Marketing/Sales + pipeline alerts → EMAIL: direct outreach is the most actionable first step
+  if (cat.includes('marketing') || cat.includes('sales') || cat.includes('pipeline')) return 'EMAIL'
 
-SAFETY:
-- Only use information from the alert and business context provided
-- Do not invent numbers or structures not in the alert
-- If a specific detail is missing, use a reasonable contextual default in brackets — only when genuinely needed
+  // Customer-facing issues → TEAM_BRIEF: the team needs to know and coordinate
+  if (cat.includes('customer')) return 'TEAM_BRIEF'
 
-Return VALID JSON ONLY. No markdown, no backticks, no preamble.`
+  // Finance, management, operations, revenue, everything else → ACTION_PLAN
+  return 'ACTION_PLAN'
+}
 
-function buildHealthCheckPrompt(alert, intel) {
-  const businessContext = intel ? `
-BUSINESS CONTEXT (from memory — use to make the plan specific to this business):
-Overall status: ${intel.summary || 'not available'}
-Known recurring blockers: ${(intel.repeated_blockers || []).join(', ') || 'none identified'}
-Current priorities: ${(intel.top_priorities || []).join(', ') || 'none identified'}
-Active watchouts: ${(intel.watchouts || []).join(', ') || 'none'}
-` : ''
+function buildApproveLabel(artifactType, alert) {
+  const cat = String(alert?.category || '').toLowerCase()
 
+  if (artifactType === 'EMAIL') {
+    if (cat.includes('marketing') || cat.includes('sales')) return 'Draft outreach email'
+    if (cat.includes('pipeline'))                           return 'Draft pipeline email'
+    return 'Draft email'
+  }
+
+  if (artifactType === 'TEAM_BRIEF') {
+    if (cat.includes('customer')) return 'Draft customer brief'
+    return 'Draft team update'
+  }
+
+  // ACTION_PLAN
+  if (cat.includes('finance'))    return 'Financial action plan'
+  if (cat.includes('revenue'))    return 'Revenue recovery plan'
+  if (cat.includes('management')) return 'Strategic action plan'
+  if (cat.includes('operation') || cat.includes('production')) return 'Operations action plan'
+  return 'Action plan'
+}
+
+// ── Prompt builder (shared instructions, alert-specific context) ──────────────
+
+function buildAlertPrompt(artifactType, alert, intel) {
   const metricLine = alert.metric_key
     ? `Observed metric: ${alert.metric_key} = ${alert.metric_value ?? 'unknown'}`
     : ''
 
-  return `Generate a prioritized ACTION_PLAN for this business health alert detected at 8 AM.
+  const intelContext = intel ? `
+BUSINESS CONTEXT (use to make content specific to this business):
+Overall status: ${intel.summary || 'not available'}
+Known recurring blockers: ${(intel.repeated_blockers || []).join(', ') || 'none identified'}
+Current priorities: ${(intel.top_priorities || []).join(', ') || 'none identified'}
+Active watchouts: ${(intel.watchouts || []).join(', ') || 'none'}` : ''
+
+  return `Generate a ${artifactType} artifact from this business health alert.
 
 ALERT:
 Title: ${alert.title || 'Unknown risk'}
@@ -47,50 +65,69 @@ Root cause: ${alert.root_cause || 'not specified'}
 Business impact: ${alert.impact || 'not specified'}
 ${metricLine}
 Recommended action: ${alert.recommended_action || 'Review and respond.'}
-${businessContext}
-Generate a prioritized Action Plan with these EXACT section labels:
-- Goal: The specific outcome this plan achieves — state it clearly with a measurable target grounded in this alert
-- Timeline: Total timeframe with honest rationale for why it takes that long
-- Week 1: Exact actions for the first 7 days — specific, assignable tasks tied to this alert
-- Month 1: Key milestones to hit by end of month 1 — measurable checkpoints
-- Month 3: Where the business gets to by the 90-day mark if this plan executes
-- Blockers: The top 2-3 things that could derail this plan and how to handle each one
+${intelContext}
 
-Return a single JSON object with this exact structure:
-{
-  "type": "ACTION_PLAN",
-  "title": "Specific descriptive title based on their actual alert — not generic",
-  "summary": "One sentence: what this plan does and why it matters for their specific situation",
-  "sections": [
-    { "label": "Goal", "content": "..." },
-    { "label": "Timeline", "content": "..." },
-    { "label": "Week 1", "content": "..." },
-    { "label": "Month 1", "content": "..." },
-    { "label": "Month 3", "content": "..." },
-    { "label": "Blockers", "content": "..." }
-  ]
-}`
+${ARTIFACT_TYPE_INSTRUCTIONS[artifactType]}
+${ARTIFACT_JSON_SCHEMA(artifactType)}`
 }
 
-function buildCriticalActionArtifact(alert) {
-  return {
-    title: `Critical response: ${alert?.title || 'Risk alert'}`,
+// ── Static fallbacks (used when Claude API is unavailable) ────────────────────
+
+function buildFallbackArtifact(artifactType, alert) {
+  const base = {
+    title: `${alert?.title || 'Risk alert'} — response needed`,
     summary: alert?.description || 'A critical risk requires your attention.',
+  }
+
+  if (artifactType === 'EMAIL') {
+    return {
+      ...base,
+      type: 'EMAIL',
+      sections: [
+        { label: 'Subject Line', content: `Following up: ${alert?.title || 'action required'}` },
+        {
+          label: 'Body',
+          content: [
+            `Hi [First Name],`,
+            ``,
+            `I wanted to reach out regarding ${alert?.description || 'a critical business issue we have identified'}.`,
+            ``,
+            `${alert?.recommended_action || 'We need to act on this urgently.'}`,
+            ``,
+            `Can we connect this week to align on next steps?`,
+            ``,
+            `Best,`,
+          ].join('\n'),
+        },
+      ],
+    }
+  }
+
+  if (artifactType === 'TEAM_BRIEF') {
+    return {
+      ...base,
+      type: 'TEAM_BRIEF',
+      sections: [
+        { label: 'Situation', content: alert?.description || 'A risk was detected that needs team awareness.' },
+        { label: 'Impact', content: alert?.impact || 'Unresolved, this compounds over time.' },
+        { label: 'What We Need', content: alert?.recommended_action || 'Review and respond with your assessment.' },
+        { label: 'Next Check-in', content: 'Update by end of this week.' },
+      ],
+    }
+  }
+
+  // ACTION_PLAN fallback
+  return {
+    ...base,
+    type: 'ACTION_PLAN',
     sections: [
-      {
-        label: 'Situation',
-        content: alert?.description || 'SelfAudit detected a critical business risk that needs review.',
-      },
-      {
-        label: 'Recommended Action',
-        content: alert?.recommended_action || 'Review the finding, confirm the root cause, and document the next operating response.',
-      },
+      { label: 'Situation', content: alert?.description || 'SelfAudit detected a critical business risk.' },
+      { label: 'Recommended Action', content: alert?.recommended_action || 'Review the finding and document the next operating response.' },
       {
         label: 'Finding Snapshot',
         content: [
           `Area: ${alert?.category || 'unknown'}`,
           `Severity: ${alert?.severity || 'unknown'}`,
-          `Status: ${alert?.finding_status || 'unknown'}`,
           alert?.metric_key ? `Metric: ${alert.metric_key}` : '',
           alert?.metric_value != null ? `Observed value: ${alert.metric_value}` : '',
         ].filter(Boolean).join('\n'),
@@ -99,11 +136,12 @@ function buildCriticalActionArtifact(alert) {
   }
 }
 
-async function generateHealthCheckArtifact(supabase, userId, alert) {
-  const apiKey = process.env.CLAUDE_API_KEY
-  if (!apiKey) return buildCriticalActionArtifact(alert)
+// ── Claude generation ─────────────────────────────────────────────────────────
 
-  // Fetch latest intelligence profile for business context
+async function generateHealthCheckArtifact(supabase, userId, alert, artifactType) {
+  const apiKey = process.env.CLAUDE_API_KEY
+  if (!apiKey) return buildFallbackArtifact(artifactType, alert)
+
   let intel = null
   try {
     const { data } = await supabase
@@ -114,9 +152,7 @@ async function generateHealthCheckArtifact(supabase, userId, alert) {
       .limit(1)
       .maybeSingle()
     intel = data
-  } catch (_) {
-    // continue without brain context
-  }
+  } catch (_) {}
 
   try {
     const response = await fetch(CLAUDE_API, {
@@ -129,8 +165,8 @@ async function generateHealthCheckArtifact(supabase, userId, alert) {
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
         max_tokens: 2000,
-        system: HEALTH_CHECK_SYSTEM_PROMPT,
-        messages: [{ role: 'user', content: buildHealthCheckPrompt(alert, intel) }],
+        system: ARTIFACT_SYSTEM_PROMPT,
+        messages: [{ role: 'user', content: buildAlertPrompt(artifactType, alert, intel) }],
       }),
     })
 
@@ -147,46 +183,49 @@ async function generateHealthCheckArtifact(supabase, userId, alert) {
 
     return artifact
   } catch (err) {
-    console.warn('[critical-action-staging] Claude artifact generation failed, using static fallback:', err.message)
-    return buildCriticalActionArtifact(alert)
+    console.warn('[critical-action-staging] Claude generation failed, using static fallback:', err.message)
+    return buildFallbackArtifact(artifactType, alert)
   }
 }
+
+// ── Main export ───────────────────────────────────────────────────────────────
 
 export async function stageCriticalAction(supabase, userId, alert) {
   try {
     if (!supabase || !userId || !alert?.id) return null
     if (alert.execution_staged) return null
+
     const ACTIONABLE = new Set(['critical', 'alert', 'escalate'])
     if (!ACTIONABLE.has(String(alert.escalation_tier || '').toLowerCase())) return null
 
-    const action = getActionForArtifact('ACTION_PLAN')
+    const artifactType = pickArtifactType(alert)
+    const action = getActionForArtifact(artifactType)
     if (!action) return null
 
-    // Generate a real Claude artifact instead of the static placeholder
-    const artifact = await generateHealthCheckArtifact(supabase, userId, alert)
+    const artifact = await generateHealthCheckArtifact(supabase, userId, alert, artifactType)
     const stagedArgs = action.buildArgs(artifact, {})
 
     const { data, error } = await supabase
       .from('pending_actions')
       .insert({
-        user_id: userId,
-        artifact_id: null,
-        action_type: 'ACTION_PLAN',
-        tool_slug: action.tool,
-        connector: action.connector,
-        title: artifact.title || `Action Plan: ${alert.title}`,
-        staged_args: stagedArgs,
+        user_id:                userId,
+        artifact_id:            null,
+        action_type:            artifactType,
+        tool_slug:              action.tool,
+        connector:              action.connector,
+        title:                  artifact.title || `${artifactType}: ${alert.title}`,
+        staged_args:            stagedArgs,
         finding_snapshot: {
-          areaId: alert.category,
-          title: alert.title,
-          severity: alert.severity,
-          status: alert.finding_status,
-          metricKey: alert.metric_key,
+          areaId:      alert.category,
+          title:       alert.title,
+          severity:    alert.severity,
+          status:      alert.finding_status,
+          metricKey:   alert.metric_key,
           metricValue: alert.metric_value,
         },
         source_health_check_id: alert.health_check_id ?? null,
-        status: 'pending',
-        updated_at: new Date().toISOString(),
+        status:                 'pending',
+        updated_at:             new Date().toISOString(),
       })
       .select('*')
       .single()
@@ -196,18 +235,16 @@ export async function stageCriticalAction(supabase, userId, alert) {
       return null
     }
 
-    // Fetch current evidence so we can merge without overwriting rootCause/impact
     const { data: alertRow } = await supabase
       .from('risk_alerts')
       .select('evidence')
       .eq('id', alert.id)
       .single()
 
-    const ACTION_TYPE_LABELS = { ACTION_PLAN: 'Action Plan', EMAIL: 'Email Draft', TEAM_BRIEF: 'Team Brief' }
     const mergedEvidence = {
       ...(alertRow?.evidence ?? {}),
       pending_action_id:    data.id,
-      pending_action_label: ACTION_TYPE_LABELS[data.action_type] ?? 'Action Plan',
+      pending_action_label: buildApproveLabel(artifactType, alert),
     }
 
     await supabase
