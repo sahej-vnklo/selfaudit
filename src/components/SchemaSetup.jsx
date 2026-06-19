@@ -330,16 +330,17 @@ export default function SchemaSetup({ user, onComplete }) {
             <div style={{
               width: '40%', flexShrink: 0,
               display: 'flex', flexDirection: 'column', justifyContent: 'center',
-              padding: '48px 52px',
+              padding: '48px 44px',
             }}>
               <h1 style={{
                 fontFamily: '"Cormorant Garamond", "Times New Roman", serif',
-                fontSize: 'clamp(36px, 4vw, 56px)',
+                fontSize: 'clamp(28px, 2.8vw, 40px)',
                 fontWeight: 500,
-                lineHeight: 1.1,
+                lineHeight: 1.15,
                 letterSpacing: '-0.02em',
                 color: '#ffffff',
                 margin: '0 0 36px',
+                whiteSpace: 'nowrap',
               }}>
                 What type of business<br />are you ?
               </h1>
@@ -368,10 +369,10 @@ export default function SchemaSetup({ user, onComplete }) {
             </div>
 
             {/* Right — 3×5 visible industry grid, padded box */}
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center', padding: '0 48px 0 0', position: 'relative' }}>
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', padding: '0 60px 0 0', position: 'relative' }}>
               <div className="sa-ind-scroll" style={{
                 width: '100%',
-                height: 'calc(100% - 80px)',
+                height: 'calc(100% - 120px)',
                 overflowY: 'scroll',
               }}>
               {catalogLoading ? (
