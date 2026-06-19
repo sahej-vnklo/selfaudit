@@ -2542,12 +2542,12 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                   {/* Tab switcher */}
                   <div style={{ display: 'flex', gap: 4, padding: '20px 28px 0', borderBottom: `1px solid ${G.border}` }}>
                     {[
-                      { id: 'profile',      label: 'Profile' },
-                      { id: 'billing',      label: 'Billing' },
-                      { id: 'history',      label: 'History' },
-                      { id: 'setup',        label: 'Business Setup' },
-                      { id: 'intelligence', label: 'Intelligence' },
-                      { id: 'data',         label: 'Data' },
+                      { id: 'profile',    label: 'Profile' },
+                      { id: 'billing',    label: 'Billing' },
+                      { id: 'history',    label: 'History' },
+                      { id: 'know',       label: 'What We Know' },
+                      { id: 'setup',      label: 'Business Setup' },
+                      { id: 'data',       label: 'Data' },
                     ].map(({ id, label }) => (
                       <button
                         key={id}
@@ -2635,13 +2635,20 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                     </div>
                   )}
 
-                  {/* Intelligence tab — synthesized intelligence profile */}
+                  {/* What We Know tab — business state memory auto-filled from audits */}
+                  {accountTab === 'know' && (
+                    <div style={{ padding: '28px 28px 0' }}>
+                      <BusinessStateCard
+                        user={user}
+                        businessState={businessState}
+                        loading={businessStateLoading}
+                      />
+                    </div>
+                  )}
+
+                  {/* Intelligence tab — hidden from nav, kept for future use */}
                   {accountTab === 'intelligence' && (
                     <div style={{ padding: '28px 28px 0' }}>
-                      <div style={{ marginBottom: 24 }}>
-                        <h2 style={{ fontSize: 22, fontWeight: 700, color: G.text, margin: 0 }}>Intelligence</h2>
-                        <p style={{ fontSize: 14, color: G.textMuted, marginTop: 6 }}>What the system has learned about your business so far.</p>
-                      </div>
                       <IntelligenceBrief
                         user={user}
                         profile={profile}
