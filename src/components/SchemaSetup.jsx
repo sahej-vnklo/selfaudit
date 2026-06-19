@@ -491,7 +491,7 @@ export default function SchemaSetup({ user, onComplete }) {
                   margin: 0,
                   whiteSpace: 'nowrap',
                 }}>
-                  Tell us where<br />to look.
+                  Where does your<br />business live?
                 </h1>
                 {selectedAreas.length > 0 && (
                   <p style={{ marginTop: 20, fontSize: 13, color: 'rgba(255,255,255,0.45)', fontWeight: 500 }}>
