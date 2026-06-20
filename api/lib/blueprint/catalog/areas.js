@@ -358,6 +358,42 @@ export const COMPOUND_RULES_PS = [
   createCompoundRule({ id: 'compound:delivery-revenue-risk', conditions: [{ metricKey: 'projects_at_risk', comparator: 'gt', value: 1 }, { metricKey: 'overdue_milestones', comparator: 'gt', value: 2 }], title: 'Delivery and revenue at risk', summary: 'Multiple at-risk projects and overdue milestones together create significant renewal and billing risk.', recommendation: 'Convene a delivery review and reset client expectations immediately on the most critical engagements.', severity: 'critical' }),
 ]
 
+export const COMPOUND_RULES_MARKETPLACE = [
+  createCompoundRule({ id: 'compound:platform-trust-failure',     conditions: [{ metricKey: 'disputes',           comparator: 'gt', value: 10  }, { metricKey: 'failed_transactions', comparator: 'gt', value: 5   }], title: 'Platform trust failure',              summary: 'High disputes and failed transactions simultaneously — both buyer and seller trust is breaking down.',                                           recommendation: 'Investigate whether the failure pattern concentrates by seller, category, or payment method and fix the root source.',        severity: 'critical' }),
+  createCompoundRule({ id: 'compound:marketplace-liquidity-thin', conditions: [{ metricKey: 'take_rate',          comparator: 'lt', value: 10  }, { metricKey: 'transaction_count',   comparator: 'lt', value: 10  }], title: 'Marketplace liquidity thinning',       summary: 'Low transaction volume and falling take rate together signal supply or demand quality is deteriorating.',                                recommendation: 'Run a supply-side and demand-side health review simultaneously — identify where liquidity is leaking.',                         severity: 'high'     }),
+]
+
+export const COMPOUND_RULES_CONSUMER_APP = [
+  createCompoundRule({ id: 'compound:retention-revenue-spiral', conditions: [{ metricKey: 'd30_retention',  comparator: 'lt', value: 10 }, { metricKey: 'sub_cancellation', comparator: 'gt', value: 10 }], title: 'Retention and revenue spiral',     summary: 'Low D30 retention and rising subscription cancellations mean the app is losing users and paid revenue simultaneously.',          recommendation: 'Fix the core habit loop before pushing paid conversion — retention is the prerequisite to revenue.',                  severity: 'critical' }),
+  createCompoundRule({ id: 'compound:acquisition-spend-wasted', conditions: [{ metricKey: 'cpi',           comparator: 'gt', value: 5  }, { metricKey: 'uninstall_rate',   comparator: 'gt', value: 30 }], title: 'Paid acquisition spend wasted',    summary: 'High CPI and high uninstall rate mean money is being spent acquiring users who immediately leave.',                            recommendation: 'Pause or cut paid spend until first-session experience is fixed — every install at this uninstall rate burns cash.', severity: 'high'     }),
+]
+
+export const COMPOUND_RULES_HOSPITALITY = [
+  createCompoundRule({ id: 'compound:guest-experience-revenue-spiral', conditions: [{ metricKey: 'occupancy_rate',  comparator: 'lt', value: 60  }, { metricKey: 'avg_review_score', comparator: 'lt', value: 4.0 }], title: 'Guest experience destroying occupancy', summary: 'Low occupancy and poor reviews compound — the experience problem is now directly suppressing future bookings.',                    recommendation: 'Fix the top complaint categories this week — they are the cause of the occupancy gap, not a separate issue.', severity: 'critical' }),
+  createCompoundRule({ id: 'compound:cancellation-review-risk',        conditions: [{ metricKey: 'cancellations',   comparator: 'gt', value: 10  }, { metricKey: 'avg_review_score', comparator: 'lt', value: 4.0 }], title: 'Cancellations and review decline',      summary: 'High cancellations and falling reviews together signal a booking channel or expectations problem compounding.',                   recommendation: 'Review the booking sources driving most cancellations and the reviews citing unmet expectations.',                    severity: 'high'     }),
+]
+
+export const COMPOUND_RULES_HEALTHCARE = [
+  createCompoundRule({ id: 'compound:patient-and-revenue-leaking', conditions: [{ metricKey: 'no_show_rate', comparator: 'gt', value: 20 }, { metricKey: 'collection_rate', comparator: 'lt', value: 90 }], title: 'Patient flow and collections both failing', summary: 'High no-show rate and low collection rate are destroying capacity and revenue simultaneously — neither problem is being caught.', recommendation: 'Fix appointment reminders first — reducing no-shows is the single highest-leverage move for both capacity and revenue.', severity: 'critical' }),
+]
+
+export const COMPOUND_RULES_WHOLESALE = [
+  createCompoundRule({ id: 'compound:customer-quality-deterioration', conditions: [{ metricKey: 'account_churn',          comparator: 'gt', value: 2  }, { metricKey: 'days_sales_outstanding', comparator: 'gt', value: 45 }], title: 'Account quality deteriorating',  summary: 'Accounts churning and DSO rising together signal the customer base is deteriorating in both count and payment quality.', recommendation: 'Segment accounts by risk level and address the highest-risk ones before they worsen further.', severity: 'critical' }),
+  createCompoundRule({ id: 'compound:cash-flow-squeeze',             conditions: [{ metricKey: 'overdue_invoices',        comparator: 'gt', value: 3  }, { metricKey: 'days_sales_outstanding', comparator: 'gt', value: 60 }], title: 'Cash flow squeeze',             summary: 'Multiple overdue invoices and DSO above 60 days mean cash conversion is breaking down at a structural level.',          recommendation: 'Run an immediate collections sweep and suspend credit terms for all accounts over 60 days outstanding.',          severity: 'high'     }),
+]
+
+export const COMPOUND_RULES_LOGISTICS = [
+  createCompoundRule({ id: 'compound:fleet-delivery-failure', conditions: [{ metricKey: 'on_time_rate', comparator: 'lt', value: 90 }, { metricKey: 'breakdowns', comparator: 'gt', value: 3 }], title: 'Fleet issues causing delivery failure', summary: 'Breakdowns and on-time delivery failures are compounding — the fleet is the root cause of the service deterioration.', recommendation: 'Prioritise emergency maintenance on the highest-breakdown vehicles before late deliveries trigger customer exits.', severity: 'critical' }),
+]
+
+export const COMPOUND_RULES_CONSTRUCTION = [
+  createCompoundRule({ id: 'compound:pipeline-collapse-and-cash', conditions: [{ metricKey: 'bid_win_rate', comparator: 'lt', value: 20 }, { metricKey: 'runway_months', comparator: 'lt', value: 6 }], title: 'Pipeline collapse with critical runway', summary: 'Low bid win rate and less than 6 months runway together create existential risk — the front-end is failing while cash runs out.', recommendation: 'Prioritise any in-progress bids and reduce non-essential costs immediately — do not wait for results.', severity: 'critical' }),
+]
+
+export const COMPOUND_RULES_REAL_ESTATE = [
+  createCompoundRule({ id: 'compound:vacancy-and-arrears', conditions: [{ metricKey: 'vacancy_days_avg', comparator: 'gt', value: 30 }, { metricKey: 'rent_arrears', comparator: 'gt', value: 3 }], title: 'Vacancy and arrears creating double cash squeeze', summary: 'Long vacancy periods and multiple rent arrears together create a compound income shortfall from both ends of the portfolio.', recommendation: 'Address arrears through formal process and improve vacant unit marketing simultaneously — they share the same urgency.', severity: 'critical' }),
+]
+
 // ─── Extended areas (38 industry-specific) ──────────────────────────────────
 
 export const AREA_PRODUCT_ENGINEERING = createArea({
@@ -396,7 +432,7 @@ export const AREA_PRODUCT_ENGINEERING = createArea({
 export const AREA_PEOPLE_HR = createArea({
   id: 'people-hr',
   label: 'People & HR',
-  industries: ['saas-software', 'professional-services', 'manufacturing', 'consumer-app'],
+  industries: ['saas-software', 'professional-services', 'manufacturing', 'consumer-app', 'retail', 'retail-hospitality', 'hospitality-fb', 'logistics-freight', 'wholesale-distribution', 'construction', 'healthcare', 'education'],
   connectors: ['bamboohr', 'gusto'],
   businessLogic: {
     objective: 'Keep team capacity, retention, and hiring pipeline healthy so people do not become the execution bottleneck.',

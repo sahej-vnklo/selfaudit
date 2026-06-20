@@ -867,6 +867,16 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
   const agentYScrollRef  = useRef(null)
   const agentXFinalRef   = useRef('')  // tracks Agent X full output for history
 
+  // Pick up a probe question dropped into sessionStorage by the cockpit blind-spots card
+  useEffect(() => {
+    if (section !== 'home') return
+    const probe = sessionStorage.getItem('sa_probe_question')
+    if (!probe) return
+    sessionStorage.removeItem('sa_probe_question')
+    setCmdInput(probe)
+    setTimeout(() => document.querySelector('.dash-cmd-input')?.focus(), 80)
+  }, [section])
+
   const name = profile?.name?.trim() || user?.user_metadata?.name?.trim() || ''
   const email = user?.email || ''
   const initials = getInitials(name, email)

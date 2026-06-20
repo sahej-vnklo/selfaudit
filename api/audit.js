@@ -248,7 +248,70 @@ async function fetchSchemaContext(userId) {
     const schema = data.schema
     const lines = []
 
+    // ── Blueprint: industry + selected areas + unit types ─────────────────────
+    const industry      = schema.industryId || schema.industry_id || schema.industry || null
+    const areas         = schema.areas         ?? []
+    const unitTypes     = schema.unitTypes     ?? []
+    const compoundRules = schema.compoundRules ?? []
+
+    if (industry || areas.length || unitTypes.length) {
+      lines.push('BUSINESS BLUEPRINT (how this business is structured — use to frame every question and diagnosis):')
+
+      if (industry) lines.push(`Industry: ${industry}`)
+
+      if (areas.length) {
+        lines.push('')
+        lines.push('Selected business areas:')
+
+        const unitsByArea = {}
+        for (const unit of unitTypes) {
+          for (const areaId of (unit.areas ?? [])) {
+            if (!unitsByArea[areaId]) unitsByArea[areaId] = []
+            unitsByArea[areaId].push(unit)
+          }
+        }
+
+        for (const area of areas) {
+          const objective = area.businessLogic?.objective ?? ''
+          const questions = area.businessLogic?.questions ?? []
+          const units     = unitsByArea[area.id] ?? []
+          const unitDesc  = units.map(u => {
+            const props = (u.properties ?? []).slice(0, 4).map(p => p.key).join(', ')
+            return `${u.label}${props ? ` [${props}]` : ''}`
+          }).join('; ')
+          const areaLines = [`  ${area.label}${objective ? `: ${objective}` : ''}`]
+          if (questions.length) areaLines.push(`    Diagnose: ${questions.join(' | ')}`)
+          if (unitDesc)         areaLines.push(`    Entities: ${unitDesc}`)
+          lines.push(areaLines.join('\n'))
+        }
+      }
+
+      if (compoundRules.length) {
+        lines.push('')
+        lines.push('Cross-area risks to watch:')
+        for (const rule of compoundRules) {
+          lines.push(`  - ${rule.title}: ${rule.summary}`)
+        }
+      }
+
+      lines.push('')
+      lines.push('BLUEPRINT RULES: Ground every question and diagnosis in these areas and entities. Reference real entity names (Deal, Customer, SupportTicket, etc.), not generic terms. When the user describes a problem, map it to the relevant area first.')
+    }
+
+    // ── Area insights (learned from chat, written back via schema patches) ────
+    const areaInsights = schema.areaInsights || {}
+    const insightEntries = Object.entries(areaInsights).filter(([, v]) => v?.note)
+    if (insightEntries.length > 0) {
+      lines.push('')
+      lines.push('AREA INSIGHTS (confirmed by this user in prior conversations):')
+      for (const [areaId, val] of insightEntries) {
+        lines.push(`  ${areaId}: ${val.note}`)
+      }
+    }
+
+    // ── User customisations ───────────────────────────────────────────────────
     if (schema.customBusinessName) {
+      if (lines.length) lines.push('')
       lines.push(`BUSINESS TYPE: ${schema.customBusinessName}`)
       if (schema.customBusinessDescription) {
         lines.push(`Description: ${schema.customBusinessDescription}`)
@@ -273,6 +336,29 @@ async function fetchSchemaContext(userId) {
         lines.push(line)
       }
       lines.push('Use these definitions when auditing — they reflect how this business actually operates.')
+    }
+
+    // ── Probing queue: blind areas with no data yet ───────────────────────────
+    try {
+      const { data: profileRow } = await supabase
+        .from('intelligence_profiles')
+        .select('synthesized_profile')
+        .eq('user_id', userId)
+        .maybeSingle()
+
+      const probingQueue   = profileRow?.synthesized_profile?.probing_queue ?? []
+      const dismissed      = new Set(schema.dismissedBlindAreas ?? [])
+      const activeProbes   = probingQueue.filter(p => !dismissed.has(p.areaId))
+      if (activeProbes.length > 0) {
+        lines.push('')
+        lines.push('BLIND AREAS (no data collected yet — probe these to build coverage):')
+        for (const item of activeProbes.slice(0, 3)) {
+          lines.push(`  ${item.areaLabel}: "${item.question}"`)
+        }
+        lines.push('When conversation allows, ask one of these questions to help the system learn about uncovered areas.')
+      }
+    } catch {
+      // non-blocking
     }
 
     return lines.length > 0 ? lines.join('\n') : ''
@@ -507,6 +593,26 @@ Do NOT open with "How can I help", "What are you working on", or any generic que
   const connectorBlock = connectorContext ? `\n\n---\nCONNECTOR DATA\n${connectorContext}` : ''
   const governanceBlock = governanceContext ? `\n\n---\n${governanceContext}` : ''
   const schemaBlock = schemaContext ? `\n\n---\n${schemaContext}` : ''
+  const schemaPatchInstruction = schemaContext ? `
+
+SCHEMA LEARNING — CRITICAL RULE:
+When the user explicitly corrects or defines something structural about their business (e.g. "we call our deals 'projects'", "we don't track X", "our customers are actually called clients"), you MUST emit a schema patch at the END of your response using this exact format — no exceptions:
+
+<schema_patch>
+{
+  "unitCustomizations": { "UnitId": { "label": "NewName" } },
+  "areaInsights": { "area-id": { "note": "What user told you about how this area works for them" } },
+  "dismissBlindArea": ["area-id"]
+}
+</schema_patch>
+
+Rules:
+- Only emit when the user explicitly tells you something structural. Do NOT infer or guess.
+- Only include the keys that are relevant — omit the rest.
+- unitCustomizations: use the exact unit ID from the blueprint (e.g. "Deal", "Customer") and rename or describe it.
+- areaInsights: store a short factual note about how this business runs that area.
+- dismissBlindArea: use only when the user explicitly says they don't track or operate in that area.
+- The patch block is stripped before the user sees your response. Write naturally — do not announce it.` : ''
   const sessionContinuityBlock = sessionContinuity ? `\n\n---\n${sessionContinuity}` : ''
   const contextPriorityBlock = `
 
@@ -519,7 +625,7 @@ CONTEXT PRIORITY:
 
 If two sources conflict, do not ignore it. Name the contradiction and ask one direct clarifying question.`
 
-  return base + goalBlock + scopeBlock + schemaBlock + intelligenceBriefBlock + businessStateBlock + memoryBlock + patternsBlock + connectorBlock + governanceBlock + sessionContinuityBlock + contextPriorityBlock + openingRule
+  return base + goalBlock + scopeBlock + schemaBlock + schemaPatchInstruction + intelligenceBriefBlock + businessStateBlock + memoryBlock + patternsBlock + connectorBlock + governanceBlock + sessionContinuityBlock + contextPriorityBlock + openingRule
 }
 
 function buildReportPrompt(goalMode) {
@@ -826,6 +932,41 @@ function validateForwardTrajectory(forwardTrajectory, { required = false } = {})
   return issues
 }
 
+// Extract <schema_patch>…</schema_patch> from Claude's response text, apply it,
+// and return the cleaned text (patch block stripped — user never sees it).
+const SCHEMA_PATCH_RE = /<schema_patch>([\s\S]*?)<\/schema_patch>/i
+
+async function applySchemaPatches(text, userId) {
+  if (!userId) return text
+  const match = text.match(SCHEMA_PATCH_RE)
+  if (!match) return text
+
+  const clean = text.replace(SCHEMA_PATCH_RE, '').replace(/\n{3,}/g, '\n\n').trim()
+
+  try {
+    const patch = JSON.parse(match[1].trim())
+    const hasContent = (
+      (patch.unitCustomizations && Object.keys(patch.unitCustomizations).length > 0) ||
+      (patch.areaInsights        && Object.keys(patch.areaInsights).length > 0)        ||
+      (Array.isArray(patch.dismissBlindArea) && patch.dismissBlindArea.length > 0)
+    )
+    if (hasContent) {
+      const origin = process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : 'http://localhost:3000'
+      await fetch(`${origin}/api/schema-setup`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'x-internal-service': 'audit' },
+        body: JSON.stringify({ userId, patch }),
+      }).catch(() => {}) // non-blocking — patch failure must never break the chat response
+    }
+  } catch {
+    // Malformed patch JSON — silently ignore, return clean text
+  }
+
+  return clean
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
@@ -965,7 +1106,8 @@ export default async function handler(req, res) {
       return res.status(200).json({ report })
     }
 
-    return res.status(200).json({ text })
+    const cleanText = await applySchemaPatches(text, userId)
+    return res.status(200).json({ text: cleanText })
   } catch (err) {
     return res.status(500).json({ error: err.message })
   }

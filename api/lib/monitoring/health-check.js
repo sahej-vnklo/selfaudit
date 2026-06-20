@@ -551,6 +551,19 @@ export async function runBusinessHealthCheck(userId) {
     : null
   const schemaVersion = computeSchemaFingerprint(schema)
 
+  // Build a set of selected area IDs from the user's blueprint.
+  // If no schema exists (onboarding not complete), all analyzers run as before.
+  const selectedAreaIds = new Set(
+    (schema?.areas ?? [])
+      .map(a => String(a?.id || a?.areaId || '').toLowerCase())
+      .filter(Boolean)
+  )
+  const hasSchemaAreas = selectedAreaIds.size > 0
+  function areaActive(ids) {
+    if (!hasSchemaAreas) return true
+    return ids.some(id => selectedAreaIds.has(id))
+  }
+
   if (briefRes.status === 'fulfilled' && briefRes.value.error) {
     console.warn('[health-check] brief fetch error:', briefRes.value.error.message)
   }
@@ -577,14 +590,15 @@ export async function runBusinessHealthCheck(userId) {
     }
   } catch { /* non-blocking */ }
 
-  // 7: Run all analyzers
+  // 7: Run analyzers gated by the user's selected blueprint areas.
+  // No schema = backward-compatible: all analyzers run.
   const allRisks = [
-    ...analyzePipelineRisk(normalized),
-    ...analyzeRevenueRisk(brief),
-    ...analyzeCustomerRisk(brain, normalized),
-    ...analyzeExecutionRisk(brain),
-    ...analyzeGoalRisk(brain),
-    ...analyzeOperationalRisk(brain),
+    ...(areaActive(['marketing-sales'])                    ? analyzePipelineRisk(normalized)        : []),
+    ...(areaActive(['finance-accounting'])                 ? analyzeRevenueRisk(brief)              : []),
+    ...(areaActive(['customer-service'])                   ? analyzeCustomerRisk(brain, normalized) : []),
+    ...(areaActive(['management-strategy'])                ? analyzeExecutionRisk(brain)            : []),
+    ...(areaActive(['management-strategy'])                ? analyzeGoalRisk(brain)                 : []),
+    ...(areaActive(['inventory-operations', 'production']) ? analyzeOperationalRisk(brain)          : []),
   ].sort((a, b) => (SEVERITY_ORDER[a.severity] ?? 4) - (SEVERITY_ORDER[b.severity] ?? 4))
 
   const health_score  = scoreFromRisks(allRisks)
@@ -616,6 +630,13 @@ export async function runBusinessHealthCheck(userId) {
   // Gate: skip AI diagnosis when the user has no metrics and no connector data.
   // Without real input, Claude would invent narratives against thin air.
   const deterministicGovernanceAdvice = buildGovernanceAdvice(governanceBase)
+  const blueprintForAI = schema ? {
+    industry:      schema.industryId || schema.industry_id || schema.industry || null,
+    areas:         schema.areas      ?? [],
+    unitTypes:     schema.unitTypes  ?? [],
+    compoundRules: schema.compoundRules ?? [],
+  } : null
+
   const governanceAdvice = (hasMetrics || hasConnectors)
     ? await enrichGovernanceWithAI({
         userId,
@@ -623,6 +644,7 @@ export async function runBusinessHealthCheck(userId) {
         brain,
         intelligenceBrief: brief,
         deterministicAdvice: deterministicGovernanceAdvice,
+        blueprint: blueprintForAI,
       })
     : deterministicGovernanceAdvice
   const governance          = {

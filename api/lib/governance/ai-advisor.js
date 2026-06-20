@@ -30,6 +30,45 @@ function compactObject(value) {
   )
 }
 
+function buildBlueprintContext(blueprint) {
+  if (!blueprint) return null
+
+  const areas     = blueprint.areas     ?? []
+  const unitTypes = blueprint.unitTypes ?? []
+  const compound  = blueprint.compoundRules ?? []
+
+  // Group unit types by area id so we can list them under each area
+  const unitsByArea = {}
+  for (const unit of unitTypes) {
+    for (const areaId of (unit.areas ?? [])) {
+      if (!unitsByArea[areaId]) unitsByArea[areaId] = []
+      unitsByArea[areaId].push(unit)
+    }
+  }
+
+  const areaLines = areas.map(area => {
+    const objective = area.businessLogic?.objective ?? ''
+    const questions = area.businessLogic?.questions ?? []
+    const units     = unitsByArea[area.id] ?? []
+
+    const unitDesc = units.map(u => {
+      const props = (u.properties ?? []).slice(0, 4).map(p => p.key).join(', ')
+      return `${u.label}${props ? ` [${props}]` : ''}`
+    }).join('; ')
+
+    const lines = [`${area.label}: ${objective}`]
+    if (questions.length) lines.push(`  Diagnose: ${questions.join(' | ')}`)
+    if (unitDesc)         lines.push(`  Entities: ${unitDesc}`)
+    return lines.join('\n')
+  })
+
+  const compoundLines = compound.length
+    ? `\nCross-area risks:\n${compound.map(r => `- ${r.title}: ${r.summary}`).join('\n')}`
+    : ''
+
+  return `Industry: ${blueprint.industry ?? 'unknown'}\n\nSelected areas:\n${areaLines.join('\n\n')}${compoundLines}`
+}
+
 function buildSystemPrompt() {
   return `You are TSA — The Self Audit operational strategist. You are a senior operator reviewing governance findings across a business.
 
@@ -42,6 +81,7 @@ Your rules:
 - Preserve the structure you are asked for and output only valid JSON.
 - Areas listed in zero_coverage_areas have NO measured data at all. Do not reference them, do not generate diagnoses or alert_candidates for them, and do not mention them in the summary.
 - Set recurring: true on a diagnosis or alert_candidate when its pattern clearly matches something in repeated_blockers. Set recurring: false otherwise.
+- When business_blueprint is provided, ground every diagnosis in the actual areas and entity types defined there. Reference entities by their real name (e.g. "Deal", "Customer", "SupportTicket") not generic terms. Let the area objectives and diagnostic questions shape the framing of each finding.
 
 Return JSON in this exact shape:
 {
@@ -132,7 +172,7 @@ function buildFindingsByArea(governance) {
     }))
 }
 
-function buildUserMessage({ governance, brain, intelligenceBrief, deterministicAdvice, decisionMemory = [] }) {
+function buildUserMessage({ governance, brain, intelligenceBrief, deterministicAdvice, decisionMemory = [], blueprint = null }) {
   const zeroCoverageAreas = (governance?.areas ?? [])
     .filter((a) => !a.coverage || a.coverage === 0)
     .map((a) => a.areaId)
@@ -176,6 +216,11 @@ function buildUserMessage({ governance, brain, intelligenceBrief, deterministicA
     payload.historical_memory = brain.historical_memory_formatted
   }
 
+  const blueprintContext = buildBlueprintContext(blueprint)
+  if (blueprintContext) {
+    payload.business_blueprint = blueprintContext
+  }
+
   return `Review these governance findings and improve the diagnosis quality without changing the underlying facts or severity.
 
 Rules:
@@ -185,6 +230,7 @@ Rules:
 - If data is thin, say what is likely instead of pretending certainty.
 - Recommended actions should be specific and non-duplicative.
 - Do not generate any diagnoses or alert_candidates for areas listed in zero_coverage_areas — no data was collected for them.
+- If business_blueprint is present: read it first. Let the area objectives and entity types (Deals, Customers, SupportTickets, etc.) shape the language and framing of every diagnosis. Reference the actual entities by name, not generic terms.
 
 Input:
 ${JSON.stringify(payload, null, 2)}`
@@ -301,6 +347,7 @@ export async function enrichGovernanceWithAI({
   brain,
   intelligenceBrief,
   deterministicAdvice,
+  blueprint = null,
 }) {
   const baseAdvice = deterministicAdvice ?? buildGovernanceAdvice(governance)
   const apiKey = process.env.CLAUDE_API_KEY || process.env.VITE_CLAUDE_API_KEY
@@ -334,7 +381,7 @@ export async function enrichGovernanceWithAI({
         system: buildSystemPrompt(),
         messages: [{
           role: 'user',
-          content: buildUserMessage({ governance, brain, intelligenceBrief, deterministicAdvice: baseAdvice, decisionMemory }),
+          content: buildUserMessage({ governance, brain, intelligenceBrief, deterministicAdvice: baseAdvice, decisionMemory, blueprint }),
         }],
       }),
     })

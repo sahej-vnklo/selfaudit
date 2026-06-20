@@ -21,6 +21,81 @@ const CARD = {
   pillBorder:     '#CCCAC5',
 }
 
+// Per-area calibration questions → map to rule IDs so answers go straight into user_rule_overrides
+const AREA_CALIBRATION = {
+  'finance-accounting': [
+    { ruleId: 'finance-accounting:churn-bad',   question: 'What monthly churn % would make you worried?',       unit: '%',      placeholder: '5'   },
+    { ruleId: 'finance-accounting:churn-watch', question: 'What churn % is your early-warning line?',           unit: '%',      placeholder: '2'   },
+  ],
+  'customer-service': [
+    { ruleId: 'customer-service:first-response-bad', question: 'How many hours is too long for a first reply?', unit: 'hrs',    placeholder: '24'  },
+  ],
+  'marketing-sales': [
+    { ruleId: 'marketing-sales:open-deals-bad',     question: 'How few open deals signals a thin pipeline?',    unit: 'deals',  placeholder: '3'   },
+    { ruleId: 'marketing-sales:lead-volume-watch',  question: 'How few new leads per week would concern you?',  unit: 'leads',  placeholder: '10'  },
+  ],
+  'management-strategy': [
+    { ruleId: 'management-strategy:goal-progress-watch',   question: 'What % of goals completed feels problematic?', unit: '%',    placeholder: '60' },
+    { ruleId: 'management-strategy:priority-backlog-bad',  question: 'How many priority tasks piling up is too many?', unit: 'tasks', placeholder: '5' },
+  ],
+  'revenue-sales': [
+    { ruleId: 'revenue-sales:repeat-rate-watch', question: 'What repeat purchase rate below would concern you?', unit: '%',      placeholder: '20'  },
+    { ruleId: 'revenue-sales:refund-rate-watch', question: 'What refund rate % would worry you?',                unit: '%',      placeholder: '5'   },
+  ],
+  'inventory-operations': [
+    { ruleId: 'inventory-operations:stock-days-watch', question: 'How many days of stock left triggers an alert?', unit: 'days', placeholder: '14'  },
+  ],
+  'production': [
+    { ruleId: 'production:uptime-watch', question: 'What machine uptime % below is an early concern?',  unit: '%', placeholder: '85' },
+    { ruleId: 'production:uptime-bad',   question: 'At what uptime % is it a critical problem?',        unit: '%', placeholder: '75' },
+  ],
+  'client-delivery': [
+    { ruleId: 'client-delivery:projects-at-risk-watch', question: 'How many projects at risk before you act?',     unit: 'projects',   placeholder: '1' },
+    { ruleId: 'client-delivery:overdue-watch',          question: 'How many overdue milestones is too many?',       unit: 'milestones', placeholder: '2' },
+  ],
+  'people-hr': [
+    { ruleId: 'people-hr:attrition-watch', question: 'What annual attrition % concerns you?',         unit: '%', placeholder: '10' },
+    { ruleId: 'people-hr:attrition-bad',   question: 'At what attrition % is it a serious problem?',  unit: '%', placeholder: '20' },
+  ],
+  'product-engineering': [
+    { ruleId: 'product-engineering:bugs-watch',   question: 'How many open bugs is too many before you worry?', unit: 'bugs', placeholder: '20'   },
+    { ruleId: 'product-engineering:uptime-bad',   question: 'What uptime % below would be unacceptable?',       unit: '%',    placeholder: '99.5' },
+  ],
+  'hospitality-revenue': [
+    { ruleId: 'hospitality-revenue:occupancy-watch', question: 'What occupancy rate below would worry you?', unit: '%', placeholder: '60' },
+  ],
+  'hospitality-guest': [
+    { ruleId: 'hospitality-guest:review-watch',     question: 'What average review score below is a problem?', unit: '/ 5',       placeholder: '4.0' },
+    { ruleId: 'hospitality-guest:complaints-watch', question: 'How many complaints per period is too many?',   unit: 'complaints', placeholder: '5'   },
+  ],
+  'healthcare-patients': [
+    { ruleId: 'healthcare-patients:no-show-watch', question: 'What no-show rate % would concern you?', unit: '%', placeholder: '10' },
+  ],
+  'healthcare-billing': [
+    { ruleId: 'healthcare-billing:collection-watch', question: 'What collection rate % below would worry you?', unit: '%', placeholder: '90' },
+  ],
+  'logistics-fleet': [
+    { ruleId: 'logistics-fleet:breakdowns-watch', question: 'How many vehicle breakdowns per period is too many?', unit: 'incidents', placeholder: '3' },
+  ],
+  'logistics-shipments': [
+    { ruleId: 'logistics-shipments:on-time-watch', question: 'What on-time delivery rate % below concerns you?', unit: '%',        placeholder: '95' },
+    { ruleId: 'logistics-shipments:failed-watch',  question: 'How many failed deliveries per period is too many?', unit: 'shipments', placeholder: '5' },
+  ],
+  'wholesale-sales': [
+    { ruleId: 'wholesale-sales:account-churn-watch', question: 'How many accounts lost per period would concern you?', unit: 'accounts', placeholder: '2' },
+  ],
+  'wholesale-credit': [
+    { ruleId: 'wholesale-credit:dso-watch', question: 'How many days sales outstanding (DSO) is too long?', unit: 'days', placeholder: '45' },
+  ],
+  'construction-pipeline': [
+    { ruleId: 'construction-pipeline:win-rate-watch', question: 'What bid win rate % below would concern you?', unit: '%', placeholder: '20' },
+  ],
+  'marketplace-transactions': [
+    { ruleId: 'marketplace-transactions:take-rate-watch', question: 'What take rate % below signals a problem?',       unit: '%',            placeholder: '10' },
+    { ruleId: 'marketplace-transactions:failed-tx-watch', question: 'How many failed transactions per period is too many?', unit: 'transactions', placeholder: '5'  },
+  ],
+}
+
 async function getSessionToken() {
   const sb = await initSupabase()
   const { data: { session } } = await sb.auth.getSession()
@@ -187,6 +262,7 @@ export default function SchemaSetup({ user, onComplete }) {
   const [companyName, setCompanyName]           = useState('')
   const [showCustomPanel, setShowCustomPanel]   = useState(false)
   const [customBizDesc, setCustomBizDesc]       = useState('')
+  const [areaCalibrations, setAreaCalibrations] = useState({})
 
   useEffect(() => {
     fetch('/api/catalog')
@@ -273,6 +349,28 @@ export default function SchemaSetup({ user, onComplete }) {
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify({ userId: user.id, customizations: { unitTypes: pendingOverrides } }),
         })
+      }
+
+      // Write any calibration thresholds the user answered during area selection
+      const calibrationEntries = Object.entries(areaCalibrations)
+        .flatMap(([areaId, questions]) =>
+          Object.entries(questions)
+            .map(([ruleId, raw]) => {
+              const value = parseFloat(raw)
+              return !isNaN(value) && value >= 0 ? { ruleId, areaId, value } : null
+            })
+            .filter(Boolean)
+        )
+      if (calibrationEntries.length > 0) {
+        await Promise.allSettled(
+          calibrationEntries.map(({ ruleId, areaId, value }) =>
+            fetch('/api/user-rules', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+              body: JSON.stringify({ userId: user.id, ruleId, areaId, value }),
+            })
+          )
+        )
       }
 
       onComplete()
@@ -539,6 +637,40 @@ export default function SchemaSetup({ user, onComplete }) {
                             }} />
                           </div>
                           <div className="sa-area-desc" style={{ fontSize: 11, color: on ? '#888888' : CARD.body, lineHeight: 1.5, transition: 'color 0.15s' }}>{area.objective}</div>
+
+                          {on && AREA_CALIBRATION[area.id] && (
+                            <div
+                              onClick={e => e.stopPropagation()}
+                              style={{ marginTop: 12, borderTop: '1px solid #2A2A2A', paddingTop: 12 }}
+                            >
+                              {AREA_CALIBRATION[area.id].map(q => (
+                                <div key={q.ruleId} style={{ marginBottom: 10 }}>
+                                  <div style={{ fontSize: 10, color: '#777', marginBottom: 5, lineHeight: 1.4 }}>{q.question}</div>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                    <input
+                                      type="number"
+                                      min="0"
+                                      placeholder={q.placeholder}
+                                      value={areaCalibrations[area.id]?.[q.ruleId] ?? ''}
+                                      onChange={e => setAreaCalibrations(prev => ({
+                                        ...prev,
+                                        [area.id]: { ...(prev[area.id] || {}), [q.ruleId]: e.target.value },
+                                      }))}
+                                      onClick={e => e.stopPropagation()}
+                                      onMouseDown={e => e.stopPropagation()}
+                                      style={{
+                                        width: 70, background: '#1A1A1A', border: '1px solid #333',
+                                        color: '#E8E4DC', padding: '5px 8px', fontSize: 12,
+                                        fontFamily: 'inherit', outline: 'none',
+                                      }}
+                                    />
+                                    <span style={{ fontSize: 11, color: '#555' }}>{q.unit}</span>
+                                  </div>
+                                </div>
+                              ))}
+                              <div style={{ fontSize: 10, color: '#444', marginTop: 2 }}>optional — skip if unsure</div>
+                            </div>
+                          )}
                         </button>
                       )
                     })}

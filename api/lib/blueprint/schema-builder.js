@@ -9,14 +9,31 @@ import {
   COMPOUND_RULES_ECOMMERCE,
   COMPOUND_RULES_MANUFACTURING,
   COMPOUND_RULES_PS,
+  COMPOUND_RULES_MARKETPLACE,
+  COMPOUND_RULES_CONSUMER_APP,
+  COMPOUND_RULES_HOSPITALITY,
+  COMPOUND_RULES_HEALTHCARE,
+  COMPOUND_RULES_WHOLESALE,
+  COMPOUND_RULES_LOGISTICS,
+  COMPOUND_RULES_CONSTRUCTION,
+  COMPOUND_RULES_REAL_ESTATE,
 } from './catalog/index.js'
 import { saveSchema, loadSchema } from './schema-registry.js'
 
 const COMPOUND_RULES_BY_INDUSTRY = {
-  'saas-software':         COMPOUND_RULES_SAAS,
-  'ecommerce-d2c':         COMPOUND_RULES_ECOMMERCE,
-  'manufacturing':         COMPOUND_RULES_MANUFACTURING,
-  'professional-services': COMPOUND_RULES_PS,
+  'saas-software':          COMPOUND_RULES_SAAS,
+  'ecommerce-d2c':          COMPOUND_RULES_ECOMMERCE,
+  'manufacturing':          COMPOUND_RULES_MANUFACTURING,
+  'professional-services':  COMPOUND_RULES_PS,
+  'marketplace':            COMPOUND_RULES_MARKETPLACE,
+  'consumer-app':           COMPOUND_RULES_CONSUMER_APP,
+  'hospitality-fb':         COMPOUND_RULES_HOSPITALITY,
+  'retail-hospitality':     COMPOUND_RULES_HOSPITALITY,
+  'healthcare':             COMPOUND_RULES_HEALTHCARE,
+  'wholesale-distribution': COMPOUND_RULES_WHOLESALE,
+  'logistics-freight':      COMPOUND_RULES_LOGISTICS,
+  'construction':           COMPOUND_RULES_CONSTRUCTION,
+  'real-estate':            COMPOUND_RULES_REAL_ESTATE,
 }
 
 /**

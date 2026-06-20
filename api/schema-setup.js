@@ -80,8 +80,69 @@ function buildAreaSelection(areaIds = [], industryId = 'other') {
 }
 
 export default async function handler(req, res) {
-  if (req.method !== 'GET' && req.method !== 'POST') {
+  if (req.method !== 'GET' && req.method !== 'POST' && req.method !== 'PATCH') {
     return res.status(405).json({ error: 'Method not allowed' })
+  }
+
+  // PATCH — partial schema update from chat (unit label/description, area notes)
+  if (req.method === 'PATCH') {
+    const { userId, patch } = req.body || {}
+    if (!userId) return res.status(400).json({ error: 'Missing userId' })
+    if (!patch || typeof patch !== 'object') return res.status(400).json({ error: 'Missing patch' })
+    // Internal service calls from audit.js are exempt from user token check
+    const isInternal = req.headers['x-internal-service'] === 'audit'
+    if (!isInternal && !await validateUserToken(req, res, userId)) return
+
+    try {
+      const schema = await loadSchema(userId)
+      if (!schema) return res.status(404).json({ error: 'No schema found' })
+
+      let updated = { ...schema }
+
+      // unitCustomizations: { [unitId]: { label?, description? } }
+      if (patch.unitCustomizations && typeof patch.unitCustomizations === 'object') {
+        const existing = updated.customizations?.unitTypes || {}
+        const merged   = { ...existing }
+        for (const [unitId, overrides] of Object.entries(patch.unitCustomizations)) {
+          if (!unitId || typeof overrides !== 'object') continue
+          merged[unitId] = {
+            ...(existing[unitId] || {}),
+            ...(typeof overrides.label       === 'string' ? { label:       overrides.label.slice(0, 80).trim()  } : {}),
+            ...(typeof overrides.description === 'string' ? { description: overrides.description.slice(0, 300).trim() } : {}),
+          }
+        }
+        updated = {
+          ...updated,
+          customizations: { ...(updated.customizations || {}), unitTypes: merged },
+        }
+      }
+
+      // areaInsights: { [areaId]: { note: string } } — stored as area-level notes for probing context
+      if (patch.areaInsights && typeof patch.areaInsights === 'object') {
+        const existingNotes = updated.areaInsights || {}
+        const mergedNotes   = { ...existingNotes }
+        for (const [areaId, val] of Object.entries(patch.areaInsights)) {
+          if (!areaId || typeof val?.note !== 'string') continue
+          mergedNotes[areaId] = { note: val.note.slice(0, 400).trim(), updatedAt: new Date().toISOString() }
+        }
+        updated = { ...updated, areaInsights: mergedNotes }
+      }
+
+      // dismissBlindArea: [areaId] — user said "we don't track this"; remove from probing
+      if (Array.isArray(patch.dismissBlindArea)) {
+        const dismissed = new Set(updated.dismissedBlindAreas || [])
+        for (const id of patch.dismissBlindArea) {
+          if (typeof id === 'string' && id) dismissed.add(id)
+        }
+        updated = { ...updated, dismissedBlindAreas: [...dismissed] }
+      }
+
+      await saveSchema(userId, updated)
+      return res.status(200).json({ ok: true })
+    } catch (err) {
+      console.error('[schema-setup PATCH]', err?.message || err)
+      return res.status(500).json({ error: err?.message || 'Schema patch failed' })
+    }
   }
 
   const userId = req.method === 'GET' ? req.query.userId : req.body?.userId

@@ -72,9 +72,9 @@ export default async function handler(req, res) {
       .order('created_at', { ascending: false })
       .limit(50),
 
-    // Intelligence profile for cross-dept insight + opportunities
+    // Intelligence profile for cross-dept insight + opportunities + probing queue
     sb.from('intelligence_profiles')
-      .select('summary, top_priorities, watchouts, opportunities, repeated_blockers, last_synthesized_at, confidence_level')
+      .select('summary, top_priorities, watchouts, opportunities, repeated_blockers, last_synthesized_at, confidence_level, synthesized_profile')
       .eq('user_id', userId)
       .single(),
 
@@ -121,7 +121,8 @@ export default async function handler(req, res) {
   const hc           = hcRes.status        === 'fulfilled' ? hcRes.value.data            : null
   const snapshots = snapshotsRes.status === 'fulfilled' ? (snapshotsRes.value.data ?? []) : []
   const alerts    = alertsRes.status    === 'fulfilled' ? (alertsRes.value.data ?? [])    : []
-  const intel     = profileRes.status   === 'fulfilled' ? profileRes.value.data           : null
+  const intelRaw  = profileRes.status   === 'fulfilled' ? profileRes.value.data           : null
+  const intel     = intelRaw
   const brief     = briefRes.status     === 'fulfilled' ? briefRes.value.data              : null
   const state     = stateRes.status     === 'fulfilled' ? stateRes.value.data              : null
   const overrideRows      = overridesRes.status    === 'fulfilled' ? (overridesRes.value.data ?? []) : []
@@ -329,6 +330,11 @@ export default async function handler(req, res) {
     || intel?.summary
     || null
 
+  // Probing queue — blind areas the system hasn't seen data for yet
+  const rawProbingQueue  = intel?.synthesized_profile?.probing_queue ?? []
+  const dismissedAreas   = new Set(schemaData?.dismissedBlindAreas ?? [])
+  const probing_queue    = rawProbingQueue.filter(p => !dismissedAreas.has(p.areaId))
+
   return res.status(200).json({
     company_name:         companyName,
     selected_areas:       selectedAreas,
@@ -352,5 +358,6 @@ export default async function handler(req, res) {
     has_data:             !!hc,
     comm_channels:        commChannels,
     saved_comm_pref:      savedCommPref,
+    probing_queue,
   })
 }

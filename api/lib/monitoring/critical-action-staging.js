@@ -47,8 +47,16 @@ function buildAlertPrompt(artifactType, alert, intel) {
     ? `Observed metric: ${alert.metric_key} = ${alert.metric_value ?? 'unknown'}`
     : ''
 
+  const bp = intel?.synthesized_profile?.blueprint
+  const blueprintLines = bp ? [
+    `Industry: ${bp.industry || 'unknown'}`,
+    bp.areas?.length  ? `Business areas: ${bp.areas.map(a => a.label).filter(Boolean).join(', ')}` : '',
+    bp.units?.length  ? `Key entities: ${bp.units.map(u => u.label || u.id).filter(Boolean).join(', ')}` : '',
+  ].filter(Boolean).join('\n') : ''
+
   const intelContext = intel ? `
 BUSINESS CONTEXT (use to make content specific to this business):
+${blueprintLines}
 Overall status: ${intel.summary || 'not available'}
 Known recurring blockers: ${(intel.repeated_blockers || []).join(', ') || 'none identified'}
 Current priorities: ${(intel.top_priorities || []).join(', ') || 'none identified'}
@@ -146,7 +154,7 @@ async function generateHealthCheckArtifact(supabase, userId, alert, artifactType
   try {
     const { data } = await supabase
       .from('intelligence_profiles')
-      .select('summary, repeated_blockers, top_priorities, watchouts')
+      .select('summary, repeated_blockers, top_priorities, watchouts, synthesized_profile')
       .eq('user_id', userId)
       .order('last_synthesized_at', { ascending: false })
       .limit(1)

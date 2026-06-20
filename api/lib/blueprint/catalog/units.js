@@ -185,7 +185,7 @@ const EcomCustomer = createUnitType({
   id: 'ecom-customer',
   label: 'Customer',
   description: 'A shopper with purchase history and retention signals',
-  areas: ['customer-experience', 'revenue-sales'],
+  areas: ['customer-service', 'revenue-sales'],
   interfaces: ['observable', 'actionable', 'sourced'],
   properties: [
     createPropertyDef({ key: 'ltv',             label: 'LTV',              type: 'currency' }),
@@ -241,7 +241,7 @@ const RawMaterial = createUnitType({
   id: 'raw-material',
   label: 'Raw Material',
   description: 'An input material consumed in production',
-  areas: ['inventory-supply-chain'],
+  areas: ['inventory-operations'],
   interfaces: ['observable', 'sourced'],
   properties: [
     createPropertyDef({ key: 'stock_qty',      label: 'Stock quantity',   type: 'number' }),
@@ -258,7 +258,7 @@ const ManufacturingOrder = createUnitType({
   id: 'manufacturing-order',
   label: 'Production Order',
   description: 'A scheduled production run for a specific product',
-  areas: ['production', 'orders-sales'],
+  areas: ['production'],
   interfaces: ['observable', 'actionable', 'financial'],
   properties: [
     createPropertyDef({ key: 'planned_qty',   label: 'Planned qty',   type: 'number' }),
@@ -276,7 +276,7 @@ const MfgSupplier = createUnitType({
   id: 'mfg-supplier',
   label: 'Supplier',
   description: 'A vendor providing raw materials or components',
-  areas: ['inventory-supply-chain'],
+  areas: ['inventory-operations'],
   interfaces: ['observable', 'sourced'],
   properties: [
     createPropertyDef({ key: 'lead_time_days',  label: 'Lead time (days)',  type: 'number' }),
@@ -315,7 +315,7 @@ const PSClient = createUnitType({
   id: 'ps-client',
   label: 'Client',
   description: 'A client organisation with active or historical engagements',
-  areas: ['client-delivery', 'business-development'],
+  areas: ['client-delivery'],
   interfaces: ['observable', 'actionable', 'sourced'],
   properties: [
     createPropertyDef({ key: 'arr',              label: 'ARR',               type: 'currency' }),
@@ -333,7 +333,7 @@ const Consultant = createUnitType({
   id: 'consultant',
   label: 'Consultant',
   description: 'A billable team member with utilisation and delivery metrics',
-  areas: ['resource-management'],
+  areas: ['client-delivery'],
   interfaces: ['observable', 'actionable'],
   properties: [
     createPropertyDef({ key: 'utilisation_pct',  label: 'Utilisation (%)',   type: 'number' }),

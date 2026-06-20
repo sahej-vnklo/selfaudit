@@ -26,7 +26,9 @@ function compareCondition(value, comparator, threshold) {
 // Evaluate compound rules from the schema (or fall back to SaaS defaults).
 // Compound rules are cross-area signals that fire when two metrics breach simultaneously.
 function evaluateCompoundRules(compoundRules, combinedMetrics) {
-  const rules = compoundRules?.length ? compoundRules : COMPOUND_RULES_SAAS
+  // undefined = no schema at all → fall back to SaaS defaults
+  // [] = schema exists but this industry has no rules yet → use empty, don't apply wrong-industry rules
+  const rules = compoundRules === undefined ? COMPOUND_RULES_SAAS : (compoundRules ?? [])
 
   return rules
     .filter((rule) =>

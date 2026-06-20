@@ -670,6 +670,44 @@ export default function CockpitSection({ user, navigateSection }) {
             </div>
           </button>
 
+          {/* Blind spots probing card */}
+          {(data.probing_queue || []).length > 0 && (
+            <div style={{ background: 'var(--d-surface)', border: `1px solid ${C.amber}33`, borderRadius: 10, padding: '14px 16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={C.amber} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.amber }}>Blind spots</span>
+                <span style={{ fontSize: 11, color: C.textFaint, marginLeft: 'auto' }}>{data.probing_queue.length} area{data.probing_queue.length !== 1 ? 's' : ''}</span>
+              </div>
+              <div style={{ fontSize: 12, color: C.textMuted, lineHeight: 1.5, marginBottom: 10 }}>
+                The system has no data for these areas yet. Click to answer.
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {data.probing_queue.slice(0, 3).map((item) => (
+                  <button
+                    key={item.areaId}
+                    type="button"
+                    onClick={() => {
+                      sessionStorage.setItem('sa_probe_question', item.question)
+                      navigateSection?.('home')
+                    }}
+                    style={{
+                      background: C.amberBg,
+                      border: `1px solid ${C.amber}44`,
+                      borderRadius: 7,
+                      padding: '8px 10px',
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      width: '100%',
+                    }}
+                  >
+                    <div style={{ fontSize: 10, fontWeight: 600, color: C.amberText, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 3 }}>{item.areaLabel}</div>
+                    <div style={{ fontSize: 12, color: C.text, lineHeight: 1.4 }}>{item.question}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
         </div>
       </div>
     </div>

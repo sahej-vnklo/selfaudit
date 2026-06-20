@@ -1,4 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
+import { loadSchema } from '../blueprint/schema-registry.js'
+import { AREA_CATALOG } from '../blueprint/catalog/index.js'
 
 function getSupabase() {
   return createClient(
@@ -276,6 +278,8 @@ export async function synthesizeUserIntelligence(userId, options = {}) {
     previousProfileResult,
     existingPrefsResult,
     connectorSnapshotResult,
+    schemaResult,
+    areaSnapshotsResult,
   ] = await Promise.all([
     supabase
       .from('reports')
@@ -320,6 +324,13 @@ export async function synthesizeUserIntelligence(userId, options = {}) {
       .select('providers, fetched_at')
       .eq('user_id', userId)
       .maybeSingle(),
+    loadSchema(userId).catch(() => null),
+    supabase
+      .from('area_metric_snapshots')
+      .select('area')
+      .eq('user_id', userId)
+      .order('captured_at', { ascending: false })
+      .limit(500),
   ])
 
   if (reportsResult.error)         console.warn('[synthesize] reports fetch error:', reportsResult.error.message)
@@ -336,6 +347,32 @@ export async function synthesizeUserIntelligence(userId, options = {}) {
   const previousProfile = previousProfileResult.data ?? null
   const existingPrefs   = existingPrefsResult.data   ?? null
   const connectorSnapshot = connectorSnapshotResult.data ?? null
+  const schema          = schemaResult               ?? null
+
+  // Build a coverage map: areaId → true/false based on whether any metric snapshots exist for that area.
+  // This tells us which schema areas are "blind" (no data logged yet) vs live.
+  const areaSnapshotRows = areaSnapshotsResult?.data ?? []
+  const areasWithData = new Set(areaSnapshotRows.map(r => r.area).filter(Boolean))
+  const schemaCoverage = (schema?.areas ?? []).map(area => ({
+    id:       area.id || area.areaId,
+    label:    area.label || area.name || area.id,
+    hasData:  areasWithData.has(area.id || area.areaId),
+  }))
+  const blindAreas = schemaCoverage.filter(a => !a.hasData)
+  const liveAreas  = schemaCoverage.filter(a =>  a.hasData)
+
+  // Build a probing queue from blind areas — max 5 questions to serve via chat/dashboard.
+  // Prioritise areas with more diagnostic questions (more instrumented = more important to probe).
+  const probingQueue = blindAreas
+    .map(area => {
+      const catalogArea = AREA_CATALOG[area.id]
+      const questions   = catalogArea?.businessLogic?.questions ?? []
+      return questions.length > 0
+        ? { areaId: area.id, areaLabel: area.label, question: questions[0] }
+        : null
+    })
+    .filter(Boolean)
+    .slice(0, 5)
 
   const reportData = extractFromReports(reports)
   const memoryData = extractFromMemory(memoryRows)
@@ -349,7 +386,12 @@ export async function synthesizeUserIntelligence(userId, options = {}) {
   const goalScore = typeof businessState?.goal_score === 'number'
     ? businessState.goal_score
     : (reportData.latestGoalScore ?? 0)
+  const blueprintAreaLabels = (schema?.areas ?? [])
+    .map(a => a.label || a.name || a.id || a.areaId)
+    .filter(Boolean)
+
   const focusAreas = uniq([
+    ...blueprintAreaLabels,
     ...(profile.domain ? [profile.domain] : []),
     ...combinedDomains,
     ...(activeGoal ? ['Goal Progress'] : []),
@@ -401,6 +443,17 @@ export async function synthesizeUserIntelligence(userId, options = {}) {
     },
     synthesized_profile: {
       business_state: businessState || null,
+      blueprint: schema ? {
+        industry: schema.industryId || schema.industry_id || schema.industry || null,
+        areas: (schema.areas ?? []).map(a => ({ id: a.id || a.areaId, label: a.label || a.name || a.id })),
+        units: schema.units ?? [],
+      } : null,
+      area_coverage: {
+        live:  liveAreas.map(a => a.id),
+        blind: blindAreas.map(a => a.id),
+        detail: schemaCoverage,
+      },
+      probing_queue: probingQueue,
       top_headlines: reportData.topHeadlines,
       focus_areas: focusAreas,
       domains_audited: combinedDomains,
