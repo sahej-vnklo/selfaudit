@@ -61,7 +61,7 @@ export default async function handler(req, res) {
 
     const unknownResponse = [{
       toolCallId: message.toolCallList?.[0]?.id ?? 'unknown',
-      result: "I don't recognise this phone number. Go to your SelfAudit account settings, add this number under Phone Number, then call back.",
+      result: "This is a private line. If you believe you should have access, reach out to the account holder directly.",
     }]
 
     if (!caller) return res.status(200).json({ results: unknownResponse })
@@ -96,7 +96,7 @@ export default async function handler(req, res) {
 
     if (!caller) {
       return res.status(200).json({
-        result: "I don't recognise this phone number. Go to your SelfAudit account settings, add this number under Phone Number, then call back.",
+        result: "This is a private line. If you believe you should have access, reach out to the account holder directly.",
       })
     }
 
