@@ -119,8 +119,26 @@ async function loadSimulationContext(supabase, userId) {
 
   let normalized = null
   try {
-    const connectorData = await fetchAllConnectedData(userId)
-    if (Object.keys(connectorData).length) normalized = normalizeConnectorData(connectorData)
+    // Prefer the daily connector snapshot (written at 5:30 AM by sync-connectors cron)
+    // to avoid redundant live Composio calls on every simulation run.
+    const { data: snapshot } = await supabase
+      .from('connector_snapshots')
+      .select('normalized_data, fetched_at')
+      .eq('user_id', userId)
+      .maybeSingle()
+
+    const snapshotAgeMs = snapshot?.fetched_at
+      ? Date.now() - new Date(snapshot.fetched_at).getTime()
+      : Infinity
+    const STALE_THRESHOLD_MS = 24 * 60 * 60 * 1000
+
+    if (snapshot?.normalized_data && snapshotAgeMs < STALE_THRESHOLD_MS) {
+      normalized = snapshot.normalized_data
+    } else {
+      // Snapshot missing or older than 24h — fall back to live fetch
+      const connectorData = await fetchAllConnectedData(userId)
+      if (Object.keys(connectorData).length) normalized = normalizeConnectorData(connectorData)
+    }
   } catch {
     normalized = null
   }
