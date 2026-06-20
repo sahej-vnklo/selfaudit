@@ -6726,6 +6726,15 @@ function AccountSection({ user, profile, onProfileChange, onSignOut, dataOnly = 
           onEscape={() => setPhoneEditing(false)}
           onEnter={savePhone}
         />
+        {profile?.phone ? (
+          <div style={{ fontSize: 12, color: G.textFaint, marginTop: 6, paddingLeft: 2 }}>
+            Voice access enabled — call your SelfAudit number from this phone to get live business updates.
+          </div>
+        ) : (
+          <div style={{ fontSize: 12, color: G.textFaint, marginTop: 6, paddingLeft: 2 }}>
+            Add your number to enable voice access — call SelfAudit anytime for live updates and approvals.
+          </div>
+        )}
       </div>
 
       <div style={{ marginTop: 24 }}>
