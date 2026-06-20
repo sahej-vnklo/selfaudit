@@ -537,21 +537,16 @@ export default function SimulationPage({ userId }) {
   // ── Render ──
   return (
     <div style={st.page}>
-      <div style={st.header}>
-        <div style={st.eyebrow}>Scenario Simulator</div>
-        <h1 style={st.title}>Stress-test your business before it happens.</h1>
-        <p style={st.sub}>
-          Shift a metric, see the cascade. Every scenario runs against your live daily snapshot.
-        </p>
-      </div>
-
       {dataLoading ? (
         <div style={st.status}>Loading your business canvas…</div>
       ) : dataError ? (
         <div style={st.status}>{dataError}</div>
       ) : !hasSchema || areas.length === 0 ? (
         <div style={{ ...st.status, ...st.statusCard }}>
-          Complete onboarding to configure your business areas before running simulations.
+          <div style={st.eyebrow}>Simulate</div>
+          <p style={{ margin: '8px 0 0', color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.6 }}>
+            Complete onboarding to configure your business areas before running simulations.
+          </p>
         </div>
       ) : (
         <div style={st.main}>
@@ -649,11 +644,8 @@ export default function SimulationPage({ userId }) {
 
 // ── Styles ─────────────────────────────────────────────────────────────────────
 const st = {
-  page: { display: 'grid', gap: 20 },
-  header: { display: 'grid', gap: 8 },
+  page: {},
   eyebrow: { fontSize: 12, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--accent-text)' },
-  title: { margin: 0, fontSize: '1.8rem', lineHeight: 1.1, color: 'var(--text)' },
-  sub: { margin: 0, color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: 1.6, maxWidth: 680 },
 
   status: { padding: '14px 0', color: 'var(--text-secondary)', fontSize: 14 },
   statusCard: {
@@ -667,7 +659,7 @@ const st = {
     borderRadius: 18,
     border: '1px solid var(--border)',
     overflow: 'hidden',
-    height: 540,
+    height: 'calc(100vh - 120px)',
     boxShadow: '0 18px 40px -28px rgba(0,0,0,0.35)',
   },
 

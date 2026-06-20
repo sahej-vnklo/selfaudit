@@ -2534,9 +2534,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
               )}
               {section === 'connectors' && <ConnectorsSection user={user} />}
               {section === 'simulate'  && (
-                <PageShell title="Simulate" sub="Run a what-if scenario against the current governance engine without changing live data.">
-                  <SimulationPage userId={user?.id} />
-                </PageShell>
+                <SimulationPage userId={user?.id} />
               )}
               {section === 'agent'      && <AgentSection user={user} />}
               {section === 'logic'      && <LogicPage user={user} />}
