@@ -1,6 +1,10 @@
 // Vapi voice webhook — handles all inbound Vapi events.
-// Called by Vapi for every function-call during a phone conversation.
 // Identity is established via the caller's phone number (registered in Account settings).
+//
+// Vapi sends two tool-call formats depending on model/version:
+//   - type: 'tool-calls'    → toolCallList array, response: { results: [{ toolCallId, result }] }
+//   - type: 'function-call' → functionCall object,  response: { result }
+// We handle both.
 
 import { identifyCaller } from './lib/identify-caller.js'
 import { getBusinessOverview } from './lib/tools/get-overview.js'
@@ -14,6 +18,28 @@ function validateSecret(req) {
   return req.headers['x-vapi-secret'] === secret
 }
 
+async function runTool(toolName, params, userId) {
+  switch (toolName) {
+    case 'get_business_overview':
+      return getBusinessOverview(userId)
+
+    case 'list_pending_actions':
+      return listPendingActions(userId)
+
+    case 'approve_action':
+      return executeVoiceAction(userId, params.action_id, 'approve')
+
+    case 'dismiss_action':
+      return executeVoiceAction(userId, params.action_id, 'dismiss')
+
+    case 'ask_question':
+      return askQuestion(userId, params.question)
+
+    default:
+      return "I didn't understand that request. You can ask for a business overview, list your pending actions, or ask me a specific question about your business."
+  }
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
@@ -25,59 +51,69 @@ export default async function handler(req, res) {
   const message = req.body?.message
   if (!message) return res.status(400).json({ error: 'Missing message' })
 
-  // Vapi sends many event types — we only handle function-call
-  if (message.type !== 'function-call') {
-    return res.status(200).json({})
+  const type = message.type
+
+  // ── New Vapi format: tool-calls (array) ──────────────────────────────────────
+  if (type === 'tool-calls') {
+    const phoneNumber = message.call?.customer?.number
+    const caller = await identifyCaller(phoneNumber).catch(() => null)
+
+    const unknownResponse = [{
+      toolCallId: message.toolCallList?.[0]?.id ?? 'unknown',
+      result: "I don't recognise this phone number. Go to your SelfAudit account settings, add this number under Phone Number, then call back.",
+    }]
+
+    if (!caller) return res.status(200).json({ results: unknownResponse })
+
+    const userId = caller.id
+    const calls = message.toolCallList ?? []
+
+    const results = await Promise.all(calls.map(async (call) => {
+      const toolName = call.function?.name
+      const params = (() => {
+        try { return JSON.parse(call.function?.arguments ?? '{}') } catch { return {} }
+      })()
+
+      console.log(`[vapi/webhook] tool-calls user=${userId} tool=${toolName}`)
+
+      try {
+        const result = await runTool(toolName, params, userId)
+        return { toolCallId: call.id, result }
+      } catch (err) {
+        console.error(`[vapi/webhook] error tool=${toolName} user=${userId}:`, err.message)
+        return { toolCallId: call.id, result: "Something went wrong. Please try again or check your dashboard." }
+      }
+    }))
+
+    return res.status(200).json({ results })
   }
 
-  const phoneNumber = message.call?.customer?.number
-  const caller = await identifyCaller(phoneNumber).catch(() => null)
+  // ── Legacy Vapi format: function-call (single) ────────────────────────────────
+  if (type === 'function-call') {
+    const phoneNumber = message.call?.customer?.number
+    const caller = await identifyCaller(phoneNumber).catch(() => null)
 
-  if (!caller) {
-    return res.status(200).json({
-      result: "I don't recognise this phone number. To use SelfAudit by voice, go to your account settings and add this number under Phone Number. Then call back and I'll know it's you.",
-    })
-  }
-
-  const userId = caller.id
-  const toolName = message.functionCall?.name
-  const params = message.functionCall?.parameters ?? {}
-
-  console.log(`[vapi/webhook] user=${userId} tool=${toolName}`)
-
-  try {
-    let result
-
-    switch (toolName) {
-      case 'get_business_overview':
-        result = await getBusinessOverview(userId)
-        break
-
-      case 'list_pending_actions':
-        result = await listPendingActions(userId)
-        break
-
-      case 'approve_action':
-        result = await executeVoiceAction(userId, params.action_id, 'approve')
-        break
-
-      case 'dismiss_action':
-        result = await executeVoiceAction(userId, params.action_id, 'dismiss')
-        break
-
-      case 'ask_question':
-        result = await askQuestion(userId, params.question)
-        break
-
-      default:
-        result = "I didn't understand that request. You can ask for a business overview, list your pending actions, or ask me a specific question about your business."
+    if (!caller) {
+      return res.status(200).json({
+        result: "I don't recognise this phone number. Go to your SelfAudit account settings, add this number under Phone Number, then call back.",
+      })
     }
 
-    return res.status(200).json({ result })
-  } catch (err) {
-    console.error(`[vapi/webhook] error tool=${toolName} user=${userId}:`, err.message)
-    return res.status(200).json({
-      result: "Something went wrong on my end. Please try again in a moment, or check your dashboard.",
-    })
+    const userId = caller.id
+    const toolName = message.functionCall?.name
+    const params = message.functionCall?.parameters ?? {}
+
+    console.log(`[vapi/webhook] function-call user=${userId} tool=${toolName}`)
+
+    try {
+      const result = await runTool(toolName, params, userId)
+      return res.status(200).json({ result })
+    } catch (err) {
+      console.error(`[vapi/webhook] error tool=${toolName} user=${userId}:`, err.message)
+      return res.status(200).json({ result: "Something went wrong. Please try again or check your dashboard." })
+    }
   }
+
+  // All other event types (status-update, end-of-call-report, etc.) — ignore
+  return res.status(200).json({})
 }
