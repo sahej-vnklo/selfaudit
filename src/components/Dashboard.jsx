@@ -2054,13 +2054,6 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
               </svg>
               <span className="navlabel">Command</span>
             </button>
-            <button className={`dash-navbtn${section === 'connectors' ? ' active' : ''}`} data-label="Connectors" aria-label="Connectors" type="button" onClick={() => navigateSection('connectors')}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="6" cy="6" r="2.4"/><circle cx="18" cy="6" r="2.4"/><circle cx="12" cy="18" r="2.4"/>
-                <path d="M6 8.4v3a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-3M12 13.4v2.2"/>
-              </svg>
-              <span className="navlabel">Connectors</span>
-            </button>
             <button className={`dash-navbtn${section === 'simulate' ? ' active' : ''}`} data-label="Simulate" aria-label="Simulate" type="button" onClick={() => navigateSection('simulate')}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/>
@@ -2080,6 +2073,13 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
           </nav>
 
           <div className="dash-side-foot">
+            <button className={`dash-navbtn${section === 'connectors' ? ' active' : ''}`} data-label="Connectors" aria-label="Connectors" type="button" onClick={() => navigateSection('connectors')}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="6" cy="6" r="2.4"/><circle cx="18" cy="6" r="2.4"/><circle cx="12" cy="18" r="2.4"/>
+                <path d="M6 8.4v3a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-3M12 13.4v2.2"/>
+              </svg>
+              <span className="navlabel">Connectors</span>
+            </button>
             <button className={`dash-navbtn${section === 'account' ? ' active' : ''}`} data-label="Account" aria-label="Account" type="button" onClick={() => navigateSection('account')}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="8" r="3.6"/><path d="M5 20a7 7 0 0 1 14 0"/>
