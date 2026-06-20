@@ -11,6 +11,7 @@ import { getBusinessOverview } from './lib/tools/get-overview.js'
 import { listPendingActions } from './lib/tools/list-actions.js'
 import { executeVoiceAction } from './lib/tools/execute-action.js'
 import { askQuestion } from './lib/tools/ask-question.js'
+import { handleEndOfCall } from './lib/handle-end-of-call.js'
 
 function validateSecret(req) {
   const secret = process.env.VAPI_WEBHOOK_SECRET
@@ -114,6 +115,12 @@ export default async function handler(req, res) {
     }
   }
 
-  // All other event types (status-update, end-of-call-report, etc.) — ignore
+  // End of call — save summary to dashboard + brain (fire and forget)
+  if (type === 'end-of-call-report') {
+    handleEndOfCall(message).catch(() => {})
+    return res.status(200).json({})
+  }
+
+  // All other event types (status-update, etc.) — ignore
   return res.status(200).json({})
 }

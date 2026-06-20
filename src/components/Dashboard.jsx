@@ -837,6 +837,8 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
   const [completingOnboarding, setCompletingOnboarding] = useState(false)
   const [hasSchema, setHasSchema] = useState(null)
   const [actionFeed, setActionFeed] = useState({ pending: [], history: [] })
+  const [voiceCalls, setVoiceCalls] = useState([])
+  const [voiceCallsLoading, setVoiceCallsLoading] = useState(false)
   const [actionFeedLoaded, setActionFeedLoaded] = useState(false)
   const pendingAuditRef        = useRef(null)
   const pendingAuditParamsRef  = useRef(null)
@@ -1040,6 +1042,29 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
       cancelled = true
     }
   }, [user])
+
+  useEffect(() => {
+    if (!user?.id || accountTab !== 'voice') return
+    let cancelled = false
+    setVoiceCallsLoading(true)
+    ;(async () => {
+      try {
+        const sb = await initSupabase()
+        const { data: { session } } = await sb.auth.getSession()
+        const res = await fetch(`/api/voice-calls?userId=${user.id}`, {
+          headers: { Authorization: `Bearer ${session?.access_token}` },
+        })
+        if (!res.ok) throw new Error('Failed to load calls')
+        const { calls } = await res.json()
+        if (!cancelled) setVoiceCalls(calls ?? [])
+      } catch {
+        if (!cancelled) setVoiceCalls([])
+      } finally {
+        if (!cancelled) setVoiceCallsLoading(false)
+      }
+    })()
+    return () => { cancelled = true }
+  }, [user, accountTab])
 
   useEffect(() => {
     if (!user?.id) return
@@ -2553,6 +2578,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                       { id: 'profile',    label: 'Profile' },
                       { id: 'billing',    label: 'Billing' },
                       { id: 'history',    label: 'History' },
+                      { id: 'voice',      label: 'Voice Calls' },
                       { id: 'know',       label: 'What We Know' },
                       { id: 'setup',      label: 'Business Setup' },
                       { id: 'data',       label: 'Data' },
@@ -2629,6 +2655,94 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                         <p style={{ fontSize: 14, color: G.textMuted, marginTop: 6 }}>Your saved audit reports.</p>
                       </div>
                       {reportsLoading ? <ReportSkeletons /> : reports.length > 0 ? <ReportList reports={reports} userId={user?.id} /> : <EmptyReports onStartAudit={startAudit} />}
+                    </div>
+                  )}
+
+                  {/* Voice Calls tab — call history from Vapi */}
+                  {accountTab === 'voice' && (
+                    <div style={{ padding: '28px 28px 0' }}>
+                      <div style={{ marginBottom: 24 }}>
+                        <h2 style={{ fontSize: 22, fontWeight: 700, color: G.text, margin: 0 }}>Voice Calls</h2>
+                        <p style={{ fontSize: 14, color: G.textMuted, marginTop: 6 }}>
+                          Calls made to your SelfAudit advisor at <strong style={{ color: G.text }}>+1 (434) 373-8238</strong>.
+                        </p>
+                      </div>
+                      {voiceCallsLoading ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                          {[0,1,2].map((i) => (
+                            <div key={i} style={{ height: 96, borderRadius: 10, background: G.surface2, animation: 'pulse 1.5s ease-in-out infinite' }} />
+                          ))}
+                        </div>
+                      ) : voiceCalls.length === 0 ? (
+                        <div style={{ textAlign: 'center', padding: '48px 0', color: G.textMuted }}>
+                          <div style={{ fontSize: 40, marginBottom: 12 }}>📞</div>
+                          <p style={{ fontSize: 15, fontWeight: 600, color: G.text, margin: '0 0 6px' }}>No calls yet</p>
+                          <p style={{ fontSize: 13, margin: 0 }}>Call <strong style={{ color: G.text }}>+1 (434) 373-8238</strong> from your registered number to get a live business update.</p>
+                        </div>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                          {voiceCalls.map((call) => {
+                            const date = call.started_at ? new Date(call.started_at) : null
+                            const mins = call.duration_seconds ? Math.floor(call.duration_seconds / 60) : 0
+                            const secs = call.duration_seconds ? call.duration_seconds % 60 : 0
+                            const duration = call.duration_seconds
+                              ? `${mins}m ${secs}s`
+                              : 'Unknown duration'
+                            const approvedCount = call.actions_approved ?? 0
+                            const dismissedCount = call.actions_dismissed ?? 0
+                            const topics = Array.isArray(call.topics) ? call.topics : []
+                            const decisions = Array.isArray(call.decisions) ? call.decisions : []
+                            return (
+                              <div key={call.id} style={{
+                                background: G.surface2,
+                                border: `1px solid ${G.border}`,
+                                borderRadius: 10,
+                                padding: '18px 20px',
+                              }}>
+                                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: call.summary ? 10 : 0 }}>
+                                  <div style={{ flex: 1, minWidth: 0 }}>
+                                    <p style={{ fontSize: 14, fontWeight: 600, color: G.text, margin: '0 0 4px', lineHeight: 1.4 }}>
+                                      {call.headline || 'Voice call'}
+                                    </p>
+                                    <p style={{ fontSize: 12, color: G.textMuted, margin: 0 }}>
+                                      {date ? date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'} · {duration}
+                                    </p>
+                                  </div>
+                                  <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+                                    {approvedCount > 0 && (
+                                      <span style={{ fontSize: 11, fontWeight: 600, background: G.accentLight, color: G.accentText, borderRadius: 20, padding: '2px 10px' }}>
+                                        {approvedCount} approved
+                                      </span>
+                                    )}
+                                    {dismissedCount > 0 && (
+                                      <span style={{ fontSize: 11, fontWeight: 600, background: G.surface3, color: G.textMuted, borderRadius: 20, padding: '2px 10px' }}>
+                                        {dismissedCount} dismissed
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                                {call.summary && (
+                                  <p style={{ fontSize: 13, color: G.textMuted, margin: '0 0 10px', lineHeight: 1.5 }}>{call.summary}</p>
+                                )}
+                                {topics.length > 0 && (
+                                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: decisions.length ? 8 : 0 }}>
+                                    {topics.map((t, i) => (
+                                      <span key={i} style={{ fontSize: 11, background: G.surface3, color: G.textMuted, borderRadius: 20, padding: '2px 10px' }}>{t}</span>
+                                    ))}
+                                  </div>
+                                )}
+                                {decisions.length > 0 && (
+                                  <div>
+                                    {decisions.map((d, i) => (
+                                      <p key={i} style={{ fontSize: 12, color: G.text, margin: i === 0 ? 0 : '4px 0 0', paddingLeft: 10, borderLeft: `2px solid ${G.accent}` }}>{d}</p>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            )
+                          })}
+                        </div>
+                      )}
                     </div>
                   )}
 
