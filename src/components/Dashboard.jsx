@@ -6122,7 +6122,7 @@ function ConnectorsSection({ user }) {
                         })
                         const data = await response.json().catch(() => ({}))
                         if (response.ok && data?.url) { window.location.href = data.url; return }
-                        setToast(data?.error || `Could not connect ${connector.name}.`)
+                        setToast(data?.detail || data?.error || `Could not connect ${connector.name}.`)
                       }}
                     >
                       +

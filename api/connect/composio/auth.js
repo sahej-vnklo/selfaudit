@@ -64,6 +64,6 @@ export default async function handler(req, res) {
     return res.status(200).json({ url: composioUrl })
   } catch (err) {
     console.error(`[composio/auth] ${provider} link failed:`, err.message)
-    return res.status(500).json({ error: 'Failed to generate connection link' })
+    return res.status(500).json({ error: 'Failed to generate connection link', detail: err.message })
   }
 }
