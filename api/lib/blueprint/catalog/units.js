@@ -6,7 +6,7 @@ const Customer = createUnitType({
   id: 'customer',
   label: 'Customer',
   description: 'A subscribing company or individual generating recurring revenue',
-  areas: ['customer-service', 'finance-accounting'],
+  areas: ['customer-service'],
   interfaces: ['observable', 'actionable', 'sourced', 'linked'],
   properties: [
     createPropertyDef({ key: 'plan',         label: 'Plan',          type: 'string' }),
@@ -126,6 +126,223 @@ const DecisionSaaS = createUnitType({
   ],
 })
 
+// ─── SaaS: Product & Engineering ─────────────────────────────────────────────
+
+const Feature = createUnitType({
+  id: 'feature',
+  label: 'Feature',
+  description: 'A product feature in development or shipped to production',
+  areas: ['product-engineering'],
+  interfaces: ['observable', 'actionable'],
+  properties: [
+    createPropertyDef({ key: 'status',     label: 'Status',       type: 'enum', enumValues: ['backlog', 'in_progress', 'shipped', 'rolled_back'] }),
+    createPropertyDef({ key: 'priority',   label: 'Priority',     type: 'enum', enumValues: ['p0', 'p1', 'p2', 'p3'] }),
+    createPropertyDef({ key: 'area',       label: 'Product area', type: 'string' }),
+    createPropertyDef({ key: 'shipped_at', label: 'Shipped at',   type: 'date' }),
+  ],
+  links: [],
+})
+
+const Bug = createUnitType({
+  id: 'bug',
+  label: 'Bug',
+  description: 'A reported defect or regression in the product',
+  areas: ['product-engineering'],
+  interfaces: ['observable', 'actionable'],
+  properties: [
+    createPropertyDef({ key: 'severity',   label: 'Severity',  type: 'enum', enumValues: ['p0', 'p1', 'p2', 'p3'] }),
+    createPropertyDef({ key: 'status',     label: 'Status',    type: 'enum', enumValues: ['open', 'in_progress', 'resolved', 'wont_fix'] }),
+    createPropertyDef({ key: 'days_open',  label: 'Days open', type: 'number' }),
+    createPropertyDef({ key: 'regression', label: 'Regression', type: 'boolean' }),
+  ],
+  links: [
+    createLinkDef({ id: 'bug-on-feature', label: 'On feature', toUnitTypeId: 'feature', cardinality: 'many-to-one' }),
+  ],
+})
+
+const Deployment = createUnitType({
+  id: 'deployment',
+  label: 'Deployment',
+  description: 'A code release deployed to an environment',
+  areas: ['product-engineering'],
+  interfaces: ['observable', 'sourced'],
+  properties: [
+    createPropertyDef({ key: 'environment',    label: 'Environment',       type: 'enum', enumValues: ['production', 'staging', 'development'] }),
+    createPropertyDef({ key: 'status',         label: 'Status',            type: 'enum', enumValues: ['success', 'failed', 'rolled_back'] }),
+    createPropertyDef({ key: 'change_failure', label: 'Change failure',    type: 'boolean' }),
+    createPropertyDef({ key: 'deploy_mins',    label: 'Deploy time (min)', type: 'number' }),
+  ],
+  links: [],
+})
+
+const Incident = createUnitType({
+  id: 'incident',
+  label: 'Incident',
+  description: 'A production outage or service degradation event',
+  areas: ['product-engineering'],
+  interfaces: ['observable', 'actionable'],
+  properties: [
+    createPropertyDef({ key: 'severity',        label: 'Severity',        type: 'enum', enumValues: ['p0', 'p1', 'p2', 'p3'] }),
+    createPropertyDef({ key: 'duration_mins',   label: 'Duration (min)',  type: 'number' }),
+    createPropertyDef({ key: 'mttr_mins',       label: 'MTTR (min)',      type: 'number' }),
+    createPropertyDef({ key: 'resolved',        label: 'Resolved',        type: 'boolean' }),
+    createPropertyDef({ key: 'customer_impact', label: 'Customer impact', type: 'boolean' }),
+  ],
+  links: [
+    createLinkDef({ id: 'incident-triggered-by-deployment', label: 'Triggered by', toUnitTypeId: 'deployment', cardinality: 'many-to-one' }),
+  ],
+})
+
+// ─── SaaS: People & HR ───────────────────────────────────────────────────────
+
+const Employee = createUnitType({
+  id: 'employee',
+  label: 'Employee',
+  description: 'A full-time or part-time employee tracked across the employment lifecycle',
+  areas: ['people-hr'],
+  interfaces: ['observable', 'actionable'],
+  properties: [
+    createPropertyDef({ key: 'department',    label: 'Department',  type: 'string' }),
+    createPropertyDef({ key: 'role',          label: 'Role',        type: 'string' }),
+    createPropertyDef({ key: 'status',        label: 'Status',      type: 'enum', enumValues: ['active', 'on_leave', 'probation', 'terminated'] }),
+    createPropertyDef({ key: 'tenure_months', label: 'Tenure (mo)', type: 'number' }),
+    createPropertyDef({ key: 'start_date',    label: 'Start date',  type: 'date' }),
+  ],
+  links: [],
+})
+
+const JobOpening = createUnitType({
+  id: 'job-opening',
+  label: 'Job Opening',
+  description: 'An open role being actively recruited for',
+  areas: ['people-hr'],
+  interfaces: ['observable', 'actionable'],
+  properties: [
+    createPropertyDef({ key: 'role',         label: 'Role',         type: 'string' }),
+    createPropertyDef({ key: 'department',   label: 'Department',   type: 'string' }),
+    createPropertyDef({ key: 'status',       label: 'Status',       type: 'enum', enumValues: ['open', 'interviewing', 'offer_made', 'filled', 'cancelled'] }),
+    createPropertyDef({ key: 'days_open',    label: 'Days open',    type: 'number' }),
+    createPropertyDef({ key: 'target_start', label: 'Target start', type: 'date' }),
+  ],
+  links: [],
+})
+
+const PerformanceReview = createUnitType({
+  id: 'performance-review',
+  label: 'Performance Review',
+  description: 'A formal performance evaluation for an employee',
+  areas: ['people-hr'],
+  interfaces: ['observable', 'actionable'],
+  properties: [
+    createPropertyDef({ key: 'rating',      label: 'Rating',        type: 'enum', enumValues: ['exceeds', 'meets', 'below', 'pip'] }),
+    createPropertyDef({ key: 'period',      label: 'Review period', type: 'string' }),
+    createPropertyDef({ key: 'completed',   label: 'Completed',     type: 'boolean' }),
+    createPropertyDef({ key: 'department',  label: 'Department',    type: 'string' }),
+  ],
+  links: [
+    createLinkDef({ id: 'review-for-employee', label: 'For employee', toUnitTypeId: 'employee', cardinality: 'many-to-one' }),
+  ],
+})
+
+// ─── SaaS: Finance & Accounting ──────────────────────────────────────────────
+
+const SaaSInvoice = createUnitType({
+  id: 'saas-invoice',
+  label: 'Invoice',
+  description: 'A subscription or service invoice raised to a customer',
+  areas: ['finance-accounting'],
+  interfaces: ['observable', 'financial'],
+  properties: [
+    createPropertyDef({ key: 'amount',          label: 'Amount',         type: 'currency' }),
+    createPropertyDef({ key: 'status',          label: 'Status',         type: 'enum', enumValues: ['draft', 'sent', 'paid', 'overdue', 'disputed', 'written_off'] }),
+    createPropertyDef({ key: 'days_overdue',    label: 'Days overdue',   type: 'number' }),
+    createPropertyDef({ key: 'payment_method',  label: 'Payment method', type: 'enum', enumValues: ['card', 'bank_transfer', 'direct_debit', 'other'] }),
+  ],
+  links: [
+    createLinkDef({ id: 'saas-invoice-to-customer', label: 'Billed to', toUnitTypeId: 'customer', cardinality: 'many-to-one' }),
+  ],
+})
+
+const Expense = createUnitType({
+  id: 'expense',
+  label: 'Expense',
+  description: 'A company operating expense or cost item',
+  areas: ['finance-accounting'],
+  interfaces: ['observable', 'financial'],
+  properties: [
+    createPropertyDef({ key: 'category',  label: 'Category', type: 'enum', enumValues: ['payroll', 'software', 'marketing', 'travel', 'office', 'cloud_infra', 'other'] }),
+    createPropertyDef({ key: 'amount',    label: 'Amount',   type: 'currency' }),
+    createPropertyDef({ key: 'approved',  label: 'Approved', type: 'boolean' }),
+    createPropertyDef({ key: 'recurring', label: 'Recurring', type: 'boolean' }),
+    createPropertyDef({ key: 'period',    label: 'Period',   type: 'string' }),
+  ],
+  links: [],
+})
+
+const Budget = createUnitType({
+  id: 'budget',
+  label: 'Budget',
+  description: 'A financial budget allocation for a department or initiative',
+  areas: ['finance-accounting'],
+  interfaces: ['observable', 'actionable'],
+  properties: [
+    createPropertyDef({ key: 'department',       label: 'Department', type: 'string' }),
+    createPropertyDef({ key: 'allocated_amount', label: 'Allocated',  type: 'currency' }),
+    createPropertyDef({ key: 'spent_amount',     label: 'Spent',      type: 'currency' }),
+    createPropertyDef({ key: 'period',           label: 'Period',     type: 'string' }),
+    createPropertyDef({ key: 'over_budget',      label: 'Over budget', type: 'boolean' }),
+  ],
+  links: [],
+})
+
+const Vendor = createUnitType({
+  id: 'vendor',
+  label: 'Vendor',
+  description: 'An external supplier or service provider the company pays',
+  areas: ['finance-accounting'],
+  interfaces: ['observable', 'actionable'],
+  properties: [
+    createPropertyDef({ key: 'category',      label: 'Category',      type: 'string' }),
+    createPropertyDef({ key: 'monthly_spend', label: 'Monthly spend', type: 'currency' }),
+    createPropertyDef({ key: 'contract_end',  label: 'Contract end',  type: 'date' }),
+    createPropertyDef({ key: 'active',        label: 'Active',        type: 'boolean' }),
+  ],
+  links: [],
+})
+
+// ─── SaaS: Customer Service (extended) ───────────────────────────────────────
+
+const Agent = createUnitType({
+  id: 'agent',
+  label: 'Agent',
+  description: 'A customer support agent handling tickets and interactions',
+  areas: ['customer-service'],
+  interfaces: ['observable', 'actionable'],
+  properties: [
+    createPropertyDef({ key: 'tier',               label: 'Tier',               type: 'enum', enumValues: ['tier_1', 'tier_2', 'tier_3', 'manager'] }),
+    createPropertyDef({ key: 'tickets_open',       label: 'Open tickets',       type: 'number' }),
+    createPropertyDef({ key: 'avg_resolution_hrs', label: 'Avg resolution (hrs)', type: 'number' }),
+    createPropertyDef({ key: 'csat_score',         label: 'CSAT score',         type: 'number' }),
+    createPropertyDef({ key: 'utilisation_pct',    label: 'Utilisation (%)',    type: 'number' }),
+  ],
+  links: [],
+})
+
+const SupportChannel = createUnitType({
+  id: 'support-channel',
+  label: 'Channel',
+  description: 'A support channel through which customers reach the team',
+  areas: ['customer-service'],
+  interfaces: ['observable'],
+  properties: [
+    createPropertyDef({ key: 'type',                   label: 'Channel type',           type: 'enum', enumValues: ['email', 'live_chat', 'phone', 'social', 'in_app', 'community'] }),
+    createPropertyDef({ key: 'ticket_volume',          label: 'Ticket volume',          type: 'number' }),
+    createPropertyDef({ key: 'avg_first_response_hrs', label: 'Avg first response (hrs)', type: 'number' }),
+    createPropertyDef({ key: 'sla_breach_rate',        label: 'SLA breach rate (%)',    type: 'number' }),
+  ],
+  links: [],
+})
+
 // ─── E-commerce / D2C ─────────────────────────────────────────────────────────
 
 const Order = createUnitType({
@@ -185,7 +402,7 @@ const EcomCustomer = createUnitType({
   id: 'ecom-customer',
   label: 'Customer',
   description: 'A shopper with purchase history and retention signals',
-  areas: ['customer-service', 'revenue-sales'],
+  areas: ['revenue-sales'],
   interfaces: ['observable', 'actionable', 'sourced'],
   properties: [
     createPropertyDef({ key: 'ltv',             label: 'LTV',              type: 'currency' }),
@@ -1057,7 +1274,7 @@ const ComplianceFiling = createUnitType({
 // ─── Exports ──────────────────────────────────────────────────────────────────
 
 export const UNIT_TYPE_CATALOG = {
-  // SaaS
+  // SaaS — core
   'customer':         Customer,
   'support-ticket':   SupportTicket,
   'deal':             Deal,
@@ -1065,6 +1282,23 @@ export const UNIT_TYPE_CATALOG = {
   'goal':             GoalSaaS,
   'team-member':      TeamMember,
   'decision':         DecisionSaaS,
+  // SaaS — product & engineering
+  'feature':            Feature,
+  'bug':                Bug,
+  'deployment':         Deployment,
+  'incident':           Incident,
+  // SaaS — people & HR
+  'employee':           Employee,
+  'job-opening':        JobOpening,
+  'performance-review': PerformanceReview,
+  // SaaS — finance & accounting
+  'saas-invoice':       SaaSInvoice,
+  'expense':            Expense,
+  'budget':             Budget,
+  'vendor':             Vendor,
+  // SaaS — customer service (extended)
+  'agent':              Agent,
+  'support-channel':    SupportChannel,
   // E-commerce
   'order':            Order,
   'sku':              SKU,

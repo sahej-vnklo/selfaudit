@@ -6,7 +6,20 @@ export const INDUSTRY_CATALOG = {
     label: 'Software / SaaS',
     description: 'Subscription or software product sold online.',
     defaultAreas: ['product-engineering', 'customer-service', 'marketing-sales', 'finance-accounting', 'management-strategy'],
-    defaultUnitTypes: ['customer', 'support-ticket', 'deal', 'lead', 'goal', 'team-member', 'decision'],
+    defaultUnitTypes: [
+      // product & engineering
+      'feature', 'bug', 'deployment', 'incident',
+      // customer service
+      'customer', 'support-ticket', 'agent', 'support-channel',
+      // marketing & sales
+      'deal', 'lead',
+      // finance & accounting
+      'saas-invoice', 'expense', 'budget', 'vendor',
+      // management & strategy
+      'goal', 'team-member', 'decision',
+      // people & HR (optional area — units show if user adds it)
+      'employee', 'job-opening', 'performance-review',
+    ],
   }),
 
   'ecommerce-d2c': createIndustry({
