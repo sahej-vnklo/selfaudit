@@ -418,7 +418,7 @@ export default function SimulationPage({ userId }) {
   const [metricValues, setMetricValues] = useState({})
 
   const [messages, setMessages] = useState([
-    { role: 'ai', text: 'Run a scenario to see cascade effects live across your canvas.' },
+    { role: 'ai', text: 'This is your what-if engine.\n\nShift any metric and every connected area updates instantly — based on your actual business logic, not a generic model.\n\nPick a scenario below or type your own: "What if churn hits 8%?" or "What if pipeline drops 30%?"' },
   ])
   const [input, setInput] = useState('')
   const [isRunning, setIsRunning] = useState(false)
