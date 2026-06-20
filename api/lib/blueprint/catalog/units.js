@@ -400,9 +400,9 @@ const Supplier = createUnitType({
 
 const EcomCustomer = createUnitType({
   id: 'ecom-customer',
-  label: 'Customer',
+  label: 'Shopper',
   description: 'A shopper with purchase history and retention signals',
-  areas: ['revenue-sales'],
+  areas: ['revenue-sales', 'customer-service'],
   interfaces: ['observable', 'actionable', 'sourced'],
   properties: [
     createPropertyDef({ key: 'ltv',             label: 'LTV',              type: 'currency' }),
@@ -491,7 +491,7 @@ const ManufacturingOrder = createUnitType({
 
 const MfgSupplier = createUnitType({
   id: 'mfg-supplier',
-  label: 'Supplier',
+  label: 'Manufacturer',
   description: 'A vendor providing raw materials or components',
   areas: ['inventory-operations'],
   interfaces: ['observable', 'sourced'],
@@ -565,9 +565,9 @@ const Consultant = createUnitType({
 
 const Invoice = createUnitType({
   id: 'invoice',
-  label: 'Invoice',
-  description: 'A billable amount owed by a client',
-  areas: ['revenue-billing'],
+  label: 'Project Invoice',
+  description: 'A billable amount owed by a client for a completed project or milestone',
+  areas: ['client-delivery', 'finance-accounting'],
   interfaces: ['observable', 'sourced', 'financial'],
   properties: [
     createPropertyDef({ key: 'days_outstanding', label: 'Days outstanding',  type: 'number' }),
@@ -708,6 +708,22 @@ const Experiment = createUnitType({
     createPropertyDef({ key: 'stage',     label: 'Stage',    type: 'enum', enumValues: ['hypothesis', 'running', 'completed', 'failed'] }),
     createPropertyDef({ key: 'advanced',  label: 'Advanced', type: 'boolean' }),
     createPropertyDef({ key: 'cost',      label: 'Cost',     type: 'currency' }),
+  ],
+  links: [],
+})
+
+const ResearchGrant = createUnitType({
+  id: 'research-grant',
+  label: 'Research Grant',
+  description: 'A funding grant supporting an R&D programme or experiment pipeline',
+  areas: ['rd-pipeline'],
+  interfaces: ['observable', 'financial'],
+  properties: [
+    createPropertyDef({ key: 'funder',       label: 'Funder',        type: 'string' }),
+    createPropertyDef({ key: 'amount',       label: 'Grant amount',  type: 'currency' }),
+    createPropertyDef({ key: 'status',       label: 'Status',        type: 'enum', enumValues: ['applied', 'awarded', 'active', 'closed', 'rejected'] }),
+    createPropertyDef({ key: 'expiry_date',  label: 'Expiry date',   type: 'date' }),
+    createPropertyDef({ key: 'burn_rate',    label: 'Burn rate',     type: 'currency' }),
   ],
   links: [],
 })
@@ -1271,6 +1287,413 @@ const ComplianceFiling = createUnitType({
   links: [],
 })
 
+// ─── Real Estate ─────────────────────────────────────────────────────────────
+
+const Property = createUnitType({
+  id: 'property',
+  label: 'Property',
+  description: 'A physical property asset — residential, commercial, or industrial',
+  areas: ['real-estate-portfolio'],
+  interfaces: ['observable', 'actionable', 'financial'],
+  properties: [
+    createPropertyDef({ key: 'property_type', label: 'Type',           type: 'enum', enumValues: ['residential', 'commercial', 'industrial', 'mixed_use', 'land'] }),
+    createPropertyDef({ key: 'status',        label: 'Status',         type: 'enum', enumValues: ['vacant', 'leased', 'for_sale', 'under_renovation', 'sold'] }),
+    createPropertyDef({ key: 'current_value', label: 'Current value',  type: 'currency' }),
+    createPropertyDef({ key: 'gross_yield',   label: 'Gross yield (%)', type: 'number' }),
+  ],
+  links: [],
+})
+
+const Listing = createUnitType({
+  id: 'listing',
+  label: 'Listing',
+  description: 'A property listed for sale or rent on the market',
+  areas: ['real-estate-portfolio'],
+  interfaces: ['observable', 'actionable'],
+  properties: [
+    createPropertyDef({ key: 'list_price',    label: 'List price',       type: 'currency' }),
+    createPropertyDef({ key: 'days_on_market', label: 'Days on market',  type: 'number' }),
+    createPropertyDef({ key: 'status',        label: 'Status',           type: 'enum', enumValues: ['active', 'under_contract', 'sold', 'leased', 'withdrawn'] }),
+    createPropertyDef({ key: 'enquiries',     label: 'Enquiries',        type: 'number' }),
+  ],
+  links: [
+    createLinkDef({ id: 'listing-for-property', label: 'For property', toUnitTypeId: 'property', cardinality: 'many-to-one' }),
+  ],
+})
+
+const Tenant = createUnitType({
+  id: 'tenant',
+  label: 'Tenant',
+  description: 'A current or prospective occupant under a lease agreement',
+  areas: ['real-estate-portfolio'],
+  interfaces: ['observable', 'actionable'],
+  properties: [
+    createPropertyDef({ key: 'monthly_rent',      label: 'Monthly rent',     type: 'currency' }),
+    createPropertyDef({ key: 'lease_end',          label: 'Lease end',        type: 'date' }),
+    createPropertyDef({ key: 'rent_in_arrears',    label: 'Rent in arrears',  type: 'boolean' }),
+    createPropertyDef({ key: 'renewal_likely',     label: 'Renewal likely',   type: 'boolean' }),
+  ],
+  links: [
+    createLinkDef({ id: 'tenant-at-property', label: 'At property', toUnitTypeId: 'property', cardinality: 'many-to-one' }),
+  ],
+})
+
+// ─── Consumer App (extended) ──────────────────────────────────────────────────
+
+const AppSession = createUnitType({
+  id: 'app-session',
+  label: 'Session',
+  description: 'A single user session within the app with engagement depth signals',
+  areas: ['app-engagement'],
+  interfaces: ['observable', 'sourced'],
+  properties: [
+    createPropertyDef({ key: 'duration_mins',  label: 'Duration (min)', type: 'number' }),
+    createPropertyDef({ key: 'screens_visited', label: 'Screens visited', type: 'number' }),
+    createPropertyDef({ key: 'action_taken',   label: 'Action completed', type: 'boolean' }),
+    createPropertyDef({ key: 'channel',        label: 'Entry channel', type: 'enum', enumValues: ['organic', 'push', 'email', 'paid', 'referral'] }),
+  ],
+  links: [
+    createLinkDef({ id: 'session-by-user', label: 'By user', toUnitTypeId: 'app-user', cardinality: 'many-to-one' }),
+  ],
+})
+
+const AppSubscription = createUnitType({
+  id: 'app-subscription',
+  label: 'Subscription',
+  description: 'A recurring in-app subscription or paid tier',
+  areas: ['app-monetisation'],
+  interfaces: ['observable', 'financial'],
+  properties: [
+    createPropertyDef({ key: 'plan',          label: 'Plan',         type: 'string' }),
+    createPropertyDef({ key: 'status',        label: 'Status',       type: 'enum', enumValues: ['active', 'cancelled', 'paused', 'past_due', 'trialing'] }),
+    createPropertyDef({ key: 'mrr',           label: 'MRR',          type: 'currency' }),
+    createPropertyDef({ key: 'billing_cycle', label: 'Billing cycle', type: 'enum', enumValues: ['monthly', 'annual', 'lifetime'] }),
+  ],
+  links: [
+    createLinkDef({ id: 'subscription-by-user', label: 'By user', toUnitTypeId: 'app-user', cardinality: 'many-to-one' }),
+  ],
+})
+
+// ─── Logistics & Freight (extended) ──────────────────────────────────────────
+
+const Driver = createUnitType({
+  id: 'driver',
+  label: 'Driver',
+  description: 'A driver or rider responsible for completing deliveries',
+  areas: ['logistics-fleet'],
+  interfaces: ['observable', 'actionable'],
+  properties: [
+    createPropertyDef({ key: 'status',           label: 'Status',             type: 'enum', enumValues: ['active', 'on_leave', 'suspended', 'offboarded'] }),
+    createPropertyDef({ key: 'trips_completed',  label: 'Trips completed',    type: 'number' }),
+    createPropertyDef({ key: 'on_time_rate',     label: 'On-time rate (%)',   type: 'number' }),
+    createPropertyDef({ key: 'safety_incidents', label: 'Safety incidents',   type: 'number' }),
+  ],
+  links: [],
+})
+
+const MaintenanceEvent = createUnitType({
+  id: 'maintenance-event',
+  label: 'Maintenance Event',
+  description: 'A scheduled or unscheduled maintenance activity on a fleet vehicle',
+  areas: ['logistics-fleet'],
+  interfaces: ['observable', 'actionable'],
+  properties: [
+    createPropertyDef({ key: 'type',       label: 'Type',           type: 'enum', enumValues: ['scheduled', 'breakdown', 'inspection', 'repair'] }),
+    createPropertyDef({ key: 'cost',       label: 'Cost',           type: 'currency' }),
+    createPropertyDef({ key: 'duration_hrs', label: 'Duration (hrs)', type: 'number' }),
+    createPropertyDef({ key: 'completed',  label: 'Completed',      type: 'boolean' }),
+  ],
+  links: [
+    createLinkDef({ id: 'maintenance-on-vehicle', label: 'On vehicle', toUnitTypeId: 'vehicle', cardinality: 'many-to-one' }),
+  ],
+})
+
+// ─── Wholesale / Distribution (extended) ─────────────────────────────────────
+
+const WholesaleInvoice = createUnitType({
+  id: 'wholesale-invoice',
+  label: 'Invoice',
+  description: 'A B2B invoice raised to a wholesale account, with overdue tracking',
+  areas: ['wholesale-credit'],
+  interfaces: ['observable', 'financial'],
+  properties: [
+    createPropertyDef({ key: 'amount',       label: 'Amount',       type: 'currency' }),
+    createPropertyDef({ key: 'overdue',      label: 'Overdue',      type: 'boolean' }),
+    createPropertyDef({ key: 'days_overdue', label: 'Days overdue', type: 'number' }),
+    createPropertyDef({ key: 'disputed',     label: 'Disputed',     type: 'boolean' }),
+  ],
+  links: [
+    createLinkDef({ id: 'wholesale-invoice-from-account', label: 'From account', toUnitTypeId: 'wholesale-account', cardinality: 'many-to-one' }),
+  ],
+})
+
+// ─── Healthcare / Wellness (extended) ────────────────────────────────────────
+
+const Patient = createUnitType({
+  id: 'patient',
+  label: 'Patient',
+  description: 'An active or former patient across the care relationship lifecycle',
+  areas: ['healthcare-patients'],
+  interfaces: ['observable', 'actionable'],
+  properties: [
+    createPropertyDef({ key: 'status',                label: 'Status',           type: 'enum', enumValues: ['active', 'discharged', 'referred_out', 'lost_to_followup'] }),
+    createPropertyDef({ key: 'first_visit',           label: 'First visit',      type: 'date' }),
+    createPropertyDef({ key: 'appointments_completed', label: 'Appts completed', type: 'number' }),
+    createPropertyDef({ key: 'high_risk',             label: 'High risk',        type: 'boolean' }),
+  ],
+  links: [],
+})
+
+const HealthcareClaim = createUnitType({
+  id: 'healthcare-claim',
+  label: 'Insurance Claim',
+  description: 'A claim submitted to an insurance payer for a delivered service',
+  areas: ['healthcare-billing'],
+  interfaces: ['observable', 'financial'],
+  properties: [
+    createPropertyDef({ key: 'payer',        label: 'Payer',           type: 'string' }),
+    createPropertyDef({ key: 'amount',       label: 'Claim amount',    type: 'currency' }),
+    createPropertyDef({ key: 'status',       label: 'Status',          type: 'enum', enumValues: ['submitted', 'approved', 'denied', 'pending', 'appealed'] }),
+    createPropertyDef({ key: 'days_pending', label: 'Days pending',    type: 'number' }),
+  ],
+  links: [],
+})
+
+// ─── Construction (extended) ─────────────────────────────────────────────────
+
+const ConstructionClient = createUnitType({
+  id: 'construction-client',
+  label: 'Client',
+  description: 'A current or prospective client for construction services',
+  areas: ['construction-pipeline'],
+  interfaces: ['observable', 'actionable'],
+  properties: [
+    createPropertyDef({ key: 'relationship_stage', label: 'Stage',        type: 'enum', enumValues: ['prospect', 'qualified', 'active', 'past', 'lost'] }),
+    createPropertyDef({ key: 'projects_won',       label: 'Projects won', type: 'number' }),
+    createPropertyDef({ key: 'total_contract_value', label: 'Total contract value', type: 'currency' }),
+    createPropertyDef({ key: 'last_contact',       label: 'Last contact', type: 'date' }),
+  ],
+  links: [],
+})
+
+const Proposal = createUnitType({
+  id: 'proposal',
+  label: 'Proposal',
+  description: 'A formal project proposal or tender submitted to a client',
+  areas: ['construction-pipeline'],
+  interfaces: ['observable', 'actionable', 'financial'],
+  properties: [
+    createPropertyDef({ key: 'value',       label: 'Proposal value', type: 'currency' }),
+    createPropertyDef({ key: 'status',      label: 'Status',         type: 'enum', enumValues: ['draft', 'submitted', 'under_review', 'accepted', 'rejected', 'expired'] }),
+    createPropertyDef({ key: 'submitted_at', label: 'Submitted',     type: 'date' }),
+    createPropertyDef({ key: 'decision_due', label: 'Decision due',  type: 'date' }),
+  ],
+  links: [
+    createLinkDef({ id: 'proposal-for-client', label: 'For client', toUnitTypeId: 'construction-client', cardinality: 'many-to-one' }),
+  ],
+})
+
+// ─── Agriculture (extended) ───────────────────────────────────────────────────
+
+const Field = createUnitType({
+  id: 'field',
+  label: 'Field',
+  description: 'A cultivated land plot or growing area with crop and soil signals',
+  areas: ['agriculture-production', 'agriculture-inputs'],
+  interfaces: ['observable', 'sourced'],
+  properties: [
+    createPropertyDef({ key: 'area_hectares', label: 'Area (hectares)', type: 'number' }),
+    createPropertyDef({ key: 'crop_type',     label: 'Crop type',       type: 'string' }),
+    createPropertyDef({ key: 'soil_health',   label: 'Soil health',     type: 'enum', enumValues: ['excellent', 'good', 'fair', 'poor'] }),
+    createPropertyDef({ key: 'irrigated',     label: 'Irrigated',       type: 'boolean' }),
+  ],
+  links: [],
+})
+
+const FarmEquipment = createUnitType({
+  id: 'farm-equipment',
+  label: 'Equipment',
+  description: 'A farm machinery or equipment asset with maintenance and uptime tracking',
+  areas: ['agriculture-inputs'],
+  interfaces: ['observable', 'actionable'],
+  properties: [
+    createPropertyDef({ key: 'equipment_type',   label: 'Type',              type: 'enum', enumValues: ['tractor', 'harvester', 'irrigation', 'sprayer', 'other'] }),
+    createPropertyDef({ key: 'status',           label: 'Status',            type: 'enum', enumValues: ['operational', 'in_maintenance', 'breakdown', 'retired'] }),
+    createPropertyDef({ key: 'last_service',     label: 'Last service date', type: 'date' }),
+    createPropertyDef({ key: 'downtime_days_ytd', label: 'Downtime days (YTD)', type: 'number' }),
+  ],
+  links: [],
+})
+
+// ─── Fintech / Finance (extended) ────────────────────────────────────────────
+
+const FintechTransaction = createUnitType({
+  id: 'fintech-transaction',
+  label: 'Transaction',
+  description: 'A payment, transfer, or financial event processed through the platform',
+  areas: ['fintech-customers'],
+  interfaces: ['observable', 'sourced', 'financial'],
+  properties: [
+    createPropertyDef({ key: 'type',    label: 'Type',   type: 'enum', enumValues: ['deposit', 'withdrawal', 'transfer', 'payment', 'refund'] }),
+    createPropertyDef({ key: 'amount',  label: 'Amount', type: 'currency' }),
+    createPropertyDef({ key: 'status',  label: 'Status', type: 'enum', enumValues: ['completed', 'pending', 'failed', 'reversed', 'flagged'] }),
+    createPropertyDef({ key: 'flagged', label: 'Flagged for review', type: 'boolean' }),
+  ],
+  links: [
+    createLinkDef({ id: 'transaction-on-account', label: 'On account', toUnitTypeId: 'fintech-account', cardinality: 'many-to-one' }),
+  ],
+})
+
+const KYCDocument = createUnitType({
+  id: 'kyc-document',
+  label: 'KYC Document',
+  description: 'A know-your-customer identity or compliance document submission',
+  areas: ['fintech-customers'],
+  interfaces: ['observable', 'actionable'],
+  properties: [
+    createPropertyDef({ key: 'document_type', label: 'Document type', type: 'enum', enumValues: ['id', 'passport', 'proof_of_address', 'company_registration', 'other'] }),
+    createPropertyDef({ key: 'status',        label: 'Status',        type: 'enum', enumValues: ['pending', 'verified', 'rejected', 'expired'] }),
+    createPropertyDef({ key: 'submitted_at',  label: 'Submitted',     type: 'date' }),
+    createPropertyDef({ key: 'expiry_date',   label: 'Expiry date',   type: 'date' }),
+  ],
+  links: [
+    createLinkDef({ id: 'kyc-for-account', label: 'For account', toUnitTypeId: 'fintech-account', cardinality: 'many-to-one' }),
+  ],
+})
+
+// ─── Insurance (extended) ─────────────────────────────────────────────────────
+
+const Policyholder = createUnitType({
+  id: 'policyholder',
+  label: 'Policyholder',
+  description: 'An insured customer with one or more active policies',
+  areas: ['insurance-policy'],
+  interfaces: ['observable', 'actionable'],
+  properties: [
+    createPropertyDef({ key: 'policies_count', label: 'Policies held',   type: 'number' }),
+    createPropertyDef({ key: 'total_premium',  label: 'Total premium',   type: 'currency' }),
+    createPropertyDef({ key: 'risk_tier',      label: 'Risk tier',       type: 'enum', enumValues: ['standard', 'preferred', 'high_risk', 'declined'] }),
+    createPropertyDef({ key: 'claims_history', label: 'Claims (lifetime)', type: 'number' }),
+  ],
+  links: [
+    createLinkDef({ id: 'policyholder-has-policies', label: 'Has policies', toUnitTypeId: 'policy', cardinality: 'one-to-many' }),
+  ],
+})
+
+const ClaimSettlement = createUnitType({
+  id: 'claim-settlement',
+  label: 'Settlement',
+  description: 'A claim settlement or payment issued to a policyholder',
+  areas: ['insurance-claims'],
+  interfaces: ['observable', 'financial'],
+  properties: [
+    createPropertyDef({ key: 'settlement_amount', label: 'Settlement amount', type: 'currency' }),
+    createPropertyDef({ key: 'settled',           label: 'Settled',           type: 'boolean' }),
+    createPropertyDef({ key: 'settlement_date',   label: 'Settlement date',   type: 'date' }),
+    createPropertyDef({ key: 'disputed',          label: 'Disputed by claimant', type: 'boolean' }),
+  ],
+  links: [
+    createLinkDef({ id: 'settlement-for-claim', label: 'For claim', toUnitTypeId: 'claim', cardinality: 'one-to-one' }),
+  ],
+})
+
+// ─── Telecommunications (extended) ───────────────────────────────────────────
+
+const NetworkEquipment = createUnitType({
+  id: 'network-equipment',
+  label: 'Network Equipment',
+  description: 'A network infrastructure asset — tower, router, switch, or node',
+  areas: ['telecom-network'],
+  interfaces: ['observable', 'actionable'],
+  properties: [
+    createPropertyDef({ key: 'equipment_type',  label: 'Type',              type: 'enum', enumValues: ['tower', 'router', 'switch', 'node', 'antenna', 'other'] }),
+    createPropertyDef({ key: 'status',          label: 'Status',            type: 'enum', enumValues: ['operational', 'degraded', 'failed', 'in_maintenance'] }),
+    createPropertyDef({ key: 'uptime_pct',      label: 'Uptime (%)',        type: 'number' }),
+    createPropertyDef({ key: 'last_maintenance', label: 'Last maintenance', type: 'date' }),
+  ],
+  links: [],
+})
+
+const TelecomServiceTicket = createUnitType({
+  id: 'telecom-service-ticket',
+  label: 'Service Ticket',
+  description: 'A network-related service request or fault report from a subscriber',
+  areas: ['telecom-network', 'telecom-subscribers'],
+  interfaces: ['observable', 'actionable'],
+  properties: [
+    createPropertyDef({ key: 'category',       label: 'Category',      type: 'enum', enumValues: ['fault', 'billing', 'plan_change', 'installation', 'complaint'] }),
+    createPropertyDef({ key: 'priority',       label: 'Priority',      type: 'enum', enumValues: ['p1', 'p2', 'p3', 'p4'] }),
+    createPropertyDef({ key: 'resolution_hrs', label: 'Resolution (hrs)', type: 'number' }),
+    createPropertyDef({ key: 'sla_breached',   label: 'SLA breached',  type: 'boolean' }),
+  ],
+  links: [],
+})
+
+// ─── Media / Creator (extended) ──────────────────────────────────────────────
+
+const Campaign = createUnitType({
+  id: 'campaign',
+  label: 'Campaign',
+  description: 'A marketing or content campaign targeting audience growth or engagement',
+  areas: ['media-audience'],
+  interfaces: ['observable', 'actionable'],
+  properties: [
+    createPropertyDef({ key: 'channel',        label: 'Channel',        type: 'enum', enumValues: ['email', 'social', 'paid', 'organic', 'partnership'] }),
+    createPropertyDef({ key: 'goal',           label: 'Goal',           type: 'enum', enumValues: ['awareness', 'growth', 'engagement', 'conversion', 'retention'] }),
+    createPropertyDef({ key: 'reach',          label: 'Reach',          type: 'number' }),
+    createPropertyDef({ key: 'new_subscribers', label: 'New subscribers gained', type: 'number' }),
+  ],
+  links: [],
+})
+
+const Post = createUnitType({
+  id: 'post',
+  label: 'Post',
+  description: 'A published social media post or short-form content piece',
+  areas: ['media-engagement'],
+  interfaces: ['observable', 'sourced'],
+  properties: [
+    createPropertyDef({ key: 'platform',        label: 'Platform',         type: 'enum', enumValues: ['instagram', 'twitter_x', 'tiktok', 'linkedin', 'youtube', 'other'] }),
+    createPropertyDef({ key: 'format',          label: 'Format',           type: 'enum', enumValues: ['reel', 'image', 'carousel', 'story', 'text', 'video'] }),
+    createPropertyDef({ key: 'reach',           label: 'Reach',            type: 'number' }),
+    createPropertyDef({ key: 'engagement_rate', label: 'Engagement rate (%)', type: 'number' }),
+  ],
+  links: [],
+})
+
+// ─── Energy & Utilities (extended) ───────────────────────────────────────────
+
+const EnergyAsset = createUnitType({
+  id: 'energy-asset',
+  label: 'Asset',
+  description: 'A generation or distribution infrastructure asset (turbine, panel array, transformer, etc.)',
+  areas: ['energy-generation'],
+  interfaces: ['observable', 'actionable'],
+  properties: [
+    createPropertyDef({ key: 'asset_type',       label: 'Type',           type: 'enum', enumValues: ['solar', 'wind', 'gas', 'hydro', 'transformer', 'grid_node', 'other'] }),
+    createPropertyDef({ key: 'status',           label: 'Status',         type: 'enum', enumValues: ['operational', 'degraded', 'offline', 'in_maintenance'] }),
+    createPropertyDef({ key: 'capacity_mw',      label: 'Capacity (MW)',  type: 'number' }),
+    createPropertyDef({ key: 'uptime_pct',       label: 'Uptime (%)',     type: 'number' }),
+    createPropertyDef({ key: 'last_maintenance', label: 'Last maintenance', type: 'date' }),
+  ],
+  links: [],
+})
+
+const EnergyCustomer = createUnitType({
+  id: 'energy-customer',
+  label: 'Customer',
+  description: 'A utility customer account with service and billing status',
+  areas: ['energy-billing'],
+  interfaces: ['observable', 'actionable'],
+  properties: [
+    createPropertyDef({ key: 'status',           label: 'Status',          type: 'enum', enumValues: ['active', 'overdue', 'disconnected', 'in_dispute'] }),
+    createPropertyDef({ key: 'balance_overdue',  label: 'Balance overdue', type: 'currency' }),
+    createPropertyDef({ key: 'months_overdue',   label: 'Months overdue',  type: 'number' }),
+    createPropertyDef({ key: 'payment_plan',     label: 'Payment plan',    type: 'boolean' }),
+  ],
+  links: [],
+})
+
 // ─── Exports ──────────────────────────────────────────────────────────────────
 
 export const UNIT_TYPE_CATALOG = {
@@ -1321,20 +1744,26 @@ export const UNIT_TYPE_CATALOG = {
   'marketplace-buyer':    MarketplaceBuyer,
   'dispute':              Dispute,
   // Consumer App
-  'app-user':         AppUser,
-  'install':          Install,
-  'in-app-purchase':  InAppPurchase,
+  'app-user':          AppUser,
+  'install':           Install,
+  'in-app-purchase':   InAppPurchase,
+  'app-session':       AppSession,
+  'app-subscription':  AppSubscription,
   // Life Sciences
   'experiment':              Experiment,
+  'research-grant':          ResearchGrant,
   'clinical-trial':          ClinicalTrial,
   'regulatory-submission':   RegulatorySubmission,
   // Wholesale / Distribution
-  'wholesale-order':   WholesaleOrder,
-  'wholesale-account': WholesaleAccount,
+  'wholesale-order':    WholesaleOrder,
+  'wholesale-account':  WholesaleAccount,
+  'wholesale-invoice':  WholesaleInvoice,
   // Logistics & Freight
-  'shipment':        Shipment,
-  'vehicle':         Vehicle,
-  'freight-invoice': FreightInvoice,
+  'shipment':           Shipment,
+  'vehicle':            Vehicle,
+  'freight-invoice':    FreightInvoice,
+  'driver':             Driver,
+  'maintenance-event':  MaintenanceEvent,
   // Hospitality / F&B
   'booking':            Booking,
   'guest-complaint':    GuestComplaint,
@@ -1342,38 +1771,58 @@ export const UNIT_TYPE_CATALOG = {
   // Healthcare / Wellness
   'patient-appointment':  PatientAppointment,
   'healthcare-invoice':   HealthcareInvoice,
+  'patient':              Patient,
+  'healthcare-claim':     HealthcareClaim,
+  // Real Estate
+  'property': Property,
+  'listing':  Listing,
+  'tenant':   Tenant,
   // Construction
-  'bid':                  Bid,
-  'construction-project': ConstructionProject,
-  'draw-request':         DrawRequest,
-  'subcontractor-event':  SubcontractorEvent,
+  'bid':                    Bid,
+  'construction-project':   ConstructionProject,
+  'draw-request':           DrawRequest,
+  'subcontractor-event':    SubcontractorEvent,
+  'construction-client':    ConstructionClient,
+  'proposal':               Proposal,
   // Agriculture
-  'harvest':       Harvest,
-  'crop-sale':     CropSale,
+  'harvest':        Harvest,
+  'crop-sale':      CropSale,
   'input-purchase': InputPurchase,
+  'field':          Field,
+  'farm-equipment': FarmEquipment,
   // Fintech / Finance
-  'fintech-account': FintechAccount,
-  'fraud-event':     FraudEvent,
-  'loan':            Loan,
+  'fintech-account':      FintechAccount,
+  'fraud-event':          FraudEvent,
+  'loan':                 Loan,
+  'fintech-transaction':  FintechTransaction,
+  'kyc-document':         KYCDocument,
   // Insurance
-  'policy': Policy,
-  'claim':  Claim,
+  'policy':           Policy,
+  'claim':            Claim,
+  'policyholder':     Policyholder,
+  'claim-settlement': ClaimSettlement,
   // Telecommunications
-  'subscriber':      Subscriber,
-  'network-outage':  NetworkOutage,
-  'telecom-invoice': TelecomInvoice,
+  'subscriber':             Subscriber,
+  'network-outage':         NetworkOutage,
+  'telecom-invoice':        TelecomInvoice,
+  'network-equipment':      NetworkEquipment,
+  'telecom-service-ticket': TelecomServiceTicket,
   // Media / Creator
   'media-subscriber': MediaSubscriber,
   'content-piece':    ContentPiece,
   'sponsorship-deal': SponsorshipDeal,
+  'campaign':         Campaign,
+  'post':             Post,
   // Education
   'student-enrolment': StudentEnrolment,
   'student-dropout':   StudentDropout,
   'tuition-payment':   TuitionPayment,
   // Energy & Utilities
-  'outage-event':          OutageEvent,
-  'energy-customer-bill':  EnergyCustomerBill,
-  'compliance-filing':     ComplianceFiling,
+  'outage-event':         OutageEvent,
+  'energy-customer-bill': EnergyCustomerBill,
+  'compliance-filing':    ComplianceFiling,
+  'energy-asset':         EnergyAsset,
+  'energy-customer':      EnergyCustomer,
 }
 
 export function getUnitType(id) {
