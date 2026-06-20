@@ -55,22 +55,40 @@ const TOOLKIT_SLUGS = {
   zohomail:        'zoho_mail',
 }
 
-// Returns the OAuth redirect URL for a user to connect a specific toolkit.
-// Uses a custom auth_config_id if one is configured (for our own OAuth apps),
-// otherwise falls back to Composio's shared OAuth for that toolkit.
-export async function getComposioAuthLink(userId, toolkit, redirectUrl) {
-  const authConfigId = AUTH_CONFIGS[toolkit]
-  const toolkitSlug  = TOOLKIT_SLUGS[toolkit] ?? toolkit
+// In-memory cache: toolkitSlug → auth_config_id
+// Populated lazily so we never block startup and never re-create on the same process.
+const _authConfigCache = {}
 
-  const body = {
-    user_id:      userId,
-    redirect_url: redirectUrl,
-    ...(authConfigId ? { auth_config_id: authConfigId } : { toolkit: toolkitSlug }),
-  }
+// Gets the auth_config_id for a toolkit. Uses the hardcoded map first,
+// then checks the cache, then creates a Composio-managed config on demand.
+async function resolveAuthConfigId(toolkit) {
+  if (AUTH_CONFIGS[toolkit]) return AUTH_CONFIGS[toolkit]
+
+  const slug = TOOLKIT_SLUGS[toolkit] ?? toolkit
+  if (_authConfigCache[slug]) return _authConfigCache[slug]
+
+  const data = await composioFetch('/api/v3/auth_configs', {
+    method: 'POST',
+    body: JSON.stringify({ toolkit: { slug }, use_composio_auth: true }),
+  })
+
+  const id = data.auth_config?.id
+  if (!id) throw new Error(`Composio did not return an auth_config id for toolkit: ${slug}`)
+  _authConfigCache[slug] = id
+  return id
+}
+
+// Returns the OAuth redirect URL for a user to connect a specific toolkit.
+export async function getComposioAuthLink(userId, toolkit, redirectUrl) {
+  const authConfigId = await resolveAuthConfigId(toolkit)
 
   const data = await composioFetch('/api/v3/connected_accounts/link', {
     method: 'POST',
-    body: JSON.stringify(body),
+    body: JSON.stringify({
+      user_id:        userId,
+      redirect_url:   redirectUrl,
+      auth_config_id: authConfigId,
+    }),
   })
 
   return {
