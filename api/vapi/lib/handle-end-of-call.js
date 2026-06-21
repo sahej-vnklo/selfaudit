@@ -25,7 +25,7 @@ async function summariseCall(transcript, vapiSummary) {
   const apiKey = process.env.CLAUDE_API_KEY || process.env.VITE_CLAUDE_API_KEY
   if (!apiKey || !transcript) return null
 
-  const prompt = `You are summarising a voice call between a founder and their SelfAudit business advisor.
+  const prompt = `You are summarising a voice call between a founder and Nico, their business operator.
 
 TRANSCRIPT:
 ${transcript}

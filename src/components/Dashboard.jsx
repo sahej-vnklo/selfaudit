@@ -2657,7 +2657,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                     <div style={{ padding: '28px 28px 0' }}>
                       <div style={{ marginBottom: 24 }}>
                         <h2 style={{ fontSize: 22, fontWeight: 700, color: G.text, margin: 0 }}>Voice Calls</h2>
-                        <p style={{ fontSize: 14, color: G.textMuted, marginTop: 6 }}>Your personal AI advisor, available by phone.</p>
+                        <p style={{ fontSize: 14, color: G.textMuted, marginTop: 6 }}>Nico — your operator, available by phone.</p>
                       </div>
                       <VoicePhoneSetup
                         user={user}
@@ -2675,7 +2675,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                         <div style={{ textAlign: 'center', padding: '48px 0', color: G.textMuted }}>
                           <div style={{ fontSize: 40, marginBottom: 12 }}>📞</div>
                           <p style={{ fontSize: 15, fontWeight: 600, color: G.text, margin: '0 0 6px' }}>No calls yet</p>
-                          <p style={{ fontSize: 13, margin: 0 }}>Call <strong style={{ color: G.text }}>+1 (434) 373-8238</strong> from your registered number to get a live business update.</p>
+                          <p style={{ fontSize: 13, margin: 0 }}>Call <strong style={{ color: G.text }}>+1 (434) 373-8238</strong> — Nico will pick up.</p>
                         </div>
                       ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -6795,17 +6795,17 @@ function VoicePhoneSetup({ user, currentPhone, onSaved }) {
     <div style={{ maxWidth: 420, margin: '0 auto', padding: currentPhone ? '24px 0' : '48px 0', textAlign: 'center' }}>
       {!currentPhone && <div style={{ fontSize: 36, marginBottom: 16 }}>📞</div>}
       <h3 style={{ fontSize: 17, fontWeight: 700, color: G.text, margin: '0 0 10px' }}>
-        {currentPhone ? 'Change your voice number' : 'Enable your voice advisor'}
+        {currentPhone ? 'Change your number' : 'Meet Nico'}
       </h3>
       <p style={{ fontSize: 13, color: G.textMuted, lineHeight: 1.65, margin: '0 0 28px' }}>
         {currentPhone
           ? 'Enter the new number you want to call from. Your call history stays intact.'
-          : <>Register your phone number and call <strong style={{ color: G.text }}>+1 (434) 373-8238</strong> anytime. Your advisor will brief you on what's happening across your business, surface top risks, and let you approve or dismiss actions — all by voice.</>
+          : <>Register your number and call <strong style={{ color: G.text }}>+1 (434) 373-8238</strong> anytime. Nico knows your business — he'll tell you what's happening, surface the top risks, and let you approve or dismiss actions. No login. Just call.</>
         }
       </p>
       {done ? (
         <div style={{ fontSize: 14, color: G.accentText, fontWeight: 600 }}>
-          {currentPhone ? 'Number updated.' : 'Voice access enabled.'} Call +1 (434) 373-8238 to get started.
+          {currentPhone ? 'Number updated.' : "You're set."} Call +1 (434) 373-8238 — Nico's ready.
         </div>
       ) : (
         <>
@@ -7064,7 +7064,7 @@ function AccountSection({ user, profile, onProfileChange, onSignOut, dataOnly = 
           </div>
         ) : (
           <div style={{ fontSize: 12, color: G.textFaint, marginTop: 6, paddingLeft: 2 }}>
-            Add your number to enable voice access — call SelfAudit anytime for live updates and approvals.
+            Add your number to reach Nico — call anytime for a live business update.
           </div>
         )}
       </div>
