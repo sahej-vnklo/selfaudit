@@ -2518,20 +2518,14 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
           {/* All other sections — scrollable content */}
           {section !== 'home' && (
             <div className="section-scroll">
-              {/* ── Oversight → Business Health + Open Issues + Oversight lanes ── */}
+              {/* ── Oversight → consolidated summary ── */}
               {section === 'oversight' && (
-                <PageShell title="Oversight" sub="Business health, open issues, and your four operational lanes.">
-                  <BusinessHealthPanel
-                    latestDomains={latestDomains}
+                <PageShell title="Oversight" sub="What's happening across your business right now.">
+                  <OversightSummary
                     healthIntel={healthIntel}
                     goalState={goalState}
+                    intelligenceUnlocked={intelligenceUnlocked}
                   />
-                  <div style={{ marginTop: 24 }}>
-                    <OperationalOversightSection intelligenceUnlocked={intelligenceUnlocked} healthIntel={healthIntel} userId={user?.id} areaTrends={areaTrends} />
-                  </div>
-                  <div style={{ marginTop: 24 }}>
-                    <ThresholdEditorPanel userId={user?.id} />
-                  </div>
                 </PageShell>
               )}
 
@@ -3742,6 +3736,117 @@ function ThresholdEditorPanel({ userId }) {
           )}
         </div>
       ))}
+    </PanelCard>
+  )
+}
+
+function OversightSummary({ healthIntel, goalState, intelligenceUnlocked }) {
+  if (!intelligenceUnlocked) {
+    return (
+      <PanelCard title="operational overview">
+        <EmptyPanel message="Oversight is reserved for Intelligence users." />
+      </PanelCard>
+    )
+  }
+
+  const summary        = healthIntel?.governance_summary ?? null
+  const areasCount     = healthIntel?.governance_areas_with_signals ?? 0
+  const alertCount     = healthIntel?.governance_alert_candidates ?? 0
+  const diagnosesCount = healthIntel?.governance_diagnoses_count ?? 0
+  const actions        = Array.isArray(healthIntel?.health_check_actions) ? healthIntel.health_check_actions.slice(0, 5) : []
+  const risks          = Array.isArray(healthIntel?.active_risks) ? healthIntel.active_risks.slice(0, 3) : []
+  const unresolved     = Array.isArray(healthIntel?.unresolved_actions) ? healthIntel.unresolved_actions.slice(0, 3) : []
+
+  const hasGoal        = !!(goalState?.goal)
+  const progress       = typeof goalState?.progress === 'number' ? Math.max(0, Math.min(100, goalState.progress)) : 0
+  const deadline       = goalState?.goal_deadline ? formatGoalDeadline(goalState.goal_deadline) : null
+
+  const noData = !summary && actions.length === 0 && risks.length === 0 && !hasGoal
+
+  const rowStyle = { display: 'flex', gap: 8, alignItems: 'flex-start', fontSize: 13, color: G.textSecondary, lineHeight: 1.5 }
+  const sectionTitle = { fontSize: 11, fontWeight: 700, color: G.textFaint, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 10 }
+  const section = { marginTop: 24 }
+
+  return (
+    <PanelCard title="operational overview">
+      {noData ? (
+        <EmptyPanel message="Run a health check to populate your oversight summary." />
+      ) : (
+        <>
+          {/* Summary + stats */}
+          {summary && (
+            <div>
+              <p style={{ fontSize: 14, color: G.text, lineHeight: 1.6, margin: '0 0 12px' }}>{summary}</p>
+              <div style={{ display: 'flex', gap: 20, fontSize: 12, color: G.textMuted }}>
+                <span><strong style={{ color: G.text }}>{areasCount}</strong> areas with signals</span>
+                <span><strong style={{ color: G.text }}>{alertCount}</strong> alert candidates</span>
+                <span><strong style={{ color: G.text }}>{diagnosesCount}</strong> diagnoses</span>
+              </div>
+            </div>
+          )}
+
+          {/* Top priorities */}
+          {actions.length > 0 && (
+            <div style={section}>
+              <div style={sectionTitle}>Top priorities</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {actions.map((action, i) => (
+                  <div key={i} style={rowStyle}>
+                    <span style={{ color: G.accent, fontWeight: 700, flexShrink: 0, fontSize: 12, minWidth: 16 }}>{i + 1}</span>
+                    <span>{action}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Active risks */}
+          {risks.length > 0 && (
+            <div style={section}>
+              <div style={sectionTitle}>Active risks</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {risks.map((risk, i) => (
+                  <div key={i} style={rowStyle}>
+                    <span style={{ color: G.red, flexShrink: 0 }}>↑</span>
+                    <span>{risk}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Unresolved actions */}
+          {unresolved.length > 0 && (
+            <div style={section}>
+              <div style={sectionTitle}>Unresolved actions</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {unresolved.map((item, i) => (
+                  <div key={i} style={rowStyle}>
+                    <span style={{ color: G.amber, flexShrink: 0 }}>→</span>
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Goal */}
+          {hasGoal && (
+            <div style={section}>
+              <div style={sectionTitle}>Active goal</div>
+              <p style={{ fontSize: 13, color: G.text, margin: '0 0 10px', lineHeight: 1.5 }}>{goalState.goal}</p>
+              <div style={{ height: 4, borderRadius: 2, background: G.border, overflow: 'hidden', marginBottom: 8 }}>
+                <div style={{ height: '100%', width: `${progress}%`, background: G.accent, borderRadius: 2, transition: 'width 0.4s ease' }} />
+              </div>
+              <div style={{ display: 'flex', gap: 20, fontSize: 12, color: G.textMuted }}>
+                <span>{typeof goalState.progress === 'number' ? `${progress}% complete` : 'Progress not quantified yet'}</span>
+                {deadline && <span>Due {deadline}</span>}
+                {goalState.goal_area_id && <span style={{ color: G.accent }}>{goalState.goal_area_id}</span>}
+              </div>
+            </div>
+          )}
+        </>
+      )}
     </PanelCard>
   )
 }
