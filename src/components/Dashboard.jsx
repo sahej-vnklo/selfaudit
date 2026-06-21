@@ -2655,18 +2655,16 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                   {/* Voice Calls tab — call history from Vapi */}
                   {accountTab === 'voice' && (
                     <div style={{ padding: '28px 28px 0' }}>
-                      {!profile?.phone ? (
-                        <VoicePhoneSetup
-                          user={user}
-                          onSaved={(updated) => setProfile((prev) => ({ ...prev, ...updated }))}
-                        />
-                      ) : <>
                       <div style={{ marginBottom: 24 }}>
                         <h2 style={{ fontSize: 22, fontWeight: 700, color: G.text, margin: 0 }}>Voice Calls</h2>
-                        <p style={{ fontSize: 14, color: G.textMuted, marginTop: 6 }}>
-                          Calls from <strong style={{ color: G.text }}>{profile.phone}</strong> · advisor at <strong style={{ color: G.text }}>+1 (434) 373-8238</strong>.
-                        </p>
+                        <p style={{ fontSize: 14, color: G.textMuted, marginTop: 6 }}>Your personal AI advisor, available by phone.</p>
                       </div>
+                      <VoicePhoneSetup
+                        user={user}
+                        currentPhone={profile?.voice_phone ?? null}
+                        onSaved={(updated) => setProfile((prev) => ({ ...prev, ...updated }))}
+                      />
+                      {profile?.voice_phone && <>
                       {voiceCallsLoading ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                           {[0,1,2].map((i) => (
@@ -6750,11 +6748,12 @@ const agent = {
   },
 }
 
-function VoicePhoneSetup({ user, onSaved }) {
-  const [val, setVal]       = useState('')
-  const [saving, setSaving] = useState(false)
-  const [done, setDone]     = useState(false)
-  const [err, setErr]       = useState(null)
+function VoicePhoneSetup({ user, currentPhone, onSaved }) {
+  const [val, setVal]           = useState('')
+  const [saving, setSaving]     = useState(false)
+  const [done, setDone]         = useState(false)
+  const [err, setErr]           = useState(null)
+  const [changing, setChanging] = useState(!currentPhone)
 
   async function save() {
     const trimmed = val.trim()
@@ -6762,9 +6761,10 @@ function VoicePhoneSetup({ user, onSaved }) {
     setSaving(true); setErr(null)
     try {
       const sb = await initSupabase()
-      await sb.from('profiles').update({ phone: trimmed }).eq('id', user.id)
-      onSaved({ phone: trimmed })
+      await sb.from('profiles').update({ voice_phone: trimmed }).eq('id', user.id)
+      onSaved({ voice_phone: trimmed })
       setDone(true)
+      setChanging(false)
     } catch {
       setErr('Could not save. Try again.')
     } finally {
@@ -6772,55 +6772,86 @@ function VoicePhoneSetup({ user, onSaved }) {
     }
   }
 
+  // Already registered — show current number with Change option
+  if (currentPhone && !changing) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 0', borderBottom: `1px solid ${G.border}`, marginBottom: 24 }}>
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 600, color: G.textFaint, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Registered number</div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: G.text }}>{currentPhone}</div>
+        </div>
+        <button
+          type="button"
+          onClick={() => { setChanging(true); setDone(false); setVal('') }}
+          style={{ fontSize: 12, fontWeight: 600, color: G.accentText, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit' }}
+        >
+          Change
+        </button>
+      </div>
+    )
+  }
+
   return (
-    <div style={{
-      maxWidth: 420, margin: '0 auto', padding: '48px 0', textAlign: 'center',
-    }}>
-      <div style={{ fontSize: 36, marginBottom: 16 }}>📞</div>
+    <div style={{ maxWidth: 420, margin: '0 auto', padding: currentPhone ? '24px 0' : '48px 0', textAlign: 'center' }}>
+      {!currentPhone && <div style={{ fontSize: 36, marginBottom: 16 }}>📞</div>}
       <h3 style={{ fontSize: 17, fontWeight: 700, color: G.text, margin: '0 0 10px' }}>
-        Enable your voice advisor
+        {currentPhone ? 'Change your voice number' : 'Enable your voice advisor'}
       </h3>
       <p style={{ fontSize: 13, color: G.textMuted, lineHeight: 1.65, margin: '0 0 28px' }}>
-        Register your phone number and call <strong style={{ color: G.text }}>+1 (434) 373-8238</strong> anytime.
-        Your SelfAudit advisor will brief you on what's happening across your business, surface the top risks,
-        and let you approve or dismiss pending actions — all by voice.
+        {currentPhone
+          ? 'Enter the new number you want to call from. Your call history stays intact.'
+          : <>Register your phone number and call <strong style={{ color: G.text }}>+1 (434) 373-8238</strong> anytime. Your advisor will brief you on what's happening across your business, surface top risks, and let you approve or dismiss actions — all by voice.</>
+        }
       </p>
       {done ? (
         <div style={{ fontSize: 14, color: G.accentText, fontWeight: 600 }}>
-          Voice access enabled. Call +1 (434) 373-8238 to get started.
+          {currentPhone ? 'Number updated.' : 'Voice access enabled.'} Call +1 (434) 373-8238 to get started.
         </div>
       ) : (
-        <div style={{ display: 'flex', gap: 8, maxWidth: 340, margin: '0 auto' }}>
-          <input
-            type="tel"
-            value={val}
-            onChange={e => setVal(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && save()}
-            placeholder="+1 555 000 0000"
-            style={{
-              flex: 1, padding: '10px 14px', fontSize: 14, borderRadius: 8,
-              border: `1px solid ${G.border2}`, background: G.surface2,
-              color: G.text, outline: 'none', fontFamily: 'inherit',
-            }}
-          />
-          <button
-            type="button"
-            onClick={save}
-            disabled={saving || !val.trim()}
-            style={{
-              padding: '10px 18px', fontSize: 13, fontWeight: 600, borderRadius: 8,
-              background: G.accent, color: '#fff', border: 'none', cursor: saving ? 'default' : 'pointer',
-              opacity: saving || !val.trim() ? 0.6 : 1, fontFamily: 'inherit', flexShrink: 0,
-            }}
-          >
-            {saving ? 'Saving…' : 'Enable'}
-          </button>
-        </div>
+        <>
+          <div style={{ display: 'flex', gap: 8, maxWidth: 340, margin: '0 auto' }}>
+            <input
+              type="tel"
+              value={val}
+              onChange={e => setVal(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && save()}
+              placeholder="+1 555 000 0000"
+              style={{
+                flex: 1, padding: '10px 14px', fontSize: 14, borderRadius: 8,
+                border: `1px solid ${G.border2}`, background: G.surface2,
+                color: G.text, outline: 'none', fontFamily: 'inherit',
+              }}
+            />
+            <button
+              type="button"
+              onClick={save}
+              disabled={saving || !val.trim()}
+              style={{
+                padding: '10px 18px', fontSize: 13, fontWeight: 600, borderRadius: 8,
+                background: G.accent, color: '#fff', border: 'none', cursor: saving ? 'default' : 'pointer',
+                opacity: saving || !val.trim() ? 0.6 : 1, fontFamily: 'inherit', flexShrink: 0,
+              }}
+            >
+              {saving ? 'Saving…' : currentPhone ? 'Update' : 'Enable'}
+            </button>
+          </div>
+          {currentPhone && (
+            <button
+              type="button"
+              onClick={() => setChanging(false)}
+              style={{ marginTop: 10, fontSize: 12, color: G.textMuted, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+            >
+              Cancel
+            </button>
+          )}
+        </>
       )}
       {err && <p style={{ fontSize: 12, color: G.red, marginTop: 10 }}>{err}</p>}
-      <p style={{ fontSize: 11, color: G.textFaint, marginTop: 20 }}>
-        Must call from this exact number. Your number is only used to identify you — never shared.
-      </p>
+      {!currentPhone && (
+        <p style={{ fontSize: 11, color: G.textFaint, marginTop: 20 }}>
+          Must call from this exact number. Only used to identify you — never shared.
+        </p>
+      )}
     </div>
   )
 }

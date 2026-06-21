@@ -15,7 +15,7 @@ function normalizePhone(phone) {
   return stripped || null
 }
 
-// Look up a SelfAudit user by their phone number.
+// Look up a SelfAudit user by their voice_phone number.
 // Returns { id, name } or null if not registered.
 export async function identifyCaller(rawPhone) {
   const normalized = normalizePhone(rawPhone)
@@ -27,7 +27,7 @@ export async function identifyCaller(rawPhone) {
   const { data: exact } = await sb
     .from('profiles')
     .select('id, name')
-    .eq('phone', normalized)
+    .eq('voice_phone', normalized)
     .single()
 
   if (exact) return exact
@@ -37,13 +37,13 @@ export async function identifyCaller(rawPhone) {
   const digitsOnly = normalized.replace(/^\+/, '')
   const { data: rows } = await sb
     .from('profiles')
-    .select('id, name, phone')
-    .not('phone', 'is', null)
+    .select('id, name, voice_phone')
+    .not('voice_phone', 'is', null)
 
   if (!rows?.length) return null
 
   const match = rows.find((r) => {
-    const stored = normalizePhone(r.phone)?.replace(/^\+/, '') ?? ''
+    const stored = normalizePhone(r.voice_phone)?.replace(/^\+/, '') ?? ''
     return stored && (stored === digitsOnly || digitsOnly.endsWith(stored) || stored.endsWith(digitsOnly))
   })
 
