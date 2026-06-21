@@ -7,35 +7,6 @@ const supabase = createClient(
   { auth: { persistSession: false } }
 )
 
-// All tables that store per-user data — wiped before the auth user is deleted.
-const USER_TABLES = [
-  'agent_findings',
-  'area_metric_snapshots',
-  'artifacts',
-  'audit_sessions',
-  'business_health_checks',
-  'business_state',
-  'chats',
-  'company_causal_patterns',
-  'company_schemas',
-  'connector_snapshots',
-  'connector_sync_logs',
-  'decision_records',
-  'execution_log',
-  'goal_nodes',
-  'intelligence_brief',
-  'intelligence_notification_preferences',
-  'intelligence_profiles',
-  'pending_actions',
-  'reports',
-  'risk_alerts',
-  'user_connector_prefs',
-  'user_custom_metrics',
-  'user_memory',
-  'user_rule_overrides',
-  'voice_calls',
-]
-
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
@@ -48,12 +19,23 @@ export default async function handler(req, res) {
   if (!await validateUserToken(req, res, userId)) return
 
   try {
-    // 1. Wipe all user data rows first
-    for (const table of USER_TABLES) {
+    // 1. Discover every public table that has a user_id column dynamically —
+    //    so new tables are covered automatically without changing this file.
+    const { data: columns, error: schemaError } = await supabase
+      .from('information_schema.columns')
+      .select('table_name')
+      .eq('table_schema', 'public')
+      .eq('column_name', 'user_id')
+
+    if (schemaError) throw new Error(`Schema lookup failed: ${schemaError.message}`)
+
+    const tables = (columns ?? []).map((r) => r.table_name)
+
+    // 2. Wipe all user data rows
+    for (const table of tables) {
       const { error } = await supabase.from(table).delete().eq('user_id', userId)
       if (error) {
         console.warn(`[delete-account] failed to clear ${table} for ${userId}:`, error.message)
-        // Non-fatal — continue and still delete the auth user
       }
     }
 
