@@ -2,6 +2,7 @@ import { getCompanyBrain } from '../../../lib/intelligence/company-brain.js'
 import { getAvailableDataSources, planWithClaude } from '../../../lib/agent/planner.js'
 import { gatherAgentContext } from '../../../lib/agent/gather-context.js'
 import { generateAgentAnswer } from '../../../lib/agent/generate-agent-answer.js'
+import { getComposioConnectionMap } from '../../../lib/connectors/composio.js'
 
 // Bridge to the existing SelfAudit agent brain.
 // Routes a spoken question through the same planner → gather → answer pipeline
@@ -14,10 +15,17 @@ export async function askQuestion(userId, question) {
   const apiKey = process.env.CLAUDE_API_KEY || process.env.VITE_CLAUDE_API_KEY
   if (!apiKey) throw new Error('CLAUDE_API_KEY not configured')
 
-  const brain = await getCompanyBrain(userId).catch(() => null)
-  const availableSources = getAvailableDataSources(brain, null)
+  const [brain, connectionMap] = await Promise.allSettled([
+    getCompanyBrain(userId),
+    getComposioConnectionMap(userId),
+  ])
 
-  const plan = await planWithClaude(question, brain, availableSources, [], apiKey)
+  const brainData      = brain.status      === 'fulfilled' ? brain.value      : null
+  const connectionData = connectionMap.status === 'fulfilled' ? connectionMap.value : {}
+
+  const availableSources = getAvailableDataSources(brainData, connectionData)
+
+  const plan = await planWithClaude(question, brainData, availableSources, [], apiKey)
   const context = await gatherAgentContext(userId, {
     ...plan,
     available_sources: plan.sources_to_fetch,

@@ -108,6 +108,24 @@ export default async function handler(req, res) {
 
     if (insertError) throw insertError
 
+    // When a founder confirms actions worked, write those as grounded pattern rows.
+    // These are the only rows that will eventually feed back into audit prompts
+    // once we have enough user_reported_worked rows to make the signal trustworthy.
+    const workedActions = cleanActionFeedback.filter(a => a.status === 'done')
+    if (workedActions.length > 0) {
+      const patternRows = workedActions.map(a => ({
+        industry:          null,
+        domain:            null,
+        conversation_mode: null,
+        root_causes:       [],
+        actions_given:     [a.text],
+        source_type:       'user_reported_worked',
+        source_user_id:    userId,
+        source_report_id:  reportId,
+      }))
+      supabase.from('patterns').insert(patternRows).catch(() => {})
+    }
+
     try {
       await synthesizeUserIntelligence(userId, { supabase })
     } catch (synthError) {

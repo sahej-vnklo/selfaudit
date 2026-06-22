@@ -8,10 +8,10 @@
 // Composio call automatically — nothing breaks.
 
 import { createClient }              from '@supabase/supabase-js'
-import { getComposioConnectionMap }  from '../lib/connectors/composio.js'
-import { fetchAllConnectedData }     from '../lib/connectors/data-fetcher.js'
-import { normalizeConnectorData }    from '../lib/connectors/normalize.js'
-import { isAuthorisedCronRequest }   from '../lib/cron-auth.js'
+import { getComposioConnectionMap }              from '../lib/connectors/composio.js'
+import { fetchAllConnectedData }                from '../lib/connectors/data-fetcher.js'
+import { normalizeConnectorData, extractRawRows } from '../lib/connectors/normalize.js'
+import { isAuthorisedCronRequest }              from '../lib/cron-auth.js'
 
 const INTELLIGENCE_TIERS = new Set(['intelligence'])
 const BATCH_LIMIT        = 50
@@ -22,6 +22,43 @@ function getSupabase() {
     process.env.SUPABASE_SERVICE_ROLE_KEY,
     { auth: { persistSession: false } }
   )
+}
+
+async function writeHistoryRows(sb, userId, normalized, connectorData, syncedAt) {
+  const ops = []
+
+  // Metric history — one row per metric key per sync
+  if (normalized?.metrics?.length) {
+    const metricRows = normalized.metrics.map(m => ({
+      user_id:      userId,
+      provider:     m.source,
+      metric_key:   m.key,
+      metric_value: m.value,
+      synced_at:    syncedAt,
+    }))
+    ops.push(sb.from('connector_metric_history').insert(metricRows))
+  }
+
+  // Raw rows — deals, subscriptions, tickets
+  const { deals, subscriptions, tickets } = extractRawRows(connectorData)
+
+  if (deals.length) {
+    ops.push(sb.from('connector_deals').insert(
+      deals.map(d => ({ ...d, user_id: userId, synced_at: syncedAt }))
+    ))
+  }
+  if (subscriptions.length) {
+    ops.push(sb.from('connector_subscriptions').insert(
+      subscriptions.map(s => ({ ...s, user_id: userId, synced_at: syncedAt }))
+    ))
+  }
+  if (tickets.length) {
+    ops.push(sb.from('connector_tickets').insert(
+      tickets.map(t => ({ ...t, user_id: userId, synced_at: syncedAt }))
+    ))
+  }
+
+  await Promise.allSettled(ops)
 }
 
 export default async function handler(req, res) {
@@ -116,6 +153,11 @@ export default async function handler(req, res) {
           },
           { onConflict: 'user_id' }
         )
+
+      // Write history rows — append-only, fire-and-forget
+      writeHistoryRows(sb, user.id, normalized, connectorData, fetchedAt).catch(err =>
+        console.warn(`[cron/sync-connectors] history write failed for ${user.id}:`, err?.message)
+      )
 
       summary.synced_users += 1
     } catch (err) {

@@ -154,7 +154,7 @@ function analyzeRevenueRisk(brief) {
   const c = brief.context   || {}
 
   const churn   = f.churn   != null ? Number(f.churn)   : null
-  const runway  = f.runway  != null ? Number(f.runway)  : (c.runway != null ? Number(c.runway) : null)
+  const runway  = f.runway  != null ? Number(f.runway)  : null
   const ltv     = f.ltv     != null ? Number(f.ltv)     : null
   const cac     = f.cac     != null ? Number(f.cac)     : null
   const burn    = f.burn_rate != null ? Number(f.burn_rate) : null

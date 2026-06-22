@@ -13,6 +13,7 @@ import { createClient } from '@supabase/supabase-js'
 import { validateUserToken } from './lib/auth.js'
 import { fetchAllConnectedData } from './lib/connectors/data-fetcher.js'
 import { normalizeConnectorData, formatNormalizedForPrompt } from './lib/connectors/normalize.js'
+import { buildBIContext, formatBIContextForPrompt } from './lib/connectors/slice-query.js'
 import { getCompanyBrain, formatBrainForPrompt } from './lib/intelligence/company-brain.js'
 import { getUserPlan } from './lib/plans.js'
 
@@ -79,6 +80,18 @@ async function fetchConnectorContext(userId, supabase) {
   }
 }
 
+async function fetchBIHistory(userId, supabase) {
+  if (!userId) return ''
+  try {
+    const plan = await getUserPlan(userId, supabase)
+    if (plan !== 'intelligence') return ''
+    const ctx = await buildBIContext(userId)
+    return formatBIContextForPrompt(ctx)
+  } catch {
+    return ''
+  }
+}
+
 async function fetchIntelligenceBrief(userId) {
   if (!userId) return ''
   try {
@@ -90,7 +103,7 @@ async function fetchIntelligenceBrief(userId) {
 
     if (!data) return ''
 
-    const lines = ['INTELLIGENCE BRIEF (hard verified numbers — treat these as ground truth, not assumptions):']
+    const lines = ['INTELLIGENCE BRIEF (reported by this founder — use these numbers but probe if something in conversation contradicts them):']
 
     const f = data.financial || {}
     const o = data.operational || {}
@@ -103,7 +116,7 @@ async function fetchIntelligenceBrief(userId) {
     if (f.ltv) lines.push(`LTV: $${f.ltv} (LTV:CAC ratio: ${f.cac ? (f.ltv / f.cac).toFixed(1) : 'unknown'})`)
     if (f.churn) lines.push(`Monthly churn: ${f.churn}%`)
     if (f.burn_rate) lines.push(`Monthly burn: $${Number(f.burn_rate).toLocaleString()}`)
-    if (f.runway || c.runway) lines.push(`Runway: ${f.runway || c.runway} months`)
+    if (f.runway) lines.push(`Runway: ${f.runway} months`)
     if (o.headcount) lines.push(`Headcount: ${o.headcount}`)
     if (o.active_customers) lines.push(`Active customers: ${o.active_customers}`)
     if (o.nps) lines.push(`NPS: ${o.nps}`)
@@ -409,7 +422,7 @@ async function fetchGovernanceContext(userId) {
   }
 }
 
-function clipPromptLine(value, max = 240) {
+function clipPromptLine(value, max = 600) {
   if (typeof value !== 'string') return ''
   const clean = value.replace(/\s+/g, ' ').trim()
   if (!clean) return ''
@@ -459,7 +472,7 @@ function buildSessionContinuity(messages) {
   return lines.join('\n')
 }
 
-function buildSystemPrompt(industry, domain, intelligenceBrief, userMemory, goalMode, goal, goalTimeline, goalBaseline, businessState, patterns, connectorContext, sessionContinuity, governanceContext, schemaContext) {
+function buildSystemPrompt(industry, domain, intelligenceBrief, userMemory, goalMode, goal, goalTimeline, goalBaseline, businessState, patterns, connectorContext, sessionContinuity, governanceContext, schemaContext, biHistoryContext) {
   const base = `You are SelfAudit — a brutally honest, senior-level business and life advisor. Your job is to audit any situation a user brings — business, startup, side project, personal goals, career, anything.
 
 CORE RULES:
@@ -485,6 +498,25 @@ MODE 2: EXECUTION
 Decision is already made. User needs help executing it well, not re-examining it.
 Signals: "deal is done", "I've decided", "we're closing", "I'm selling", "already chose", "happening in X weeks", "signed the papers", "closing in"
 Behaviour: STOP diagnosing. Don't question the decision. Don't reframe it as a problem. Ask what they need to execute this well. Help them think through the execution clearly.
+
+EXECUTION MODE OVERRIDE — use rarely:
+Stay in EXECUTION mode by default. Do not re-open the decision.
+
+You may challenge the decision only if BOTH are true:
+1. The user's own words show the decision is itself the root structural problem, not just the thing being executed.
+2. Executing it as stated would likely cause immediate material harm — cash damage, customer loss, legal/compliance exposure, key team damage, or directly worsening the original problem.
+
+If BOTH are not clearly true, do not challenge.
+
+When this override applies:
+- Ask exactly ONE direct challenge question. Name the specific structural risk.
+- Do not diagnose the whole business. Do not ask follow-up challenge questions unless the user explicitly opens the door.
+- After that one question, return to execution support — or switch to DIAGNOSTIC only if the user explicitly asks to re-evaluate the decision.
+
+Good: "Before we get into execution: if hiring 3 salespeople is meant to solve low close rate, are you sure the constraint is capacity rather than conversion? If the funnel is weak, this adds burn without fixing the problem."
+Bad: "Are you sure this is the right strategy?" or "Let's step back and rethink the whole business."
+
+When uncertain, do NOT challenge. Default to execution support.
 
 MODE 3: HUMAN_MOMENT
 Emotional weight is present. User is carrying something hard. They need to be heard before they need to be helped.
@@ -589,9 +621,10 @@ Do NOT open with "How can I help", "What are you working on", or any generic que
   const intelligenceBriefBlock = intelligenceBrief ? `\n\n---\n${intelligenceBrief}` : ''
   const memoryBlock = userMemory ? `\n\n---\n${userMemory}` : ''
   const businessStateBlock = businessState ? `\n\n---\n${businessState}` : ''
-  const patternsBlock      = patterns      ? `\n\n---\n${patterns}`       : ''
-  const connectorBlock = connectorContext ? `\n\n---\nCONNECTOR DATA\n${connectorContext}` : ''
-  const governanceBlock = governanceContext ? `\n\n---\n${governanceContext}` : ''
+  const patternsBlock      = ''
+  const connectorBlock   = connectorContext   ? `\n\n---\nCONNECTOR DATA\n${connectorContext}`               : ''
+  const biHistoryBlock   = biHistoryContext   ? `\n\n---\n${biHistoryContext}`                                 : ''
+  const governanceBlock  = governanceContext  ? `\n\n---\n${governanceContext}`                                : ''
   const schemaBlock = schemaContext ? `\n\n---\n${schemaContext}` : ''
   const schemaPatchInstruction = schemaContext ? `
 
@@ -621,11 +654,11 @@ CONTEXT PRIORITY:
 2. Verified numbers or live connector data
 3. Company intelligence accumulated across prior audits
 4. Recent user memory from prior sessions
-5. General patterns from similar companies
+5. General knowledge about similar companies
 
 If two sources conflict, do not ignore it. Name the contradiction and ask one direct clarifying question.`
 
-  return base + goalBlock + scopeBlock + schemaBlock + schemaPatchInstruction + intelligenceBriefBlock + businessStateBlock + memoryBlock + patternsBlock + connectorBlock + governanceBlock + sessionContinuityBlock + contextPriorityBlock + openingRule
+  return base + goalBlock + scopeBlock + schemaBlock + schemaPatchInstruction + intelligenceBriefBlock + businessStateBlock + memoryBlock + patternsBlock + connectorBlock + biHistoryBlock + governanceBlock + sessionContinuityBlock + contextPriorityBlock + openingRule
 }
 
 function buildReportPrompt(goalMode) {
@@ -997,15 +1030,17 @@ export default async function handler(req, res) {
     'anthropic-version': '2023-06-01',
   }
 
-  const [intelligenceBrief, userMemory, businessState, patterns, governanceContext, schemaContext] = await Promise.all([
+  const [intelligenceBrief, userMemory, businessState, governanceContext, schemaContext] = await Promise.all([
     fetchIntelligenceBrief(userId),
     fetchUserMemory(userId),
     fetchBusinessState(userId),
-    fetchPatterns(industry, domain),
     fetchGovernanceContext(userId),
     fetchSchemaContext(userId),
   ])
-  const connectorContext = await fetchConnectorContext(userId, supabase)
+  const [connectorContext, biHistoryContext] = await Promise.all([
+    fetchConnectorContext(userId, supabase),
+    fetchBIHistory(userId, supabase),
+  ])
   const sessionContinuity = buildSessionContinuity(messages)
 
   try {
@@ -1015,7 +1050,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
         max_tokens: isReport ? (goalMode ? 4000 : 3200) : 1024,
-        system: buildSystemPrompt(industry, domain, intelligenceBrief, userMemory, goalMode, goal, goalTimeline, goalBaseline, businessState, patterns, connectorContext, sessionContinuity, governanceContext, schemaContext),
+        system: buildSystemPrompt(industry, domain, intelligenceBrief, userMemory, goalMode, goal, goalTimeline, goalBaseline, businessState, patterns, connectorContext, sessionContinuity, governanceContext, schemaContext, biHistoryContext),
         messages: finalMessages,
       }),
     })
@@ -1084,7 +1119,7 @@ export default async function handler(req, res) {
               body: JSON.stringify({
                 model: 'claude-sonnet-4-6',
                 max_tokens: goalMode ? 4000 : 3200,
-                system: buildSystemPrompt(industry, domain, intelligenceBrief, userMemory, goalMode, goal, goalTimeline, goalBaseline, businessState, patterns, connectorContext, sessionContinuity, governanceContext, schemaContext),
+                system: buildSystemPrompt(industry, domain, intelligenceBrief, userMemory, goalMode, goal, goalTimeline, goalBaseline, businessState, patterns, connectorContext, sessionContinuity, governanceContext, schemaContext, biHistoryContext),
                 messages: retryMessages,
               }),
             })

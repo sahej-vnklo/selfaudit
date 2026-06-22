@@ -11,6 +11,7 @@ import { getBusinessOverview } from './lib/tools/get-overview.js'
 import { listPendingActions } from './lib/tools/list-actions.js'
 import { executeVoiceAction } from './lib/tools/execute-action.js'
 import { askQuestion } from './lib/tools/ask-question.js'
+import { createVoiceAction } from './lib/tools/create-action.js'
 import { handleEndOfCall } from './lib/handle-end-of-call.js'
 
 function validateSecret(req) {
@@ -35,6 +36,9 @@ async function runTool(toolName, params, userId) {
 
     case 'ask_question':
       return askQuestion(userId, params.question)
+
+    case 'create_action':
+      return createVoiceAction(userId, params.action_type, params.title, params.staged_args ?? {})
 
     default:
       return "I didn't understand that request. You can ask for a business overview, list your pending actions, or ask me a specific question about your business."

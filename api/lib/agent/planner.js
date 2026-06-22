@@ -11,8 +11,7 @@ const SOURCE_CATALOG = {
   recent_audits:       'Domain-level findings from the last 3 audits — what was flagged, root causes, which domains had issues',
   health_checks:       'Current business health score (0–100) and risk breakdown from the most recent automated health check',
   risk_alerts:         'Open risk flags not yet resolved — categorised by severity and domain',
-  hubspot_pipeline:    'Live CRM pipeline: open deals, total pipeline value, average deal size, deals closing within 14 days',
-  hubspot_contacts:    'CRM contacts: new leads this month, lifecycle stage breakdown, MQLs, SQLs, customer count',
+  connector_data:      'Live data from any connected tool — CRM deals, revenue/subscriptions, support tickets, pipeline value, churn rate. Use whenever the question is about numbers, trends, pipeline, revenue, customers, or support.',
 }
 
 // Messages that should get a conversational reply, not a full diagnosis
@@ -87,7 +86,7 @@ Rules:
 - Pick only sources genuinely relevant to this specific query
 - Fewer focused sources beat fetching everything
 - company_brain is almost always worth including — it grounds the answer
-- If the query is about revenue/pipeline/deals, include hubspot sources if available
+- If the query is about revenue, pipeline, deals, churn, customers, or support tickets — include connector_data if available
 - Use intent "goal_pursuit" when the user is asking how to achieve a future state, reach a target, or close a gap to a goal ("how do I get to", "hit $X", "reach X by", "want to achieve")
 - Output ONLY valid JSON, no prose
 
@@ -160,15 +159,17 @@ Rules:
 
 // ── Available source detection (unchanged) ────────────────────────────────────
 
-export function getAvailableDataSources(userBrain, integrations) {
+// connectionMap: output of getComposioConnectionMap(userId) — any connected app qualifies.
+// If the user has any tool connected (HubSpot, Stripe, Zendesk, Slack, anything), connector_data is available.
+export function getAvailableDataSources(userBrain, connectionMap) {
   const sources = ['company_brain', 'recent_audits', 'health_checks', 'risk_alerts']
 
   if (userBrain?.intelligence_summary || userBrain?.top_priorities?.length) {
     sources.push('intelligence_brief')
   }
 
-  if (integrations?.hubspot?.access_token) {
-    sources.push('hubspot_pipeline', 'hubspot_contacts')
+  if (connectionMap && Object.keys(connectionMap).length > 0) {
+    sources.push('connector_data')
   }
 
   return sources

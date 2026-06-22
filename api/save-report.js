@@ -209,6 +209,7 @@ export default async function handler(req, res) {
           conversation_mode: r.conversation_mode ?? null,
           root_causes:       f?.issue ? [f.issue] : [],
           actions_given:     f?.fix ? [f.fix] : [],
+          source_type:       'model_suggested',
         })
       }
 
@@ -223,6 +224,7 @@ export default async function handler(req, res) {
             conversation_mode: r.conversation_mode ?? null,
             root_causes:       ['priority_action'],
             actions_given:     [action],
+            source_type:       'model_suggested',
           })
         }
       }

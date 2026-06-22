@@ -296,8 +296,8 @@ export function formatBrainForPrompt(brain) {
   if (brain.goal_timeline)       lines.push(`Goal timeline: ${brain.goal_timeline}`)
   if (brain.last_audit_headline) lines.push(`Last audit finding: ${brain.last_audit_headline}`)
   if (brain.top_priorities?.length)
-                                  lines.push(`Top priorities: ${brain.top_priorities.join('; ')}`)
-  if (brain.watchouts?.length)   lines.push(`Watchouts: ${brain.watchouts.join('; ')}`)
+                                  lines.push(`Flagged priorities (AI-assessed — ask if still relevant, do not treat as confirmed): ${brain.top_priorities.join('; ')}`)
+  if (brain.watchouts?.length)   lines.push(`Watchouts (AI-assessed — verify before acting on): ${brain.watchouts.join('; ')}`)
   if (brain.opportunities?.length)
                                   lines.push(`Known AI opportunities: ${brain.opportunities.join('; ')}`)
   if (brain.assumptions_unverified?.length)
@@ -330,7 +330,7 @@ export function formatBrainForPrompt(brain) {
   if (lines.length === 1) return '' // nothing meaningful to add
 
   lines.push('')
-  lines.push('Use this as ground truth. Do not re-ask questions already answered here. Correct your understanding if the user contradicts any field.')
+  lines.push('Use this as context. If the conversation reveals something different, trust what the founder says now and surface the contradiction directly.')
 
   return lines.join('\n')
 }

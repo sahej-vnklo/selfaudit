@@ -26,7 +26,8 @@ Rules:
 - When approving or dismissing, pass the exact action_id from the list.
 - If you don't know something, say so. Never fabricate data.
 - Acknowledge difficulty before advising — if something is bad, say it plainly first.
-- End each response with a clear signal of what they can do next.`,
+- End each response with a clear signal of what they can do next.
+- If the conversation leads to a decision that needs an email, Slack message, or Notion page — gather the required details from the user (recipient, channel, content, etc.), then call create_action. After creating, offer to execute it immediately by passing the returned action_id to approve_action.`,
     tools: [
       {
         type: 'function',
@@ -104,6 +105,33 @@ Rules:
               },
             },
             required: ['question'],
+          },
+        },
+        server: { url: `${APP_URL}/api/vapi/webhook` },
+      },
+      {
+        type: 'function',
+        function: {
+          name: 'create_action',
+          description: 'Create a new action from this voice conversation — an email draft, Slack message, or Notion page. Gather all required details from the user FIRST, then call this. The response includes an action_id you can immediately pass to approve_action to execute it.',
+          parameters: {
+            type: 'object',
+            properties: {
+              action_type: {
+                type: 'string',
+                enum: ['EMAIL', 'TEAM_BRIEF', 'ACTION_PLAN'],
+                description: 'EMAIL = Gmail draft, TEAM_BRIEF = Slack message, ACTION_PLAN = Notion page.',
+              },
+              title: {
+                type: 'string',
+                description: 'Short human-readable title, e.g. "Email to Sarah about Q2 targets" or "Growth team brief".',
+              },
+              staged_args: {
+                type: 'object',
+                description: 'All arguments needed to execute. EMAIL: { recipient_email, subject, body }. TEAM_BRIEF: { channel, markdown_text }. ACTION_PLAN: { parent_id, title, markdown }.',
+              },
+            },
+            required: ['action_type', 'title', 'staged_args'],
           },
         },
         server: { url: `${APP_URL}/api/vapi/webhook` },

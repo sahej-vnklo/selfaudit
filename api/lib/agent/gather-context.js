@@ -178,7 +178,7 @@ export async function gatherAgentContext(userId, plan) {
     }
   } catch { /* non-blocking */ }
 
-  const needsConnector = needed.includes('hubspot_pipeline') || needed.includes('hubspot_contacts')
+  const needsConnector = needed.includes('connector_data') || needed.includes('hubspot_pipeline') || needed.includes('hubspot_contacts')
 
   // Parallel loads for everything
   const [briefBlock, auditBlock, healthBlock, alertBlock, connectorBlock, decisionsBlock, companyDNABlock, historicalMemoryBlock] = await Promise.allSettled([

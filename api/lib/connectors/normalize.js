@@ -285,6 +285,104 @@ export function normalizeConnectorData(connectorData) {
   return merged
 }
 
+// Extracts raw row arrays from connector data for BI history storage.
+// Called by the sync cron alongside normalizeConnectorData.
+// Returns { deals, subscriptions, tickets } — each an array of clean rows ready to INSERT.
+export function extractRawRows(connectorData) {
+  const deals         = []
+  const subscriptions = []
+  const tickets       = []
+
+  for (const [, providerData] of Object.entries(connectorData || {})) {
+    const { provider, category, data } = providerData
+
+    if (category === 'crm') {
+      const rawDeals  = data?.deals?.results  ?? data?.deals?.data  ?? []
+      const pipelines = data?.pipelines?.results ?? data?.pipelines?.data ?? []
+      const stageRows     = pipelines.flatMap(p => p.stages || [])
+      const stageNameById = Object.fromEntries(stageRows.map(s => [s.id, s.label || s.id]))
+
+      for (const d of rawDeals) {
+        const p      = d.properties || {}
+        const amount = p.amount != null ? Number(p.amount) : null
+        deals.push({
+          provider,
+          deal_id:     d.id,
+          deal_name:   p.dealname    || null,
+          amount:      Number.isFinite(amount) ? amount : null,
+          stage:       stageNameById[p.dealstage] || p.dealstage || null,
+          close_date:  p.closedate   ? String(p.closedate).slice(0, 10) : null,
+          probability: p.hs_deal_stage_probability != null ? Number(p.hs_deal_stage_probability) : null,
+          pipeline:    p.pipeline    || null,
+        })
+      }
+    }
+
+    if (category === 'revenue') {
+      const activeSubs   = data?.active_subs?.data   ?? data?.active_subs?.results   ?? []
+      const canceledSubs = data?.canceled_subs?.data ?? data?.canceled_subs?.results ?? []
+
+      const toMonthly = (sub) => {
+        let m = 0
+        for (const item of sub.items?.data ?? []) {
+          const price = item.price
+          if (!price?.unit_amount) continue
+          const a  = price.unit_amount / 100
+          const iv = price.recurring?.interval       ?? 'month'
+          const ic = price.recurring?.interval_count ?? 1
+          if      (iv === 'month') m += a / ic
+          else if (iv === 'year')  m += a / ic / 12
+          else if (iv === 'week')  m += a * 52 / 12 / ic
+          else if (iv === 'day')   m += a * 365 / 12 / ic
+        }
+        return Number(m.toFixed(2))
+      }
+
+      for (const s of activeSubs) {
+        subscriptions.push({
+          provider,
+          sub_id:        s.id,
+          customer_id:   s.customer || null,
+          status:        'active',
+          amount_monthly: toMonthly(s),
+          plan_interval: s.items?.data?.[0]?.price?.recurring?.interval || null,
+          created_at:    s.created   ? new Date(s.created * 1000).toISOString()    : null,
+          canceled_at:   null,
+        })
+      }
+
+      for (const s of canceledSubs) {
+        subscriptions.push({
+          provider,
+          sub_id:        s.id,
+          customer_id:   s.customer || null,
+          status:        'canceled',
+          amount_monthly: toMonthly(s),
+          plan_interval: s.items?.data?.[0]?.price?.recurring?.interval || null,
+          created_at:    s.created    ? new Date(s.created * 1000).toISOString()    : null,
+          canceled_at:   s.canceled_at ? new Date(s.canceled_at * 1000).toISOString() : null,
+        })
+      }
+    }
+
+    if (category === 'support') {
+      const rawTickets = data?.open_tickets?.tickets ?? data?.open_tickets?.results ?? data?.open_tickets ?? []
+      for (const t of rawTickets) {
+        tickets.push({
+          provider,
+          ticket_id:   String(t.id),
+          status:      t.status     || null,
+          priority:    t.priority   || null,
+          created_at:  t.created_at || null,
+          resolved_at: t.updated_at || null,
+        })
+      }
+    }
+  }
+
+  return { deals, subscriptions, tickets }
+}
+
 // Formats normalized data as a text block for Claude prompts.
 export function formatNormalizedForPrompt(normalized) {
   if (!normalized) return ''

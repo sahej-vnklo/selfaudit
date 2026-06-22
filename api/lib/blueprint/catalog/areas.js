@@ -87,7 +87,7 @@ export const AREA_FINANCE_ACCOUNTING = createArea({
     createMetricMapping({ metricKey: 'churn_rate',    transform: 'safeNumber', sources: [{ type: 'integration', integration: 'stripe', field: 'churn_rate' },    { type: 'brief', path: 'financial.churn' }],      source: 'stripe' }),
     createMetricMapping({ metricKey: 'ltv',           transform: 'safeNumber', sources: [{ type: 'integration', integration: 'stripe', field: 'ltv' },           { type: 'brief', path: 'financial.ltv' }],        source: 'stripe' }),
     createMetricMapping({ metricKey: 'burn_rate',     transform: 'safeNumber', sources: [{ type: 'brief', path: 'financial.burn_rate' }],                        source: 'intelligence_brief' }),
-    createMetricMapping({ metricKey: 'runway_months', transform: 'safeNumber', sources: [{ type: 'brief', path: 'financial.runway' }, { type: 'brief', path: 'context.runway' }], source: 'intelligence_brief' }),
+    createMetricMapping({ metricKey: 'runway_months', transform: 'safeNumber', sources: [{ type: 'brief', path: 'financial.runway' }], source: 'intelligence_brief' }),
     createMetricMapping({ metricKey: 'ltv_cac_ratio', transform: 'divide',     inputs: [{ metricKey: 'ltv' }, { metricKey: 'cac', sources: [{ type: 'brief', path: 'financial.cac' }] }], source: 'derived' }),
   ],
 })
