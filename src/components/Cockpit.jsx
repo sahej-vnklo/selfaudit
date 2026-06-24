@@ -102,29 +102,58 @@ function EmptyState({ onNavigate }) {
 }
 
 const MONITORING_STEPS = [
-  'Connecting to your tools…',
-  'Reading live metrics…',
-  'Evaluating business health…',
-  'Identifying risks across areas…',
-  'Finalising your first report…',
+  { text: 'Connecting to your tools',     ms: 0    },
+  { text: 'Reading live metrics',         ms: 2800 },
+  { text: 'Evaluating business health',   ms: 5800 },
+  { text: 'Identifying risks',            ms: 8800 },
+  { text: 'Composing diagnostics',        ms: 11000 },
 ]
 
+function AnimatedDots() {
+  const [dots, setDots] = useState('.')
+  useEffect(() => {
+    const t = setInterval(() => setDots(d => d.length >= 3 ? '.' : d + '.'), 400)
+    return () => clearInterval(t)
+  }, [])
+  return <span style={{ opacity: 0.5 }}>{dots}</span>
+}
+
 function ReadyState({ onStart, running }) {
-  const [stepIdx, setStepIdx] = useState(0)
+  const [visibleSteps, setVisibleSteps] = useState([])
+  const [doneSteps, setDoneSteps]       = useState(new Set())
 
   useEffect(() => {
-    if (!running) { setStepIdx(0); return }
-    const timings = [0, 2500, 5500, 9000, 12000]
-    const timers = timings.map((t, i) => setTimeout(() => setStepIdx(i), t))
+    if (!running) { setVisibleSteps([]); setDoneSteps(new Set()); return }
+
+    const timers = []
+    MONITORING_STEPS.forEach((step, i) => {
+      timers.push(setTimeout(() => setVisibleSteps(prev => [...prev, i]), step.ms))
+      if (i < MONITORING_STEPS.length - 1) {
+        timers.push(setTimeout(() => setDoneSteps(prev => new Set([...prev, i])), MONITORING_STEPS[i + 1].ms - 100))
+      }
+    })
     return () => timers.forEach(clearTimeout)
   }, [running])
 
   if (running) return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20, padding: '60px 40px' }}>
-      <div style={{ width: 36, height: 36, border: `3px solid ${C.border}`, borderTopColor: C.accent, borderRadius: '50%', animation: 'spin 0.9s linear infinite' }} />
-      <div style={{ textAlign: 'center' }}>
-        <div style={{ fontSize: 14, fontWeight: 600, color: C.text, marginBottom: 6 }}>Running your first audit</div>
-        <div style={{ fontSize: 13, color: C.textMuted, minHeight: 20, transition: 'opacity 0.3s' }}>{MONITORING_STEPS[stepIdx]}</div>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 40px' }}>
+      <div style={{ fontFamily: 'monospace', fontSize: 13, display: 'flex', flexDirection: 'column', gap: 8, minWidth: 280 }}>
+        {visibleSteps.map(i => {
+          const done = doneSteps.has(i)
+          const isLast = i === visibleSteps[visibleSteps.length - 1]
+          return (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, color: done ? C.textMuted : C.text }}>
+              <span style={{ fontSize: 11, minWidth: 14, color: done ? C.green : C.accent }}>
+                {done ? '✓' : '›'}
+              </span>
+              <span>
+                {MONITORING_STEPS[i].text}
+                {!done && isLast && <AnimatedDots />}
+                {done && <span style={{ opacity: 0.4 }}> done</span>}
+              </span>
+            </div>
+          )
+        })}
       </div>
       <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
     </div>
