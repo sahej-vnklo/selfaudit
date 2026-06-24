@@ -72,27 +72,31 @@ function nextCheckLabel() {
 
 // ── Loading / empty states ──────────────────────────────────────────────────
 
-function EmptyState({ onRun, refreshing }) {
+function EmptyState({ onNavigate }) {
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, padding: '60px 40px', color: C.textMuted }}>
-      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.4 }}>
-        <rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/>
-        <rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/>
-      </svg>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 24, padding: '60px 40px', color: C.textMuted }}>
       <div style={{ textAlign: 'center' }}>
-        <div style={{ fontSize: 15, fontWeight: 600, color: C.text, marginBottom: 6 }}>No analysis yet</div>
-        <div style={{ fontSize: 13, color: C.textMuted, maxWidth: 340, lineHeight: 1.6 }}>
-          Run your first health check to see a briefing on what's happening across your business.
+        <div style={{ fontSize: 15, fontWeight: 600, color: C.text, marginBottom: 8 }}>No signals yet</div>
+        <div style={{ fontSize: 13, color: C.textMuted, maxWidth: 380, lineHeight: 1.7 }}>
+          Connect your tools and set your metrics. SelfAudit monitors your business continuously from there — no prompting required.
         </div>
       </div>
-      <button
-        type="button"
-        onClick={onRun}
-        disabled={refreshing}
-        style={{ padding: '9px 20px', borderRadius: 8, background: C.accentLight, border: `1px solid ${C.accent}`, color: C.accentText, fontSize: 13, fontWeight: 600, cursor: refreshing ? 'not-allowed' : 'pointer', opacity: refreshing ? 0.6 : 1 }}
-      >
-        {refreshing ? 'Running analysis…' : 'Run analysis now'}
-      </button>
+      <div style={{ display: 'flex', gap: 10 }}>
+        <button
+          type="button"
+          onClick={() => onNavigate('connectors')}
+          style={{ padding: '9px 20px', borderRadius: 8, background: C.accentLight, border: `1px solid ${C.accent}`, color: C.accentText, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
+        >
+          Connect tools
+        </button>
+        <button
+          type="button"
+          onClick={() => onNavigate('logic')}
+          style={{ padding: '9px 20px', borderRadius: 8, background: 'transparent', border: `1px solid ${C.border}`, color: C.text, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
+        >
+          Set metrics
+        </button>
+      </div>
     </div>
   )
 }
@@ -485,7 +489,7 @@ export default function CockpitSection({ user, navigateSection }) {
 
   if (!data?.has_data) return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-      <EmptyState onRun={runHealthCheck} refreshing={refreshing} />
+      <EmptyState onNavigate={navigateSection} />
     </div>
   )
 
