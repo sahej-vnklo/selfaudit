@@ -81,20 +81,20 @@ function EmptyState({ onNavigate }) {
           Connect your tools and set your metrics. SelfAudit monitors your business continuously from there — no prompting required.
         </div>
       </div>
-      <div style={{ display: 'flex', gap: 10 }}>
-        <button
-          type="button"
-          onClick={() => onNavigate('connectors')}
-          style={{ padding: '9px 20px', borderRadius: 8, background: C.accentLight, border: `1px solid ${C.accent}`, color: C.accentText, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
-        >
-          Connect tools
-        </button>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
         <button
           type="button"
           onClick={() => onNavigate('logic')}
-          style={{ padding: '9px 20px', borderRadius: 8, background: 'transparent', border: `1px solid ${C.border}`, color: C.text, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
+          style={{ padding: '9px 24px', borderRadius: 8, background: C.accentLight, border: `1px solid ${C.accent}`, color: C.accentText, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
         >
           Set metrics
+        </button>
+        <button
+          type="button"
+          onClick={() => onNavigate('connectors')}
+          style={{ padding: '6px 16px', borderRadius: 8, background: 'transparent', border: 'none', color: C.textMuted, fontSize: 12, cursor: 'pointer', textDecoration: 'underline' }}
+        >
+          or connect your tools
         </button>
       </div>
     </div>
