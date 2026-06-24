@@ -101,6 +101,54 @@ function EmptyState({ onNavigate }) {
   )
 }
 
+const MONITORING_STEPS = [
+  'Connecting to your tools…',
+  'Reading live metrics…',
+  'Evaluating business health…',
+  'Identifying risks across areas…',
+  'Finalising your first report…',
+]
+
+function ReadyState({ onStart, running }) {
+  const [stepIdx, setStepIdx] = useState(0)
+
+  useEffect(() => {
+    if (!running) { setStepIdx(0); return }
+    const timings = [0, 2500, 5500, 9000, 12000]
+    const timers = timings.map((t, i) => setTimeout(() => setStepIdx(i), t))
+    return () => timers.forEach(clearTimeout)
+  }, [running])
+
+  if (running) return (
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20, padding: '60px 40px' }}>
+      <div style={{ width: 36, height: 36, border: `3px solid ${C.border}`, borderTopColor: C.accent, borderRadius: '50%', animation: 'spin 0.9s linear infinite' }} />
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ fontSize: 14, fontWeight: 600, color: C.text, marginBottom: 6 }}>Running your first audit</div>
+        <div style={{ fontSize: 13, color: C.textMuted, minHeight: 20, transition: 'opacity 0.3s' }}>{MONITORING_STEPS[stepIdx]}</div>
+      </div>
+      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+    </div>
+  )
+
+  return (
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 24, padding: '60px 40px' }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ fontSize: 15, fontWeight: 600, color: C.text, marginBottom: 8 }}>You're all set</div>
+        <div style={{ fontSize: 13, color: C.textMuted, maxWidth: 360, lineHeight: 1.7 }}>
+          Your tools are connected. Start monitoring and SelfAudit will evaluate your business health and flag what needs attention — automatically from here.
+        </div>
+      </div>
+      <button
+        type="button"
+        onClick={onStart}
+        style={{ padding: '11px 32px', borderRadius: 8, background: C.accent, border: 'none', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', letterSpacing: '0.01em' }}
+      >
+        Start monitoring
+      </button>
+    </div>
+  )
+}
+
 function LoadingSkeleton() {
   const shimmer = { background: 'var(--surface2)', borderRadius: 6, animation: 'cockpit-shimmer 1.4s ease-in-out infinite' }
   return (
@@ -432,6 +480,7 @@ export default function CockpitSection({ user, navigateSection }) {
   const [data, setData]             = useState(null)
   const [loading, setLoading]       = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const [monitoring, setMonitoring] = useState(false)
   const [error, setError]           = useState(null)
   const [dismissed, setDismissed]   = useState(new Set())
 
@@ -457,24 +506,29 @@ export default function CockpitSection({ user, navigateSection }) {
 
   useEffect(() => { fetchData() }, [fetchData])
 
-  const runHealthCheck = async () => {
+  const runHealthCheck = async (fromReadyState = false) => {
     if (!user?.id || refreshing) return
+    if (fromReadyState) setMonitoring(true)
     setRefreshing(true)
     try {
       const sb = await initSupabase()
       const { data: { session } } = await sb.auth.getSession()
       const token = session?.access_token || ''
-      await fetch('/api/run-health-check', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-        body:    JSON.stringify({ userId: user.id }),
-      })
+      const [healthRes] = await Promise.all([
+        fetch('/api/run-health-check', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+          body:    JSON.stringify({ userId: user.id }),
+        }),
+        fromReadyState ? new Promise(r => setTimeout(r, 14000)) : Promise.resolve(),
+      ])
       setDismissed(new Set())
       await fetchData()
     } catch {
       await fetchData()
     } finally {
       setRefreshing(false)
+      setMonitoring(false)
     }
   }
 
@@ -487,11 +541,17 @@ export default function CockpitSection({ user, navigateSection }) {
     </div>
   )
 
-  if (!data?.has_data) return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-      <EmptyState onNavigate={navigateSection} />
-    </div>
-  )
+  if (!data?.has_data) {
+    const isReady = data?.has_connectors || data?.metrics_configured
+    return (
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        {isReady
+          ? <ReadyState onStart={() => runHealthCheck(true)} running={monitoring} />
+          : <EmptyState onNavigate={navigateSection} />
+        }
+      </div>
+    )
+  }
 
   // ── Derived values ──────────────────────────────────────────────────────
   const areaLabelById = new Map((data.selected_areas || []).map(a => [a.id, a.label]))

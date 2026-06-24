@@ -355,6 +355,7 @@ export default async function handler(req, res) {
     goal_score:           state?.goal_score ?? null,
     calibration,
     metrics_configured:   metricsCount > 0,
+    has_connectors:       connProviders.length > 0,
     has_data:             !!hc,
     comm_channels:        commChannels,
     saved_comm_pref:      savedCommPref,
