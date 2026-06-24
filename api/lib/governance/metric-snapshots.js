@@ -21,6 +21,7 @@ function metric(key, value, source) {
 }
 
 function safeNumber(value) {
+  if (value == null) return null
   const parsed = Number(value)
   return Number.isFinite(parsed) ? parsed : null
 }
