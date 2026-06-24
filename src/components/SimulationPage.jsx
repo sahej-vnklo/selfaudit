@@ -489,16 +489,45 @@ export default function SimulationPage({ userId }) {
       setMetricStates(states)
       setMetricValues(values)
 
-      const narrative = result.cascade?.narrative || ''
       const delta = result.delta || {}
-      const affectedCount = (delta.newFindings?.length || 0) + (delta.worsenedFindings?.length || 0)
-      const areaChanges = (delta.areaStatusChanges || [])
-        .map(c => `${c.areaId.split('-').map(w => w[0].toUpperCase() + w.slice(1)).join(' ')}: ${c.before} → ${c.after}`)
-        .join(', ')
+      const patch = result.appliedPatch || {}
+      const newFindings = delta.newFindings || []
+      const worsenedFindings = delta.worsenedFindings || []
+      const improvedFindings = delta.improvedFindings || []
+      const areaChanges = delta.areaStatusChanges || []
 
-      let reply = narrative || 'Scenario applied.'
-      if (affectedCount > 0) reply += `\n\n${affectedCount} finding${affectedCount > 1 ? 's' : ''} triggered downstream.`
-      if (areaChanges) reply += `\n\nArea status: ${areaChanges}.`
+      const fmt = (v) => v != null ? String(Math.round(v * 100) / 100) : '—'
+      const beforeStr = patch.before != null ? fmt(patch.before) : 'not set'
+      const afterStr = fmt(patch.after)
+
+      const lines = []
+      lines.push(`${scenario.label || patch.metricKey}: ${beforeStr} → ${afterStr}`)
+
+      if (newFindings.length || worsenedFindings.length) {
+        const triggered = [...newFindings, ...worsenedFindings]
+        lines.push(`${triggered.length} new issue${triggered.length > 1 ? 's' : ''} flagged:`)
+        triggered.slice(0, 3).forEach(f => lines.push(`• ${f.title} (${f.severity})`))
+      } else if (improvedFindings.length) {
+        lines.push(`${improvedFindings.length} issue${improvedFindings.length > 1 ? 's' : ''} resolved or improved.`)
+      } else {
+        lines.push('No threshold breaches at this level. Business stays within acceptable range.')
+      }
+
+      if (areaChanges.length) {
+        const changeStr = areaChanges.map(c => {
+          const label = c.areaId.split('-').map(w => w[0].toUpperCase() + w.slice(1)).join(' ')
+          return `${label} moves from ${c.before} → ${c.after}`
+        }).join('. ')
+        lines.push(changeStr + '.')
+      }
+
+      const cascade = result.cascade?.downstream || []
+      if (cascade.length) {
+        const chain = cascade.slice(0, 3).map(c => c.nodeId).join(' → ')
+        lines.push(`Downstream pressure: ${chain}.`)
+      }
+
+      let reply = lines.join('\n\n')
 
       setMessages(prev => [...prev.slice(0, -1), { role: 'ai', text: reply }])
     } catch (err) {
