@@ -6,6 +6,7 @@ import { createClient } from '@supabase/supabase-js'
 import { validateUserToken } from './lib/auth.js'
 import { getIndustry, getArea } from './lib/blueprint/catalog/index.js'
 import { getCommChannelProviders } from './lib/connectors/registry.js'
+import { getComposioConnectionMap } from './lib/connectors/composio.js'
 
 const AREA_META = {
   'customer-service':     { name: 'Support',        role: 'Head of Customer Support',  key_metric: 'first_response_time', metric_label: 'Avg. Response Time', unit: 'h' },
@@ -129,6 +130,14 @@ export default async function handler(req, res) {
   const metricsCount      = metricsCountRes.status === 'fulfilled' ? (metricsCountRes.value.count ?? 0) : 0
   const connProviders     = connSnapRes.status     === 'fulfilled' ? (connSnapRes.value.data?.providers ?? []) : []
   const savedPrefs        = commPrefsRes.status    === 'fulfilled' ? (commPrefsRes.value.data ?? []) : []
+
+  // Live Composio connection check — connector_snapshots is only populated by cron,
+  // so we check Composio directly to detect freshly-connected tools.
+  let liveConnectionCount = 0
+  try {
+    const connectionMap = await getComposioConnectionMap(userId)
+    liveConnectionCount = Object.values(connectionMap || {}).filter(c => c.connected).length
+  } catch { /* non-fatal — fall back to snapshot providers */ }
 
   // Communication channels — email is always available; Slack/Gmail show if connected
   const COMM_CONNECTORS = getCommChannelProviders()
@@ -355,7 +364,7 @@ export default async function handler(req, res) {
     goal_score:           state?.goal_score ?? null,
     calibration,
     metrics_configured:   metricsCount > 0,
-    has_connectors:       connProviders.length > 0,
+    has_connectors:       liveConnectionCount > 0 || connProviders.length > 0,
     has_data:             !!hc,
     comm_channels:        commChannels,
     saved_comm_pref:      savedCommPref,
