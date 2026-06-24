@@ -956,8 +956,8 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
     const syncSection = () => setSection(getSectionFromHash())
     window.addEventListener('hashchange', syncSection)
     window.addEventListener('popstate', syncSection)
-    if (window.location.hash === '#dashboard' || !window.location.hash) {
-      history.replaceState({ section: 'home' }, '', '#home')
+    if (window.location.hash === '#dashboard' || window.location.hash === '#home' || !window.location.hash) {
+      history.replaceState({ section: 'cockpit' }, '', '#cockpit')
     }
     return () => {
       window.removeEventListener('hashchange', syncSection)
