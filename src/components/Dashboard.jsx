@@ -363,7 +363,7 @@ const LEGACY_NOTIFICATION_AREA_MAP = {
   customer_experience: 'customer_health',
 }
 const GOVERNANCE_AREA_LABELS = Object.fromEntries(OPERATIONAL_AREAS.map((area) => [area.id, area.label]))
-const SECTIONS = ['home', 'oversight', 'intelligence', 'alerts', 'connectors', 'simulate', 'agent', 'logic', 'billing', 'account']
+const SECTIONS = ['home', 'cockpit', 'oversight', 'intelligence', 'alerts', 'connectors', 'simulate', 'agent', 'logic', 'billing', 'account']
 const INTELLIGENCE_ONLY_SECTIONS = new Set(['oversight', 'alerts', 'connectors', 'agent'])
 const WELCOME_TOUR_ROLLOUT_AT = Date.parse('2026-05-24T00:30:00-04:00')
 
