@@ -1388,7 +1388,9 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
 
   const navigateSection = (nextSection) => {
     const [sectionName, query = ''] = nextSection.split('?')
-    const view = new URLSearchParams(query).get('view') || 'all'
+    const params = new URLSearchParams(query)
+    const view = params.get('view') || 'all'
+    const tab  = params.get('tab')
     if (activationLocked && sectionName !== 'billing' && sectionName !== 'account') {
       history.pushState({ section: 'billing' }, '', '#billing')
       setSection('billing')
@@ -1397,6 +1399,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
     history.pushState({ section: sectionName }, '', `#${nextSection}`)
     setSection(sectionName)
     setDeptView(view)
+    if (tab) setAccountTab(tab)
   }
 
   const baseAuditInfo = () => ({

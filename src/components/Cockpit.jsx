@@ -84,17 +84,17 @@ function EmptyState({ onNavigate }) {
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
         <button
           type="button"
-          onClick={() => onNavigate('logic')}
+          onClick={() => onNavigate('connectors')}
           style={{ padding: '9px 24px', borderRadius: 8, background: C.accentLight, border: `1px solid ${C.accent}`, color: C.accentText, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
         >
-          Set metrics
+          Connect your tools
         </button>
         <button
           type="button"
-          onClick={() => onNavigate('connectors')}
+          onClick={() => onNavigate('account?tab=metrics')}
           style={{ padding: '6px 16px', borderRadius: 8, background: 'transparent', border: 'none', color: C.textMuted, fontSize: 12, cursor: 'pointer', textDecoration: 'underline' }}
         >
-          or connect your tools
+          or set metrics manually
         </button>
       </div>
     </div>
@@ -548,14 +548,14 @@ export default function CockpitSection({ user, navigateSection }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: C.amberBg, border: `1px solid ${C.amber}`, borderRadius: 10, padding: '11px 16px' }}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: C.amber, flexShrink: 0 }} aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
           <span style={{ fontSize: 13, color: C.amberText, flex: 1, lineHeight: 1.5 }}>
-            Monitoring is paused. The system needs your numbers before it can diagnose anything. Set your Logic to start.
+            Monitoring is paused. Connect your tools or add metrics manually so the system has something to evaluate.
           </span>
           <button
             type="button"
-            onClick={() => navigateSection?.('logic')}
+            onClick={() => navigateSection?.('connectors')}
             style={{ flexShrink: 0, fontSize: 12, fontWeight: 600, color: C.amberText, background: 'transparent', border: `1px solid ${C.amber}`, borderRadius: 6, padding: '5px 12px', cursor: 'pointer', whiteSpace: 'nowrap' }}
           >
-            Set Logic →
+            Connect tools →
           </button>
         </div>
       )}
