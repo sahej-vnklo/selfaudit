@@ -422,6 +422,7 @@ export default function SimulationPage({ userId }) {
   ])
   const [input, setInput] = useState('')
   const [isRunning, setIsRunning] = useState(false)
+  const [scenariosUsed, setScenariosUsed] = useState(false)
 
   const msgsEndRef = useRef(null)
 
@@ -488,6 +489,7 @@ export default function SimulationPage({ userId }) {
       const { states, values } = mapResult(result, areas)
       setMetricStates(states)
       setMetricValues(values)
+      setScenariosUsed(true)
 
       const delta = result.delta || {}
       const patch = result.appliedPatch || {}
@@ -496,21 +498,36 @@ export default function SimulationPage({ userId }) {
       const improvedFindings = delta.improvedFindings || []
       const areaChanges = delta.areaStatusChanges || []
 
-      const fmt = (v) => v != null ? String(Math.round(v * 100) / 100) : '—'
-      const beforeStr = patch.before != null ? fmt(patch.before) : 'not set'
-      const afterStr = fmt(patch.after)
+      // Detect unit from metric key for human-readable formatting
+      const mk = patch.metricKey || ''
+      const isPercent = mk.includes('rate') || mk.includes('pct') || mk.includes('churn') || mk.includes('margin') || mk.includes('conversion')
+      const isMoney  = mk.includes('mrr') || mk.includes('revenue') || mk.includes('value') || mk.includes('arr') || mk.includes('ltv') || mk.includes('cac')
+      const fmtVal = (v) => {
+        if (v == null) return null
+        const n = Math.round(v * 100) / 100
+        if (isMoney) return `$${n.toLocaleString()}`
+        if (isPercent) return `${n}%`
+        return String(n)
+      }
+      const beforeStr = patch.before != null ? fmtVal(patch.before) : null
+      const afterStr  = fmtVal(patch.after) ?? String(patch.after)
+      const metricLabel = scenario.label || mk.replace(/_/g, ' ')
 
       const lines = []
-      lines.push(`${scenario.label || patch.metricKey}: ${beforeStr} → ${afterStr}`)
+      lines.push(beforeStr
+        ? `If ${metricLabel} goes to ${afterStr} (was ${beforeStr}):`
+        : `Simulating ${metricLabel} at ${afterStr}:`)
 
       if (newFindings.length || worsenedFindings.length) {
         const triggered = [...newFindings, ...worsenedFindings]
-        lines.push(`${triggered.length} new issue${triggered.length > 1 ? 's' : ''} flagged:`)
-        triggered.slice(0, 3).forEach(f => lines.push(`• ${f.title} (${f.severity})`))
+        triggered.slice(0, 3).forEach(f => {
+          const desc = f.summary || f.description || f.title
+          lines.push(`• ${desc}`)
+        })
       } else if (improvedFindings.length) {
-        lines.push(`${improvedFindings.length} issue${improvedFindings.length > 1 ? 's' : ''} resolved or improved.`)
+        lines.push(`This actually helps — ${improvedFindings.length} issue${improvedFindings.length > 1 ? 's' : ''} move in the right direction.`)
       } else {
-        lines.push('No threshold breaches at this level. Business stays within acceptable range.')
+        lines.push('No threshold breaches at this level. You\'re still in the safe zone.')
       }
 
       if (areaChanges.length) {
@@ -614,7 +631,7 @@ export default function SimulationPage({ userId }) {
               <div style={st.chatSub}>Real-time cascade engine</div>
             </div>
 
-            {suggestions.length > 0 && (
+            {suggestions.length > 0 && !scenariosUsed && (
               <div style={st.pills}>
                 <div style={st.pillsLabel}>Quick scenarios</div>
                 {suggestions.map((sg, i) => (
