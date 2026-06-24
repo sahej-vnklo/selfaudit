@@ -47,7 +47,7 @@ function SavedBadge() {
   )
 }
 
-function MetricRow({ areaId, metric, userId, token }) {
+function MetricRow({ areaId, metric, userId }) {
   const [val, setVal]       = useState(metric.savedValue != null ? String(metric.savedValue) : '')
   const [saved, setSaved]   = useState(metric.savedValue != null)
   const [saving, setSaving] = useState(false)
@@ -59,6 +59,9 @@ function MetricRow({ areaId, metric, userId, token }) {
     if (isNaN(num)) return
     setSaving(true); setErr(null)
     try {
+      const sb = await initSupabase()
+      const { data: { session } } = await sb.auth.getSession()
+      const token = session?.access_token || ''
       const res = await fetch('/api/custom-metrics', {
         method:  'PATCH',
         headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
@@ -71,7 +74,7 @@ function MetricRow({ areaId, metric, userId, token }) {
     } finally {
       setSaving(false)
     }
-  }, [userId, areaId, metric.key, metric.unit, token])
+  }, [userId, areaId, metric.key, metric.unit])
 
   function handleChange(e) {
     const v = e.target.value
@@ -131,7 +134,7 @@ function MetricRow({ areaId, metric, userId, token }) {
   )
 }
 
-function AreaSection({ area, userId, token }) {
+function AreaSection({ area, userId }) {
   const filledCount = area.metrics.filter(m => m.savedValue != null).length
 
   return (
@@ -143,7 +146,7 @@ function AreaSection({ area, userId, token }) {
         </span>
       </div>
       {area.metrics.map(metric => (
-        <MetricRow key={metric.key} areaId={area.id} metric={metric} userId={userId} token={token} />
+        <MetricRow key={metric.key} areaId={area.id} metric={metric} userId={userId} />
       ))}
     </div>
   )
@@ -153,7 +156,6 @@ export default function LogicPage({ user }) {
   const [areas, setAreas]     = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError]     = useState(null)
-  const [token, setToken]     = useState(null)
 
   useEffect(() => {
     if (!user?.id) return
@@ -164,7 +166,6 @@ export default function LogicPage({ user }) {
         const sb = await initSupabase()
         const { data: { session } } = await sb.auth.getSession()
         const tok = session?.access_token || ''
-        if (!cancelled) setToken(tok)
 
         const res = await fetch(`/api/logic-catalog?userId=${user.id}`, {
           headers: tok ? { Authorization: `Bearer ${tok}` } : {},
@@ -216,7 +217,7 @@ export default function LogicPage({ user }) {
       </div>
 
       {areas.map(area => (
-        <AreaSection key={area.id} area={area} userId={user?.id} token={token} />
+        <AreaSection key={area.id} area={area} userId={user?.id} />
       ))}
     </div>
   )
