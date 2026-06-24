@@ -632,8 +632,8 @@ export default function CockpitSection({ user, navigateSection }) {
         </div>
       </div>
 
-      {/* Logic nudge — shown when user hasn't set their metrics yet */}
-      {!data.metrics_configured && (
+      {/* Logic nudge — shown when user has neither connectors nor custom metrics */}
+      {!data.metrics_configured && !data.has_connectors && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: C.amberBg, border: `1px solid ${C.amber}`, borderRadius: 10, padding: '11px 16px' }}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: C.amber, flexShrink: 0 }} aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
           <span style={{ fontSize: 13, color: C.amberText, flex: 1, lineHeight: 1.5 }}>
