@@ -46,7 +46,7 @@ const HASH_SCREENS = new Set([
   SCREENS.ABOUT,
 ])
 
-const DASHBOARD_SECTION_HASHES = new Set(['home', 'reports', 'intelligence', 'business-state', 'alerts', 'connectors', 'agent', 'billing', 'account'])
+const DASHBOARD_SECTION_HASHES = new Set(['home', 'cockpit', 'reports', 'intelligence', 'business-state', 'alerts', 'connectors', 'agent', 'billing', 'account'])
 
 function getHashSection() {
   const hash = window.location.hash.replace(/^#\/?/, '')
