@@ -288,11 +288,15 @@ export default function SchemaManager({ user }) {
 
   useEffect(() => {
     if (!user?.id) return
-    fetch(`/api/schema-setup?userId=${encodeURIComponent(user.id)}`)
-      .then(r => r.json())
-      .then(d => setSchema(d.schema || null))
-      .catch(() => {})
-      .finally(() => setLoading(false))
+    getToken().then(token =>
+      fetch(`/api/schema-setup?userId=${encodeURIComponent(user.id)}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
+        .then(r => r.json())
+        .then(d => setSchema(d.schema || null))
+        .catch(() => {})
+        .finally(() => setLoading(false))
+    )
   }, [user?.id])
 
   const handleSaveOverride = useCallback(async (unitId, overrides) => {
