@@ -710,8 +710,39 @@ export default function SchemaSetup({ user, onComplete }) {
 
             {/* Canvas */}
             <div style={{ flex: 1, padding: 24, overflowY: 'auto', position: 'relative' }}>
-              <div style={{ fontSize: 13, color: '#AAAAAA', marginBottom: 20 }}>
-                Select the units to track in each area
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+                <div style={{ fontSize: 13, color: '#AAAAAA' }}>
+                  Select the units to track in each area
+                </div>
+                <button
+                  onClick={() => {
+                    const allSelected = selectedAreas.every(areaId => {
+                      const units = unitsForArea(areaId)
+                      const sel = selectedUnits[areaId] || []
+                      return units.every(u => sel.includes(u.id))
+                    })
+                    if (allSelected) {
+                      setSelectedUnits({})
+                    } else {
+                      const next = {}
+                      selectedAreas.forEach(areaId => {
+                        next[areaId] = unitsForArea(areaId).map(u => u.id)
+                      })
+                      setSelectedUnits(next)
+                    }
+                  }}
+                  style={{
+                    fontSize: 12, padding: '4px 12px', cursor: 'pointer',
+                    background: 'transparent', border: `1px solid ${C.accent}`,
+                    color: C.accentText, fontFamily: C.sans,
+                  }}
+                >
+                  {selectedAreas.every(areaId => {
+                    const units = unitsForArea(areaId)
+                    const sel = selectedUnits[areaId] || []
+                    return units.every(u => sel.includes(u.id))
+                  }) ? 'Deselect all' : 'Select all'}
+                </button>
               </div>
               <div style={{
                 display: 'grid',
