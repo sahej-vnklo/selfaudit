@@ -19,17 +19,26 @@ export default async function handler(req, res) {
   if (!await validateUserToken(req, res, userId)) return
 
   try {
-    // 1. Discover every public table that has a user_id column dynamically —
-    //    so new tables are covered automatically without changing this file.
-    const { data: columns, error: schemaError } = await supabase
-      .from('information_schema.columns')
-      .select('table_name')
-      .eq('table_schema', 'public')
-      .eq('column_name', 'user_id')
-
-    if (schemaError) throw new Error(`Schema lookup failed: ${schemaError.message}`)
-
-    const tables = (columns ?? []).map((r) => r.table_name)
+    // Tables that have a user_id column (uuid FK to auth.users).
+    // company_schemas uses user_id as a text PK and is handled separately below.
+    const tables = [
+      'business_state',
+      'intelligence_profiles',
+      'intelligence_notification_preferences',
+      'intelligence_brief',
+      'business_health_checks',
+      'risk_alerts',
+      'reports',
+      'user_memory',
+      'artifacts',
+      'area_metric_snapshots',
+      'pending_actions',
+      'execution_log',
+      'user_rule_overrides',
+      'user_custom_metrics',
+      'user_connector_prefs',
+      'connector_snapshots',
+    ]
 
     // 2. Wipe all user data rows
     for (const table of tables) {
@@ -39,7 +48,10 @@ export default async function handler(req, res) {
       }
     }
 
-    // 2. Delete the profile row (user_id = id on profiles, not a user_id column)
+    // company_schemas uses user_id as text PK
+    await supabase.from('company_schemas').delete().eq('user_id', userId)
+
+    // Delete the profile row (user_id = id on profiles, not a user_id column)
     await supabase.from('profiles').delete().eq('id', userId)
 
     // 3. Delete the auth user
