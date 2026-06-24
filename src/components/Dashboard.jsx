@@ -363,7 +363,7 @@ const LEGACY_NOTIFICATION_AREA_MAP = {
   customer_experience: 'customer_health',
 }
 const GOVERNANCE_AREA_LABELS = Object.fromEntries(OPERATIONAL_AREAS.map((area) => [area.id, area.label]))
-const SECTIONS = ['home', 'cockpit', 'oversight', 'intelligence', 'alerts', 'connectors', 'simulate', 'agent', 'logic', 'billing', 'account']
+const SECTIONS = ['home', 'cockpit', 'oversight', 'intelligence', 'alerts', 'connectors', 'simulate', 'agent', 'billing', 'account']
 const INTELLIGENCE_ONLY_SECTIONS = new Set(['oversight', 'alerts', 'connectors', 'agent'])
 const WELCOME_TOUR_ROLLOUT_AT = Date.parse('2026-05-24T00:30:00-04:00')
 
@@ -2060,16 +2060,6 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
               </svg>
               <span className="navlabel">Simulate</span>
             </button>
-            <button className={`dash-navbtn${section === 'logic' ? ' active' : ''}`} data-label="Logic" aria-label="Logic" type="button" onClick={() => navigateSection('logic')}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="4" y1="6" x2="20" y2="6"/>
-                <line x1="4" y1="12" x2="14" y2="12"/>
-                <line x1="4" y1="18" x2="17" y2="18"/>
-                <circle cx="20" cy="12" r="2.5"/>
-                <circle cx="20" cy="18" r="2.5"/>
-              </svg>
-              <span className="navlabel">Logic</span>
-            </button>
           </nav>
 
           <div className="dash-side-foot">
@@ -2560,7 +2550,6 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                 <SimulationPage userId={user?.id} />
               )}
               {section === 'agent'      && <AgentSection user={user} />}
-              {section === 'logic'      && <LogicPage user={user} />}
               {section === 'cockpit'    && <CockpitSection user={user} navigateSection={navigateSection} />}
               {section === 'dept-customer-service'    && <DepartmentPage areaId="customer-service"    user={user} navigateSection={navigateSection} view={deptView} />}
               {section === 'dept-marketing-sales'     && <DepartmentPage areaId="marketing-sales"     user={user} navigateSection={navigateSection} view={deptView} />}
@@ -2578,6 +2567,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                       { id: 'history',    label: 'History' },
                       { id: 'voice',      label: 'Voice Calls' },
                       { id: 'know',       label: 'What We Know' },
+                      { id: 'metrics',    label: 'Metrics' },
                       { id: 'setup',      label: 'Business Setup' },
                       { id: 'data',       label: 'Data' },
                     ].map(({ id, label }) => (
@@ -2750,6 +2740,10 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                   )}
 
                   {/* Business Setup tab — areas & units editor */}
+                  {accountTab === 'metrics' && (
+                    <LogicPage user={user} />
+                  )}
+
                   {accountTab === 'setup' && (
                     <div style={{ padding: '28px 28px 0' }}>
                       <div style={{ marginBottom: 24 }}>
