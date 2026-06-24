@@ -2095,7 +2095,11 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
           {/* Command / Home — two agent cards + command bar */}
           {section === 'home' && (
             <>
-              {hasSchema === false && <SchemaSetup user={user} onComplete={() => setHasSchema(true)} />}
+              {hasSchema === false && <SchemaSetup user={user} onComplete={() => {
+                setHasSchema(true)
+                history.pushState({ section: 'cockpit' }, '', '#cockpit')
+                setSection('cockpit')
+              }} />}
               <div className="dash-cards">
                 {auditJustCompleted ? (
                   <>
