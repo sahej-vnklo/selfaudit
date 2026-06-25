@@ -76,7 +76,10 @@ export default async function handler(req, res) {
     const results = await Promise.all(calls.map(async (call) => {
       const toolName = call.function?.name
       const params = (() => {
-        try { return JSON.parse(call.function?.arguments ?? '{}') } catch { return {} }
+        const raw = call.function?.arguments
+        if (!raw) return {}
+        if (typeof raw === 'object') return raw
+        try { return JSON.parse(raw) } catch { return {} }
       })()
 
       console.log(`[vapi/webhook] tool-calls user=${userId} tool=${toolName}`)

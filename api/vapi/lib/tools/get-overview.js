@@ -58,15 +58,16 @@ export async function getBusinessOverview(userId) {
   const hasCritical = alerts.some((a) => a.severity === 'critical') || health?.risks?.some((r) => r.severity === 'critical')
   const urgency = hasCritical ? 'high' : (alerts.length || pendingCount > 0) ? 'medium' : 'low'
 
-  // Build the business update
+  // Build the business update — keep it to 2 points max for voice
   const parts = []
 
+  // Priority 1: critical/high risks
   if (health?.risks?.length) {
     const critical = health.risks.filter((r) => r.severity === 'critical')
     const high = health.risks.filter((r) => r.severity === 'high')
-    const topRisks = [...critical, ...high].slice(0, 2)
-    if (topRisks.length) {
-      parts.push(topRisks.map((r) => r.title).join('. ') + '.')
+    const topRisk = [...critical, ...high][0]
+    if (topRisk) {
+      parts.push(topRisk.title + '.')
     } else if (health.summary) {
       parts.push(health.summary)
     }
@@ -74,30 +75,29 @@ export async function getBusinessOverview(userId) {
     parts.push(health.summary)
   }
 
-  if (alerts.length) {
+  // Priority 2: open alerts (only if we haven't already covered critical)
+  if (alerts.length && parts.length < 2) {
     const critical = alerts.filter((a) => a.severity === 'critical')
     if (critical.length) {
-      parts.push(`Critical alert: ${critical[0].title}.`)
-    } else {
-      parts.push(`${alerts.length} open alert${alerts.length > 1 ? 's' : ''}. Top one: ${alerts[0].title}.`)
+      parts.push(`Critical: ${critical[0].title}.`)
+    } else if (!hasCritical) {
+      parts.push(`${alerts.length} open alert${alerts.length > 1 ? 's' : ''} — top one: ${alerts[0].title}.`)
     }
   }
 
-  if (brain?.watchouts?.length && parts.length < 2) {
-    parts.push(brain.watchouts[0])
+  // Priority 3: pending actions (if no other urgency filled the slots)
+  if (pendingCount > 0 && parts.length < 2) {
+    parts.push(`${pendingCount} action${pendingCount > 1 ? 's' : ''} waiting for your approval.`)
   }
 
-  if (brain?.opportunities?.length && !hasCritical && parts.length < 3) {
-    parts.push(`One thing worth acting on: ${brain.opportunities[0]}.`)
-  }
-
-  if (pendingCount > 0) {
-    parts.push(`${pendingCount} action${pendingCount > 1 ? 's' : ''} waiting for approval.`)
+  // Priority 4: positive opportunity (only when things are calm)
+  if (!hasCritical && brain?.opportunities?.length && parts.length < 2) {
+    parts.push(`One thing worth your attention: ${brain.opportunities[0]}.`)
   }
 
   const update = parts.length
     ? parts.join(' ')
-    : "Nothing critical flagged right now. Things look stable based on last check."
+    : "Nothing critical right now. Things look stable."
 
   // Prefix with caller context — AI uses this to personalise the greeting
   // without reading the metadata tag aloud
