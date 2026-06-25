@@ -277,29 +277,62 @@ function buildAreaSVG(area, metricStates, metricValues) {
 }
 
 // ── Scenario parsing ───────────────────────────────────────────────────────────
+// Common synonyms so users can speak naturally
+const METRIC_SYNONYMS = {
+  churn:       ['churn', 'churn rate', 'monthly churn', 'customer churn'],
+  mrr:         ['mrr', 'revenue', 'monthly revenue', 'monthly recurring'],
+  pipeline_value: ['pipeline', 'pipeline value', 'deals pipeline', 'deal pipeline'],
+  open_deals:  ['deals', 'open deals', 'number of deals'],
+  lead_volume: ['leads', 'lead volume', 'lead flow', 'inbound leads'],
+  stage_conversion: ['conversion', 'conversion rate', 'stage conversion', 'deal conversion'],
+  burn_rate:   ['burn', 'burn rate', 'monthly burn'],
+  runway_months: ['runway', 'cash runway', 'months of runway'],
+  ltv:         ['ltv', 'lifetime value', 'customer lifetime value'],
+  cac:         ['cac', 'acquisition cost', 'customer acquisition'],
+  csat:        ['csat', 'satisfaction', 'customer satisfaction', 'nps'],
+  headcount:   ['headcount', 'team size', 'employees', 'staff'],
+}
+
 function parseScenario(text, allMetrics) {
   const lower = text.toLowerCase()
-  const metric = allMetrics.find(m =>
-    lower.includes(m.label.toLowerCase()) ||
-    lower.includes(m.key.replace(/_/g, ' '))
-  )
+
+  // Try to find a metric — first by synonym map, then by label/key substring
+  let metric = null
+
+  for (const [key, synonyms] of Object.entries(METRIC_SYNONYMS)) {
+    if (synonyms.some(s => lower.includes(s))) {
+      metric = allMetrics.find(m => m.key === key)
+      if (metric) break
+    }
+  }
+
+  if (!metric) {
+    metric = allMetrics.find(m =>
+      lower.includes(m.label.toLowerCase()) ||
+      lower.includes(m.key.replace(/_/g, ' ')) ||
+      m.key.split('_').some(word => word.length > 3 && lower.includes(word))
+    )
+  }
+
   if (!metric) return null
+
   const numMatch = text.match(/[\d.]+/)
   if (!numMatch) return null
   const value = parseFloat(numMatch[0])
   if (!Number.isFinite(value)) return null
 
+  const hasPercent = lower.includes('%') || metric.unit === 'percent'
   let deltaType = 'set', deltaValue = value
-  if (lower.match(/increase|up\b|\+/) && lower.includes('%')) { deltaType = 'percent'; deltaValue = value }
-  else if (lower.match(/drop|decreas|down\b|-/) && lower.includes('%')) { deltaType = 'percent'; deltaValue = -value }
-  else if (lower.match(/increase|up\b|\+/)) { deltaType = 'absolute'; deltaValue = value }
-  else if (lower.match(/drop|decreas|down\b|-/)) { deltaType = 'absolute'; deltaValue = -value }
+  if (lower.match(/increase|up\b|grow|rise|\+/) && hasPercent)      { deltaType = 'percent'; deltaValue = value }
+  else if (lower.match(/drop|decreas|down\b|fall|lose|lose|-/) && hasPercent) { deltaType = 'percent'; deltaValue = -value }
+  else if (lower.match(/increase|up\b|grow|rise|\+/))                { deltaType = 'absolute'; deltaValue = value }
+  else if (lower.match(/drop|decreas|down\b|fall|lose|by\s+\d|-/))  { deltaType = 'percent'; deltaValue = -value }
 
   return {
     metricKey: metric.key,
     deltaType,
     deltaValue,
-    label: `${metric.label} → ${value}${metric.unit === 'percent' ? '%' : ''}`,
+    label: `${metric.label} → ${value}${hasPercent ? '%' : ''}`,
   }
 }
 
@@ -578,7 +611,7 @@ export default function SimulationPage({ userId }) {
       setMessages(prev => [
         ...prev,
         { role: 'user', text },
-        { role: 'ai', text: `I couldn't find a metric match for that. Try: "What if churn hits 7%?" or click a suggestion.` },
+        { role: 'ai', text: `I didn't catch which metric you meant. Try something like:\n\n"What if churn hits 7%?"\n"What if pipeline drops 30%?"\n"What if MRR grows 20%?"` },
       ])
     }
   }
