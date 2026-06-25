@@ -332,7 +332,9 @@ function parseScenario(text, allMetrics) {
     metricKey: metric.key,
     deltaType,
     deltaValue,
-    label: `${metric.label} → ${value}${hasPercent ? '%' : ''}`,
+    label: deltaType === 'percent'
+      ? `${metric.label} ${deltaValue < 0 ? '−' : '+'}${value}%`
+      : `${metric.label} → ${value}${hasPercent ? '%' : ''}`,
   }
 }
 
