@@ -99,9 +99,15 @@ export async function getBusinessOverview(userId) {
     ? parts.join(' ')
     : "Nothing critical right now. Things look stable."
 
-  // Prefix with caller context — AI uses this to personalise the greeting
-  // without reading the metadata tag aloud
+  // Rotating greetings — pick one so each call feels different
+  const greetings = hasCritical
+    ? ['We need to talk.', 'Glad you called.', 'Good timing.']
+    : ['Talk to me.', "What are we looking at?", "Good you called.", callerName ? `${callerName}.` : "Hey."]
+  const greeting = greetings[Math.floor(Math.random() * greetings.length)]
+
+  // Prefix with caller context — AI uses these as instructions, not speech
   const contextPrefix = [
+    `[GREETING:${greeting}]`,
     callerName ? `[CALLER:${callerName}]` : '',
     positiveHint ? `[NOTABLE:${positiveHint}]` : '',
     `[URGENCY:${urgency}]`,
