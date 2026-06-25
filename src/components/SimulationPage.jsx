@@ -513,14 +513,24 @@ export default function SimulationPage({ userId }) {
       const afterStr  = fmtVal(patch.after) ?? String(patch.after)
       const metricLabel = scenario.label || mk.replace(/_/g, ' ')
 
+      const cleanLabel = mk.replace(/_/g, ' ')
       const lines = []
       lines.push(beforeStr
-        ? `If ${metricLabel} goes to ${afterStr} (was ${beforeStr}):`
-        : `Simulating ${metricLabel} at ${afterStr}:`)
+        ? `If ${cleanLabel} goes to ${afterStr} (currently ${beforeStr}):`
+        : `Simulating ${cleanLabel} at ${afterStr}:`)
 
       if (newFindings.length || worsenedFindings.length) {
         const triggered = [...newFindings, ...worsenedFindings]
-        triggered.slice(0, 3).forEach(f => {
+        // Dedupe: if multiple findings fire on the same metric key, keep only worst severity
+        const sevRank = { critical: 4, high: 3, medium: 2, low: 1 }
+        const seen = new Map()
+        for (const f of triggered) {
+          const key = f.metricKey || f.areaId || f.title
+          const existing = seen.get(key)
+          if (!existing || (sevRank[f.severity] || 0) > (sevRank[existing.severity] || 0)) seen.set(key, f)
+        }
+        const deduped = [...seen.values()].slice(0, 3)
+        deduped.forEach(f => {
           const desc = f.summary || f.description || f.title
           lines.push(`• ${desc}`)
         })
