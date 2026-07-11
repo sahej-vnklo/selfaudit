@@ -6170,7 +6170,7 @@ function ConnectorsSection({ user }) {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ provider }),
+        body: JSON.stringify({ userId: user.id, provider }),
       })
       if (provider === 'hubspot') setPreview(null)
       await loadConnectors()
