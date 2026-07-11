@@ -1,12 +1,13 @@
-import { readFileSync } from 'node:fs'
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { createRequire } from 'node:module'
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
+// require() with static string paths so serverless bundlers (Vercel nft) trace
+// and include the JSON artifacts in the function bundle. fs.readFileSync with a
+// joined path is NOT traced and causes ENOENT in production.
+const require = createRequire(import.meta.url)
 
-const metricEdgesArtifact = readJson('metric-edges.v1.json')
-const conceptGraph = readJson('causal-graph.v1.json')
-const metricBindingsArtifact = readJson('metric-bindings.v1.json')
+const metricEdgesArtifact = require('./metric-edges.v1.json')
+const conceptGraph = require('./causal-graph.v1.json')
+const metricBindingsArtifact = require('./metric-bindings.v1.json')
 
 const metricEdges = Array.isArray(metricEdgesArtifact.edges) ? metricEdgesArtifact.edges : []
 const bindings = metricBindingsArtifact.bindings ?? {}
@@ -19,10 +20,6 @@ const enrichedMetricEdges = buildEnrichedMetricEdgeIndex()
 
 validateBindings()
 validateMotifs()
-
-function readJson(fileName) {
-  return JSON.parse(readFileSync(path.join(__dirname, fileName), 'utf8'))
-}
 
 function invertBindings(bindingMap) {
   const byMetric = new Map()
