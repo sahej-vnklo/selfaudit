@@ -1,3 +1,5 @@
+import { CLAUDE_MODEL } from '../model-config.js'
+
 const CLAUDE_API = 'https://api.anthropic.com/v1/messages'
 
 function buildSystemPrompt() {
@@ -64,7 +66,7 @@ Now test the hypothesis against the evidence. Confirm, refute, or refine it. Pro
 }
 
 export async function generateAgentAnswer({ query, plan, context, conversationHistory }) {
-  const apiKey = process.env.CLAUDE_API_KEY || process.env.VITE_CLAUDE_API_KEY
+  const apiKey = process.env.CLAUDE_API_KEY
   if (!apiKey) throw new Error('CLAUDE_API_KEY not configured')
 
   const userMessage = buildUserMessage(query, plan, context.context_blocks, conversationHistory)
@@ -77,7 +79,7 @@ export async function generateAgentAnswer({ query, plan, context, conversationHi
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
-      model:      'claude-sonnet-4-6',
+      model:      CLAUDE_MODEL,
       max_tokens: 2000,
       system:     buildSystemPrompt(),
       messages:   [{ role: 'user', content: userMessage }],

@@ -1,0 +1,61 @@
+{
+  "version": "1.1.0",
+  "note": "concept_node -> [canonical metric keys]. Only high-confidence seeds; expand in WP2.",
+  "bindings": {
+    "mkt.retention-churn": [
+      "churn_rate",
+      "repeat_rate"
+    ],
+    "fin.cash-runway": [
+      "runway_months"
+    ],
+    "fin.unit-economics": [
+      "ltv_cac_ratio"
+    ],
+    "mkt.expansion-nrr": [
+      "mrr"
+    ],
+    "mkt.pipeline-management": [
+      "open_deals",
+      "pipeline_value"
+    ],
+    "mkt.pipeline-forecasting": [
+      "pipeline_value"
+    ],
+    "mkt.outbound-sales": [
+      "lead_volume"
+    ],
+    "mkt.sales-qualification": [
+      "stage_conversion"
+    ],
+    "mkt.sales-process": [
+      "sales_cycle_days"
+    ],
+    "ops.order-fulfillment": [
+      "fulfilment_time_hrs",
+      "refund_rate"
+    ],
+    "ops.inventory-management": [
+      "avg_days_of_stock",
+      "out_of_stock_skus"
+    ],
+    "ops.quality-management": [
+      "defect_rate",
+      "refund_rate",
+      "scrap_rate"
+    ],
+    "ops.capacity-planning": [
+      "utilisation_rate"
+    ],
+    "ops.workforce-scheduling": [
+      "utilisation_rate"
+    ],
+    "mi.voice-of-customer": [
+      "csat"
+    ],
+    "ops.operational-kpis": [
+      "oee",
+      "output_vs_plan"
+    ]
+  }
+}

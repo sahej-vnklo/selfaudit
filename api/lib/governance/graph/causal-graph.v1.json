@@ -1,0 +1,4214 @@
+{
+  "version": "1.0.0",
+  "generated_at": "2026-07-10",
+  "provenance": "One-way snapshot derived from EI reference content (read-only). Owned and versioned by SelfAudit from this point on.",
+  "stats": {
+    "nodes": 177,
+    "concept_edges": 175,
+    "motifs": 7
+  },
+  "nodes": {
+    "chg.adoption-design": {
+      "title": "Adoption Design",
+      "plain_meaning": "Engineering the uptake of anything new — tool, process, policy —\nthrough incentives that favor the new way, friction removed from\nit and added to the old way, and communication that answers \"what's\nin it for me\" honestly."
+    },
+    "chg.change-management": {
+      "title": "Change Management",
+      "plain_meaning": "Why initiatives fail at the humans, not the plan — and the craft of\nmoving people through change: urgency they believe, a coalition\nthat carries it, early wins that prove it, and persistence past the\npoint where leadership got bored."
+    },
+    "chg.communication-cascades": {
+      "title": "Communication Cascades",
+      "plain_meaning": "Getting one message through many layers intact: the discipline of\nequipping each level of management to carry the same story — because\nevery layer is a filter, and unmanaged filters compound into a\ndifferent message by the frontline."
+    },
+    "chg.resistance-diagnosis": {
+      "title": "Resistance Diagnosis",
+      "plain_meaning": "Sorting WHY people resist before treating it: can't (ability — they\nlack skill, time, or tools), won't-because-it-costs-them (incentive\n— the change genuinely harms their position), or won't-because-they-\ndon't-believe (conviction — they think it's wrong or doomed).\nDifferent diseases, different cures."
+    },
+    "chg.transformation-design": {
+      "title": "Transformation Design",
+      "plain_meaning": "Sequencing big, multi-quarter change: the coalition before the\nannouncement, the beachhead before the rollout, quick wins placed\nwhere skeptics watch, and a cadence that survives leadership's\nattention span."
+    },
+    "dat.bi-dashboards": {
+      "title": "BI & Dashboards",
+      "plain_meaning": "Turning data into interfaces people actually check — Power BI, Tableau,\nLooker — where the goal is decisions made faster, not charts made\nprettier."
+    },
+    "dat.data-modeling-warehousing": {
+      "title": "Data Modeling & Warehousing",
+      "plain_meaning": "Structuring data so questions are cheap: facts (events with numbers)\njoined to conformed dimensions (customer, product, date meaning the\nsame thing everywhere) — Kimball's star schemas, or wider modern\nvariants, in a warehouse built for asking."
+    },
+    "dat.data-quality": {
+      "title": "Data Quality",
+      "plain_meaning": "Whether the data is complete, current, consistent, and traceable to\nits source — lineage, freshness, and the unglamorous audits that keep\n\"data-driven\" from meaning \"confidently misled.\""
+    },
+    "dat.data-storytelling": {
+      "title": "Data Storytelling",
+      "plain_meaning": "Making numbers change minds: the finding stated as a headline, the\nchart designed to show exactly that finding, and the so-what attached\n— analysis packaged for a decision, not a data dump."
+    },
+    "dat.etl-pipelines": {
+      "title": "ETL & Pipelines",
+      "plain_meaning": "Moving and transforming data reliably from where it's created to where\nit's questioned — extract, transform, load (or ELT, transforming after\nlanding) — the plumbing under every number anyone trusts."
+    },
+    "dat.experimentation": {
+      "title": "Experimentation",
+      "plain_meaning": "A/B tests and their kin: deliberately varying one thing across\ncomparable groups so you learn what actually CAUSED what — the only\nreliable escape from correlation's hall of mirrors."
+    },
+    "dat.forecasting-methods": {
+      "title": "Forecasting Methods",
+      "plain_meaning": "The statistical toolkit for predicting: baselines (naive, moving\naverage), decomposition (trend + seasonality + noise), exponential\nsmoothing and beyond — applications live in each pillar (demand,\nfinancial, pipeline); the craft lives here."
+    },
+    "dat.goodharts-law": {
+      "title": "Goodhart's Law",
+      "plain_meaning": "When a measure becomes a target, it ceases to be a good measure —\nthe moment a number decides pay, promotion, or survival, people\noptimize the NUMBER, and its connection to the thing it measured\nstarts dissolving."
+    },
+    "dat.metric-design": {
+      "title": "Metric Design",
+      "plain_meaning": "Choosing and structuring the numbers a company steers by: a metric\ntree from north star down to team-level drivers, leading indicators\nahead of lagging ones, and paired metrics that watch each other's\nblind sides."
+    },
+    "dat.predictive-analytics": {
+      "title": "Predictive Analytics",
+      "plain_meaning": "Models that score the future at the individual level: which customer\nwill churn, which lead will convert, which invoice will pay late —\npattern recognition dressed as foresight, useful exactly as far as\ntomorrow resembles the training data."
+    },
+    "dat.spreadsheets": {
+      "title": "Spreadsheets",
+      "plain_meaning": "Excel and Sheets as the universal modeling tool — the fastest way to\nthink in numbers ever built, and the least governed system in every\ncompany that runs on it."
+    },
+    "dat.sql": {
+      "title": "SQL",
+      "plain_meaning": "The language for asking databases questions directly — joins, filters,\naggregations — the difference between waiting in the analytics queue\nand knowing in ninety seconds."
+    },
+    "dat.statistics-fundamentals": {
+      "title": "Statistics Fundamentals",
+      "plain_meaning": "Enough statistics to not fool yourself: distributions (averages hide\nshapes), variance (this month's jump may be noise), significance (would\nthis difference survive a coin-flip test), and the eternal gap between\ncorrelation and cause."
+    },
+    "ent.exit-paths": {
+      "title": "Exit Paths",
+      "plain_meaning": "How ownership ends: acquisition (strategic or financial), IPO,\nsecondaries (partial founder liquidity), management buyout, or a\nwell-run shutdown — each with different preparation, timelines, and\nmasters."
+    },
+    "ent.founder-led-sales": {
+      "title": "Founder-Led Sales",
+      "plain_meaning": "The founder personally selling the first customers — not because\nsales hires are unaffordable, but because the founder is the only\none who can afford to hear the truth the market is telling."
+    },
+    "ent.founder-psychology": {
+      "title": "Founder Psychology",
+      "plain_meaning": "The mental load of the job: decision fatigue, isolation, identity\nfused to the company, and the specific distortions (grandiosity on\nMonday, doom on Wednesday) that pressure produces in otherwise\nsound judgment."
+    },
+    "ent.fundraising-strategy": {
+      "title": "Fundraising Strategy",
+      "plain_meaning": "Whether to raise at all, when, how much, and from whom — the\nstrategic layer above the term-sheet mechanics (which live in\nFinance). Money always arrives with a worldview attached."
+    },
+    "ent.scaling-pathologies": {
+      "title": "Scaling Pathologies",
+      "plain_meaning": "The characteristic diseases of growing fast: premature scaling\n(spending like the model works before it does), culture dilution\n(hiring faster than values transmit), and process debt (systems\nbuilt for 10 people operating 60)."
+    },
+    "ent.stage-transitions": {
+      "title": "Stage Transitions",
+      "plain_meaning": "What breaks as the company grows through stages — 5 to 20 to 50 to\n150 people — where each transition demands that yesterday's survival\nskills be partially retired, on schedule, before their absence\nbecomes the crisis."
+    },
+    "ent.zero-to-one": {
+      "title": "Zero to One",
+      "plain_meaning": "Idea to validated demand to first revenue: the search phase, where\nthe job is not building a company but discovering whether one should\nexist — cheaply, fast, and against your own optimism."
+    },
+    "ext.contracts": {
+      "title": "Contracts",
+      "plain_meaning": "Promises with teeth: who does what, who pays what, what happens when\nthings go wrong — where the boring clauses (termination, liability,\nrenewal, IP) matter more than the business terms everyone actually\nnegotiates."
+    },
+    "ext.corporate-governance": {
+      "title": "Corporate Governance",
+      "plain_meaning": "Who the company answers to and how: the board, fiduciary duties,\nshareholder rights, and the machinery (minutes, approvals,\ncommittees) that separates an accountable company from a founder\nwith a checkbook."
+    },
+    "ext.esg-sustainability": {
+      "title": "ESG & Sustainability",
+      "plain_meaning": "Environmental, social, and governance obligations treated as business\ninputs: emissions and supply-chain footprints, labor practices, and\nthe reporting scaffolding that large customers, lenders, and\nregulators increasingly demand of everyone they touch."
+    },
+    "ext.geopolitics-policy": {
+      "title": "Geopolitics & Policy",
+      "plain_meaning": "How governments and geography move the markets you're in: trade\nrules and tariffs, sanctions, industrial policy, data localization,\nand the slow rewiring of supply chains along political lines."
+    },
+    "ext.intellectual-property": {
+      "title": "Intellectual Property",
+      "plain_meaning": "Owning what you create: trademarks (your name and marks), copyright\n(your code and content), patents (your inventions, maybe), and trade\nsecrets (what you deliberately keep confidential) — four different\ntools with different costs and lifespans."
+    },
+    "ext.legal-fundamentals": {
+      "title": "Legal Fundamentals",
+      "plain_meaning": "The operating minimum: entity structure (what shields what),\nliability (who can be sued for which failures), and the judgment\ncall every operator faces weekly — what needs a lawyer versus what\nneeds a template versus what needs neither."
+    },
+    "ext.macroeconomics": {
+      "title": "Macroeconomics",
+      "plain_meaning": "Cycles, interest rates, inflation, and currency as business inputs:\nthe weather system every company operates inside, ignorable in calm\nyears and decisive in the others."
+    },
+    "ext.privacy-data-protection": {
+      "title": "Privacy & Data Protection",
+      "plain_meaning": "Handling personal data lawfully — GDPR, CCPA and their spreading\ncousins: collect with a basis, use for the stated purpose, keep only\nwhat's needed, delete on request, and tell the truth when breached."
+    },
+    "ext.regulation-compliance": {
+      "title": "Regulation & Compliance",
+      "plain_meaning": "The rules of your industry — licensing, reporting, sector-specific\nlaw — and the operating posture toward them: compliant, compliant-ish,\nor betting the company on nobody looking."
+    },
+    "fin.accounting-fundamentals": {
+      "title": "Accounting Fundamentals",
+      "plain_meaning": "The language of financial record: accrual vs cash basis, debits and credits,\nwhen revenue counts as earned and when a cost counts as incurred — the rules\nthat decide what the numbers even mean."
+    },
+    "fin.accounts-receivable": {
+      "title": "Accounts Receivable",
+      "plain_meaning": "Money customers owe you for delivered work — revenue that exists on paper\nbut hasn't become cash yet."
+    },
+    "fin.break-even": {
+      "title": "Break-even",
+      "plain_meaning": "The volume (or revenue) at which the business stops losing money: fixed\ncosts divided by contribution margin per unit. Below it, every month costs\nyou; above it, every unit is profit."
+    },
+    "fin.budgeting-fpa": {
+      "title": "Budgeting & FP&A",
+      "plain_meaning": "Planning what the business will spend and earn, then holding the plan\nagainst reality every month — financial planning and analysis as the\ncompany's steering feedback loop."
+    },
+    "fin.capital-structure": {
+      "title": "Capital Structure",
+      "plain_meaning": "The mix of debt and equity funding the business — cheap-but-demanding\nmoney (debt: fixed obligations, covenants, someone who can force\noutcomes) versus expensive-but-patient money (equity: dilution,\nalignment, no repayment clock)."
+    },
+    "fin.cash-flow": {
+      "title": "Cash Flow",
+      "plain_meaning": "Actual cash moving in and out over a period — operating, investing,\nfinancing. Profit is an accounting opinion; cash is a fact."
+    },
+    "fin.cash-runway": {
+      "title": "Cash Runway",
+      "plain_meaning": "Cash in the bank divided by net monthly burn — how many months until zero.\nThe survival clock."
+    },
+    "fin.cogs": {
+      "title": "COGS",
+      "plain_meaning": "Cost of goods sold — what it directly costs to deliver the thing you sold.\nMaterials, direct labour, inbound and outbound freight, packaging."
+    },
+    "fin.ebitda-net-margin": {
+      "title": "EBITDA & Net Margin",
+      "plain_meaning": "Two depths of profitability: EBITDA (earnings before interest, tax,\ndepreciation, amortization) shows what the operating machine earns;\nnet margin shows what's actually left after everything, including the\nthings EBITDA politely ignores."
+    },
+    "fin.financial-forecasting": {
+      "title": "Financial Forecasting",
+      "plain_meaning": "Projecting the financial future — revenue, costs, cash — as honestly as the\nevidence allows, with stated assumptions instead of embedded hopes."
+    },
+    "fin.financial-statements": {
+      "title": "Financial Statements",
+      "plain_meaning": "The three linked reports — P&L (performance over a period), balance sheet\n(position at a moment), cash flow statement (where money actually moved) —\nread together as one story, never separately."
+    },
+    "fin.fundraising-mechanics": {
+      "title": "Fundraising Mechanics",
+      "plain_meaning": "The fine print of other people's money: dilution math, SAFEs and\npriced rounds, liquidation preferences, pro-rata rights, board seats,\nvesting, and the cap table where every past decision lives forever."
+    },
+    "fin.gross-margin": {
+      "title": "Gross Margin",
+      "plain_meaning": "Money left after the direct cost of delivering what you sold.\nRevenue minus COGS, usually shown as a percentage of revenue."
+    },
+    "fin.operating-expenses": {
+      "title": "Operating Expenses",
+      "plain_meaning": "The cost of running the machine — salaries, rent, software, marketing,\nadmin — everything below gross margin that isn't directly tied to\ndelivering one unit."
+    },
+    "fin.pricing-mathematics": {
+      "title": "Pricing Mathematics",
+      "plain_meaning": "The arithmetic of what a price change actually does — to margin, to\nbreak-even volume, and to profit — before psychology or strategy enter\nthe room."
+    },
+    "fin.revenue": {
+      "title": "Revenue",
+      "plain_meaning": "Money earned from customers for goods or services delivered in a period.\nNot the same as cash received, and not all revenue is equal quality."
+    },
+    "fin.roi-irr-npv": {
+      "title": "ROI, IRR & NPV",
+      "plain_meaning": "Three ways to compare money spent now against money returned later:\nROI (simple return ratio), NPV (future cash discounted to today's value),\nIRR (the discount rate at which a project breaks even). All three answer\none question — is this use of money better than the alternatives?"
+    },
+    "fin.unit-economics": {
+      "title": "Unit Economics",
+      "plain_meaning": "Whether ONE unit of the business makes money: one customer, one order, one\nseat, one job — its contribution margin after everything it directly causes,\nincluding the cost of acquiring it."
+    },
+    "fin.valuation": {
+      "title": "Valuation",
+      "plain_meaning": "What a business is worth and the three ways to argue it: intrinsic\n(discounted future cash flows), relative (multiples of comparable\ncompanies), and transactional (what similar businesses actually sold\nfor) — three lenses that should triangulate, and interestingly argue\nwhen they don't."
+    },
+    "fin.working-capital": {
+      "title": "Working Capital",
+      "plain_meaning": "Cash trapped in the operating cycle — inventory sitting on shelves plus\nmoney customers owe you, minus money you owe suppliers."
+    },
+    "mi.competitive-intelligence": {
+      "title": "Competitive Intelligence",
+      "plain_meaning": "Watching rivals systematically — pricing moves, hiring patterns,\nproduct releases, customer wins and losses — turned into a running\npicture of their strategy and its next move."
+    },
+    "mi.customer-interviews": {
+      "title": "Customer Interviews",
+      "plain_meaning": "Structured conversations that extract truth from customers — about\ntheir past behavior, their actual workflow, what they've already\ntried and spent — while defusing the politeness that makes people\nlie encouragingly."
+    },
+    "mi.market-research-methods": {
+      "title": "Market Research Methods",
+      "plain_meaning": "Primary research (talking to and observing the market yourself) and\nsecondary research (reports, data, other people's studies) — run to\nproduce truth you can act on, not comfort you can present."
+    },
+    "mi.market-sizing": {
+      "title": "Market Sizing",
+      "plain_meaning": "TAM, SAM, SOM done honestly: total market if everyone bought,\nthe slice your model can actually serve, the share you can win in\nthe planning horizon — built bottom-up from real units, not\ntop-down from a Gartner number."
+    },
+    "mi.trend-analysis": {
+      "title": "Trend Analysis",
+      "plain_meaning": "Separating weak signals from noise before they're obvious: watching\nthe edges (early adopters, adjacent industries, cost curves,\nregulation drafts) for what changes the game while it's still cheap\nto act on."
+    },
+    "mi.voice-of-customer": {
+      "title": "Voice of Customer",
+      "plain_meaning": "The always-on listening system — surveys, NPS, reviews, support\nthemes, sales-call patterns — aggregated into signal about what\ncustomers experience, want, and are starting to resent."
+    },
+    "mi.win-loss-analysis": {
+      "title": "Win-Loss Analysis",
+      "plain_meaning": "Learning from every deal won and lost — from the BUYER's mouth, not\nthe rep's memory — why they chose what they chose, what almost\nchanged their mind, and who else was in the room."
+    },
+    "mkt.brand-strategy": {
+      "title": "Brand Strategy",
+      "plain_meaning": "Building memory structures in buyers' heads — being thought of at all when\nthe buying moment arrives, and being recognized instantly when seen — so\nthat future demand costs less to capture."
+    },
+    "mkt.cac-ltv-attribution": {
+      "title": "CAC, LTV & Attribution",
+      "plain_meaning": "What acquiring a customer fully costs (CAC), what a customer is worth over\ntheir life (LTV), and which activity actually caused the acquisition\n(attribution) — the three numbers that decide whether growth spending is\ninvestment or bonfire."
+    },
+    "mkt.customer-segmentation": {
+      "title": "Customer Segmentation",
+      "plain_meaning": "Splitting the market into groups that buy differently — different problems,\ndifferent budgets, different buying processes — so the business can choose\nwhom to serve instead of averaging everyone."
+    },
+    "mkt.customer-success": {
+      "title": "Customer Success",
+      "plain_meaning": "Making customers actually succeed with what they bought — onboarding to\nfirst value fast, monitoring health, intervening before trouble — so\nrevenue stays and grows instead of quietly leaving."
+    },
+    "mkt.demand-generation": {
+      "title": "Demand Generation",
+      "plain_meaning": "Creating qualified interest on purpose: the portfolio of paid, organic,\noutbound, events, and referral activity that fills the top of the funnel\nwith people who resemble the ICP."
+    },
+    "mkt.discounting": {
+      "title": "Discounting",
+      "plain_meaning": "Selling below list price to close volume. A price cut wearing a\ndeal-by-deal disguise."
+    },
+    "mkt.expansion-nrr": {
+      "title": "Expansion & NRR",
+      "plain_meaning": "Growing revenue inside existing accounts — upsell, cross-sell, usage\ngrowth — measured as net revenue retention: what last year's customers\npay this year, expansion minus churn, with no new logos counted."
+    },
+    "mkt.funnel-conversion": {
+      "title": "Funnel & Conversion",
+      "plain_meaning": "The staged path from stranger to customer — visit, lead, qualified,\nproposal, closed — measured as conversion rates between stages, so you\ncan see WHERE interest dies instead of just THAT it dies."
+    },
+    "mkt.go-to-market": {
+      "title": "Go-To-Market",
+      "plain_meaning": "The motion that carries product to customer: self-serve/product-led,\ninside sales, field sales, channel partners — and the choice of which,\nfor which segment, at which price point."
+    },
+    "mkt.ideal-customer-profile": {
+      "title": "Ideal Customer Profile",
+      "plain_meaning": "The narrow, written definition of who you serve best and first: the\ncustomer for whom your product is a painkiller, who can pay, who you can\nreach, and who succeeds fast enough to stay and refer."
+    },
+    "mkt.messaging": {
+      "title": "Messaging",
+      "plain_meaning": "Turning positioning into words that convert: the headlines, pitches, and\npage copy that make the right buyer say \"that's me, that's my problem,\nI want that outcome.\""
+    },
+    "mkt.organic-content-seo": {
+      "title": "Organic & Content",
+      "plain_meaning": "Earning attention that compounds instead of renting it: content, SEO,\ncommunity, and social presence that keep producing demand after the work\nis paid for."
+    },
+    "mkt.outbound-sales": {
+      "title": "Outbound Sales",
+      "plain_meaning": "Cold outreach as a system: lists built from the ICP, sequenced touches\nacross email/phone/social, and qualification of whoever responds — demand\nyou go get instead of demand that finds you."
+    },
+    "mkt.paid-acquisition": {
+      "title": "Paid Acquisition",
+      "plain_meaning": "Buying attention in auctions — search, social, display — and converting it\nprofitably. Rented demand: it arrives fast and stops the day you stop paying."
+    },
+    "mkt.pipeline-forecasting": {
+      "title": "Pipeline Forecasting",
+      "plain_meaning": "Predicting bookings from the pipeline — stage-weighted, evidence-based,\nand honest about the difference between commit, best case, and hope."
+    },
+    "mkt.pipeline-management": {
+      "title": "Pipeline Management",
+      "plain_meaning": "Keeping the deal inventory honest: right stages, real close dates, dead\ndeals removed — the pipeline as a truthful picture of future revenue\nrather than a museum of optimism."
+    },
+    "mkt.positioning": {
+      "title": "Positioning",
+      "plain_meaning": "The slot you occupy in the customer's mind relative to alternatives —\nwhat category they file you under, whom they compare you against, and\nwhat they expect you to cost before you say a word."
+    },
+    "mkt.pricing-strategy": {
+      "title": "Pricing Strategy",
+      "plain_meaning": "What you charge, whom you charge it to, and what the price says about you —\nthe strategic layer above the arithmetic (which lives in Pricing\nMathematics). Value-based vs cost-plus vs competitor-matched; the metric\nyou charge on; the fences between tiers."
+    },
+    "mkt.retention-churn": {
+      "title": "Retention & Churn",
+      "plain_meaning": "Whether customers stay and buy again. Churn is customers leaving —\nquietly first, visibly later."
+    },
+    "mkt.sales-compensation": {
+      "title": "Sales Compensation",
+      "plain_meaning": "How sellers are paid — base, commission, bonuses — and critically,\nwhat the variable part is calculated on."
+    },
+    "mkt.sales-process": {
+      "title": "Sales Process",
+      "plain_meaning": "The repeatable steps from lead to close — discovery, demo, proposal,\nnegotiation — each with entry and EXIT criteria, so a deal's stage means\nthe same thing regardless of whose deal it is."
+    },
+    "mkt.sales-qualification": {
+      "title": "Sales Qualification",
+      "plain_meaning": "Deciding fast which deals deserve time — testing for budget, authority,\nneed, timeline (BANT) or the deeper MEDDIC evidence — so selling effort\ngoes where it can actually convert."
+    },
+    "mkt.value-proposition": {
+      "title": "Value Proposition",
+      "plain_meaning": "The promise of value that makes switching worth it: what the customer gets,\ncompared to what they'd otherwise do, minus the pain of change. Not a\nslogan — an equation the buyer runs in their head."
+    },
+    "ops.capacity-planning": {
+      "title": "Capacity Planning",
+      "plain_meaning": "Matching what you CAN deliver to what you'll be ASKED to deliver —\nahead of time, because capacity takes months to add and demand takes\none good quarter to outrun it."
+    },
+    "ops.continuous-improvement": {
+      "title": "Continuous Improvement",
+      "plain_meaning": "The habit of making the process better every cycle — small, constant,\nowned by the people doing the work — rather than periodic improvement\nprojects done TO the work by outsiders."
+    },
+    "ops.demand-planning": {
+      "title": "Demand Planning",
+      "plain_meaning": "Forecasting what customers will order, so purchasing and capacity can\nprepare ahead of time."
+    },
+    "ops.inventory-management": {
+      "title": "Inventory Management",
+      "plain_meaning": "The stock you hold to serve demand — raw materials, work in progress,\nfinished goods. Frozen cash sitting on shelves."
+    },
+    "ops.lean-thinking": {
+      "title": "Lean Thinking",
+      "plain_meaning": "Removing waste from flow — everything the customer wouldn't pay for:\noverproduction, waiting, transport, over-processing, inventory, motion,\ndefects — so value moves continuously instead of sitting in piles."
+    },
+    "ops.logistics-warehousing": {
+      "title": "Logistics & Warehousing",
+      "plain_meaning": "Moving and storing goods without eating the margin: warehouse layout,\npicking efficiency, carrier choice, and the last mile — the physical\nplumbing between promise and doorstep."
+    },
+    "ops.operational-kpis": {
+      "title": "Operational KPIs",
+      "plain_meaning": "The few numbers that actually steer the operation — chosen so that when\nthey move, someone knows what to do, and paired so that gaming one shows\nup in another."
+    },
+    "ops.operations-strategy": {
+      "title": "Operations Strategy",
+      "plain_meaning": "Choosing what your operation is BEST at — cost, speed, quality,\nflexibility, or dependability — because physics lets you excel at one or\ntwo, and pretending to excel at all five means excelling at none."
+    },
+    "ops.order-fulfillment": {
+      "title": "Order Fulfillment",
+      "plain_meaning": "The promise-to-delivery pipeline — receive the order, pick it, pack it,\nship it, deliver it right and on time."
+    },
+    "ops.process-design": {
+      "title": "Process Design",
+      "plain_meaning": "Building repeatable flows on purpose: each step with an owner, an input\nstandard, an output standard, and a reason to exist — instead of workflows\nthat congealed from history."
+    },
+    "ops.procurement": {
+      "title": "Procurement",
+      "plain_meaning": "Buying well: choosing vendors, negotiating terms, and managing the\nrelationship afterward — with total cost of ownership as the yardstick,\nnot the sticker price."
+    },
+    "ops.quality-management": {
+      "title": "Quality Management",
+      "plain_meaning": "Preventing defects systematically — building quality into the process —\ninstead of inspecting them out at the end, after the cost is already sunk."
+    },
+    "ops.service-delivery": {
+      "title": "Service Delivery",
+      "plain_meaning": "Delivering intangible promises repeatedly — support, implementations,\nmanaged services, agencies — where the product is an experience produced\nlive, every time, by people and process under load."
+    },
+    "ops.sla-management": {
+      "title": "SLA Management",
+      "plain_meaning": "Explicit service promises — response times, uptime, delivery windows —\nwith defined measurement, honest reporting, and real consequences when\nthey're missed."
+    },
+    "ops.sop-standard-work": {
+      "title": "SOPs & Standard Work",
+      "plain_meaning": "The written best-known-way to do each recurring task — not bureaucracy,\nbut the current champion method, documented so quality survives turnover\nand improvement has a baseline to beat."
+    },
+    "ops.supply-chain": {
+      "title": "Supply Chain",
+      "plain_meaning": "The network that turns orders into delivered goods — suppliers, factories,\nwarehouses, carriers — where your promise to customers is only as good as\nthe weakest, slowest, or most distant link you depend on."
+    },
+    "ops.theory-of-constraints": {
+      "title": "Theory of Constraints",
+      "plain_meaning": "Every system has exactly one binding constraint at a time, and the whole\nsystem moves at its pace — so improvement anywhere else is decoration,\nand an hour lost at the bottleneck is an hour lost forever."
+    },
+    "ops.workforce-scheduling": {
+      "title": "Workforce & Scheduling",
+      "plain_meaning": "Right people, right skills, right hours — matched against demand curves\nthat refuse to be flat: daily peaks, weekly rhythms, seasonal swells."
+    },
+    "ppl.coaching-development": {
+      "title": "Coaching & Development",
+      "plain_meaning": "Growing people deliberately — through stretch assignments, real-time\ncoaching, and honest career conversations — instead of hoping experience\nalone teaches."
+    },
+    "ppl.compensation": {
+      "title": "Compensation",
+      "plain_meaning": "Paying competitively against the market while staying fair internally —\nbase, variable, and equity as one designed system rather than a pile of\nnegotiation outcomes."
+    },
+    "ppl.conflict-resolution": {
+      "title": "Conflict Resolution",
+      "plain_meaning": "Turning friction into information: surfacing disagreement early, sorting\nwhat it's actually about (facts, interests, or dignity), and closing it\nwith a decision people can commit to — instead of letting it ferment\ninto politics."
+    },
+    "ppl.culture": {
+      "title": "Culture",
+      "plain_meaning": "The behavior that gets rewarded, punished, and tolerated when nobody's\nwatching — the company's real operating system, as opposed to the values\non the wall."
+    },
+    "ppl.executive-communication": {
+      "title": "Executive Communication",
+      "plain_meaning": "Saying hard things clearly to the people who need them — upward to boards\nand investors, downward through layers, outward to customers and partners\n— with the conclusion first and the evidence behind it."
+    },
+    "ppl.hiring": {
+      "title": "Hiring",
+      "plain_meaning": "Sourcing, assessing, and closing people — the decision that compounds\nmore than any other, because every hire then hires, teaches, and sets\nthe bar for the next."
+    },
+    "ppl.incentive-design": {
+      "title": "Incentive Design",
+      "plain_meaning": "Engineering what actually gets rewarded — pay, promotion, praise, and\nwhat leadership visibly tolerates — knowing that people optimize for the\nreal reward system, not the stated one."
+    },
+    "ppl.key-person-dependency": {
+      "title": "Key-Person Dependency",
+      "plain_meaning": "When one irreplaceable human is a single point of failure — the only one\nwho knows the system, holds the relationships, or makes the thing work —\nand their bus factor is the company's."
+    },
+    "ppl.leadership": {
+      "title": "Leadership",
+      "plain_meaning": "Getting sustained performance from people who could leave — through\ndirection they believe, standards they respect, and the daily evidence\nthat the leader absorbs pressure instead of amplifying it."
+    },
+    "ppl.negotiation": {
+      "title": "Negotiation",
+      "plain_meaning": "Claiming and creating value across a table — price, terms, roles, deals —\nwhere preparation, alternatives, and listening beat aggression almost\nevery time."
+    },
+    "ppl.organizational-design": {
+      "title": "Organizational Design",
+      "plain_meaning": "Who reports to whom, who decides what, and how wide each manager's span\nruns — the structure through which strategy either flows or gets stuck."
+    },
+    "ppl.performance-management": {
+      "title": "Performance Management",
+      "plain_meaning": "Clear expectations, honest feedback against them, and real consequences\nboth ways — the loop that tells every person where they stand and the\ncompany where its people are."
+    },
+    "ppl.stakeholder-management": {
+      "title": "Stakeholder Management",
+      "plain_meaning": "Mapping who can help, block, or quietly sabotage what you're trying to do\n— then deliberately managing their information, involvement, and interests\ninstead of hoping merit speaks for itself."
+    },
+    "ppl.team-effectiveness": {
+      "title": "Team Effectiveness",
+      "plain_meaning": "Why some groups multiply their members and others divide them: trust,\nproductive conflict, real commitment, mutual accountability, and shared\nresults — Lencioni's stack, in that order, because each layer requires\nthe one below."
+    },
+    "prd.customer-discovery": {
+      "title": "Customer Discovery",
+      "plain_meaning": "Learning what customers actually need — through interviews about their\npast behavior, observation of their workflow, and small tests — without\nleading the witness or pitching disguised as research."
+    },
+    "prd.design-ux": {
+      "title": "Design & UX",
+      "plain_meaning": "Making the product usable enough that its value survives contact with\nreal users — reducing the distance between what someone wants to do and\nwhat the interface lets them do without thinking."
+    },
+    "prd.jobs-to-be-done": {
+      "title": "Jobs To Be Done",
+      "plain_meaning": "What customers actually hire the product to accomplish — the progress\nthey're trying to make in a situation — rather than who they are\ndemographically or what features they click."
+    },
+    "prd.platform-ecosystem": {
+      "title": "Platform & Ecosystem",
+      "plain_meaning": "When others build on you — integrations, apps, marketplaces, APIs — and\nvalue comes from the network between participants, not just your own\nfeatures."
+    },
+    "prd.product-analytics": {
+      "title": "Product Analytics",
+      "plain_meaning": "The product's vital signs: activation (reached first value), engagement\n(uses it, how deeply, how often), and retention cohorts (still here after\nN weeks) — measured per cohort, not as vanity totals."
+    },
+    "prd.product-development-process": {
+      "title": "Product Development Process",
+      "plain_meaning": "How ideas become shipped product — the batch size, cycle length, and\ndecision rituals: scrum sprints, kanban flow, Shape Up cycles, or the\nunnamed thing a team actually does regardless of what it calls itself."
+    },
+    "prd.product-led-growth": {
+      "title": "Product-Led Growth",
+      "plain_meaning": "The product itself as the acquisition, conversion, and expansion channel:\ntry before buy, value before paywall, and usage that naturally spreads to\nteammates — the motion where the product does the selling."
+    },
+    "prd.product-market-fit": {
+      "title": "Product-Market Fit",
+      "plain_meaning": "The state where the market pulls the product out of you — customers stay,\nuse it more, and bring others — instead of every sale being pushed uphill.\nNot a feeling; measurable in retention curves and pull signals."
+    },
+    "prd.product-operations": {
+      "title": "Product Operations",
+      "plain_meaning": "The connective tissue that keeps product teams running on data instead of\nfolklore: instrumentation that works, research that's findable, launch\nprocesses that repeat, and feedback loops that route to the right owner."
+    },
+    "prd.product-strategy": {
+      "title": "Product Strategy",
+      "plain_meaning": "Which problems the product will solve, for whom, in what order — and,\njust as loudly, which it will refuse. The connective layer between company\nstrategy and what engineers build this quarter."
+    },
+    "prd.roadmap-prioritization": {
+      "title": "Roadmap Prioritization",
+      "plain_meaning": "Sequencing what gets built against impact, confidence, and effort — and\ndefending that sequence against the daily assault of new urgencies."
+    },
+    "rea.calibration-learning": {
+      "title": "Calibration & Learning",
+      "plain_meaning": "Keeping score on your own judgment: writing predictions down before\noutcomes arrive, reviewing the misses without flinching, and updating how\nconfident you're allowed to be next time."
+    },
+    "rea.diagnosis": {
+      "title": "Diagnosis",
+      "plain_meaning": "Finding the verified first cause of a problem — the domino that fell first —\nrather than the symptom that finally became visible or the explanation that\narrived first."
+    },
+    "rea.judgment-under-uncertainty": {
+      "title": "Judgment Under Uncertainty",
+      "plain_meaning": "Deciding as if placing a bet: probabilities instead of certainties, payoffs\nweighed against odds, and the quality of the decision judged separately from\nthe luck of the outcome."
+    },
+    "rea.prioritization": {
+      "title": "Prioritization",
+      "plain_meaning": "Ranking what gets done first by impact and leverage — and keeping an\nexplicit not-now list, because a priority list without a sacrifice list\nis just a wish list."
+    },
+    "rea.second-order-thinking": {
+      "title": "Second-order Thinking",
+      "plain_meaning": "Tracing consequences past the first step: \"and then what?\" — including the\nstep where other people (customers, competitors, employees) adapt to what\nyou just did."
+    },
+    "rea.structuring": {
+      "title": "Structuring",
+      "plain_meaning": "Turning a messy situation into a defined problem before trying to solve it —\na one-sentence problem statement, then a tree of possible causes or options\nthat is MECE: mutually exclusive, collectively exhaustive."
+    },
+    "rea.systems-thinking": {
+      "title": "Systems Thinking",
+      "plain_meaning": "Seeing a business as loops, stocks, and delays instead of isolated events —\nwhere today's problem is usually yesterday's solution feeding back, and the\nstructure of the system produces its behavior more than the people in it do."
+    },
+    "rea.trade-off-analysis": {
+      "title": "Trade-off Analysis",
+      "plain_meaning": "Naming what every option sacrifices — because in a functioning market and a\nfinite company, every real choice buys something by giving something up.\nAn option with no visible downside just has an unexamined one."
+    },
+    "rsk.business-continuity": {
+      "title": "Business Continuity",
+      "plain_meaning": "Surviving the bad day: backups that restore, failovers that fail\nover, plans that name who does what when systems, buildings, vendors,\nor people are suddenly unavailable — tested before needed, because\nthe test IS the plan."
+    },
+    "rsk.concentration-risk": {
+      "title": "Concentration Risk",
+      "plain_meaning": "Too much of anything vital in one place: one customer as 40% of\nrevenue, one supplier for the critical input, one channel for all\ndemand, one person holding the system, one geography holding the\ninfrastructure."
+    },
+    "rsk.cyber-risk": {
+      "title": "Cyber Risk",
+      "plain_meaning": "Security posture translated into business risk: what an attack\nwould actually cost (downtime, data, ransom, trust, lawyers), how\nlikely your current hygiene makes it, and which defenses buy the\nmost risk reduction per dollar."
+    },
+    "rsk.data-governance": {
+      "title": "Data Governance",
+      "plain_meaning": "Policy for who owns, accesses, and answers for data: ownership per\ndomain, access rules, retention schedules, definition authority —\nthe accountability layer that data quality, privacy, and security\nall stand on."
+    },
+    "rsk.internal-controls": {
+      "title": "Internal Controls",
+      "plain_meaning": "Process checks that make error and fraud hard: separation of duties\n(no one both approves and pays), reconciliations (two records that\nmust agree), approval thresholds, and access limits — friction\ninstalled on purpose where money and data move."
+    },
+    "rsk.risk-appetite": {
+      "title": "Risk Appetite",
+      "plain_meaning": "Deciding in advance how much risk is acceptable, per domain: where\nthe company bets boldly (product, growth experiments), where it's\nconservative (cash, compliance, security), and how big any single\nbet may be — written before the exciting opportunity arrives."
+    },
+    "rsk.risk-process": {
+      "title": "Risk Process",
+      "plain_meaning": "The loop: identify → assess (likelihood × impact) → treat (avoid,\nreduce, transfer, accept) → monitor — run as a standing rhythm, not\na binder produced once for an audit."
+    },
+    "rsk.risk-taxonomy": {
+      "title": "Risk Taxonomy",
+      "plain_meaning": "Naming the kinds of risk so none hide: strategic (wrong bets),\noperational (broken processes), financial (cash, credit, market),\ncompliance (rules), cyber, reputational, and concentration — a\nshared vocabulary that turns \"what keeps you up at night\" into a\nchecklist."
+    },
+    "rsk.vendor-risk": {
+      "title": "Vendor Risk",
+      "plain_meaning": "Third parties as extensions of your risk surface: every critical\nvendor's outage is your outage, their breach is your breach, their\nprice increase is your margin call — inherited exposure you chose\nby signing."
+    },
+    "str.business-model-design": {
+      "title": "Business Model Design",
+      "plain_meaning": "How the company creates, delivers, and captures value — who pays, for\nwhat, how often, at what margin, through what cost structure. The\narchitecture of the money."
+    },
+    "str.capital-allocation": {
+      "title": "Capital Allocation",
+      "plain_meaning": "Deciding where every marginal dollar goes — reinvest in the core, fund\nnew bets, acquire, pay down debt, return to owners — the CEO's actual\njob once the machine runs."
+    },
+    "str.competitive-advantage": {
+      "title": "Competitive Advantage",
+      "plain_meaning": "The durable reasons customers pick you that rivals can't quickly copy —\nthe moat. Real ones are structural: network effects, switching costs,\nscale economies, brand memory, proprietary data or process, regulatory\nposition."
+    },
+    "str.competitive-strategy": {
+      "title": "Competitive Strategy",
+      "plain_meaning": "Choosing where to compete and how to win against named rivals: Porter's\ngeneric paths (cost leadership, differentiation, focus) and the\ndiscipline of not being stuck between them."
+    },
+    "str.corporate-strategy": {
+      "title": "Corporate Strategy",
+      "plain_meaning": "Managing a portfolio of businesses as one company: what to own, what to\nexit, how units share strengths — and the standing question every parent\nmust answer: does this business become MORE valuable under our roof, or\nless?"
+    },
+    "str.disruption-theory": {
+      "title": "Disruption Theory",
+      "plain_meaning": "Christensen's specific mechanism (not a synonym for \"new thing\"): why\nwell-run incumbents lose to entrants whose products start WORSE —\ncheaper, simpler, serving overlooked segments — then improve faster\nthan customer needs grow, until \"worse\" is suddenly good enough for\neveryone."
+    },
+    "str.five-forces": {
+      "title": "Five Forces",
+      "plain_meaning": "Porter's model of what determines industry profitability: rivalry among\nexisting competitors, threat of new entrants, threat of substitutes,\nsupplier power, and buyer power — five pressures, each squeezing margin\nfrom a different direction."
+    },
+    "str.growth-strategy": {
+      "title": "Growth Strategy",
+      "plain_meaning": "The chosen path to bigger: sell more of the same to the same (penetration),\nsame product to new markets, new products to the same customers, or new\nto new (Ansoff's grid) — organically built or inorganically bought."
+    },
+    "str.industry-analysis": {
+      "title": "Industry Analysis",
+      "plain_meaning": "Reading an industry's structure — who captures the profit, what forces\nsqueeze it, where it's consolidating or fragmenting, and which way the\neconomics are drifting — before betting your company on a position in it."
+    },
+    "str.innovation-strategy": {
+      "title": "Innovation Strategy",
+      "plain_meaning": "Deciding where new value will come from and protecting the work of\nfinding it: sustaining improvements to today's business, adjacent\nextensions, and transformational bets — a portfolio with different\nclocks, metrics, and management."
+    },
+    "str.mergers-acquisitions": {
+      "title": "Mergers & Acquisitions",
+      "plain_meaning": "Buying growth, capability, or competition removal — valuation,\ndiligence, deal structure, and the part where most of the value\nactually lives or dies: integration."
+    },
+    "str.partnerships-alliances": {
+      "title": "Partnerships & Alliances",
+      "plain_meaning": "Growth through others: channel partners who resell, technology partners\nwho integrate, strategic alliances that share markets or capabilities —\nleverage without acquisition."
+    },
+    "str.strategic-planning": {
+      "title": "Strategic Planning",
+      "plain_meaning": "Turning direction into a coherent set of choices: Rumelt's kernel — an\nhonest DIAGNOSIS of the situation, a GUIDING POLICY for dealing with it,\nand COHERENT ACTIONS that reinforce each other — not a wish list with\ndates."
+    },
+    "str.strategy-execution": {
+      "title": "Strategy Execution",
+      "plain_meaning": "The bridge from chosen strategy to sequenced action: translating the\nkernel into a few wildly important goals, cascading them into\nteam-level commitments, and running the cadence that keeps daily work\npointed at them."
+    },
+    "str.swot": {
+      "title": "SWOT",
+      "plain_meaning": "The structured stocktake — strengths, weaknesses, opportunities,\nthreats — internal capabilities crossed with external conditions.\nAn input to strategy, never the strategy itself."
+    },
+    "str.vision-mission": {
+      "title": "Vision & Mission",
+      "plain_meaning": "What the company is FOR (mission), where it's going over a decade\n(vision), and — the part that gives both teeth — what it therefore\nrefuses to do."
+    },
+    "tec.ai-agents-automation": {
+      "title": "AI Agents & Automation",
+      "plain_meaning": "Delegating work to software that decides — multi-step tasks where the\nsystem chooses actions, calls tools, and iterates — beyond automation\nthat merely repeats what it was told."
+    },
+    "tec.ai-llms": {
+      "title": "AI & LLMs",
+      "plain_meaning": "Large language models as business capabilities: machines that read,\nwrite, summarize, extract, classify, and reason over language —\nprobabilistically, which is both the superpower and the fine print."
+    },
+    "tec.apis-integration": {
+      "title": "APIs & Integration",
+      "plain_meaning": "How systems talk: the contracts (what data, what format, what\npromises), the sync patterns (real-time vs batch), and the failure\nmodes nobody designs for until they fire."
+    },
+    "tec.bpm-workflow": {
+      "title": "BPM & Workflow",
+      "plain_meaning": "Automating processes so work routes itself — approvals flow, handoffs\ntrigger, status is visible — instead of living in email threads and\nsomebody-remembers."
+    },
+    "tec.build-buy-partner": {
+      "title": "Build, Buy or Partner",
+      "plain_meaning": "The recurring capability decision: build it (control, cost, and\nmaintenance forever), buy it (speed and roadmap-dependency), or\npartner for it (leverage and shared fate) — decided per capability,\nrevisited as stakes change."
+    },
+    "tec.business-analysis": {
+      "title": "Business Analysis",
+      "plain_meaning": "Turning business needs into something systems can implement: eliciting\nwhat people actually need (vs what they ask for), modeling the process,\nand bridging the two languages — business and technical — that\nroutinely mistranslate each other."
+    },
+    "tec.cloud-infrastructure": {
+      "title": "Cloud Infrastructure",
+      "plain_meaning": "Renting compute, storage, and services instead of owning them —\nelasticity and speed in exchange for a meter that never stops running\nand a landlord with opinions."
+    },
+    "tec.crm-systems": {
+      "title": "CRM Systems",
+      "plain_meaning": "The system of record for customers and revenue motion — contacts,\ndeals, activity, history — where the pipeline either reflects reality\nor decorates it."
+    },
+    "tec.cybersecurity-basics": {
+      "title": "Cybersecurity Basics",
+      "plain_meaning": "The minimum defenses every business owes itself: MFA everywhere,\npatched systems, tested backups, least-privilege access, phishing-aware\npeople, and a plan for the bad day — the unglamorous 20% that stops\n80% of attacks."
+    },
+    "tec.devops-release": {
+      "title": "DevOps & Release",
+      "plain_meaning": "Shipping changes fast without breaking production: automated pipelines,\nsmall frequent deploys, monitoring that notices before customers do,\nand rollback as a reflex rather than a crisis."
+    },
+    "tec.digital-transformation": {
+      "title": "Digital Transformation",
+      "plain_meaning": "Changing how the business RUNS — decisions, processes, customer\nexperience — with technology as the lever, not the point. New tools\nrunning old processes is renovation theater, not transformation."
+    },
+    "tec.enterprise-architecture": {
+      "title": "Enterprise Architecture",
+      "plain_meaning": "The map of systems, data flows, and processes — what talks to what,\nwhere each fact lives, which systems are load-bearing — and its fit to\nwhat the business is trying to become."
+    },
+    "tec.erp-systems": {
+      "title": "ERP Systems",
+      "plain_meaning": "The system of record for the operating business — finance, inventory,\norders, procurement in one integrated database — where a transaction\nentered once flows everywhere it's needed."
+    },
+    "tec.master-data-management": {
+      "title": "Master Data Management",
+      "plain_meaning": "One truth for the facts everything else depends on — customer, product,\nvendor, price — with owned definitions, golden records, and rules for\nwho may change what."
+    },
+    "tec.process-mapping": {
+      "title": "Process Mapping",
+      "plain_meaning": "Drawing how work actually flows — swimlanes, decisions, handoffs\n(BPMN when formality pays) — as it IS, before anyone argues about how\nit should be."
+    },
+    "tec.requirements-engineering": {
+      "title": "Requirements Engineering",
+      "plain_meaning": "Specifying and verifying what gets built: BRDs (what the business\nneeds), FRDs (what the system will do), acceptance criteria (how we'll\nknow), and UAT (proving it with real users before go-live)."
+    },
+    "tec.technical-debt": {
+      "title": "Technical Debt",
+      "plain_meaning": "Speed borrowed from the future: shortcuts, outdated foundations, and\nuntested tangles that made yesterday faster and make every tomorrow\nslower — with interest charged in engineering hours."
+    }
+  },
+  "concept_edges": [
+    {
+      "id": "e.valuation-fundmechanics",
+      "from": "fin.valuation",
+      "to": "fin.fundraising-mechanics",
+      "effect": "the valuation story sets the dilution math — but terms decide what the number is worth; a high headline with a loaded preference stack pays less than a clean lower one",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "per round, felt at exit",
+      "confidence": "high",
+      "evidence": [
+        "waterfall model at multiple exit sizes",
+        "preference stack vs headline valuation comparison"
+      ],
+      "sources": [
+        "Feld & Mendelson, Venture Deals",
+        "Damodaran"
+      ]
+    },
+    {
+      "id": "e.capstructure-runway",
+      "from": "fin.capital-structure",
+      "to": "fin.cash-runway",
+      "effect": "debt service and covenants put a second clock on the company — fixed obligations convert volatility into mortality risk",
+      "polarity": "negative",
+      "strength": "strong",
+      "conditions": [
+        "meaningful debt against volatile cash flows"
+      ],
+      "delay": "monthly, cliff-shaped at covenant breaches",
+      "confidence": "high",
+      "evidence": [
+        "debt service vs worst-quarter cash generation",
+        "covenant headroom trend"
+      ],
+      "sources": [
+        "Higgins",
+        "PE/lender practice"
+      ]
+    },
+    {
+      "id": "e.fundmechanics-governance",
+      "from": "fin.fundraising-mechanics",
+      "to": "ext.corporate-governance",
+      "effect": "term sheets construct the board — every round's control terms decide who can overrule or remove the founder years later",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "signed now, felt in crises",
+      "confidence": "high",
+      "evidence": [
+        "board composition now and post-next-round",
+        "protective provision list actually read"
+      ],
+      "sources": [
+        "Feld, Startup Boards",
+        "Venture Deals"
+      ]
+    },
+    {
+      "id": "e.legal-contracts",
+      "from": "ext.legal-fundamentals",
+      "to": "ext.contracts",
+      "effect": "entity and liability literacy underpins contracting — who signs, as whom, with what exposure, decides whether the company or the founder is on the hook",
+      "polarity": "positive",
+      "strength": "moderate",
+      "conditions": [],
+      "delay": "per signature",
+      "confidence": "high",
+      "evidence": [
+        "signature discipline audit",
+        "personal guarantee inventory"
+      ],
+      "sources": [
+        "Bagley"
+      ]
+    },
+    {
+      "id": "e.contracts-revenue-quality",
+      "from": "ext.contracts",
+      "to": "fin.revenue",
+      "effect": "contract terms are revenue quality's skeleton — auto-renewals, termination rights, and pricing clauses decide how durable and diligence-able the top line is",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "per renewal cycle",
+      "confidence": "high",
+      "evidence": [
+        "renewal/termination clause audit across the customer base",
+        "contract variance (bespoke vs standard)"
+      ],
+      "sources": [
+        "contract review practice",
+        "M&A diligence practice"
+      ]
+    },
+    {
+      "id": "e.ip-advantage",
+      "from": "ext.intellectual-property",
+      "to": "str.competitive-advantage",
+      "effect": "owned IP thickens moats built of other things — and unowned IP (missing assignments) is a moat with a hole a diligence team can walk through",
+      "polarity": "positive",
+      "strength": "moderate",
+      "conditions": [
+        "ownership hygiene is actually complete"
+      ],
+      "delay": "latent until dispute or diligence",
+      "confidence": "high",
+      "evidence": [
+        "assignment audit completeness",
+        "trademark registrations in operating markets"
+      ],
+      "sources": [
+        "startup IP diligence practice",
+        "Helmer (IP as power amplifier)"
+      ]
+    },
+    {
+      "id": "e.regulation-industry-structure",
+      "from": "ext.regulation-compliance",
+      "to": "str.industry-analysis",
+      "effect": "regulation redraws industry structure — compliance burdens are entry barriers incumbents love, and rule changes reshuffle profit pools on announcement",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "telegraphed years ahead in drafts",
+      "confidence": "high",
+      "evidence": [
+        "pending consultations/drafts in the sector",
+        "compliance cost as % of revenue by company size"
+      ],
+      "sources": [
+        "Porter (barriers)",
+        "regulatory strategy practice"
+      ]
+    },
+    {
+      "id": "e.privacy-datagovernance",
+      "from": "ext.privacy-data-protection",
+      "to": "rsk.data-governance",
+      "effect": "privacy law is data governance with penalties — the legal requirements (mapping, minimization, deletion) define the governance program's floor",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "continuous, cliff-shaped at breaches",
+      "confidence": "high",
+      "evidence": [
+        "data map existing",
+        "deletion capability exercised end-to-end"
+      ],
+      "sources": [
+        "GDPR/CCPA texts",
+        "IAPP practice"
+      ]
+    },
+    {
+      "id": "e.governance-capital-allocation",
+      "from": "ext.corporate-governance",
+      "to": "str.capital-allocation",
+      "effect": "the board is the allocation referee — real governance forces big capital decisions through scrutiny; theater governance rubber-stamps momentum",
+      "polarity": "positive",
+      "strength": "moderate",
+      "conditions": [],
+      "delay": "per major decision",
+      "confidence": "medium",
+      "evidence": [
+        "board minutes on major allocations (real debate or ratification?)",
+        "hurdle rates surviving board contact"
+      ],
+      "sources": [
+        "Thorndike",
+        "Feld, Startup Boards"
+      ]
+    },
+    {
+      "id": "e.esg-brand-access",
+      "from": "ext.esg-sustainability",
+      "to": "mkt.go-to-market",
+      "effect": "ESG posture has become a procurement gate — enterprise questionnaires and supplier audits decide market access before any sales conversation",
+      "polarity": "positive",
+      "strength": "moderate",
+      "conditions": [
+        "selling to large enterprises or regulated buyers"
+      ],
+      "delay": "per RFP cycle",
+      "confidence": "medium",
+      "evidence": [
+        "deals stalled on supplier questionnaires",
+        "evidence file behind public claims"
+      ],
+      "sources": [
+        "supply-chain ESG procurement practice",
+        "CSRD trajectory"
+      ]
+    },
+    {
+      "id": "e.macro-financial-forecast",
+      "from": "ext.macroeconomics",
+      "to": "fin.financial-forecasting",
+      "effect": "rates, inflation, and cycle position are forecast inputs, not background — boom-year baselines extrapolated into plans are the cycle's favorite ambush",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "quarters",
+      "confidence": "high",
+      "evidence": [
+        "planning assumptions stress-tested against rate/cycle scenarios",
+        "pricing power tested recently"
+      ],
+      "sources": [
+        "Dalio",
+        "Marks (cycles)"
+      ]
+    },
+    {
+      "id": "e.macro-fundraising",
+      "from": "ext.macroeconomics",
+      "to": "ent.fundraising-strategy",
+      "effect": "the price of money sets the fundraising weather — windows open and close with rates, and raising into a closed window reprices everything",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "market-wide, quarters",
+      "confidence": "high",
+      "evidence": [
+        "venture funding volume vs rate environment",
+        "runway planning against window risk"
+      ],
+      "sources": [
+        "venture market cycle history",
+        "Graham (raise when you can)"
+      ]
+    },
+    {
+      "id": "e.geopolitics-supplychain",
+      "from": "ext.geopolitics-policy",
+      "to": "ops.supply-chain",
+      "effect": "political decisions reprice and re-route supply chains — tariffs, sanctions, and export controls turn single-geography sourcing into a standing bet",
+      "polarity": "negative",
+      "strength": "strong",
+      "conditions": [
+        "concentrated sourcing in politically contested geographies"
+      ],
+      "delay": "overnight on announcement, quarters to mitigate",
+      "confidence": "high",
+      "evidence": [
+        "country concentration audit (sourcing, revenue, infrastructure)",
+        "tier-2 supplier geography visibility"
+      ],
+      "sources": [
+        "post-2020 supply-chain resilience canon",
+        "sanctions compliance practice"
+      ]
+    },
+    {
+      "id": "e.discounting-gross-margin",
+      "from": "mkt.discounting",
+      "to": "fin.gross-margin",
+      "effect": "discounts come straight out of margin — a 10% discount on a 30% margin business erases a third of the profit on every discounted sale",
+      "polarity": "negative",
+      "strength": "strong",
+      "conditions": [
+        "discounts are off list price, not funded by a supplier"
+      ],
+      "delay": "immediate, but often hidden until monthly close",
+      "confidence": "high",
+      "evidence": [
+        "discount log / realized price vs list price by month",
+        "margin bridge (price vs volume vs mix decomposition)",
+        "sales comp plan (is volume rewarded regardless of price?)"
+      ],
+      "sources": [
+        "Hormozi, $100M Offers",
+        "McKinsey pricing waterfall"
+      ]
+    },
+    {
+      "id": "e.cogs-gross-margin",
+      "from": "fin.cogs",
+      "to": "fin.gross-margin",
+      "effect": "direct cost creep compresses margin even at stable prices",
+      "polarity": "negative",
+      "strength": "strong",
+      "conditions": [
+        "prices are not repriced to pass cost increases through"
+      ],
+      "delay": "30-90 days (supplier increases hit as old stock sells through)",
+      "confidence": "high",
+      "evidence": [
+        "COGS trend by month",
+        "supplier price change notices / purchase price variance",
+        "labour cost per unit trend"
+      ],
+      "sources": [
+        "CFI, cost accounting fundamentals"
+      ]
+    },
+    {
+      "id": "e.gross-margin-cash-flow",
+      "from": "fin.gross-margin",
+      "to": "fin.cash-flow",
+      "effect": "margin is where operating cash is born — falling margin starves cash even while revenue grows",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "one cash conversion cycle (typically 30-90 days)",
+      "confidence": "high",
+      "evidence": [
+        "cash flow statement, operating section vs P&L gross profit",
+        "cash conversion cycle trend"
+      ],
+      "sources": [
+        "Damodaran",
+        "Berkshire letters"
+      ]
+    },
+    {
+      "id": "e.inventory-working-capital",
+      "from": "ops.inventory-management",
+      "to": "fin.working-capital",
+      "effect": "inventory buildup traps cash in stock — every dollar of excess inventory is a dollar not in the bank",
+      "polarity": "negative",
+      "strength": "strong",
+      "conditions": [
+        "stock is owned, not consigned"
+      ],
+      "delay": "immediate on purchase, visible in cash 30-60 days later as payables come due",
+      "confidence": "high",
+      "evidence": [
+        "inventory aging report",
+        "purchase orders vs actual sales orders (buying ahead of real demand?)",
+        "inventory days trend (DIO)"
+      ],
+      "sources": [
+        "Goldratt, The Goal"
+      ]
+    },
+    {
+      "id": "e.working-capital-cash-runway",
+      "from": "fin.working-capital",
+      "to": "fin.cash-runway",
+      "effect": "cash trapped in the operating cycle shortens the survival clock even when the P&L looks healthy",
+      "polarity": "negative",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "immediate",
+      "confidence": "high",
+      "evidence": [
+        "13-week cash flow forecast",
+        "working capital line items vs cash balance trend"
+      ],
+      "sources": [
+        "Damodaran",
+        "CFI working capital guides"
+      ]
+    },
+    {
+      "id": "e.stats-experimentation",
+      "from": "dat.statistics-fundamentals",
+      "to": "dat.experimentation",
+      "effect": "statistical literacy is what keeps experiments honest — without it, peeking, small samples, and noise-worship manufacture false wins",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "immediate",
+      "confidence": "high",
+      "evidence": [
+        "pre-registration discipline in the test process",
+        "test win rate (too high = the process is lying)"
+      ],
+      "sources": [
+        "Kohavi, Trustworthy Online Controlled Experiments",
+        "Kahneman (law of small numbers)"
+      ]
+    },
+    {
+      "id": "e.experimentation-product-analytics",
+      "from": "dat.experimentation",
+      "to": "prd.product-analytics",
+      "effect": "experiments upgrade analytics from correlation to cause — cohort reads become defensible when the variation was randomized",
+      "polarity": "positive",
+      "strength": "moderate",
+      "conditions": [],
+      "delay": "per test cycle",
+      "confidence": "high",
+      "evidence": [
+        "big product bets tested vs shipped on faith",
+        "HiPPO override history"
+      ],
+      "sources": [
+        "Kohavi",
+        "Thomke, Experimentation Works"
+      ]
+    },
+    {
+      "id": "e.sql-bi",
+      "from": "dat.sql",
+      "to": "dat.bi-dashboards",
+      "effect": "query literacy relieves the dashboard bottleneck — questions the dashboard didn't anticipate get answered instead of abandoned",
+      "polarity": "positive",
+      "strength": "moderate",
+      "conditions": [],
+      "delay": "immediate per question",
+      "confidence": "high",
+      "evidence": [
+        "question-to-answer latency",
+        "analytics ticket queue depth"
+      ],
+      "sources": [
+        "Mode/dbt analytics practice"
+      ]
+    },
+    {
+      "id": "e.modeling-bi",
+      "from": "dat.data-modeling-warehousing",
+      "to": "dat.bi-dashboards",
+      "effect": "the model bounds the dashboard — conformed dimensions make one truth possible; a swamp guarantees competing versions of revenue",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "structural",
+      "confidence": "high",
+      "evidence": [
+        "which-dashboard-is-right incidents",
+        "conformed dimension audit"
+      ],
+      "sources": [
+        "Kimball",
+        "dbt viewpoint"
+      ]
+    },
+    {
+      "id": "e.etl-data-quality",
+      "from": "dat.etl-pipelines",
+      "to": "dat.data-quality",
+      "effect": "pipeline reliability is a quality floor — silent failures ship stale or partial data into every downstream decision",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "per incident, trust-compounding",
+      "confidence": "high",
+      "evidence": [
+        "freshness/volume monitoring coverage",
+        "silent-staleness incidents found by users"
+      ],
+      "sources": [
+        "data reliability engineering practice",
+        "Kleppmann"
+      ]
+    },
+    {
+      "id": "e.dataquality-bi-trust",
+      "from": "dat.data-quality",
+      "to": "dat.bi-dashboards",
+      "effect": "one publicly wrong number sends users back to private spreadsheets forever — dashboard adoption is a lagging indicator of data trust",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "trust lost in one incident, rebuilt over quarters",
+      "confidence": "high",
+      "evidence": [
+        "shadow spreadsheet census",
+        "dashboard usage after known data incidents"
+      ],
+      "sources": [
+        "Redman",
+        "Few"
+      ]
+    },
+    {
+      "id": "e.metricdesign-kpis",
+      "from": "dat.metric-design",
+      "to": "ops.operational-kpis",
+      "effect": "design discipline flows downhill to the ops floor — trees, leads, and pairs decide whether operational metrics steer or decorate",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "per metric review cycle",
+      "confidence": "high",
+      "evidence": [
+        "team metrics traceable to the north star",
+        "pairing audit results"
+      ],
+      "sources": [
+        "Grove (paired indicators)",
+        "Croll & Yoskovitz"
+      ]
+    },
+    {
+      "id": "e.metricdesign-goodhart",
+      "from": "dat.metric-design",
+      "to": "dat.goodharts-law",
+      "effect": "pairing and tree design are the structural defense — single unpaired targets invite gaming; a quality partner watches the blind side",
+      "polarity": "negative",
+      "strength": "strong",
+      "conditions": [
+        "pairs actually reviewed together, not reported separately"
+      ],
+      "delay": "one target cycle",
+      "confidence": "high",
+      "evidence": [
+        "unpaired incentivized metrics inventory",
+        "metric-vs-ground-truth audit results"
+      ],
+      "sources": [
+        "Grove",
+        "Muller, The Tyranny of Metrics"
+      ]
+    },
+    {
+      "id": "e.goodhart-kpis",
+      "from": "dat.goodharts-law",
+      "to": "ops.operational-kpis",
+      "effect": "once gamed, a KPI stops steering — the number reports success while the operation drifts, and raising the target just raises the gaming",
+      "polarity": "negative",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "sets in within 1-2 target cycles",
+      "confidence": "high",
+      "evidence": [
+        "metric improving while downstream outcome stalls",
+        "clustering at exactly-target distributions"
+      ],
+      "sources": [
+        "Goodhart/Strathern",
+        "Deming (quotas)"
+      ]
+    },
+    {
+      "id": "e.forecastmethods-demand",
+      "from": "dat.forecasting-methods",
+      "to": "ops.demand-planning",
+      "effect": "method discipline (baselines, error tracking, scored overrides) is what separates demand plans from negotiated fiction",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "per planning cycle",
+      "confidence": "high",
+      "evidence": [
+        "naive-baseline benchmark existing",
+        "forecast error tracked and fed back"
+      ],
+      "sources": [
+        "Makridakis (M competitions)",
+        "Hyndman"
+      ]
+    },
+    {
+      "id": "e.forecastmethods-financial",
+      "from": "dat.forecasting-methods",
+      "to": "fin.financial-forecasting",
+      "effect": "the same craft governs the money forecast — untracked error and unscored management adjustments turn the financial plan into politics with decimals",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "per planning cycle",
+      "confidence": "high",
+      "evidence": [
+        "forecast vs actual variance history",
+        "override scoring existing at all"
+      ],
+      "sources": [
+        "Makridakis",
+        "Tetlock (calibration)"
+      ]
+    },
+    {
+      "id": "e.predictive-cs",
+      "from": "dat.predictive-analytics",
+      "to": "mkt.customer-success",
+      "effect": "churn and health scores turn CS from reactive to triaged — IF a playbook consumes the score; a prediction without an intervention is trivia",
+      "polarity": "positive",
+      "strength": "moderate",
+      "conditions": [
+        "an intervention playbook exists per score band"
+      ],
+      "delay": "1-2 quarters to prove",
+      "confidence": "medium",
+      "evidence": [
+        "save rate of scored-and-worked accounts vs unworked",
+        "drift monitoring on the model"
+      ],
+      "sources": [
+        "Provost & Fawcett",
+        "Gainsight health-score practice"
+      ]
+    },
+    {
+      "id": "e.storytelling-execcomm",
+      "from": "dat.data-storytelling",
+      "to": "ppl.executive-communication",
+      "effect": "findings packaged as headline-chart-ask actually move decisions — analysis presented as methodology dies in the appendix",
+      "polarity": "positive",
+      "strength": "moderate",
+      "conditions": [],
+      "delay": "per presentation",
+      "confidence": "high",
+      "evidence": [
+        "chart titles (conclusions vs captions)",
+        "decisions traceable to analyses"
+      ],
+      "sources": [
+        "Knaflic",
+        "Minto"
+      ]
+    },
+    {
+      "id": "e.spreadsheets-controls",
+      "from": "dat.spreadsheets",
+      "to": "rsk.internal-controls",
+      "effect": "ungoverned spreadsheets running recurring processes are silent error factories outside every control — versionless, untested, one hard-coded cell from a wrong board number",
+      "polarity": "negative",
+      "strength": "strong",
+      "conditions": [
+        "spreadsheets operate (not just analyze) recurring processes"
+      ],
+      "delay": "latent until the error surfaces publicly",
+      "confidence": "high",
+      "evidence": [
+        "census of process-running spreadsheets",
+        "error findings from any audit sample"
+      ],
+      "sources": [
+        "Panko (error research)",
+        "EuSpRIG case registry"
+      ]
+    },
+    {
+      "id": "e.segmentation-icp",
+      "from": "mkt.customer-segmentation",
+      "to": "mkt.ideal-customer-profile",
+      "effect": "segmentation quality bounds ICP sharpness — you cannot define your best customer inside a market you never split",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "immediate (definitional dependency)",
+      "confidence": "high",
+      "evidence": [
+        "segment-level revenue/churn/CAC breakout existing at all",
+        "ICP document referencing actual segment data"
+      ],
+      "sources": [
+        "Moore, Crossing the Chasm",
+        "Roberge, The Sales Acceleration Formula"
+      ]
+    },
+    {
+      "id": "e.icp-value-proposition",
+      "from": "mkt.ideal-customer-profile",
+      "to": "mkt.value-proposition",
+      "effect": "a narrow ICP sharpens the value promise — outcome, believability, and effort are only computable for a specific buyer",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "one messaging cycle",
+      "confidence": "high",
+      "evidence": [
+        "value prop written per segment vs one-size",
+        "win-rate difference between ICP and non-ICP deals"
+      ],
+      "sources": [
+        "Hormozi, $100M Offers",
+        "Osterwalder, Value Proposition Design"
+      ]
+    },
+    {
+      "id": "e.value-prop-positioning",
+      "from": "mkt.value-proposition",
+      "to": "mkt.positioning",
+      "effect": "the value you can uniquely deliver determines which frame you can credibly claim — position on strengths only you have",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "immediate",
+      "confidence": "high",
+      "evidence": [
+        "Dunford-style unique-strengths inventory",
+        "lost-deal reasons referencing wrong comparisons"
+      ],
+      "sources": [
+        "April Dunford, Obviously Awesome"
+      ]
+    },
+    {
+      "id": "e.positioning-messaging",
+      "from": "mkt.positioning",
+      "to": "mkt.messaging",
+      "effect": "unsettled positioning makes messaging unfixable — words cannot converge on a frame that does not exist",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "immediate",
+      "confidence": "high",
+      "evidence": [
+        "endless copy-debate history",
+        "five-second test results on the homepage"
+      ],
+      "sources": [
+        "April Dunford",
+        "Ries & Trout, Positioning"
+      ]
+    },
+    {
+      "id": "e.positioning-pricing-strategy",
+      "from": "mkt.positioning",
+      "to": "mkt.pricing-strategy",
+      "effect": "category frame sets the price ceiling — commodity positioning invites price comparison, differentiated positioning escapes it",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "visible per deal, structural over quarters",
+      "confidence": "high",
+      "evidence": [
+        "realized price vs category norms",
+        "price objections framed as competitor comparisons"
+      ],
+      "sources": [
+        "Porter (position as trade-off)",
+        "Simon, Confessions of the Pricing Man"
+      ]
+    },
+    {
+      "id": "e.pricing-strategy-discounting",
+      "from": "mkt.pricing-strategy",
+      "to": "mkt.discounting",
+      "effect": "a strategy vacuum gets filled ad hoc — without fences and discount rules, every deal invents its own price",
+      "polarity": "negative",
+      "strength": "strong",
+      "conditions": [
+        "reps or founders can discount without structural guardrails"
+      ],
+      "delay": "one sales cycle",
+      "confidence": "high",
+      "evidence": [
+        "discount authority rules existing or not",
+        "variance of realized prices across similar deals"
+      ],
+      "sources": [
+        "Marn & Rosiello (HBR 1992)",
+        "Simon-Kucher"
+      ]
+    },
+    {
+      "id": "e.icp-gtm",
+      "from": "mkt.ideal-customer-profile",
+      "to": "mkt.go-to-market",
+      "effect": "ICP economics dictate the viable motion — deal size and buying process must afford the humans (or absence of humans) in the loop",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "structural",
+      "confidence": "high",
+      "evidence": [
+        "ACV vs cost-per-deal table",
+        "sales cycle length by segment"
+      ],
+      "sources": [
+        "a16z GTM fit frameworks",
+        "Moore, Crossing the Chasm"
+      ]
+    },
+    {
+      "id": "e.gtm-demand-generation",
+      "from": "mkt.go-to-market",
+      "to": "mkt.demand-generation",
+      "effect": "the motion selects the channels — PLG feeds on content/product loops, field sales on outbound/events; mismatched channels fill the wrong funnel",
+      "polarity": "positive",
+      "strength": "moderate",
+      "conditions": [],
+      "delay": "one quarter",
+      "confidence": "medium",
+      "evidence": [
+        "channel mix vs motion type",
+        "conversion of each channel's leads through THIS motion"
+      ],
+      "sources": [
+        "OpenView PLG research"
+      ]
+    },
+    {
+      "id": "e.messaging-funnel",
+      "from": "mkt.messaging",
+      "to": "mkt.funnel-conversion",
+      "effect": "unclear words leak the funnel at the top — buyers cannot want what they cannot parse in five seconds",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "immediate per test",
+      "confidence": "high",
+      "evidence": [
+        "landing conversion rate vs traffic quality",
+        "five-second comprehension tests",
+        "message A/B history"
+      ],
+      "sources": [
+        "MECLABS conversion heuristics",
+        "Ogilvy"
+      ]
+    },
+    {
+      "id": "e.brand-cac",
+      "from": "mkt.brand-strategy",
+      "to": "mkt.cac-ltv-attribution",
+      "effect": "memory structures lower acquisition cost over time — known brands convert cheaper in every channel; the effect compounds and is invisible quarter to quarter",
+      "polarity": "negative",
+      "strength": "moderate",
+      "conditions": [
+        "consistent distinctive assets held for years, not quarters"
+      ],
+      "delay": "12-36 months",
+      "confidence": "high",
+      "evidence": [
+        "branded search volume trend",
+        "CAC trend at constant spend mix",
+        "unaided awareness tracking"
+      ],
+      "sources": [
+        "Binet & Field, The Long and the Short of It",
+        "Byron Sharp, How Brands Grow"
+      ]
+    },
+    {
+      "id": "e.paid-cac-inflation",
+      "from": "mkt.paid-acquisition",
+      "to": "mkt.cac-ltv-attribution",
+      "effect": "scaling paid raises marginal CAC — warm audiences exhaust and the auction reprices every additional dollar",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [
+        "finite ICP audience in the auction channel"
+      ],
+      "delay": "visible within a quarter of scaling",
+      "confidence": "high",
+      "evidence": [
+        "marginal CAC by spend tier",
+        "CPM and frequency trends"
+      ],
+      "sources": [
+        "a16z paid marketing math",
+        "auction mechanics (Google/Meta documentation)"
+      ]
+    },
+    {
+      "id": "e.organic-compounding",
+      "from": "mkt.organic-content-seo",
+      "to": "mkt.demand-generation",
+      "effect": "owned content compounds demand at near-zero marginal cost — the only channel whose CAC falls with time",
+      "polarity": "positive",
+      "strength": "moderate",
+      "conditions": [
+        "6-12 months of consistent publication before the curve bends",
+        "content targets purchase-intent questions, not trivia"
+      ],
+      "delay": "6-12 months",
+      "confidence": "high",
+      "evidence": [
+        "organic share of pipeline trend",
+        "content published vs traffic curve by cohort"
+      ],
+      "sources": [
+        "Ahrefs/backlinko longitudinal studies",
+        "Fishkin, SparkToro research"
+      ]
+    },
+    {
+      "id": "e.interviews-discovery",
+      "from": "mi.customer-interviews",
+      "to": "prd.customer-discovery",
+      "effect": "interview craft is discovery's engine — past-behavior questions produce truth, pitch-shaped questions produce compliments and dead products",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "immediate per interview",
+      "confidence": "high",
+      "evidence": [
+        "question audit of interview notes",
+        "spend-trail evidence gathered per prospect"
+      ],
+      "sources": [
+        "Fitzpatrick, The Mom Test",
+        "Torres"
+      ]
+    },
+    {
+      "id": "e.research-segmentation",
+      "from": "mi.market-research-methods",
+      "to": "mkt.customer-segmentation",
+      "effect": "research design bounds segmentation truth — behavioral evidence finds segments that buy differently; opinion surveys find segments that answer differently",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "per research cycle",
+      "confidence": "high",
+      "evidence": [
+        "behavior-vs-opinion share in the segment evidence",
+        "sample honesty vs actual buyer population"
+      ],
+      "sources": [
+        "stated vs revealed preference research",
+        "Moore"
+      ]
+    },
+    {
+      "id": "e.voc-roadmap",
+      "from": "mi.voice-of-customer",
+      "to": "prd.roadmap-prioritization",
+      "effect": "themed feedback informs priorities — unthemed feedback lets the loudest requester write the roadmap one escalation at a time",
+      "polarity": "positive",
+      "strength": "moderate",
+      "conditions": [
+        "feedback is themed and weighted, not relayed raw"
+      ],
+      "delay": "per planning cycle",
+      "confidence": "high",
+      "evidence": [
+        "theme taxonomy existing",
+        "roadmap items sourced from patterns vs single accounts"
+      ],
+      "sources": [
+        "VoC practice",
+        "Cagan (feature-request handling)"
+      ]
+    },
+    {
+      "id": "e.ci-competitive-strategy",
+      "from": "mi.competitive-intelligence",
+      "to": "str.competitive-strategy",
+      "effect": "living intel makes strategy anticipatory — job posts, pricing moves, and review mining reveal the rival's next quarter before their press release",
+      "polarity": "positive",
+      "strength": "moderate",
+      "conditions": [],
+      "delay": "quarters of lead time when it works",
+      "confidence": "high",
+      "evidence": [
+        "intel owner and cadence existing",
+        "anticipate-vs-copy ratio in recent strategy moves"
+      ],
+      "sources": [
+        "Fuld",
+        "job-posting/review mining practice"
+      ]
+    },
+    {
+      "id": "e.winloss-positioning",
+      "from": "mi.win-loss-analysis",
+      "to": "mkt.positioning",
+      "effect": "the buyer's own account of the decision exposes the frame you were judged in — recurring loss themes are positioning diagnostics, not deal autopsies",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "patterns emerge over ~20 interviews",
+      "confidence": "high",
+      "evidence": [
+        "neutral-party buyer interviews existing",
+        "positioning changes traceable to win-loss patterns"
+      ],
+      "sources": [
+        "Clozd practice",
+        "Dunford"
+      ]
+    },
+    {
+      "id": "e.sizing-fundraising",
+      "from": "mi.market-sizing",
+      "to": "ent.fundraising-strategy",
+      "effect": "bottom-up sizing decides whether the venture path even fits — TAM theater raises doubts, unit-built SOM raises rounds",
+      "polarity": "positive",
+      "strength": "moderate",
+      "conditions": [],
+      "delay": "per raise",
+      "confidence": "medium",
+      "evidence": [
+        "bottom-up model connecting to the GTM plan",
+        "investor pushback on sizing in past processes"
+      ],
+      "sources": [
+        "Mullins",
+        "VC memo practice"
+      ]
+    },
+    {
+      "id": "e.trends-industry",
+      "from": "mi.trend-analysis",
+      "to": "str.industry-analysis",
+      "effect": "cost curves and edge behavior feed the structural-drift read — industry analysis without trend inputs describes yesterday's structure confidently",
+      "polarity": "positive",
+      "strength": "moderate",
+      "conditions": [],
+      "delay": "quarters to years",
+      "confidence": "high",
+      "evidence": [
+        "cost-curve tracking for core inputs",
+        "edge-adoption signals in the analysis"
+      ],
+      "sources": [
+        "Wack (scenarios)",
+        "Christensen"
+      ]
+    },
+    {
+      "id": "e.zerotoone-pmf",
+      "from": "ent.zero-to-one",
+      "to": "prd.product-market-fit",
+      "effect": "validation discipline is the PMF search algorithm — riskiest-assumption-first and money-based evidence converge on fit; enthusiasm-based search circles it forever",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "the whole search phase",
+      "confidence": "high",
+      "evidence": [
+        "evidence that isn't compliments (payments, deposits, switching)",
+        "riskiest assumption named and tested first"
+      ],
+      "sources": [
+        "Thiel",
+        "Blank, YC practice"
+      ]
+    },
+    {
+      "id": "e.foundersales-icp",
+      "from": "ent.founder-led-sales",
+      "to": "mkt.ideal-customer-profile",
+      "effect": "the founder selling personally is how the real ICP gets discovered — hired reps close whoever converts; founders notice WHO converts and why",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "first 10-20 deals",
+      "confidence": "high",
+      "evidence": [
+        "who sold the first deals and what was documented",
+        "ICP revisions during the founder-selling phase"
+      ],
+      "sources": [
+        "Roberge",
+        "Blank"
+      ]
+    },
+    {
+      "id": "e.stagetransitions-orgdesign",
+      "from": "ent.stage-transitions",
+      "to": "ppl.organizational-design",
+      "effect": "each stage breaks the previous structure on schedule — Dunbar-ish thresholds demand redesign before the informal system silently fails",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "per stage boundary (~50, ~150 heads)",
+      "confidence": "high",
+      "evidence": [
+        "current pains mapped to stage signatures",
+        "structure age vs headcount growth"
+      ],
+      "sources": [
+        "Greiner",
+        "Dunbar thresholds, Horowitz"
+      ]
+    },
+    {
+      "id": "e.scaling-runway",
+      "from": "ent.scaling-pathologies",
+      "to": "fin.cash-runway",
+      "effect": "premature scaling is runway arson — cost structure locked against hypothetical revenue burns cash at the multiple by which hiring exceeded evidence",
+      "polarity": "negative",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "2-4 quarters from the scaling decision",
+      "confidence": "high",
+      "evidence": [
+        "burn multiple trend",
+        "what was scaled vs what was validated"
+      ],
+      "sources": [
+        "Startup Genome",
+        "Gurley (burn discipline)"
+      ]
+    },
+    {
+      "id": "e.fundstrategy-mechanics",
+      "from": "ent.fundraising-strategy",
+      "to": "fin.fundraising-mechanics",
+      "effect": "the strategy sets the mechanics' leverage — raising from strength on milestones gets founder terms; raising from need gets the other kind",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "per round",
+      "confidence": "high",
+      "evidence": [
+        "runway remaining at raise start",
+        "term quality vs market comps"
+      ],
+      "sources": [
+        "Graham (fundraising essays)",
+        "Horowitz"
+      ]
+    },
+    {
+      "id": "e.founderpsych-judgment",
+      "from": "ent.founder-psychology",
+      "to": "rea.judgment-under-uncertainty",
+      "effect": "fatigue, isolation, and identity fusion degrade decision quality exactly when decisions matter most — the founder's psychology is the company's judgment infrastructure",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "continuous, compounding under stress",
+      "confidence": "high",
+      "evidence": [
+        "decision latency on known-hard calls",
+        "truth-hearing circle existing (peers, coach)"
+      ],
+      "sources": [
+        "Freeman (founder mental health)",
+        "Horowitz (The Struggle)"
+      ]
+    },
+    {
+      "id": "e.exitpaths-fundstrategy",
+      "from": "ent.exit-paths",
+      "to": "ent.fundraising-strategy",
+      "effect": "the intended exit should choose the money — VC math forecloses modest exits, so taking it IS an exit decision, usually made unread",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "set at signing, felt at exit",
+      "confidence": "high",
+      "evidence": [
+        "cap table vs exits it permits",
+        "founder-investor outcome alignment conversation happening at all"
+      ],
+      "sources": [
+        "Wilson/AVC",
+        "indie vs venture literature"
+      ]
+    },
+    {
+      "id": "e.accrual-profit-cash-gap",
+      "from": "fin.accounting-fundamentals",
+      "to": "fin.cash-flow",
+      "effect": "accrual timing makes profit and cash diverge — revenue booked before collection, costs spread over periods",
+      "polarity": "negative",
+      "strength": "strong",
+      "conditions": [
+        "accrual-basis books (cash-basis businesses do not show this gap)"
+      ],
+      "delay": "structural, visible every close",
+      "confidence": "high",
+      "evidence": [
+        "revenue recognition policy",
+        "deferred revenue and accrued liability balances",
+        "net income vs operating cash flow, trailing 12 months"
+      ],
+      "sources": [
+        "accounting identity (accrual vs cash basis)",
+        "Kieso, Intermediate Accounting"
+      ]
+    },
+    {
+      "id": "e.statements-fundraising",
+      "from": "fin.financial-statements",
+      "to": "fin.fundraising-mechanics",
+      "effect": "messy, late, or inconsistent statements stall diligence and cost leverage in any raise or sale",
+      "polarity": "positive",
+      "strength": "moderate",
+      "conditions": [
+        "a raise, loan, or exit process is actually contemplated"
+      ],
+      "delay": "surfaces at diligence, months after the mess was made",
+      "confidence": "medium",
+      "evidence": [
+        "time to produce monthly close",
+        "audit or diligence adjustment history",
+        "data room readiness"
+      ],
+      "sources": [
+        "YC Series A diligence guides",
+        "Wall Street Prep diligence materials"
+      ]
+    },
+    {
+      "id": "e.opex-ebitda",
+      "from": "fin.operating-expenses",
+      "to": "fin.ebitda-net-margin",
+      "effect": "opex creep compresses operating profitability even with healthy gross margin",
+      "polarity": "negative",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "gradual — the ratchet moves quarterly",
+      "confidence": "high",
+      "evidence": [
+        "opex as share of gross profit, trended 8 quarters",
+        "headcount plan vs revenue plan dates",
+        "line-item YoY growth vs revenue growth"
+      ],
+      "sources": [
+        "accounting identity (EBITDA = gross profit - opex)",
+        "Grove, High Output Management"
+      ]
+    },
+    {
+      "id": "e.budget-opex-creep",
+      "from": "fin.budgeting-fpa",
+      "to": "fin.operating-expenses",
+      "effect": "incremental last-year-plus-X budgeting ratchets opex upward — the base is never re-justified",
+      "polarity": "positive",
+      "strength": "moderate",
+      "conditions": [
+        "budgets built incrementally rather than zero-based"
+      ],
+      "delay": "one budget cycle",
+      "confidence": "high",
+      "evidence": [
+        "budget methodology (increment vs zero-base)",
+        "lines unchanged-but-grown across 3 budget years"
+      ],
+      "sources": [
+        "zero-based budgeting literature (3G Capital practice, McKinsey ZBB)"
+      ]
+    },
+    {
+      "id": "e.receivables-working-capital",
+      "from": "fin.accounts-receivable",
+      "to": "fin.working-capital",
+      "effect": "stretching DSO traps cash in customer IOUs — revenue without liquidity",
+      "polarity": "negative",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "immediate on terms, visible in cash 30-90 days",
+      "confidence": "high",
+      "evidence": [
+        "DSO trend",
+        "AR aging buckets",
+        "terms granted vs terms collected"
+      ],
+      "sources": [
+        "accounting identity (working capital components)",
+        "Higgins, Analysis for Financial Management"
+      ]
+    },
+    {
+      "id": "e.forecasting-budgeting",
+      "from": "fin.financial-forecasting",
+      "to": "fin.budgeting-fpa",
+      "effect": "forecast bias propagates into budgets — optimistic revenue plans authorize real spending",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "one planning cycle",
+      "confidence": "high",
+      "evidence": [
+        "forecast vs actual bias, 6-8 periods",
+        "spend lines explicitly tied to revenue assumptions"
+      ],
+      "sources": [
+        "Kahneman, planning fallacy",
+        "Tetlock, Superforecasting"
+      ]
+    },
+    {
+      "id": "e.forecast-optimism-runway",
+      "from": "fin.financial-forecasting",
+      "to": "fin.cash-runway",
+      "effect": "optimistic forecasts convert to committed spending against revenue that never lands — runway burns on the fantasy",
+      "polarity": "negative",
+      "strength": "strong",
+      "conditions": [
+        "hiring or purchasing is committed ahead of revenue confirmation"
+      ],
+      "delay": "1-2 quarters",
+      "confidence": "high",
+      "evidence": [
+        "committed spend vs confirmed revenue",
+        "historical forecast bias",
+        "burn plan assumptions"
+      ],
+      "sources": [
+        "Paul Graham, Default Alive or Default Dead",
+        "Kahneman, planning fallacy"
+      ]
+    },
+    {
+      "id": "e.cac-unit-economics",
+      "from": "mkt.cac-ltv-attribution",
+      "to": "fin.unit-economics",
+      "effect": "fully-loaded acquisition cost is an input to whether a unit makes money at all — understate CAC and unit economics lie",
+      "polarity": "negative",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "immediate in the math, discovered late in the bank account",
+      "confidence": "high",
+      "evidence": [
+        "CAC calculation contents (salaries and tools included?)",
+        "contribution margin per unit with and without CAC",
+        "payback period by cohort"
+      ],
+      "sources": [
+        "Bill Gurley on unit economics",
+        "a16z, common LTV/CAC mistakes"
+      ]
+    },
+    {
+      "id": "e.unit-econ-break-even",
+      "from": "fin.unit-economics",
+      "to": "fin.break-even",
+      "effect": "contribution margin per unit sets break-even volume — thinner units mean a higher cliff",
+      "polarity": "negative",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "immediate (arithmetic)",
+      "confidence": "high",
+      "evidence": [
+        "contribution margin calculation",
+        "break-even = fixed costs / contribution margin per unit"
+      ],
+      "sources": [
+        "accounting identity (cost-volume-profit)",
+        "Horngren, Cost Accounting"
+      ]
+    },
+    {
+      "id": "e.gross-margin-break-even",
+      "from": "fin.gross-margin",
+      "to": "fin.break-even",
+      "effect": "margin erosion raises break-even volume non-linearly — a 10% price cut on 30% margin needs ~50% more volume to stand still",
+      "polarity": "negative",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "immediate (arithmetic), noticed late",
+      "confidence": "high",
+      "evidence": [
+        "break-even recomputed at current vs prior margin",
+        "required-volume table for proposed discounts"
+      ],
+      "sources": [
+        "Marn & Rosiello (HBR 1992)",
+        "cost-volume-profit identity"
+      ]
+    },
+    {
+      "id": "e.pricing-math-gross-margin",
+      "from": "fin.pricing-mathematics",
+      "to": "fin.gross-margin",
+      "effect": "price changes flow almost entirely to margin — ~1% price improvement lifts operating profit 8-11% on typical cost structures",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "immediate on realized price",
+      "confidence": "high",
+      "evidence": [
+        "pocket-price waterfall",
+        "margin bridge, price vs volume vs mix"
+      ],
+      "sources": [
+        "Marn & Rosiello (HBR 1992)",
+        "Simon-Kucher pricing studies"
+      ]
+    },
+    {
+      "id": "e.break-even-runway",
+      "from": "fin.break-even",
+      "to": "fin.cash-runway",
+      "effect": "distance below break-even sets the burn rate — the farther from the cliff-edge volume, the faster the clock runs",
+      "polarity": "negative",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "immediate",
+      "confidence": "high",
+      "evidence": [
+        "monthly burn vs gap-to-break-even volume",
+        "13-week cash forecast"
+      ],
+      "sources": [
+        "accounting identity (burn = fixed costs - contribution)",
+        "Paul Graham, Default Alive or Default Dead"
+      ]
+    },
+    {
+      "id": "e.roi-capital-allocation",
+      "from": "fin.roi-irr-npv",
+      "to": "str.capital-allocation",
+      "effect": "disciplined return comparison is what makes capital allocation a decision rather than a popularity contest",
+      "polarity": "positive",
+      "strength": "moderate",
+      "conditions": [
+        "alternatives are actually compared on one table with a hurdle rate"
+      ],
+      "delay": "compounds over years",
+      "confidence": "medium",
+      "evidence": [
+        "investment memos with hurdle rates",
+        "post-mortems of past capital decisions vs projections"
+      ],
+      "sources": [
+        "Buffett letters (opportunity cost discipline)",
+        "Damodaran, corporate finance"
+      ]
+    },
+    {
+      "id": "e.ops-strategy-process",
+      "from": "ops.operations-strategy",
+      "to": "ops.process-design",
+      "effect": "the chosen competitive priority shapes every flow decision — a cost-built process and a speed-built process are different animals",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "structural",
+      "confidence": "high",
+      "evidence": [
+        "ops KPIs vs stated market promise",
+        "last three ops investments mapped to competitive dimension"
+      ],
+      "sources": [
+        "Slack & Lewis, Operations Strategy",
+        "Skinner, the focused factory"
+      ]
+    },
+    {
+      "id": "e.toc-capacity",
+      "from": "ops.theory-of-constraints",
+      "to": "ops.capacity-planning",
+      "effect": "capacity investment only pays at the constraint — adding capacity anywhere else buys inventory and pride, not throughput",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "immediate in logic, quarters in capex",
+      "confidence": "high",
+      "evidence": [
+        "improvement spend mapped against constraint location",
+        "throughput change after non-constraint investments (usually none)"
+      ],
+      "sources": [
+        "Goldratt, The Goal"
+      ]
+    },
+    {
+      "id": "e.capacity-fulfillment",
+      "from": "ops.capacity-planning",
+      "to": "ops.order-fulfillment",
+      "effect": "unplanned demand growth meets the utilization wall — past ~85-90%, queues and errors explode non-linearly",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "immediate at the ceiling",
+      "confidence": "high",
+      "evidence": [
+        "utilization at the constraint vs error/delay trend",
+        "sales forecast connected to capacity calendar (or not)"
+      ],
+      "sources": [
+        "Hopp & Spearman, Factory Physics",
+        "Kingman's formula"
+      ]
+    },
+    {
+      "id": "e.scheduling-service",
+      "from": "ops.workforce-scheduling",
+      "to": "ops.service-delivery",
+      "effect": "flat staffing against peaky demand delivers idle mornings and broken peaks — service quality follows the overlay of the two curves",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "per interval, visible daily",
+      "confidence": "high",
+      "evidence": [
+        "demand curve vs staffing curve by interval",
+        "service level by hour/day"
+      ],
+      "sources": [
+        "Erlang queueing practice",
+        "Ton, The Good Jobs Strategy"
+      ]
+    },
+    {
+      "id": "e.supplychain-inventory",
+      "from": "ops.supply-chain",
+      "to": "ops.inventory-management",
+      "effect": "lead time variability forces buffer stock — safety stock prices the variance of the chain, not its average",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "per replenishment cycle",
+      "confidence": "high",
+      "evidence": [
+        "lead time variance by lane vs safety stock levels",
+        "stockout history vs supplier delay history"
+      ],
+      "sources": [
+        "Christopher, Logistics & Supply Chain Management",
+        "ASCM safety stock formulas"
+      ]
+    },
+    {
+      "id": "e.procurement-cogs",
+      "from": "ops.procurement",
+      "to": "fin.cogs",
+      "effect": "buying discipline sets input costs — every dollar saved at the vendor is pure margin, every loyalty tax is silent COGS creep",
+      "polarity": "negative",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "per contract cycle",
+      "confidence": "high",
+      "evidence": [
+        "purchase price variance",
+        "renewal dates vs last competitive check"
+      ],
+      "sources": [
+        "Kraljic (HBR purchasing portfolio)",
+        "CIPS practice"
+      ]
+    },
+    {
+      "id": "e.warehouse-fulfillment",
+      "from": "ops.logistics-warehousing",
+      "to": "ops.order-fulfillment",
+      "effect": "layout and congestion set pick speed and accuracy — a 96%-full warehouse taxes every order in it",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "immediate",
+      "confidence": "high",
+      "evidence": [
+        "storage utilization vs pick rate trend",
+        "slotting vs current velocity ranking"
+      ],
+      "sources": [
+        "Bartholdi & Hackman, Warehouse & Distribution Science"
+      ]
+    },
+    {
+      "id": "e.quality-churn",
+      "from": "ops.quality-management",
+      "to": "mkt.retention-churn",
+      "effect": "defects reaching customers convert to complaints now and churn later at the 100x end of the 1-10-100 cost gradient",
+      "polarity": "negative",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "complaints immediate, churn 1-2 quarters",
+      "confidence": "high",
+      "evidence": [
+        "defect escape rate vs complaint categories",
+        "churn of customers who experienced defects vs those who did not"
+      ],
+      "sources": [
+        "Crosby (cost of quality)",
+        "Reichheld"
+      ]
+    },
+    {
+      "id": "e.sop-quality",
+      "from": "ops.sop-standard-work",
+      "to": "ops.quality-management",
+      "effect": "standard work stabilizes quality across people and turnover — without a standard, quality is a lottery drawn per worker",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "one training cycle",
+      "confidence": "high",
+      "evidence": [
+        "outcome variance across workers on the same task",
+        "SOP coverage and freshness for critical tasks"
+      ],
+      "sources": [
+        "Ohno (no standard, no kaizen)",
+        "TWI lineage"
+      ]
+    },
+    {
+      "id": "e.sop-keyperson",
+      "from": "ops.sop-standard-work",
+      "to": "ppl.key-person-dependency",
+      "effect": "documented best-known-way is knowledge the company owns — every current SOP lowers the bus factor of the person who wrote it",
+      "polarity": "negative",
+      "strength": "moderate",
+      "conditions": [],
+      "delay": "pays out at departures and vacations",
+      "confidence": "high",
+      "evidence": [
+        "single-name process inventory vs SOP coverage",
+        "vacation test outcomes"
+      ],
+      "sources": [
+        "bus-factor practice",
+        "Gawande, The Checklist Manifesto"
+      ]
+    },
+    {
+      "id": "e.kpis-improvement",
+      "from": "ops.operational-kpis",
+      "to": "ops.continuous-improvement",
+      "effect": "honest paired metrics are improvement's raw material — you can only improve what is measured without flattery",
+      "polarity": "positive",
+      "strength": "moderate",
+      "conditions": [],
+      "delay": "per improvement cycle",
+      "confidence": "medium",
+      "evidence": [
+        "KPI pairs vs single unpaired targets",
+        "improvement initiatives traceable to metric signals"
+      ],
+      "sources": [
+        "Grove (paired indicators)",
+        "Rother, Toyota Kata"
+      ]
+    },
+    {
+      "id": "e.sla-churn",
+      "from": "ops.sla-management",
+      "to": "mkt.retention-churn",
+      "effect": "breached service promises anchor B2B renewal decisions — an SLA set at the average is a scheduled apology",
+      "polarity": "negative",
+      "strength": "moderate",
+      "conditions": [
+        "contractual B2B relationships with measured SLAs"
+      ],
+      "delay": "at renewal",
+      "confidence": "high",
+      "evidence": [
+        "SLA attainment vs renewal rates",
+        "breach clustering vs churn timing"
+      ],
+      "sources": [
+        "ITIL practice",
+        "Reichheld (service failure and defection)"
+      ]
+    },
+    {
+      "id": "e.lean-inventory",
+      "from": "ops.lean-thinking",
+      "to": "ops.inventory-management",
+      "effect": "lean lowers buffers to expose problems — powerful when variability is being fixed, fragile when it is merely being hidden less",
+      "polarity": "negative",
+      "strength": "moderate",
+      "conditions": [
+        "underlying variability actually addressed as buffers shrink"
+      ],
+      "delay": "exposure immediate, fragility surfaces at the first shock",
+      "confidence": "high",
+      "evidence": [
+        "buffer reductions paired with variability fixes (or not)",
+        "stockout/shock history after lean initiatives"
+      ],
+      "sources": [
+        "Womack & Jones, Lean Thinking",
+        "Hopp & Spearman (variability law)"
+      ]
+    },
+    {
+      "id": "e.improvement-process",
+      "from": "ops.continuous-improvement",
+      "to": "ops.process-design",
+      "effect": "kaizen evolves the standard — improvements that get standardized compound; improvements that stay personal evaporate with the improver",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "compounds weekly or never",
+      "confidence": "high",
+      "evidence": [
+        "SOP update history following improvements",
+        "gains retention 6 months after initiatives"
+      ],
+      "sources": [
+        "Rother, Toyota Kata",
+        "Imai, Kaizen"
+      ]
+    },
+    {
+      "id": "e.incentive-quality",
+      "from": "ppl.incentive-design",
+      "to": "ops.quality-management",
+      "effect": "rewarding output volume degrades quality at the margin — people produce what's counted and shave what isn't",
+      "polarity": "negative",
+      "strength": "strong",
+      "conditions": [
+        "quality is harder to measure than quantity (it almost always is)"
+      ],
+      "delay": "1-2 quarters before defects surface downstream",
+      "confidence": "high",
+      "evidence": [
+        "defect/rework trend after incentive changes",
+        "what the bonus plan actually counts"
+      ],
+      "sources": [
+        "Kerr (1975)",
+        "Deming (quotas and quality)"
+      ]
+    },
+    {
+      "id": "e.incentive-goodhart",
+      "from": "ppl.incentive-design",
+      "to": "dat.goodharts-law",
+      "effect": "attaching pay to a metric accelerates its corruption — the measure stops measuring the moment it starts paying",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "one comp cycle",
+      "confidence": "high",
+      "evidence": [
+        "metric improving while its underlying outcome does not",
+        "known gaming routes per paid metric"
+      ],
+      "sources": [
+        "Goodhart's law",
+        "Kerr (1975)"
+      ]
+    },
+    {
+      "id": "e.org-layers-cascades",
+      "from": "ppl.organizational-design",
+      "to": "chg.communication-cascades",
+      "effect": "every management layer filters and distorts the message — more layers, more drift between what was said and what arrives",
+      "polarity": "negative",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "immediate and permanent",
+      "confidence": "high",
+      "evidence": [
+        "cascade test (frontline repeats the strategy?)",
+        "layer count between CEO and customer-facing work"
+      ],
+      "sources": [
+        "Grove",
+        "Conway's law (structure shapes information flow)"
+      ]
+    },
+    {
+      "id": "e.hiring-culture",
+      "from": "ppl.hiring",
+      "to": "ppl.culture",
+      "effect": "who gets hired is culture's largest input — every hire either reinforces or dilutes the real values, and A-players calibrate to whoever is tolerated beside them",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "2-4 quarters per cohort",
+      "confidence": "high",
+      "evidence": [
+        "hiring bar consistency under urgency",
+        "mis-hire tolerance duration"
+      ],
+      "sources": [
+        "Smart & Street (Who)",
+        "McCord (Powerful)"
+      ]
+    },
+    {
+      "id": "e.culture-execution",
+      "from": "ppl.culture",
+      "to": "str.strategy-execution",
+      "effect": "culture decides what happens when the plan is inconvenient — strategy gets executed exactly as far as daily behavior agrees with it",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "visible at every pressure moment",
+      "confidence": "high",
+      "evidence": [
+        "behavior under pressure vs stated plan",
+        "speed of bad news to the top"
+      ],
+      "sources": [
+        "Drucker (culture eats strategy)",
+        "Schein"
+      ]
+    },
+    {
+      "id": "e.coaching-performance",
+      "from": "ppl.coaching-development",
+      "to": "ppl.performance-management",
+      "effect": "development feeds performance — without coaching, performance management degenerates into judging people for skills nobody built",
+      "polarity": "positive",
+      "strength": "moderate",
+      "conditions": [],
+      "delay": "2-4 quarters",
+      "confidence": "high",
+      "evidence": [
+        "internal-fill rate for senior roles",
+        "manager calendar audit for coaching time"
+      ],
+      "sources": [
+        "Grove (task-relevant maturity)",
+        "Lombardo & Eichinger (70-20-10)"
+      ]
+    },
+    {
+      "id": "e.performance-team",
+      "from": "ppl.performance-management",
+      "to": "ppl.team-effectiveness",
+      "effect": "tolerated underperformance corrodes the team — standards are set by the worst behavior leadership accepts, and the best people leave first",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "1-2 quarters of tolerance before attrition starts",
+      "confidence": "high",
+      "evidence": [
+        "time-to-action on known underperformance",
+        "regretted attrition following tolerated cases"
+      ],
+      "sources": [
+        "Lencioni",
+        "McCord (keeper test)"
+      ]
+    },
+    {
+      "id": "e.compensation-hiring",
+      "from": "ppl.compensation",
+      "to": "ppl.hiring",
+      "effect": "below-market bands lengthen searches and quietly lower the bar — the candidates you lose are precisely the ones with options",
+      "polarity": "positive",
+      "strength": "moderate",
+      "conditions": [
+        "competitive talent market for the role"
+      ],
+      "delay": "visible per search",
+      "confidence": "high",
+      "evidence": [
+        "offer-acceptance rate and decline reasons",
+        "time-to-fill vs market benchmark"
+      ],
+      "sources": [
+        "Pave/Radford benchmarking practice"
+      ]
+    },
+    {
+      "id": "e.leadership-team",
+      "from": "ppl.leadership",
+      "to": "ppl.team-effectiveness",
+      "effect": "the team mirrors the leader within quarters — safety, standards, and mood all cascade from the example, not the speeches",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "1-2 quarters",
+      "confidence": "high",
+      "evidence": [
+        "team behavior vs leader behavior under pressure",
+        "disagreement voiced in the leader's presence"
+      ],
+      "sources": [
+        "Grove",
+        "Edmondson (leader behavior and psychological safety)"
+      ]
+    },
+    {
+      "id": "e.execcomm-stakeholders",
+      "from": "ppl.executive-communication",
+      "to": "ppl.stakeholder-management",
+      "effect": "answer-first clarity and early bad news are what keep stakeholders allied — surprises convert allies to auditors",
+      "polarity": "positive",
+      "strength": "moderate",
+      "conditions": [],
+      "delay": "compounds per interaction",
+      "confidence": "medium",
+      "evidence": [
+        "bad-news latency to board/investors",
+        "pre-wiring practice before decision meetings"
+      ],
+      "sources": [
+        "Minto",
+        "Buffett letters (candor standard)"
+      ]
+    },
+    {
+      "id": "e.stakeholders-change",
+      "from": "ppl.stakeholder-management",
+      "to": "chg.change-management",
+      "effect": "unmapped losers kill initiatives from the shadows — every change creates them, and unconsulted losers become saboteurs",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "surfaces at implementation, caused at planning",
+      "confidence": "high",
+      "evidence": [
+        "stakeholder map with losers identified",
+        "initiatives approved-but-starved history"
+      ],
+      "sources": [
+        "Kotter (coalition)",
+        "Cohen & Bradford"
+      ]
+    },
+    {
+      "id": "e.negotiation-procurement",
+      "from": "ppl.negotiation",
+      "to": "ops.procurement",
+      "effect": "negotiation discipline flows straight to vendor terms — BATNA-less buying pays list price with a smile",
+      "polarity": "positive",
+      "strength": "moderate",
+      "conditions": [],
+      "delay": "per contract cycle",
+      "confidence": "medium",
+      "evidence": [
+        "competitive bids per major contract",
+        "terms variance across similar vendors"
+      ],
+      "sources": [
+        "Fisher & Ury",
+        "procurement practice"
+      ]
+    },
+    {
+      "id": "e.conflict-team",
+      "from": "ppl.conflict-resolution",
+      "to": "ppl.team-effectiveness",
+      "effect": "surfaced conflict becomes commitment; buried conflict becomes politics — the fork decides whether meetings are real or theater",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "immediate per episode, structural over quarters",
+      "confidence": "high",
+      "evidence": [
+        "decisions reopened via side channels",
+        "hallway-vs-meeting honesty gap"
+      ],
+      "sources": [
+        "Lencioni",
+        "Stone/Patton/Heen"
+      ]
+    },
+    {
+      "id": "e.keyperson-continuity",
+      "from": "ppl.key-person-dependency",
+      "to": "rsk.business-continuity",
+      "effect": "a bus factor of one anywhere critical makes continuity planning fiction — the plan assumes people the plan can lose",
+      "polarity": "negative",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "latent until the departure, illness, or vacation",
+      "confidence": "high",
+      "evidence": [
+        "single-name process inventory",
+        "vacation test results"
+      ],
+      "sources": [
+        "ISO 22301 lineage",
+        "bus-factor practice"
+      ]
+    },
+    {
+      "id": "e.discovery-product-strategy",
+      "from": "prd.customer-discovery",
+      "to": "prd.product-strategy",
+      "effect": "discovery evidence is what turns product strategy from taste into knowledge — strategies built without it encode the founder's assumptions at scale",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "one strategy cycle",
+      "confidence": "high",
+      "evidence": [
+        "interview and research trail behind strategy decisions",
+        "discovery cadence (continuous vs launch-time ritual)"
+      ],
+      "sources": [
+        "Torres, Continuous Discovery Habits",
+        "Blank, Four Steps to the Epiphany"
+      ]
+    },
+    {
+      "id": "e.discovery-pmf",
+      "from": "prd.customer-discovery",
+      "to": "prd.product-market-fit",
+      "effect": "discovery quality drives the odds of fit — teams that interview about past behavior find real jobs; teams that pitch collect compliments and build for ghosts",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "quarters (the whole search loop)",
+      "confidence": "high",
+      "evidence": [
+        "question style in interview notes (past behavior vs hypotheticals)",
+        "prior-spend evidence gathered per prospect"
+      ],
+      "sources": [
+        "Fitzpatrick, The Mom Test"
+      ]
+    },
+    {
+      "id": "e.jtbd-value-proposition",
+      "from": "prd.jobs-to-be-done",
+      "to": "mkt.value-proposition",
+      "effect": "a sharply-stated job makes the value promise concrete — progress language beats feature language in every conversion surface",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "one messaging cycle",
+      "confidence": "high",
+      "evidence": [
+        "value prop phrased as job progress vs feature list",
+        "switch-interview push/pull/anxiety notes"
+      ],
+      "sources": [
+        "Christensen, Competing Against Luck",
+        "Moesta, Demand-Side Sales"
+      ]
+    },
+    {
+      "id": "e.pmf-retention",
+      "from": "prd.product-market-fit",
+      "to": "mkt.retention-churn",
+      "effect": "PMF is retention's upstream cause — churn that customer success cannot fix is usually fit that never existed",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "visible in every cohort curve",
+      "confidence": "high",
+      "evidence": [
+        "cohort retention flattening or sliding to zero",
+        "Ellis-test score by segment"
+      ],
+      "sources": [
+        "Casey Winters (retention as PMF truth)",
+        "Vohra, Superhuman PMF engine"
+      ]
+    },
+    {
+      "id": "e.pmf-cac",
+      "from": "prd.product-market-fit",
+      "to": "mkt.cac-ltv-attribution",
+      "effect": "without pull, every sale is pushed — pre-PMF CAC runs structurally high and misleads the growth model",
+      "polarity": "negative",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "visible per channel immediately, understood late",
+      "confidence": "high",
+      "evidence": [
+        "organic/referral share of new customers",
+        "CAC by segment vs Ellis score by segment"
+      ],
+      "sources": [
+        "Andreessen (the only thing that matters)",
+        "Skok"
+      ]
+    },
+    {
+      "id": "e.product-strategy-roadmap",
+      "from": "prd.product-strategy",
+      "to": "prd.roadmap-prioritization",
+      "effect": "strategy is the referee that makes prioritization defensible — without it, RICE scores are theater and escalation wins",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "immediate per planning cycle",
+      "confidence": "high",
+      "evidence": [
+        "roadmap items traceable to strategy pillars",
+        "reprioritization causes (evidence vs escalation)"
+      ],
+      "sources": [
+        "Cagan, Empowered",
+        "Rumelt (kernel logic)"
+      ]
+    },
+    {
+      "id": "e.analytics-roadmap",
+      "from": "prd.product-analytics",
+      "to": "prd.roadmap-prioritization",
+      "effect": "cohort and funnel data steer priorities toward what moves outcomes — without instrumentation, the roadmap is steered by anecdote",
+      "polarity": "positive",
+      "strength": "moderate",
+      "conditions": [],
+      "delay": "one planning cycle",
+      "confidence": "high",
+      "evidence": [
+        "bets carrying named target metrics",
+        "post-launch outcome reviews happening at all"
+      ],
+      "sources": [
+        "Croll & Yoskovitz, Lean Analytics",
+        "Amplitude/Reforge playbooks"
+      ]
+    },
+    {
+      "id": "e.roadmap-dev-process",
+      "from": "prd.roadmap-prioritization",
+      "to": "prd.product-development-process",
+      "effect": "prioritization style sets batch size — appetite-based choices enable small bets; everything-is-critical roadmaps force mega-releases",
+      "polarity": "positive",
+      "strength": "moderate",
+      "conditions": [],
+      "delay": "one cycle",
+      "confidence": "medium",
+      "evidence": [
+        "release size trend vs roadmap commitment style",
+        "WIP per engineer"
+      ],
+      "sources": [
+        "Singer, Shape Up",
+        "Reinertsen (batch size economics)"
+      ]
+    },
+    {
+      "id": "e.dev-process-technical-debt",
+      "from": "prd.product-development-process",
+      "to": "tec.technical-debt",
+      "effect": "fixed-scope-fixed-time pressure converts directly into debt — when neither scope nor date flexes, quality does, invisibly",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [
+        "deadlines and scope both fixed by fiat"
+      ],
+      "delay": "compounds over quarters, invoices later",
+      "confidence": "high",
+      "evidence": [
+        "deadline-doubling history",
+        "bug/incident trend after crunch releases"
+      ],
+      "sources": [
+        "DORA research",
+        "Fowler on technical debt quadrants"
+      ]
+    },
+    {
+      "id": "e.design-plg",
+      "from": "prd.design-ux",
+      "to": "prd.product-led-growth",
+      "effect": "PLG lives or dies on unassisted first-session UX — the interface is the sales rep, and friction is silent churn",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [
+        "self-serve motion (sales-assisted products can absorb more friction)"
+      ],
+      "delay": "immediate in activation funnels",
+      "confidence": "high",
+      "evidence": [
+        "first-session recordings of true novices",
+        "activation step conversion rates"
+      ],
+      "sources": [
+        "Krug, Don't Make Me Think",
+        "Bush, Product-Led Growth"
+      ]
+    },
+    {
+      "id": "e.plg-gtm",
+      "from": "prd.product-led-growth",
+      "to": "mkt.go-to-market",
+      "effect": "working PLG reshapes the whole motion — product usage becomes the qualification signal and sales moves upmarket on top of the self-serve floor",
+      "polarity": "positive",
+      "strength": "moderate",
+      "conditions": [
+        "product can deliver first value unassisted"
+      ],
+      "delay": "quarters to mature",
+      "confidence": "high",
+      "evidence": [
+        "PQL definition and conversion vs cold outreach",
+        "CAC split, self-serve vs sales-assisted"
+      ],
+      "sources": [
+        "OpenView PLG benchmarks",
+        "Kyle Poyar"
+      ]
+    },
+    {
+      "id": "e.platform-competitive-advantage",
+      "from": "prd.platform-ecosystem",
+      "to": "str.competitive-advantage",
+      "effect": "third-party dependency is compounding switching cost — every deep integration is moat someone else built for you",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [
+        "integrations touch core workflows, not edges"
+      ],
+      "delay": "years to compound",
+      "confidence": "high",
+      "evidence": [
+        "integration depth audit",
+        "churn rate of integrated vs non-integrated customers"
+      ],
+      "sources": [
+        "Parker & Van Alstyne, Platform Revolution"
+      ]
+    },
+    {
+      "id": "e.product-ops-analytics",
+      "from": "prd.product-operations",
+      "to": "prd.product-analytics",
+      "effect": "ops discipline is what keeps analytics trustworthy — one metric dictionary, working instrumentation, findable research; without it every meeting debates the numbers instead of the decision",
+      "polarity": "positive",
+      "strength": "moderate",
+      "conditions": [],
+      "delay": "gradual decay or repair",
+      "confidence": "high",
+      "evidence": [
+        "metric definition source of truth existing",
+        "time-to-answer for a product data question"
+      ],
+      "sources": [
+        "Perri (product operations)"
+      ]
+    },
+    {
+      "id": "e.sales-comp-discounting",
+      "from": "mkt.sales-compensation",
+      "to": "mkt.discounting",
+      "effect": "paying commission on revenue volume (not gross profit) makes discounting rational for every rep — they sell price cuts because the plan pays them to",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [
+        "reps have discount authority without margin-based approval",
+        "commission base is revenue or units, not gross profit"
+      ],
+      "delay": "1-2 months (one full sales cycle after the plan changes)",
+      "confidence": "high",
+      "evidence": [
+        "comp plan documents, current vs prior, with effective dates",
+        "discount depth by rep before vs after plan change",
+        "commission statements (what was actually paid on)"
+      ],
+      "sources": [
+        "Steven Kerr, On the Folly of Rewarding A While Hoping for B (1975)",
+        "Zoltners, The Complete Guide to Sales Force Incentive Compensation"
+      ]
+    },
+    {
+      "id": "e.discounting-revenue",
+      "from": "mkt.discounting",
+      "to": "fin.revenue",
+      "effect": "discounts buy volume — the top line rises and everyone celebrates the growth",
+      "polarity": "positive",
+      "strength": "moderate",
+      "conditions": [
+        "demand is price-elastic in the segment"
+      ],
+      "delay": "immediate to 30 days",
+      "confidence": "high",
+      "evidence": [
+        "volume trend vs realized price trend (units up, price per unit down)",
+        "win rate vs discount depth"
+      ],
+      "sources": [
+        "Marn & Rosiello, Managing Price Gaining Profit (HBR 1992)"
+      ]
+    },
+    {
+      "id": "e.revenue-demand-planning",
+      "from": "fin.revenue",
+      "to": "ops.demand-planning",
+      "effect": "a sales surge gets extrapolated into forecasts — planners read manufactured demand as real demand and raise the plan",
+      "polarity": "positive",
+      "strength": "moderate",
+      "conditions": [
+        "forecast is driven by recent orders or sales pipeline, not by end-customer signals"
+      ],
+      "delay": "1-2 planning cycles (30-60 days)",
+      "confidence": "medium",
+      "evidence": [
+        "forecast revisions vs the sales spike timeline",
+        "what inputs the demand plan actually uses"
+      ],
+      "sources": [
+        "Lee, Padmanabhan & Whang, The Bullwhip Effect in Supply Chains (Sloan 1997)"
+      ]
+    },
+    {
+      "id": "e.demand-planning-inventory",
+      "from": "ops.demand-planning",
+      "to": "ops.inventory-management",
+      "effect": "raised forecasts and raised safety stock turn into purchase orders — the warehouse fills against demand that may not exist",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "30-90 days (order lead time)",
+      "confidence": "high",
+      "evidence": [
+        "safety stock policy changes with dates",
+        "purchase order volume vs forecast revisions",
+        "inventory receipts vs actual sales, month by month"
+      ],
+      "sources": [
+        "Lee, Padmanabhan & Whang (Sloan 1997)",
+        "ASCM/APICS planning standards"
+      ]
+    },
+    {
+      "id": "e.revenue-fulfillment",
+      "from": "fin.revenue",
+      "to": "ops.order-fulfillment",
+      "effect": "volume growth loads the fulfillment pipeline — past ~85-90% capacity utilization, queues and errors grow non-linearly",
+      "polarity": "negative",
+      "strength": "strong",
+      "conditions": [
+        "fulfillment capacity was not expanded ahead of the volume"
+      ],
+      "delay": "immediate at the capacity ceiling; error creep visible within 30-60 days",
+      "confidence": "high",
+      "evidence": [
+        "warehouse capacity utilization trend",
+        "pick/pack error rate vs order volume",
+        "overtime hours trend"
+      ],
+      "sources": [
+        "Hopp & Spearman, Factory Physics (utilization-queueing relationship)"
+      ]
+    },
+    {
+      "id": "e.fulfillment-cogs",
+      "from": "ops.order-fulfillment",
+      "to": "fin.cogs",
+      "effect": "a strained pipeline pays a panic tax — expedited freight, overtime, error rework all land in cost of goods",
+      "polarity": "negative",
+      "strength": "moderate",
+      "conditions": [],
+      "delay": "same month (visible at close)",
+      "confidence": "high",
+      "evidence": [
+        "expedited freight as share of shipments",
+        "overtime cost trend",
+        "returns/rework processing cost"
+      ],
+      "sources": [
+        "Hopp & Spearman, Factory Physics",
+        "CFI cost accounting guides"
+      ]
+    },
+    {
+      "id": "e.fulfillment-churn",
+      "from": "ops.order-fulfillment",
+      "to": "mkt.retention-churn",
+      "effect": "late, wrong, and damaged orders convert directly into complaints now and churn later — service failure is the leading cause customers can actually name",
+      "polarity": "negative",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "complaints immediate; churn 1-2 quarters",
+      "confidence": "high",
+      "evidence": [
+        "complaint categories mapped to fulfillment stages (late/wrong/damaged)",
+        "repeat order rate for customers who had a failed order vs those who did not"
+      ],
+      "sources": [
+        "Reichheld, The Loyalty Effect (service failure and defection analysis)"
+      ]
+    },
+    {
+      "id": "e.churn-revenue",
+      "from": "mkt.retention-churn",
+      "to": "fin.revenue",
+      "effect": "lost customers become a revenue hole 2-4 quarters out — masked in the meantime by new-customer growth",
+      "polarity": "negative",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "2-4 quarters",
+      "confidence": "high",
+      "evidence": [
+        "cohort revenue retention curves",
+        "revenue bridge, new vs existing customers"
+      ],
+      "sources": [
+        "Reichheld, The Loyalty Effect",
+        "ProfitWell retention benchmarks"
+      ]
+    },
+    {
+      "id": "e.cash-flow-runway",
+      "from": "fin.cash-flow",
+      "to": "fin.cash-runway",
+      "effect": "operating cash flow sets the burn — negative operating cash shortens the survival clock directly (accounting identity)",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "immediate",
+      "confidence": "high",
+      "evidence": [
+        "bank balance trend vs operating cash flow",
+        "13-week cash forecast"
+      ],
+      "sources": [
+        "accounting identity (runway = cash / net burn)",
+        "CFI 13-week cash flow model"
+      ]
+    },
+    {
+      "id": "e.taxonomy-riskprocess",
+      "from": "rsk.risk-taxonomy",
+      "to": "rsk.risk-process",
+      "effect": "naming precedes managing — categories without vocabulary never enter the register, and unregistered risks are accepted by default, by nobody",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "per review cycle",
+      "confidence": "high",
+      "evidence": [
+        "register coverage across all taxonomy categories",
+        "which categories have zero entries and why"
+      ],
+      "sources": [
+        "COSO ERM",
+        "ISO 31000"
+      ]
+    },
+    {
+      "id": "e.appetite-riskprocess",
+      "from": "rsk.risk-appetite",
+      "to": "rsk.risk-process",
+      "effect": "written appetite calibrates treatment — without it, avoid/reduce/transfer/accept choices are made by mood and personality, differently per room",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "per decision",
+      "confidence": "high",
+      "evidence": [
+        "appetite statement existing with numbers (floors, maximums)",
+        "treatment consistency across similar risks"
+      ],
+      "sources": [
+        "COSO ERM (appetite statements)"
+      ]
+    },
+    {
+      "id": "e.appetite-capital-allocation",
+      "from": "rsk.risk-appetite",
+      "to": "str.capital-allocation",
+      "effect": "appetite bounds bet sizing — the never-bet-the-company line and per-domain postures are the allocation table's guardrails",
+      "polarity": "positive",
+      "strength": "moderate",
+      "conditions": [],
+      "delay": "per major allocation",
+      "confidence": "medium",
+      "evidence": [
+        "single-bet maximums existing and invoked",
+        "reversibility dimension in allocation decisions"
+      ],
+      "sources": [
+        "Buffett (never risk what you have for what you don't need)",
+        "Kelly-criterion logic"
+      ]
+    },
+    {
+      "id": "e.controls-cashflow",
+      "from": "rsk.internal-controls",
+      "to": "fin.cash-flow",
+      "effect": "controls protect cash from error and fraud — separation of duties and reconciliations catch the duplicate payment, the wrong wire, and the trusted-employee scheme",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "latent, priced per ACFE base rates",
+      "confidence": "high",
+      "evidence": [
+        "end-to-end payment flow audit (single-person paths)",
+        "reconciliation review discipline"
+      ],
+      "sources": [
+        "ACFE Report to the Nations",
+        "COSO internal control framework"
+      ]
+    },
+    {
+      "id": "e.cyberrisk-continuity",
+      "from": "rsk.cyber-risk",
+      "to": "rsk.business-continuity",
+      "effect": "ransomware is the modern continuity event — the cyber scenario and the recovery plan are one exercise; RTO under attack is the number that matters",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "cliff-shaped",
+      "confidence": "high",
+      "evidence": [
+        "continuity plan covering the cyber scenario specifically",
+        "restore capability tested against encrypted-everything"
+      ],
+      "sources": [
+        "NIST CSF (respond/recover)",
+        "ransomware incident literature"
+      ]
+    },
+    {
+      "id": "e.vendorrisk-continuity",
+      "from": "rsk.vendor-risk",
+      "to": "rsk.business-continuity",
+      "effect": "a critical vendor's outage is your outage with none of your controls — inherited continuity risk that tiering and exit rights partially return",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "at their incident, not yours",
+      "confidence": "high",
+      "evidence": [
+        "48-hour vendor blast-radius list",
+        "contingency per top-tier vendor"
+      ],
+      "sources": [
+        "third-party risk practice",
+        "ISO 22301 lineage"
+      ]
+    },
+    {
+      "id": "e.concentration-revenue-fragility",
+      "from": "rsk.concentration-risk",
+      "to": "fin.revenue",
+      "effect": "customer concentration makes the top line brittle and discounted — the 40% customer's churn is a solvency event, and buyers price the fragility before it fires",
+      "polarity": "negative",
+      "strength": "strong",
+      "conditions": [
+        "top customer share above ~20-25%"
+      ],
+      "delay": "latent until the renegotiation or churn",
+      "confidence": "high",
+      "evidence": [
+        "customer share dashboard",
+        "M&A diligence concentration discounts"
+      ],
+      "sources": [
+        "M&A diligence practice",
+        "Taleb (fragility from optimization)"
+      ]
+    },
+    {
+      "id": "e.datagovernance-quality",
+      "from": "rsk.data-governance",
+      "to": "dat.data-quality",
+      "effect": "governance is quality's enforcement arm — named owners give data problems an address; without one, issues get rediscovered instead of fixed",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "structural",
+      "confidence": "high",
+      "evidence": [
+        "owner per domain existing",
+        "issue recurrence rate (fixed vs rediscovered)"
+      ],
+      "sources": [
+        "DAMA-DMBOK"
+      ]
+    },
+    {
+      "id": "e.changemgmt-adoption",
+      "from": "chg.change-management",
+      "to": "chg.adoption-design",
+      "effect": "the campaign creates the conditions adoption design exploits — urgency and coalition make the engineered path politically possible",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "program-length",
+      "confidence": "high",
+      "evidence": [
+        "reinforcement machinery (incentives, systems) actually changed",
+        "adoption depth vs announcement-only baseline"
+      ],
+      "sources": [
+        "Kotter",
+        "Prosci/ADKAR"
+      ]
+    },
+    {
+      "id": "e.resistance-adoption",
+      "from": "chg.resistance-diagnosis",
+      "to": "chg.adoption-design",
+      "effect": "the diagnosis picks the cure — ability gets training, incentive gets the deal changed, disbelief gets evidence; undiagnosed resistance gets more communication, which cures only one of the three",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "per intervention",
+      "confidence": "high",
+      "evidence": [
+        "resistance sorted by type before response",
+        "interventions matched to diagnosis (or one-size town halls)"
+      ],
+      "sources": [
+        "Kegan & Lahey",
+        "Heath (Switch)"
+      ]
+    },
+    {
+      "id": "e.transformdesign-digital",
+      "from": "chg.transformation-design",
+      "to": "tec.digital-transformation",
+      "effect": "sequencing discipline (coalition, beachhead, quick wins, cadence) is what separates transformations that land from platforms that launch — the design is the delta in the failure statistics",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "program-length",
+      "confidence": "high",
+      "evidence": [
+        "beachhead-first vs everywhere-at-once history",
+        "cadence survival past month six"
+      ],
+      "sources": [
+        "Kotter",
+        "Westerman, McKinsey transformation surveys"
+      ]
+    },
+    {
+      "id": "e.cascades-execution",
+      "from": "chg.communication-cascades",
+      "to": "str.strategy-execution",
+      "effect": "the cascade is execution's nervous system — strategy travels only as far as each layer carries it intact, and the frontline executes what arrived, not what was sent",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "per cascade cycle",
+      "confidence": "high",
+      "evidence": [
+        "read-back test results at the frontline",
+        "manager toolkits preceding announcements"
+      ],
+      "sources": [
+        "Kotter (10x under-communication)",
+        "Sull (execution research)"
+      ]
+    },
+    {
+      "id": "e.outbound-pipeline",
+      "from": "mkt.outbound-sales",
+      "to": "mkt.pipeline-management",
+      "effect": "outbound fills the pipeline with whatever the list and quota reward — ICP-filtered lists fill it with deals, activity quotas fill it with bodies",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [
+        "SDRs measured on meetings/activity rather than qualified opportunities"
+      ],
+      "delay": "one sales cycle",
+      "confidence": "high",
+      "evidence": [
+        "pipeline source analysis with ICP-match rate per source",
+        "SDR comp plan basis"
+      ],
+      "sources": [
+        "Aaron Ross, Predictable Revenue",
+        "Roberge"
+      ]
+    },
+    {
+      "id": "e.qualification-pipeline-quality",
+      "from": "mkt.sales-qualification",
+      "to": "mkt.pipeline-management",
+      "effect": "weak qualification stuffs the pipeline with ghosts — deals that consume attention and die of no-decision",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "visible at quarter end, caused at deal entry",
+      "confidence": "high",
+      "evidence": [
+        "share of losses recorded as no-decision",
+        "entry criteria existence and enforcement"
+      ],
+      "sources": [
+        "MEDDIC practice",
+        "Sandler"
+      ]
+    },
+    {
+      "id": "e.pipeline-hygiene-forecast",
+      "from": "mkt.pipeline-management",
+      "to": "mkt.pipeline-forecasting",
+      "effect": "forecast quality is bounded by pipeline honesty — no method survives dirty input",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "immediate",
+      "confidence": "high",
+      "evidence": [
+        "deal age vs median cycle analysis",
+        "close-date roll history",
+        "forecast error correlated with hygiene metrics"
+      ],
+      "sources": [
+        "Skok, forecast categories",
+        "SaaStr pipeline hygiene practice"
+      ]
+    },
+    {
+      "id": "e.pipeline-forecast-financial-plan",
+      "from": "mkt.pipeline-forecasting",
+      "to": "fin.financial-forecasting",
+      "effect": "the sales forecast is the financial model's revenue input — its bias propagates into hiring and spend commitments",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "one planning cycle",
+      "confidence": "high",
+      "evidence": [
+        "finance model's revenue source",
+        "sales forecast bias ledger (6+ quarters)"
+      ],
+      "sources": [
+        "Kahneman, planning fallacy",
+        "Roberge"
+      ]
+    },
+    {
+      "id": "e.sales-process-conversion",
+      "from": "mkt.sales-process",
+      "to": "mkt.funnel-conversion",
+      "effect": "evidence-based exit criteria lift stage conversion — deals advance on proof, stall gets diagnosed instead of narrated",
+      "polarity": "positive",
+      "strength": "moderate",
+      "conditions": [],
+      "delay": "1-2 quarters after adoption",
+      "confidence": "high",
+      "evidence": [
+        "conversion variance across reps before/after process",
+        "stage exit criteria documents"
+      ],
+      "sources": [
+        "Roberge, The Sales Acceleration Formula",
+        "Grove (process predictability)"
+      ]
+    },
+    {
+      "id": "e.funnel-cac",
+      "from": "mkt.funnel-conversion",
+      "to": "mkt.cac-ltv-attribution",
+      "effect": "every point of funnel leak inflates CAC proportionally — you paid for all the traffic, you keep only the converted",
+      "polarity": "negative",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "immediate (arithmetic)",
+      "confidence": "high",
+      "evidence": [
+        "CAC recomputed at each stage conversion rate",
+        "cost per stage-outcome trended"
+      ],
+      "sources": [
+        "Skok, SaaS metrics",
+        "arithmetic identity (CAC = spend / conversions)"
+      ]
+    },
+    {
+      "id": "e.cs-retention",
+      "from": "mkt.customer-success",
+      "to": "mkt.retention-churn",
+      "effect": "time-to-first-value and proactive health intervention drive retention — churn is mostly decided in the first 90 days",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [
+        "recurring or repeat-purchase revenue model"
+      ],
+      "delay": "visible at renewal, caused at onboarding",
+      "confidence": "high",
+      "evidence": [
+        "churn by tenure bucket",
+        "time-to-first-value by cohort vs later retention"
+      ],
+      "sources": [
+        "Gainsight (Mehta, Customer Success)",
+        "Lincoln Murphy"
+      ]
+    },
+    {
+      "id": "e.cs-expansion",
+      "from": "mkt.customer-success",
+      "to": "mkt.expansion-nrr",
+      "effect": "expansion follows delivered success — customers grow spend after hitting value milestones, not after quota-driven asks",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "2-4 quarters after value delivery",
+      "confidence": "high",
+      "evidence": [
+        "expansion rate of customers past value milestones vs stalled ones",
+        "trigger source of expansion conversations"
+      ],
+      "sources": [
+        "Gainsight",
+        "Skok (negative churn mechanics)"
+      ]
+    },
+    {
+      "id": "e.expansion-revenue-compounding",
+      "from": "mkt.expansion-nrr",
+      "to": "fin.revenue",
+      "effect": "NRR above 100% compounds revenue without new sales; below 100% every new logo first refills the leak",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "compounds annually",
+      "confidence": "high",
+      "evidence": [
+        "NRR by cohort",
+        "revenue bridge split into new vs expansion vs churn"
+      ],
+      "sources": [
+        "Skok, negative churn",
+        "KeyBanc SaaS survey benchmarks"
+      ]
+    },
+    {
+      "id": "e.vision-planning",
+      "from": "str.vision-mission",
+      "to": "str.strategic-planning",
+      "effect": "a real vision pre-arbitrates planning debates — without one, every cycle re-litigates direction from scratch",
+      "polarity": "positive",
+      "strength": "moderate",
+      "conditions": [],
+      "delay": "per planning cycle",
+      "confidence": "high",
+      "evidence": [
+        "recurring unresolved direction debates",
+        "opportunities refused because of the vision (or never)"
+      ],
+      "sources": [
+        "Collins & Porras, Built to Last",
+        "Rumelt"
+      ]
+    },
+    {
+      "id": "e.five-forces-industry",
+      "from": "str.five-forces",
+      "to": "str.industry-analysis",
+      "effect": "the forces are the analytical engine of industry reading — they explain where the profit pool drains before any company enters",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "immediate (analytical dependency)",
+      "confidence": "high",
+      "evidence": [
+        "profit pool map informed by force analysis",
+        "the one binding force named per business"
+      ],
+      "sources": [
+        "Porter (HBR 2008)",
+        "Gadiesh & Gilbert, profit pools"
+      ]
+    },
+    {
+      "id": "e.industry-competitive-strategy",
+      "from": "str.industry-analysis",
+      "to": "str.competitive-strategy",
+      "effect": "structure picks the viable strategies — a squeezed layer of the value chain forecloses positions that execution cannot reopen",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "structural",
+      "confidence": "high",
+      "evidence": [
+        "chain-layer economics vs chosen position",
+        "margins of everyone in the layer"
+      ],
+      "sources": [
+        "Porter",
+        "Buffett (business economics over management)"
+      ]
+    },
+    {
+      "id": "e.competitive-strategy-advantage",
+      "from": "str.competitive-strategy",
+      "to": "str.competitive-advantage",
+      "effect": "consistent trade-off choices are what compound into a moat — advantage is the residue of refusals sustained over years",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "years",
+      "confidence": "high",
+      "evidence": [
+        "trade-offs actually sacrificed (or a strategy that gives up nothing)",
+        "moat named and evidenced in retention/pricing data"
+      ],
+      "sources": [
+        "Porter (What Is Strategy)",
+        "Helmer, 7 Powers"
+      ]
+    },
+    {
+      "id": "e.advantage-pricing-power",
+      "from": "str.competitive-advantage",
+      "to": "mkt.pricing-strategy",
+      "effect": "a real moat shows up as pricing power — the ability to raise prices without churn is the moat's cash register",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "visible at each price test",
+      "confidence": "high",
+      "evidence": [
+        "churn response to historical price increases",
+        "realized price vs commodity benchmark"
+      ],
+      "sources": [
+        "Buffett (pricing power as the business test)",
+        "Helmer"
+      ]
+    },
+    {
+      "id": "e.business-model-unit-econ",
+      "from": "str.business-model-design",
+      "to": "fin.unit-economics",
+      "effect": "the model architecture sets the unit economics physics — who pays, how often, and through what cost structure decides what a unit can ever earn",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "structural",
+      "confidence": "high",
+      "evidence": [
+        "unit economics compared across candidate models",
+        "revenue quality metrics by model component"
+      ],
+      "sources": [
+        "Osterwalder",
+        "Gurley (business model essays)"
+      ]
+    },
+    {
+      "id": "e.swot-planning",
+      "from": "str.swot",
+      "to": "str.strategic-planning",
+      "effect": "crossed SWOT (strength-opportunity, weakness-threat pairs) feeds diagnosis — uncrossed SWOT feeds the shredder",
+      "polarity": "positive",
+      "strength": "weak",
+      "conditions": [
+        "the crossings are actually computed (TOWS), not just listed"
+      ],
+      "delay": "per planning cycle",
+      "confidence": "medium",
+      "evidence": [
+        "initiatives traceable to SWOT crossings",
+        "relative (not generic) strengths on the list"
+      ],
+      "sources": [
+        "Weihrich (TOWS matrix)"
+      ]
+    },
+    {
+      "id": "e.growth-ma",
+      "from": "str.growth-strategy",
+      "to": "str.mergers-acquisitions",
+      "effect": "growth pressure is what walks companies into auctions — when the organic plan misses, the inorganic checkbook opens at the worst prices",
+      "polarity": "positive",
+      "strength": "moderate",
+      "conditions": [
+        "growth targets exceed organic capability"
+      ],
+      "delay": "1-2 planning cycles",
+      "confidence": "high",
+      "evidence": [
+        "deal timing vs organic growth misses",
+        "premium paid vs walk-away discipline"
+      ],
+      "sources": [
+        "Bruner (winner's curse)",
+        "Zook (Profit from the Core)"
+      ]
+    },
+    {
+      "id": "e.ma-culture",
+      "from": "str.mergers-acquisitions",
+      "to": "ppl.culture",
+      "effect": "integration is a culture collision — the acquired company's best people (the actual asset) leave when the new rules arrive unmanaged",
+      "polarity": "negative",
+      "strength": "strong",
+      "conditions": [
+        "integration treated as cleanup instead of as the project"
+      ],
+      "delay": "months 3-9 post-close",
+      "confidence": "high",
+      "evidence": [
+        "acquired-talent retention through year two",
+        "integration plan staffing before signing"
+      ],
+      "sources": [
+        "Haspeslagh & Jemison",
+        "KPMG M&A failure studies"
+      ]
+    },
+    {
+      "id": "e.partnerships-gtm",
+      "from": "str.partnerships-alliances",
+      "to": "mkt.go-to-market",
+      "effect": "channel partners are a rented motion — leverage when enabled and incentivized, a hostage situation when signed and starved",
+      "polarity": "positive",
+      "strength": "moderate",
+      "conditions": [
+        "partner rep economics actually favor selling you"
+      ],
+      "delay": "2-4 quarters to produce or disappoint",
+      "confidence": "high",
+      "evidence": [
+        "revenue per partnership vs logo count",
+        "partner enablement and co-sell cadence existing"
+      ],
+      "sources": [
+        "Gomes-Casseres",
+        "channel economics practice"
+      ]
+    },
+    {
+      "id": "e.disruption-innovation",
+      "from": "str.disruption-theory",
+      "to": "str.innovation-strategy",
+      "effect": "the disruption mechanism dictates the defense — separate unit, own cost structure, permission to cannibalize; innovation run inside core logic gets eaten by its antibodies",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "strategic horizon",
+      "confidence": "high",
+      "evidence": [
+        "disruptive bets judged by core ROI (or protected)",
+        "overshot segments and non-consumption mapped"
+      ],
+      "sources": [
+        "Christensen (Innovator's Dilemma and Solution)",
+        "Govindarajan"
+      ]
+    },
+    {
+      "id": "e.innovation-product-strategy",
+      "from": "str.innovation-strategy",
+      "to": "prd.product-strategy",
+      "effect": "horizon choices set the product portfolio's shape — what share of build capacity serves today's business vs the one after it",
+      "polarity": "positive",
+      "strength": "moderate",
+      "conditions": [],
+      "delay": "per roadmap cycle",
+      "confidence": "medium",
+      "evidence": [
+        "build capacity split across horizons",
+        "kill-or-scale record of exploratory bets"
+      ],
+      "sources": [
+        "Baghai/Coley/White (three horizons)",
+        "Cagan"
+      ]
+    },
+    {
+      "id": "e.corporate-capital",
+      "from": "str.corporate-strategy",
+      "to": "str.capital-allocation",
+      "effect": "portfolio judgment feeds the allocation table — without the parenting test, capital flows by politics and inertia instead of returns",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "per budget cycle",
+      "confidence": "high",
+      "evidence": [
+        "capital flows vs unit returns",
+        "exits actually executed when someone else is the better owner"
+      ],
+      "sources": [
+        "Goold & Campbell (parenting advantage)",
+        "Thorndike"
+      ]
+    },
+    {
+      "id": "e.capital-execution",
+      "from": "str.capital-allocation",
+      "to": "str.strategy-execution",
+      "effect": "resources ARE the strategy — a pivot that money and headcount didn't follow is rhetoric, and teams execute the budget, not the speech",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "one budget cycle",
+      "confidence": "high",
+      "evidence": [
+        "budget/headcount deltas after strategy changes",
+        "Sull's resource-movement gap in reviews"
+      ],
+      "sources": [
+        "Sull (HBR, execution unravels)",
+        "Bossidy & Charan"
+      ]
+    },
+    {
+      "id": "e.planning-execution",
+      "from": "str.strategic-planning",
+      "to": "str.strategy-execution",
+      "effect": "a kernel with coherent actions can cascade; a wish list cannot — execution quality is bounded by whether the plan contains decisions",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "immediate",
+      "confidence": "high",
+      "evidence": [
+        "teams able to name their one contribution",
+        "the plan's explicit refusals existing"
+      ],
+      "sources": [
+        "Rumelt",
+        "McChesney (4DX)"
+      ]
+    },
+    {
+      "id": "e.execution-ops-strategy",
+      "from": "str.strategy-execution",
+      "to": "ops.operations-strategy",
+      "effect": "the cascade lands in operations as a chosen priority — or fails to, leaving ops optimizing yesterday's promise",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "1-2 quarters",
+      "confidence": "high",
+      "evidence": [
+        "ops KPIs vs current strategy's promise",
+        "ops investment direction vs strategic priority"
+      ],
+      "sources": [
+        "Slack & Lewis",
+        "Skinner"
+      ]
+    },
+    {
+      "id": "e.ea-transformation",
+      "from": "tec.enterprise-architecture",
+      "to": "tec.digital-transformation",
+      "effect": "you cannot transform a landscape you have not mapped — transformations without the systems map discover their dependencies as outages",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "surfaces mid-program",
+      "confidence": "high",
+      "evidence": [
+        "current-state architecture map existing before the program",
+        "surprise-dependency incidents during past initiatives"
+      ],
+      "sources": [
+        "Ross, Weill & Robertson",
+        "TOGAF ADM (baseline before target)"
+      ]
+    },
+    {
+      "id": "e.ba-requirements",
+      "from": "tec.business-analysis",
+      "to": "tec.requirements-engineering",
+      "effect": "analysis quality bounds requirements quality — specs written from unexamined requests encode the workaround, not the need",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "immediate",
+      "confidence": "high",
+      "evidence": [
+        "requirements phrased as problems vs pre-picked solutions",
+        "exception coverage in specs"
+      ],
+      "sources": [
+        "BABOK",
+        "Gause & Weinberg"
+      ]
+    },
+    {
+      "id": "e.requirements-erp",
+      "from": "tec.requirements-engineering",
+      "to": "tec.erp-systems",
+      "effect": "implementation failure is mostly requirements failure delayed — untestable specs and skipped UAT surface as go-live chaos and change-request invoices",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "at go-live and after",
+      "confidence": "high",
+      "evidence": [
+        "change request rate post-signature",
+        "UAT depth (real users, real data, unhappy paths)"
+      ],
+      "sources": [
+        "Standish CHAOS reports",
+        "Wiegers"
+      ]
+    },
+    {
+      "id": "e.process-design-bpm",
+      "from": "ops.process-design",
+      "to": "tec.bpm-workflow",
+      "effect": "fix the process before encoding it — automated chaos is chaos at scale with an audit trail",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "pays or punishes at rollout",
+      "confidence": "high",
+      "evidence": [
+        "redesign step existing before automation projects",
+        "workaround bloom around deployed workflows"
+      ],
+      "sources": [
+        "Hammer (don't automate, obliterate)"
+      ]
+    },
+    {
+      "id": "e.mapping-bpm",
+      "from": "tec.process-mapping",
+      "to": "tec.bpm-workflow",
+      "effect": "the AS-IS map is automation's prerequisite — encoding a process three people describe differently automates the disagreement",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "immediate",
+      "confidence": "high",
+      "evidence": [
+        "observed (not conference-room) AS-IS maps preceding builds",
+        "requirements churn during workflow projects"
+      ],
+      "sources": [
+        "Rummler & Brache",
+        "Ohno (go and see)"
+      ]
+    },
+    {
+      "id": "e.mdm-erp",
+      "from": "tec.master-data-management",
+      "to": "tec.erp-systems",
+      "effect": "dirty master data corrupts the system of record from below — migration without cleansing moves the old chaos to new prices",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "from migration day onward",
+      "confidence": "high",
+      "evidence": [
+        "duplicate rates in masters pre/post migration",
+        "reconciliation labor around the ERP"
+      ],
+      "sources": [
+        "DAMA-DMBOK",
+        "Davenport"
+      ]
+    },
+    {
+      "id": "e.mdm-data-quality",
+      "from": "tec.master-data-management",
+      "to": "dat.data-quality",
+      "effect": "governed masters are data quality's foundation — without golden records every downstream metric inherits ambiguity",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "structural",
+      "confidence": "high",
+      "evidence": [
+        "reports disagreeing across departments on the same fact",
+        "named owners per master entity"
+      ],
+      "sources": [
+        "DAMA-DMBOK",
+        "Kimball (conformed dimensions)"
+      ]
+    },
+    {
+      "id": "e.crm-pipeline-truth",
+      "from": "tec.crm-systems",
+      "to": "mkt.pipeline-management",
+      "effect": "CRM honesty bounds pipeline truth — a system updated the night before review produces fiction with timestamps, and every forecast inherits it",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "immediate",
+      "confidence": "high",
+      "evidence": [
+        "update recency vs review calendar",
+        "rep payback (what the CRM gives them vs takes)"
+      ],
+      "sources": [
+        "Roberge",
+        "Salesforce adoption research"
+      ]
+    },
+    {
+      "id": "e.apis-agents",
+      "from": "tec.apis-integration",
+      "to": "tec.ai-agents-automation",
+      "effect": "the integration surface is the agent's reach — an agent without API access to your systems is an intern without a badge",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "per capability build",
+      "confidence": "high",
+      "evidence": [
+        "systems reachable by agents vs systems where the work lives",
+        "agent task completion vs required-system coverage"
+      ],
+      "sources": [
+        "Anthropic agent-design guidance",
+        "Hohpe & Woolf"
+      ]
+    },
+    {
+      "id": "e.cloud-opex",
+      "from": "tec.cloud-infrastructure",
+      "to": "fin.operating-expenses",
+      "effect": "cloud converts capex to metered opex — and waste is the default state, because the provisioner is rarely the payer",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "monthly, compounding by neglect",
+      "confidence": "high",
+      "evidence": [
+        "bill growth vs usage growth",
+        "idle/oversize audit results"
+      ],
+      "sources": [
+        "FinOps Foundation",
+        "cloud well-architected cost pillars"
+      ]
+    },
+    {
+      "id": "e.llms-agents",
+      "from": "tec.ai-llms",
+      "to": "tec.ai-agents-automation",
+      "effect": "model capability and error profile bound what agents can be trusted with — chain reliability multiplies per-step weakness into task failure",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "immediate (arithmetic)",
+      "confidence": "high",
+      "evidence": [
+        "measured per-step accuracy on own cases",
+        "steps-per-task inventory"
+      ],
+      "sources": [
+        "chained-reliability arithmetic",
+        "Anthropic/OpenAI eval guidance"
+      ]
+    },
+    {
+      "id": "e.agents-service-delivery",
+      "from": "tec.ai-agents-automation",
+      "to": "ops.service-delivery",
+      "effect": "agents industrialize the repeatable core of service work — leverage where volume is high and judgment is light, chaos where the process was never standardized",
+      "polarity": "positive",
+      "strength": "moderate",
+      "conditions": [
+        "the automated process was standardized first"
+      ],
+      "delay": "1-2 quarters per deployment",
+      "confidence": "medium",
+      "evidence": [
+        "cost per service task before/after",
+        "exception and escalation rates post-deployment"
+      ],
+      "sources": [
+        "early enterprise agent post-mortems",
+        "Frei & Morriss (standardize the core)"
+      ]
+    },
+    {
+      "id": "e.devops-dev-process",
+      "from": "tec.devops-release",
+      "to": "prd.product-development-process",
+      "effect": "deploy capability sets the feedback loop's floor — teams that can ship small and often can learn small and often; heroic release windows force big batches",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "structural",
+      "confidence": "high",
+      "evidence": [
+        "DORA four metrics",
+        "release size and cadence trend"
+      ],
+      "sources": [
+        "Forsgren, Humble & Kim (Accelerate)"
+      ]
+    },
+    {
+      "id": "e.cyberbasics-cyberrisk",
+      "from": "tec.cybersecurity-basics",
+      "to": "rsk.cyber-risk",
+      "effect": "hygiene coverage sets the exposure floor — most breaches are unpatched, unMFA'd, or phished, not sophisticated",
+      "polarity": "negative",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "latent until the incident",
+      "confidence": "high",
+      "evidence": [
+        "MFA/patch/backup-restore coverage audit",
+        "phishing drill results"
+      ],
+      "sources": [
+        "Verizon DBIR",
+        "CIS Controls"
+      ]
+    },
+    {
+      "id": "e.transformation-change",
+      "from": "tec.digital-transformation",
+      "to": "chg.change-management",
+      "effect": "transformations fail at the humans, not the platform — adoption, incentives, and old-way retirement decide what the technology was worth",
+      "polarity": "positive",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "the whole program",
+      "confidence": "high",
+      "evidence": [
+        "tech spend vs change/training spend ratio",
+        "usage depth vs mandated compliance"
+      ],
+      "sources": [
+        "Westerman, Leading Digital",
+        "McKinsey transformation surveys"
+      ]
+    },
+    {
+      "id": "e.buildbuy-ea",
+      "from": "tec.build-buy-partner",
+      "to": "tec.enterprise-architecture",
+      "effect": "every build/buy/partner decision reshapes the landscape — undisciplined choices accrete into the spaghetti the next decade pays for",
+      "polarity": "positive",
+      "strength": "moderate",
+      "conditions": [],
+      "delay": "compounds per decision",
+      "confidence": "high",
+      "evidence": [
+        "decision framework existing vs loudest-voice wins",
+        "homegrown systems in solved categories"
+      ],
+      "sources": [
+        "Wardley mapping",
+        "Ross, Weill & Robertson"
+      ]
+    },
+    {
+      "id": "e.techdebt-velocity",
+      "from": "tec.technical-debt",
+      "to": "prd.product-development-process",
+      "effect": "debt charges interest in cycle time — velocity falls while headcount rises, and eventually debt starts making product strategy by veto",
+      "polarity": "negative",
+      "strength": "strong",
+      "conditions": [],
+      "delay": "compounds over quarters",
+      "confidence": "high",
+      "evidence": [
+        "velocity trend vs headcount trend",
+        "roadmap items avoided because the area is dangerous"
+      ],
+      "sources": [
+        "Fowler",
+        "Accelerate/DORA"
+      ]
+    }
+  ],
+  "motifs": [
+    {
+      "id": "m.forecast-optimism-compounds",
+      "name": "Forecast Optimism Compounds",
+      "edges": [
+        "e.forecasting-budgeting",
+        "e.budget-opex-creep",
+        "e.opex-ebitda",
+        "e.forecast-optimism-runway"
+      ],
+      "shape": "A financial forecast is a belief, not a fact — but incremental budgeting\nconverts belief into commitment automatically. An optimistic revenue\nnumber authorizes real hiring and real purchasing before a single dollar\nof it has landed. That commitment then does damage on two fronts at\nonce, in parallel, from the same original optimism: operating expenses\nratchet upward (because the budget base was never re-justified against\nreality) which compresses margin, AND cash gets committed against revenue\nthat hasn't confirmed, which shortens the runway directly. Neither shows\nup immediately — both surface months later, exactly when the forecast\nturns out to have been wrong."
+    },
+    {
+      "id": "m.goodhart-spiral",
+      "name": "The Goodhart Spiral",
+      "edges": [
+        "e.incentive-goodhart",
+        "e.metricdesign-goodhart",
+        "e.goodhart-kpis",
+        "e.incentive-quality"
+      ],
+      "shape": "A proxy metric gets a target; the target gets money or fear attached;\npeople optimize the proxy instead of the outcome; the proxy improves\nwhile the outcome stalls; leadership, reading the improving proxy,\nraises the target — tightening the exact screw that's stripping the\nthread. Each turn of the spiral widens the gap between the number and\nthe reality it was supposed to represent."
+    },
+    {
+      "id": "m.growth-hides-rot",
+      "name": "Growth Hides Rot",
+      "edges": [
+        "e.sales-comp-discounting",
+        "e.discounting-revenue",
+        "e.discounting-gross-margin",
+        "e.cogs-gross-margin",
+        "e.gross-margin-cash-flow",
+        "e.revenue-demand-planning",
+        "e.demand-planning-inventory",
+        "e.inventory-working-capital",
+        "e.working-capital-cash-runway",
+        "e.cash-flow-runway",
+        "e.revenue-fulfillment",
+        "e.fulfillment-cogs",
+        "e.fulfillment-churn",
+        "e.churn-revenue"
+      ],
+      "shape": "The top line grows, so everyone celebrates — while margin, cash, and\nquality quietly decay underneath. The growth is not separate from the\ndecay; the growth is *causing* the decay, and simultaneously hiding it.\nUsually the first mover is an incentive — someone changed what gets\nrewarded, the salesforce responded rationally, and every downstream system\nfaithfully amplified the distortion."
+    },
+    {
+      "id": "m.incentive-eats-quality",
+      "name": "Incentive Eats Quality",
+      "edges": [
+        "e.incentive-quality",
+        "e.incentive-goodhart",
+        "e.sales-comp-discounting",
+        "e.performance-team",
+        "e.fulfillment-churn"
+      ],
+      "shape": "Someone changes what gets rewarded — a bonus, a quota, a promotion\ncriterion, or just what leadership starts tolerating. People respond\nrationally within weeks. The rewarded metric improves on schedule, the\nunrewarded dimension (quality, honesty, long-term value) decays quietly,\nand by the time the decay reaches customers, nobody connects it to the\nincentive memo from two quarters ago."
+    },
+    {
+      "id": "m.one-signature-five-consequences",
+      "name": "One Signature, Five Consequences",
+      "edges": [
+        "e.exitpaths-fundstrategy",
+        "e.fundstrategy-mechanics",
+        "e.fundmechanics-governance",
+        "e.governance-capital-allocation",
+        "e.capital-execution"
+      ],
+      "shape": "The exit you're quietly aiming for — or never consciously chose — decides\nwhat kind of money you're even allowed to take, whether you know it yet\nor not. That fundraising strategy sets the mechanics of the actual deal:\nthe term sheet. The term sheet constructs the board, because control\nprovisions and board seats are negotiated at signing, not discovered\nlater. That board then decides whether capital gets allocated by\ndiscipline (an investor's cold arithmetic) or by politics (whoever's\nloudest in the room). And capital allocation quality is what determines,\nyears later, whether strategy is resourced enough to actually execute —\nSull's finding that teams execute the budget, not the speech. One\nsignature, at the start, quietly wrote the ending."
+    },
+    {
+      "id": "m.technical-debt-spiral",
+      "name": "The Technical Debt Spiral",
+      "edges": [
+        "e.discovery-product-strategy",
+        "e.product-strategy-roadmap",
+        "e.roadmap-dev-process",
+        "e.dev-process-technical-debt",
+        "e.techdebt-velocity"
+      ],
+      "shape": "Weak customer discovery leaves product strategy with no real referee, so\nthe roadmap gets decided by escalation instead of evidence. An\nescalation-driven roadmap crams in more than capacity allows, so every\nrelease runs on fixed scope and a fixed deadline. Something has to give —\nit's quality, invisibly. That debt then does the thing debt always does:\nit charges interest. Velocity falls. And a team with less velocity has\neven less room to say no to the next unreasonable deadline — so it\nhappens again, faster. Unlike a simple chain, this one closes into a\nloop: `product-development-process → technical-debt → product-\ndevelopment-process`. Once the loop starts, it feeds itself without any\nnew mistake being required."
+    },
+    {
+      "id": "m.underpay-eats-execution",
+      "name": "Underpay Eats Execution",
+      "edges": [
+        "e.compensation-hiring",
+        "e.hiring-culture",
+        "e.culture-execution"
+      ],
+      "shape": "\"Why isn't our strategy executing?\" almost always gets investigated as a\nplanning problem — wrong priorities, unclear cascade, missing resources.\nThis motif says: check three hops further back. Below-market comp bands\nquietly lower who you can hire, because the candidates with other options\ntake the other offer. A hiring bar eroded this way dilutes culture over\nseveral quarters — not through one bad hire, but through the accumulated\ngravity of many slightly-worse ones. And culture is precisely what\ndecides whether strategy survives contact with an inconvenient moment:\nit's the daily behavior under pressure, not the deck. Nobody in a\nstrategy review checks the comp bands. That's exactly why this root\ncause hides so well."
+    }
+  ]
+}

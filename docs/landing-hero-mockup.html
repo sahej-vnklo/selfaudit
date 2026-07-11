@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SelfAudit — Landing Hero Mockup</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Manrope:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:         #0a0707;
+      --bg-2:       #110b0a;
+      --fg:         #f4ebe3;
+      --fg-dim:     #a89a91;
+      --fg-mute:    #6b5f58;
+      --ember:      oklch(0.68 0.18 35);
+      --ember-glow: oklch(0.78 0.16 40);
+      --line:       rgba(244, 235, 227, 0.08);
+      --line-2:     rgba(244, 235, 227, 0.14);
+      --serif:      "Cormorant Garamond", Georgia, serif;
+      --sans:       "Manrope", system-ui, sans-serif;
+      --mono:       "JetBrains Mono", monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--sans);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      height: 80px; z-index: 100;
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      background: linear-gradient(to bottom, rgba(10,7,7,0.7), transparent);
+    }
+
+    .nav-logo {
+      font-family: var(--serif);
+      font-size: 24px; font-weight: 500;
+      color: var(--ember);
+    }
+
+    .nav-links {
+      display: flex; gap: 36px; align-items: center;
+    }
+
+    .nav-links span {
+      font-size: 14px; font-weight: 500;
+      color: var(--fg-dim); cursor: pointer;
+    }
+
+    .nav-cta {
+      padding: 10px 22px;
+      background: linear-gradient(180deg, oklch(0.55 0.18 32), oklch(0.42 0.16 28));
+      color: var(--fg); border-radius: 8px;
+      font-size: 14px; font-weight: 500;
+      cursor: pointer;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      height: 100vh; min-height: 720px;
+      position: relative; overflow: hidden;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+    }
+
+    .hero-bg {
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 100% 80% at 50% 40%, rgba(180, 80, 40, 0.06) 0%, transparent 70%),
+        linear-gradient(180deg, #0a0707 0%, #150d0a 50%, #0a0707 100%);
+    }
+
+    .hero-grain {
+      position: absolute; inset: 0;
+      opacity: 0.06;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.5'/></svg>");
+    }
+
+    .hero-content {
+      position: relative; z-index: 4;
+      display: flex; flex-direction: column;
+      align-items: center; text-align: center;
+      padding: 0 24px; max-width: 900px;
+      gap: 0;
+    }
+
+    /* The hero is now the chain — not a tagline */
+    .hero-eyebrow {
+      font-family: var(--mono);
+      font-size: 11px; font-weight: 500;
+      letter-spacing: 0.25em; text-transform: uppercase;
+      color: var(--ember);
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 40px;
+    }
+
+    .hero-eyebrow::before {
+      content: ''; width: 24px; height: 1px;
+      background: var(--ember);
+    }
+
+    .hero-eyebrow::after {
+      content: ''; width: 24px; height: 1px;
+      background: var(--ember);
+    }
+
+    /* The chain quote — this IS the hero */
+    .hero-chain {
+      font-family: var(--serif);
+      font-size: clamp(28px, 4.2vw, 62px);
+      font-weight: 400; line-height: 1.18;
+      letter-spacing: -0.015em;
+      color: var(--fg);
+      margin-bottom: 16px;
+    }
+
+    .hero-chain em {
+      font-style: italic;
+      color: var(--ember-glow);
+    }
+
+    .hero-chain-attribution {
+      font-family: var(--mono);
+      font-size: 11px; letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--fg-mute);
+      margin-bottom: 48px;
+    }
+
+    .hero-sub {
+      font-family: var(--sans);
+      font-size: clamp(15px, 1.3vw, 18px);
+      font-weight: 400; line-height: 1.7;
+      color: var(--fg-dim);
+      max-width: 52ch; margin-bottom: 52px;
+    }
+
+    .hero-cta {
+      display: flex; gap: 16px; align-items: center;
+    }
+
+    .btn-primary {
+      padding: 14px 32px;
+      background: linear-gradient(180deg, oklch(0.55 0.18 32), oklch(0.42 0.16 28));
+      color: var(--fg); border-radius: 10px;
+      font-family: var(--sans);
+      font-size: 15px; font-weight: 500;
+      cursor: pointer; border: none;
+    }
+
+    .btn-secondary {
+      font-family: var(--sans);
+      font-size: 14px; font-weight: 500;
+      color: var(--fg-dim); cursor: pointer;
+      background: none; border: none;
+      display: flex; align-items: center; gap: 6px;
+    }
+
+    .btn-secondary::after { content: '→'; }
+
+    /* ── STATEMENT (white card below hero) ── */
+    .statement {
+      background: #fff;
+      border-radius: 24px 24px 0 0;
+      padding: 80px 48px 88px;
+      text-align: center;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 28px;
+      box-shadow: 0 -32px 80px rgba(0,0,0,0.5);
+    }
+
+    .statement-eyebrow {
+      font-family: var(--mono);
+      font-size: 11px; letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: oklch(0.55 0.16 32);
+      display: flex; align-items: center; gap: 12px;
+    }
+
+    .statement-eyebrow::before, .statement-eyebrow::after {
+      content: ''; width: 24px; height: 1px;
+      background: oklch(0.55 0.16 32);
+    }
+
+    .statement-heading {
+      font-family: var(--serif);
+      font-size: clamp(28px, 3.8vw, 56px);
+      font-weight: 500; line-height: 1.12;
+      letter-spacing: -0.02em;
+      color: #0a0707;
+      max-width: 22ch;
+    }
+
+    .statement-heading em {
+      font-style: italic;
+      color: oklch(0.50 0.18 32);
+    }
+
+    .statement-body {
+      font-family: var(--sans);
+      font-size: clamp(15px, 1.3vw, 18px);
+      font-weight: 400; color: #5a4f4a;
+      line-height: 1.65; max-width: 54ch;
+    }
+
+    /* ── PROBLEM SECTION ── */
+    .problem {
+      background: var(--bg-2);
+      padding: 120px 48px;
+    }
+
+    .problem-inner {
+      max-width: 1200px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 80px; align-items: center;
+    }
+
+    .problem-left { display: flex; flex-direction: column; gap: 28px; }
+
+    .problem-h2 {
+      font-family: var(--serif);
+      font-size: clamp(32px, 3.5vw, 52px);
+      font-weight: 500; line-height: 1.12;
+      letter-spacing: -0.015em; color: var(--fg);
+    }
+
+    .problem-h2 em { font-style: italic; color: var(--ember-glow); }
+
+    .problem-body {
+      font-family: var(--sans);
+      font-size: 17px; font-weight: 400;
+      line-height: 1.7; color: var(--fg-dim);
+    }
+
+    .problem-right { display: flex; flex-direction: column; gap: 16px; }
+
+    .chain-card {
+      background: rgba(244, 235, 227, 0.04);
+      border: 1px solid var(--line-2);
+      border-radius: 12px;
+      padding: 24px 28px;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+
+    .chain-card-area {
+      font-family: var(--mono);
+      font-size: 10px; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--ember);
+    }
+
+    .chain-card-event {
+      font-family: var(--sans);
+      font-size: 16px; font-weight: 500;
+      color: var(--fg); line-height: 1.4;
+    }
+
+    .chain-card-effect {
+      font-family: var(--sans);
+      font-size: 14px; font-weight: 400;
+      color: var(--fg-dim); line-height: 1.5;
+    }
+
+    .chain-connector {
+      display: flex; align-items: center;
+      gap: 12px; padding: 0 28px;
+      font-family: var(--mono);
+      font-size: 10px; letter-spacing: 0.15em;
+      text-transform: uppercase; color: var(--fg-mute);
+    }
+
+    .chain-connector::before {
+      content: ''; width: 1px; height: 20px;
+      background: var(--line-2);
+    }
+
+    /* ── MANIFESTO ── */
+    .manifesto {
+      background: var(--bg);
+      padding: 120px 48px;
+      text-align: center;
+      border-top: 1px solid var(--line);
+    }
+
+    .manifesto-inner {
+      max-width: 900px; margin: 0 auto;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 24px;
+    }
+
+    .manifesto-punch {
+      font-family: var(--serif);
+      font-size: clamp(22px, 2.8vw, 38px);
+      font-weight: 500; line-height: 1.4;
+      letter-spacing: -0.01em; color: var(--fg);
+    }
+
+    .manifesto-body {
+      font-family: var(--sans);
+      font-size: 17px; font-weight: 400;
+      line-height: 1.7; color: var(--fg-dim);
+      max-width: 52ch;
+    }
+
+    /* ── COMPARISON NOTE ── */
+    .mockup-note {
+      position: fixed; bottom: 24px; right: 24px;
+      background: rgba(10,7,7,0.9);
+      border: 1px solid var(--line-2);
+      border-radius: 10px; padding: 16px 20px;
+      font-family: var(--mono);
+      font-size: 11px; color: var(--ember);
+      letter-spacing: 0.08em;
+      max-width: 280px; line-height: 1.6;
+      z-index: 200;
+    }
+
+    .mockup-note strong { color: var(--fg); display: block; margin-bottom: 6px; }
+
+    .changed { background: rgba(200,66,42,0.08); border-color: rgba(200,66,42,0.25); }
+  </style>
+</head>
+<body>
+
+<!-- NAV — unchanged from current -->
+<nav>
+  <div class="nav-logo">SelfAudit</div>
+  <div class="nav-links">
+    <span style="color:var(--ember-glow)">What's Next</span>
+    <span>How It Works</span>
+  </div>
+  <div class="nav-links">
+    <span>☰</span>
+    <div class="nav-cta">Start Audit</div>
+  </div>
+</nav>
+
+<!-- ══ HERO — CHANGED ══ -->
+<!-- OLD: "Performant software was never a luxury. Strategic intelligence still is. Until now." -->
+<!-- NEW: The chain is the hero. First thing you read is the problem in motion. -->
+<section class="hero changed">
+  <div class="hero-bg"></div>
+  <div class="hero-grain"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">Cross-functional root cause</div>
+    <h1 class="hero-chain">
+      "Your support cut saved $40K.<br />
+      It will cost you <em>$180K in churn</em><br />
+      ninety days from now."
+    </h1>
+    <p class="hero-chain-attribution">A finding. Not a guess. Already running inside 10 businesses.</p>
+    <p class="hero-sub">
+      SelfAudit watches every part of your business simultaneously — and surfaces the chain before the damage compounds.
+    </p>
+    <div class="hero-cta">
+      <button class="btn-primary">Start Audit — Free</button>
+      <button class="btn-secondary">See how it works</button>
+    </div>
+  </div>
+</section>
+
+<!-- ══ STATEMENT — CHANGED ══ -->
+<!-- OLD: "Performant software was never a luxury. Strategic intelligence still is." -->
+<!-- NEW: Names the category clearly. Pre-mortem, not post-mortem. -->
+<section class="statement changed">
+  <div class="statement-eyebrow">The category</div>
+  <h2 class="statement-heading">
+    McKinsey does the post-mortem.<br />
+    SelfAudit is <em>the pre-mortem.</em>
+  </h2>
+  <p class="statement-body">
+    Large companies pay consultants to reconstruct what went wrong after the chain completes.
+    That costs $500K and six months — and the damage is already paid for.
+    SelfAudit catches the chain while it is one link long and still correctable.
+    $999/month. Continuous. No political filter on the findings.
+  </p>
+</section>
+
+<!-- ══ PROBLEM SECTION — CHANGED ══ -->
+<!-- OLD: "The problem isn't the data. It's that nobody is connecting it." (with one chain example) -->
+<!-- NEW: Show three chains. Make it their Monday morning. -->
+<section class="problem">
+  <div class="problem-inner">
+    <div class="problem-left">
+      <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.25em;text-transform:uppercase;color:var(--ember);display:flex;align-items:center;gap:12px;">
+        <span style="width:24px;height:1px;background:var(--ember);display:block;flex-shrink:0;"></span>
+        The pattern
+      </div>
+      <h2 class="problem-h2">
+        Every business problem has a cause
+        that isn't where <em>the problem appeared.</em>
+      </h2>
+      <p class="problem-body">
+        A decision made in one part of your business creates a consequence in a completely different part —
+        weeks or months later. By the time it arrives, the decision that caused it is already forgotten.
+        Three more decisions have been made on top of it. All of them pointed at the symptom.
+      </p>
+      <p class="problem-body">
+        SelfAudit watches the relationship between all four areas of your business simultaneously.
+        It names the chain before it completes.
+      </p>
+    </div>
+    <div class="problem-right">
+      <!-- Chain 1 -->
+      <div class="chain-card">
+        <span class="chain-card-area">Finance → Ops → Revenue</span>
+        <span class="chain-card-event">Support team cut to reduce burn</span>
+        <span class="chain-card-effect">Response times double → satisfaction drops → churn rises 90 days later → diagnosed as a sales problem</span>
+      </div>
+      <div class="chain-connector">↓ next chain</div>
+      <!-- Chain 2 -->
+      <div class="chain-card">
+        <span class="chain-card-area">Finance → Sales → Talent</span>
+        <span class="chain-card-event">Price raised to improve margins</span>
+        <span class="chain-card-effect">Sales cycle lengthens → close rate drops → misread as execution failure → sales lead fired</span>
+      </div>
+      <div class="chain-connector">↓ next chain</div>
+      <!-- Chain 3 -->
+      <div class="chain-card">
+        <span class="chain-card-area">Sales → Finance → Strategy</span>
+        <span class="chain-card-event">Revenue flat → three salespeople hired</span>
+        <span class="chain-card-effect">Problem was retention, not sales → churn continued → six months and $220K later, nothing changed</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ MANIFESTO — MINOR CHANGE ══ -->
+<!-- OLD: "McKinsey sells it. Palantir builds it. Bloomberg rents fragments of it." -->
+<!-- NEW: Simpler. Remove Palantir/Bloomberg — focus on the one contrast that matters. -->
+<section class="manifesto changed">
+  <div class="manifesto-inner">
+    <p class="manifesto-punch">
+      Every business generating more than $500K in revenue<br />
+      is running these chains right now.<br />
+      Most cannot see them forming.
+    </p>
+    <p class="manifesto-body">
+      A $1M business with one broken cross-functional chain loses an estimated $230K per year —
+      absorbed as friction, rework, and wrong decisions.
+      It does not show on the P&L. It shows in the ceiling the business cannot break through.
+    </p>
+  </div>
+</section>
+
+<!-- MOCKUP NOTE -->
+<div class="mockup-note">
+  <strong>Mockup — changed sections</strong>
+  Sections with red border = proposed changes.<br /><br />
+  Hero: chain quote replaces "Strategic intelligence"<br />
+  Statement: pre-mortem replaces abstract tagline<br />
+  Problem: 3 chains replace single example<br />
+  Manifesto: simplified, Palantir/Bloomberg removed
+</div>
+
+</body>
+</html>

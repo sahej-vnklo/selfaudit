@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { CLAUDE_MODEL } from './lib/model-config.js'
 import { validateUserToken } from './lib/auth.js'
 import { ARTIFACT_SYSTEM_PROMPT, ARTIFACT_TYPE_INSTRUCTIONS, ARTIFACT_JSON_SCHEMA } from './lib/artifacts/instructions.js'
 
@@ -179,7 +180,7 @@ export default async function handler(req, res) {
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
+        model: CLAUDE_MODEL,
         max_tokens: 3000,
         system: ARTIFACT_SYSTEM_PROMPT,
         messages: [{ role: 'user', content: buildUserPrompt(artifactType, report, userInfo, brain) }],

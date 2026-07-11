@@ -1,0 +1,1570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SelfAudit — Investor Deck</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #FAFAF7;
+      --ink: #0D0D0D;
+      --muted: #6B6B6B;
+      --red: #C8422A;
+      --border: oklch(0.88 0.005 60);
+      --serif: 'Cormorant Garamond', Georgia, serif;
+      --sans: 'DM Sans', system-ui, sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      width: 100%; height: 100%;
+      background: #111;
+      font-family: var(--sans);
+      overflow: hidden;
+    }
+
+    /* ── DECK WRAPPER ── */
+    .deck {
+      width: 1920px;
+      height: 1080px;
+      position: relative;
+      transform-origin: top left;
+    }
+
+    /* ── SLIDE BASE ── */
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      background: var(--bg);
+      color: var(--ink);
+      position: absolute;
+      top: 0; left: 0;
+      display: none;
+      overflow: hidden;
+    }
+
+    .slide.active { display: flex; }
+
+    /* Corner marks */
+    .corner { position: absolute; width: 28px; height: 28px; border-color: oklch(0.80 0.008 60); border-style: solid; }
+    .corner-tl { top: 44px; left: 44px; border-width: 1px 0 0 1px; }
+    .corner-tr { top: 44px; right: 44px; border-width: 1px 1px 0 0; }
+    .corner-bl { bottom: 44px; left: 44px; border-width: 0 0 1px 1px; }
+    .corner-br { bottom: 44px; right: 44px; border-width: 0 1px 1px 0; }
+
+    /* Slide number */
+    .slide-num {
+      position: absolute;
+      bottom: 48px; right: 52px;
+      font-family: var(--sans);
+      font-size: 12px; font-weight: 400;
+      color: var(--muted); letter-spacing: 0.1em;
+    }
+
+    /* Slide label */
+    .slide-label {
+      position: absolute;
+      top: 56px; left: 120px;
+      font-family: var(--sans);
+      font-size: 12px; font-weight: 600;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--red);
+    }
+
+    /* ── NAV ── */
+    .nav {
+      position: fixed;
+      bottom: 32px; left: 50%;
+      transform: translateX(-50%);
+      display: flex; align-items: center; gap: 24px;
+      background: rgba(13,13,13,0.88);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 100px;
+      padding: 14px 28px;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+    }
+
+    .nav-btn {
+      background: none; border: none; cursor: pointer;
+      color: rgba(255,255,255,0.6);
+      font-family: var(--sans); font-size: 14px; font-weight: 500;
+      letter-spacing: 0.08em; padding: 4px 12px;
+      border-radius: 100px;
+      transition: all 0.15s;
+    }
+
+    .nav-btn:hover { color: white; background: rgba(255,255,255,0.08); }
+
+    .nav-counter {
+      font-family: var(--sans); font-size: 13px;
+      color: rgba(255,255,255,0.4); letter-spacing: 0.06em;
+      min-width: 48px; text-align: center;
+    }
+
+    .nav-dots {
+      display: flex; gap: 6px; align-items: center;
+    }
+
+    .nav-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      cursor: pointer; transition: all 0.15s;
+      border: none;
+    }
+
+    .nav-dot.active {
+      background: var(--red);
+      width: 18px; border-radius: 3px;
+    }
+
+    /* ════════════════════════════════════════
+       SLIDE 01 — COVER
+    ════════════════════════════════════════ */
+    .slide-cover {
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cover-inner {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 48px;
+    }
+
+    .cover-logo {
+      display: flex; align-items: center; gap: 20px;
+    }
+
+    .cover-wordmark {
+      font-family: var(--sans);
+      font-size: 80px; font-weight: 400;
+      letter-spacing: -0.02em; color: var(--ink);
+      line-height: 1;
+    }
+
+    .cover-tagline {
+      font-family: var(--serif);
+      font-size: 28px; font-weight: 300;
+      font-style: italic; color: var(--muted);
+      letter-spacing: 0.01em; text-align: center;
+    }
+
+    /* ════════════════════════════════════════
+       SLIDE 02 — THE CONCEPT
+    ════════════════════════════════════════ */
+    .slide-concept {
+      flex-direction: column;
+      padding: 100px 120px 90px;
+      justify-content: space-between;
+    }
+
+    .concept-top { display: flex; flex-direction: column; gap: 32px; }
+
+    .concept-eyebrow {
+      font-family: var(--sans);
+      font-size: 13px; font-weight: 600;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--red);
+    }
+
+    .concept-headline {
+      font-family: var(--serif);
+      font-size: 100px; font-weight: 400;
+      line-height: 1.06; letter-spacing: -0.015em;
+      color: var(--ink); max-width: 1400px;
+    }
+
+    .concept-headline em { font-style: italic; color: var(--red); }
+
+    .concept-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 64px; max-width: 1500px;
+    }
+
+    .concept-para {
+      font-family: var(--sans);
+      font-size: 24px; font-weight: 300;
+      line-height: 1.7; color: var(--muted);
+    }
+
+    .concept-para strong { color: var(--ink); font-weight: 500; }
+
+    .concept-callout {
+      border-left: 3px solid var(--red);
+      padding-left: 28px;
+      font-family: var(--sans);
+      font-size: 28px; font-weight: 500;
+      color: var(--ink); align-self: flex-start;
+    }
+
+    /* ════════════════════════════════════════
+       SLIDE 03 — THE CHAIN
+    ════════════════════════════════════════ */
+    .slide-chain {
+      flex-direction: column;
+      padding: 96px 120px 88px;
+      justify-content: space-between;
+    }
+
+    .chain-headline {
+      font-family: var(--serif);
+      font-size: 88px; font-weight: 400;
+      line-height: 1.06; letter-spacing: -0.015em;
+      color: var(--ink);
+    }
+
+    .chain-headline em { font-style: italic; color: var(--red); }
+
+    .chain-sub {
+      font-family: var(--sans);
+      font-size: 26px; font-weight: 300;
+      color: var(--muted); margin-top: 16px;
+      max-width: 900px; line-height: 1.6;
+    }
+
+    .chain-example {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 40px 52px;
+      display: flex; flex-direction: column; gap: 20px;
+    }
+
+    .chain-example-label {
+      font-family: var(--sans);
+      font-size: 12px; font-weight: 600;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .chain-steps {
+      display: flex; align-items: center; gap: 0;
+      flex-wrap: nowrap;
+    }
+
+    .chain-step {
+      display: flex; flex-direction: column; gap: 8px;
+      flex: 1;
+    }
+
+    .chain-step-area {
+      font-family: var(--sans);
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--red);
+    }
+
+    .chain-step-text {
+      font-family: var(--sans);
+      font-size: 20px; font-weight: 400;
+      color: var(--ink); line-height: 1.35;
+    }
+
+    .chain-arrow {
+      font-size: 28px; color: var(--red);
+      padding: 0 20px; flex-shrink: 0;
+      opacity: 0.6; margin-top: -8px;
+    }
+
+    .chain-consequence {
+      border-top: 1px solid var(--border);
+      padding-top: 20px;
+      font-family: var(--sans);
+      font-size: 22px; font-weight: 300;
+      color: var(--muted); line-height: 1.6;
+    }
+
+    .chain-consequence strong { color: var(--red); font-weight: 500; }
+
+    .chain-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .chain-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 28px 32px;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+
+    .chain-card-company {
+      font-family: var(--serif);
+      font-size: 28px; font-weight: 400;
+      color: var(--ink); letter-spacing: -0.01em;
+    }
+
+    .chain-card-chain {
+      font-family: var(--sans);
+      font-size: 18px; font-weight: 300;
+      color: var(--muted); line-height: 1.55;
+    }
+
+    .chain-card-chain strong { color: var(--red); font-weight: 500; }
+
+    /* ════════════════════════════════════════
+       SLIDE 04 — THE PROOF (Famous)
+    ════════════════════════════════════════ */
+    .slide-proof {
+      display: grid !important;
+      grid-template-columns: 44% 56%;
+      padding: 0;
+    }
+
+    .proof-left {
+      display: flex; flex-direction: column;
+      justify-content: space-between;
+      padding: 96px 72px 88px 120px;
+      border-right: 1px solid var(--border);
+    }
+
+    .proof-headline {
+      font-family: var(--serif);
+      font-size: 80px; font-weight: 400;
+      line-height: 1.08; letter-spacing: -0.015em;
+      color: var(--ink);
+    }
+
+    .proof-headline em { font-style: italic; color: var(--red); }
+
+    .proof-para {
+      font-family: var(--sans);
+      font-size: 24px; font-weight: 300;
+      line-height: 1.65; color: var(--muted);
+      margin-top: 28px; text-wrap: pretty;
+    }
+
+    .proof-verdict {
+      border-left: 3px solid var(--red);
+      padding-left: 24px;
+      font-family: var(--serif);
+      font-size: 28px; font-weight: 400;
+      font-style: italic; color: var(--ink);
+      line-height: 1.4;
+    }
+
+    .proof-right {
+      display: flex; flex-direction: column;
+      justify-content: center;
+      padding: 72px 120px 72px 72px;
+      gap: 14px;
+    }
+
+    .proof-case {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 24px 32px;
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 32px;
+      align-items: start;
+    }
+
+    .proof-case-name {
+      font-family: var(--serif);
+      font-size: 30px; font-weight: 400;
+      color: var(--ink); letter-spacing: -0.01em;
+      line-height: 1;
+      padding-top: 4px;
+    }
+
+    .proof-case-chain {
+      font-family: var(--sans);
+      font-size: 18px; font-weight: 300;
+      color: var(--muted); line-height: 1.55;
+    }
+
+    .proof-case-chain strong { color: var(--red); font-weight: 500; }
+
+    /* ════════════════════════════════════════
+       SLIDE 05 — THE PROOF (Small Business)
+    ════════════════════════════════════════ */
+    .slide-proof2 {
+      flex-direction: column;
+      padding: 88px 120px 80px;
+      justify-content: space-between;
+    }
+
+    .proof2-top { display: flex; flex-direction: column; gap: 20px; }
+
+    .proof2-headline {
+      font-family: var(--serif);
+      font-size: 80px; font-weight: 400;
+      line-height: 1.06; letter-spacing: -0.015em;
+      color: var(--ink);
+    }
+
+    .proof2-headline em { font-style: italic; color: var(--red); }
+
+    .proof2-sub {
+      font-family: var(--sans);
+      font-size: 26px; font-weight: 300;
+      color: var(--muted); max-width: 1000px; line-height: 1.6;
+    }
+
+    .proof2-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .proof2-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 32px 36px;
+      display: flex; flex-direction: column; gap: 16px;
+    }
+
+    .proof2-card-title {
+      font-family: var(--sans);
+      font-size: 22px; font-weight: 600;
+      color: var(--ink); line-height: 1.3;
+    }
+
+    .proof2-card-setup {
+      font-family: var(--sans);
+      font-size: 19px; font-weight: 300;
+      color: var(--muted); line-height: 1.6;
+    }
+
+    .proof2-card-chain {
+      font-family: var(--sans);
+      font-size: 16px; font-weight: 400;
+      color: var(--red); line-height: 1.5;
+      letter-spacing: 0.01em;
+      border-top: 1px solid var(--border);
+      padding-top: 14px;
+    }
+
+    .proof2-callout {
+      border-left: 3px solid var(--red);
+      padding-left: 28px;
+      font-family: var(--sans);
+      font-size: 26px; font-weight: 500;
+      color: var(--ink); align-self: flex-start;
+    }
+
+    /* ════════════════════════════════════════
+       SLIDE 06 — THE PRE-MORTEM
+    ════════════════════════════════════════ */
+    .slide-premortem {
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0 240px;
+      gap: 56px;
+      background: var(--ink);
+    }
+
+    .premortem-eyebrow {
+      font-family: var(--sans);
+      font-size: 13px; font-weight: 600;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--red); text-align: center;
+    }
+
+    .premortem-headline {
+      font-family: var(--serif);
+      font-size: 96px; font-weight: 400;
+      line-height: 1.08; letter-spacing: -0.02em;
+      color: white; text-align: center;
+    }
+
+    .premortem-headline em { font-style: italic; color: var(--red); }
+
+    .premortem-compare {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 0; align-items: stretch;
+      width: 100%; max-width: 1400px;
+    }
+
+    .premortem-col {
+      display: flex; flex-direction: column; gap: 16px;
+      padding: 40px 52px;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 4px;
+    }
+
+    .premortem-col.us {
+      background: rgba(200,66,42,0.12);
+      border-color: rgba(200,66,42,0.3);
+    }
+
+    .premortem-col-label {
+      font-family: var(--sans);
+      font-size: 12px; font-weight: 600;
+      letter-spacing: 0.2em; text-transform: uppercase;
+    }
+
+    .premortem-col.them .premortem-col-label { color: rgba(255,255,255,0.35); }
+    .premortem-col.us .premortem-col-label { color: var(--red); }
+
+    .premortem-col-title {
+      font-family: var(--serif);
+      font-size: 44px; font-weight: 400;
+      line-height: 1.15; letter-spacing: -0.01em;
+    }
+
+    .premortem-col.them .premortem-col-title { color: rgba(255,255,255,0.45); }
+    .premortem-col.us .premortem-col-title { color: white; }
+
+    .premortem-col-desc {
+      font-family: var(--sans);
+      font-size: 20px; font-weight: 300;
+      line-height: 1.6;
+    }
+
+    .premortem-col.them .premortem-col-desc { color: rgba(255,255,255,0.3); }
+    .premortem-col.us .premortem-col-desc { color: rgba(255,255,255,0.7); }
+
+    .premortem-vs {
+      display: flex; align-items: center; justify-content: center;
+      padding: 0 40px;
+      font-family: var(--serif);
+      font-size: 36px; font-weight: 300;
+      font-style: italic; color: rgba(255,255,255,0.2);
+    }
+
+    .premortem-close {
+      font-family: var(--serif);
+      font-size: 32px; font-weight: 300;
+      font-style: italic; color: rgba(255,255,255,0.5);
+      text-align: center; max-width: 900px;
+    }
+
+    .premortem-close em { color: white; font-style: normal; font-weight: 400; }
+
+    /* ════════════════════════════════════════
+       SLIDE 07 — THE PRODUCT
+    ════════════════════════════════════════ */
+    .slide-product {
+      display: grid !important;
+      grid-template-columns: 46% 54%;
+      padding: 0;
+    }
+
+    .product-left {
+      display: flex; flex-direction: column;
+      justify-content: space-between;
+      padding: 96px 72px 88px 120px;
+      border-right: 1px solid var(--border);
+    }
+
+    .product-headline {
+      font-family: var(--serif);
+      font-size: 76px; font-weight: 400;
+      line-height: 1.08; letter-spacing: -0.015em;
+      color: var(--ink);
+    }
+
+    .product-headline em { font-style: italic; color: var(--red); }
+
+    .product-desc {
+      font-family: var(--sans);
+      font-size: 23px; font-weight: 300;
+      line-height: 1.7; color: var(--muted);
+      margin-top: 28px; text-wrap: pretty;
+    }
+
+    .product-verdict {
+      border-left: 3px solid var(--red);
+      padding-left: 24px;
+      font-family: var(--sans);
+      font-size: 24px; font-weight: 500;
+      color: var(--ink); line-height: 1.5;
+    }
+
+    .product-right {
+      display: flex; flex-direction: column;
+      justify-content: center;
+      padding: 72px 120px 72px 72px;
+      gap: 12px;
+    }
+
+    .product-mapping {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 22px 28px;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 20px; align-items: center;
+    }
+
+    .product-mapping-problem {
+      font-family: var(--sans);
+      font-size: 18px; font-weight: 300;
+      color: var(--muted); line-height: 1.45;
+    }
+
+    .product-mapping-arrow {
+      color: var(--red); font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .product-mapping-solution {
+      font-family: var(--sans);
+      font-size: 18px; font-weight: 500;
+      color: var(--ink); line-height: 1.45;
+    }
+
+    .product-mapping-label {
+      grid-column: 1 / -1;
+      font-family: var(--sans);
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--red); margin-bottom: 4px;
+    }
+
+    /* ════════════════════════════════════════
+       SLIDE 08 — TRACTION
+    ════════════════════════════════════════ */
+    .slide-traction {
+      flex-direction: column;
+      padding: 96px 120px 88px;
+      justify-content: space-between;
+    }
+
+    .traction-top { display: flex; flex-direction: column; gap: 20px; }
+
+    .traction-headline {
+      font-family: var(--serif);
+      font-size: 88px; font-weight: 400;
+      line-height: 1.06; letter-spacing: -0.015em;
+      color: var(--ink);
+    }
+
+    .traction-headline em { font-style: italic; color: var(--red); }
+
+    .traction-sub {
+      font-family: var(--sans);
+      font-size: 26px; font-weight: 300;
+      color: var(--muted); max-width: 900px; line-height: 1.6;
+    }
+
+    .traction-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      border: 1px solid var(--border);
+      border-radius: 6px; overflow: hidden;
+    }
+
+    .traction-stat {
+      padding: 48px 52px;
+      display: flex; flex-direction: column; gap: 12px;
+      border-right: 1px solid var(--border);
+      background: white;
+    }
+
+    .traction-stat:last-child { border-right: none; }
+
+    .traction-stat-num {
+      font-family: var(--serif);
+      font-size: 72px; font-weight: 400;
+      color: var(--red); line-height: 1;
+      letter-spacing: -0.03em;
+    }
+
+    .traction-stat-label {
+      font-family: var(--sans);
+      font-size: 14px; font-weight: 600;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--ink);
+    }
+
+    .traction-stat-desc {
+      font-family: var(--sans);
+      font-size: 20px; font-weight: 300;
+      color: var(--muted); line-height: 1.5;
+    }
+
+    .traction-built {
+      display: flex; flex-direction: column; gap: 16px;
+    }
+
+    .traction-built-label {
+      font-family: var(--sans);
+      font-size: 12px; font-weight: 600;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .traction-built-items {
+      display: flex; gap: 12px; flex-wrap: wrap;
+    }
+
+    .traction-chip {
+      font-family: var(--sans);
+      font-size: 16px; font-weight: 400;
+      color: var(--ink);
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 8px 20px;
+    }
+
+    /* ════════════════════════════════════════
+       SLIDE 09 — MARKET
+    ════════════════════════════════════════ */
+    .slide-market {
+      flex-direction: column;
+      padding: 96px 120px 88px;
+      justify-content: space-between;
+    }
+
+    .market-top { display: flex; flex-direction: column; gap: 20px; }
+
+    .market-headline {
+      font-family: var(--serif);
+      font-size: 88px; font-weight: 400;
+      line-height: 1.06; letter-spacing: -0.015em;
+      color: var(--ink);
+    }
+
+    .market-headline em { font-style: italic; color: var(--red); }
+
+    .market-sub {
+      font-family: var(--sans);
+      font-size: 26px; font-weight: 300;
+      color: var(--muted); max-width: 1000px; line-height: 1.6;
+    }
+
+    .market-nums {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+    }
+
+    .market-num-block {
+      display: flex; flex-direction: column; gap: 12px;
+      padding: 0 56px 0 0;
+      border-right: 1px solid var(--border);
+    }
+
+    .market-num-block:last-child { border-right: none; padding-right: 0; padding-left: 56px; }
+    .market-num-block:nth-child(2) { padding-left: 56px; }
+
+    .market-num-tag {
+      font-family: var(--sans);
+      font-size: 12px; font-weight: 600;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .market-num {
+      font-family: var(--serif);
+      font-size: 108px; font-weight: 400;
+      line-height: 0.9; letter-spacing: -0.03em;
+      color: var(--ink);
+    }
+
+    .market-num-block:last-child .market-num { color: var(--red); }
+
+    .market-num-name {
+      font-family: var(--sans);
+      font-size: 22px; font-weight: 500;
+      color: var(--ink); line-height: 1.2;
+    }
+
+    .market-num-desc {
+      font-family: var(--sans);
+      font-size: 18px; font-weight: 300;
+      color: var(--muted); line-height: 1.5; text-wrap: pretty;
+    }
+
+    .market-insight {
+      border-top: 1px solid var(--border);
+      padding-top: 28px;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 56px;
+    }
+
+    .market-insight-para {
+      font-family: var(--sans);
+      font-size: 22px; font-weight: 300;
+      color: var(--muted); line-height: 1.65;
+    }
+
+    .market-insight-para strong { color: var(--ink); font-weight: 500; }
+
+    /* ════════════════════════════════════════
+       SLIDE 10 — DEFENSIBILITY
+    ════════════════════════════════════════ */
+    .slide-defense {
+      display: grid !important;
+      grid-template-columns: 50% 50%;
+      padding: 0;
+    }
+
+    .defense-left {
+      display: flex; flex-direction: column;
+      justify-content: space-between;
+      padding: 96px 72px 88px 120px;
+      border-right: 1px solid var(--border);
+    }
+
+    .defense-headline {
+      font-family: var(--serif);
+      font-size: 76px; font-weight: 400;
+      line-height: 1.08; letter-spacing: -0.015em;
+      color: var(--ink);
+    }
+
+    .defense-headline em { font-style: italic; color: var(--red); }
+
+    .defense-para {
+      font-family: var(--sans);
+      font-size: 23px; font-weight: 300;
+      color: var(--muted); margin-top: 24px;
+      line-height: 1.65; text-wrap: pretty;
+    }
+
+    .defense-callout {
+      border: 1px solid var(--border);
+      border-radius: 4px; padding: 24px 28px;
+      font-family: var(--sans);
+      font-size: 23px; font-weight: 500;
+      color: var(--ink); line-height: 1.5;
+    }
+
+    .defense-right {
+      display: flex; flex-direction: column;
+      justify-content: center;
+      padding: 72px 120px 72px 72px;
+      gap: 12px;
+    }
+
+    .defense-row {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 24px 28px;
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      gap: 20px; align-items: start;
+    }
+
+    .defense-row-num {
+      font-family: var(--serif);
+      font-size: 36px; font-weight: 400;
+      color: var(--red); line-height: 1;
+    }
+
+    .defense-row-content { display: flex; flex-direction: column; gap: 6px; }
+
+    .defense-row-title {
+      font-family: var(--sans);
+      font-size: 22px; font-weight: 600;
+      color: var(--ink);
+    }
+
+    .defense-row-desc {
+      font-family: var(--sans);
+      font-size: 19px; font-weight: 300;
+      color: var(--muted); line-height: 1.5;
+    }
+
+    /* ════════════════════════════════════════
+       SLIDE 11 — THE ASK
+    ════════════════════════════════════════ */
+    .slide-ask {
+      flex-direction: column;
+      padding: 96px 120px 88px;
+      justify-content: space-between;
+    }
+
+    .ask-top { display: flex; flex-direction: column; gap: 16px; }
+
+    .ask-headline {
+      font-family: var(--serif);
+      font-size: 88px; font-weight: 400;
+      line-height: 1.06; letter-spacing: -0.015em;
+      color: var(--ink);
+    }
+
+    .ask-headline em { font-style: italic; color: var(--red); }
+
+    .ask-sub {
+      font-family: var(--sans);
+      font-size: 26px; font-weight: 300;
+      color: var(--muted); max-width: 900px; line-height: 1.6;
+    }
+
+    .ask-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 56px; align-items: start;
+    }
+
+    .ask-amount-block { display: flex; flex-direction: column; gap: 12px; }
+
+    .ask-amount-label {
+      font-family: var(--sans);
+      font-size: 12px; font-weight: 600;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .ask-amount {
+      font-family: var(--serif);
+      font-size: 140px; font-weight: 400;
+      line-height: 0.9; letter-spacing: -0.04em;
+      color: var(--red);
+    }
+
+    .ask-amount-note {
+      font-family: var(--sans);
+      font-size: 24px; font-weight: 300;
+      color: var(--muted); line-height: 1.5;
+    }
+
+    .ask-amount-note strong { color: var(--ink); font-weight: 500; }
+
+    .ask-use { display: flex; flex-direction: column; gap: 12px; }
+
+    .ask-use-label {
+      font-family: var(--sans);
+      font-size: 12px; font-weight: 600;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 4px;
+    }
+
+    .ask-use-row {
+      display: flex; align-items: flex-start;
+      gap: 14px; padding: 16px 20px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: var(--sans);
+      font-size: 21px; font-weight: 300;
+      color: var(--muted); line-height: 1.4;
+    }
+
+    .ask-use-row strong { color: var(--ink); font-weight: 600; }
+
+    .ask-arrow { color: var(--red); flex-shrink: 0; margin-top: 2px; }
+
+    .ask-callout {
+      border-left: 3px solid var(--red);
+      padding-left: 28px;
+      font-family: var(--sans);
+      font-size: 26px; font-weight: 500;
+      color: var(--ink);
+    }
+
+    /* ════════════════════════════════════════
+       SLIDE 12 — CLOSE
+    ════════════════════════════════════════ */
+    .slide-close {
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0 280px;
+      gap: 52px;
+      background: var(--ink);
+    }
+
+    .close-eyebrow {
+      font-family: var(--sans);
+      font-size: 12px; font-weight: 600;
+      letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--red); text-align: center;
+    }
+
+    .close-headline {
+      font-family: var(--serif);
+      font-size: 84px; font-weight: 400;
+      line-height: 1.1; letter-spacing: -0.02em;
+      color: white; text-align: center;
+    }
+
+    .close-headline em { font-style: italic; color: var(--red); }
+
+    .close-lines {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 4px;
+    }
+
+    .close-line {
+      font-family: var(--serif);
+      font-size: 36px; font-weight: 300;
+      font-style: italic; color: rgba(255,255,255,0.45);
+      text-align: center; line-height: 1.5;
+    }
+
+    .close-line em { color: white; font-style: normal; font-weight: 400; }
+
+    .close-url {
+      font-family: var(--sans);
+      font-size: 20px; font-weight: 300;
+      letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.35);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+  <!-- ══ SLIDE 01: COVER ══ -->
+  <section class="slide slide-cover active" data-index="0">
+    <div class="corner corner-tl"></div>
+    <div class="corner corner-tr"></div>
+    <div class="corner corner-bl"></div>
+    <div class="corner corner-br"></div>
+
+    <div class="cover-inner">
+      <div class="cover-logo">
+        <svg width="72" height="72" viewBox="0 0 80 80" fill="none">
+          <polygon points="40,4 74,22 74,58 40,76 6,58 6,22" fill="none" stroke="#C8422A" stroke-width="2.5"/>
+          <polygon points="40,14 66,28 66,52 40,66 14,52 14,28" fill="none" stroke="#C8422A" stroke-width="1.2" opacity="0.45"/>
+          <line x1="40" y1="4"  x2="40" y2="76" stroke="#C8422A" stroke-width="1" opacity="0.25"/>
+          <line x1="6"  y1="22" x2="74" y2="58" stroke="#C8422A" stroke-width="1" opacity="0.25"/>
+          <line x1="74" y1="22" x2="6"  y2="58" stroke="#C8422A" stroke-width="1" opacity="0.25"/>
+          <circle cx="40" cy="40" r="5" fill="#C8422A"/>
+          <circle cx="40" cy="4"  r="2.5" fill="#C8422A"/>
+          <circle cx="74" cy="22" r="2.5" fill="#C8422A"/>
+          <circle cx="74" cy="58" r="2.5" fill="#C8422A"/>
+          <circle cx="40" cy="76" r="2.5" fill="#C8422A"/>
+          <circle cx="6"  cy="58" r="2.5" fill="#C8422A"/>
+          <circle cx="6"  cy="22" r="2.5" fill="#C8422A"/>
+        </svg>
+        <span class="cover-wordmark">SelfAudit</span>
+      </div>
+      <p class="cover-tagline">The pre-mortem that small businesses have never had access to.</p>
+    </div>
+
+    <span class="slide-num">01 / 12</span>
+  </section>
+
+  <!-- ══ SLIDE 02: THE CONCEPT ══ -->
+  <section class="slide slide-concept" data-index="1">
+    <div class="corner corner-tl"></div>
+    <div class="corner corner-tr"></div>
+    <div class="corner corner-bl"></div>
+    <div class="corner corner-br"></div>
+    <span class="slide-label">The Concept</span>
+
+    <div class="concept-top">
+      <span class="concept-eyebrow">A term every serious investor knows</span>
+      <h2 class="concept-headline">Second-order <em>effects.</em></h2>
+    </div>
+
+    <div class="concept-body">
+      <p class="concept-para">First-order thinking sees the immediate result of a decision. <strong>Second-order thinking asks what happens next — and in which other part of the business that lands.</strong></p>
+      <p class="concept-para">Most businesses only think first-order. Not because their leaders are not smart. Because they have <strong>no system that shows them the second order forming in real time.</strong></p>
+      <p class="concept-para">They see sales numbers. Burn rate. Churn. Each metric in its own column, watched by its own team. <strong>What they do not see is the chain running between them.</strong></p>
+    </div>
+
+    <p class="concept-callout">A decision made in finance creates pressure in operations. That pressure drops retention. That drop shows up in revenue — ninety days later, looking like a sales problem.</p>
+
+    <span class="slide-num">02 / 12</span>
+  </section>
+
+  <!-- ══ SLIDE 03: THE CHAIN ══ -->
+  <section class="slide slide-chain active" data-index="2" style="display:none; flex-direction:column; padding:88px 120px 80px; justify-content:space-between;">
+    <div class="corner corner-tl"></div>
+    <div class="corner corner-tr"></div>
+    <div class="corner corner-bl"></div>
+    <div class="corner corner-br"></div>
+    <span class="slide-label">The Chain</span>
+
+    <div>
+      <h2 class="chain-headline">By the time anyone connects four events,<br><em>three more wrong decisions have already been made.</em></h2>
+      <p class="chain-sub">The damage does not arrive where the decision was made. It arrives somewhere else, ninety days later, wearing a different name.</p>
+    </div>
+
+    <div class="chain-example">
+      <span class="chain-example-label">A real chain — playing out right now in thousands of small businesses</span>
+      <div class="chain-steps">
+        <div class="chain-step">
+          <span class="chain-step-area">Finance</span>
+          <span class="chain-step-text">Support team cut to save cash</span>
+        </div>
+        <span class="chain-arrow">→</span>
+        <div class="chain-step">
+          <span class="chain-step-area">Operations</span>
+          <span class="chain-step-text">Response times double</span>
+        </div>
+        <span class="chain-arrow">→</span>
+        <div class="chain-step">
+          <span class="chain-step-area">Customer</span>
+          <span class="chain-step-text">Satisfaction drops</span>
+        </div>
+        <span class="chain-arrow">→</span>
+        <div class="chain-step">
+          <span class="chain-step-area">Revenue</span>
+          <span class="chain-step-text">Churn rises 90 days later</span>
+        </div>
+        <span class="chain-arrow">→</span>
+        <div class="chain-step">
+          <span class="chain-step-area">Misdiagnosis</span>
+          <span class="chain-step-text">CEO hires salespeople to fix "revenue problem"</span>
+        </div>
+      </div>
+      <p class="chain-consequence">The cash saved: <strong>$40K.</strong> The revenue lost to churn: <strong>$180K.</strong> The sales team hired on a false diagnosis: <strong>$220K in salary.</strong> The decision that started it all: six months old and already forgotten.</p>
+    </div>
+
+    <div class="chain-cards">
+      <div class="chain-card">
+        <span class="chain-card-company">Nokia</span>
+        <p class="chain-card-chain">Engineers knew software was falling behind → <strong>middle management filtered the information before it reached leadership</strong> → leadership made decisions on false data → Apple and Google built unchallenged → collapse.</p>
+      </div>
+      <div class="chain-card">
+        <span class="chain-card-company">Sears</span>
+        <p class="chain-card-chain">Finance cut store maintenance → <strong>customer experience degraded → traffic fell → supplier leverage weakened → pricing became uncompetitive</strong> → revenues collapsed. One decision. Four functions. One chain.</p>
+      </div>
+      <div class="chain-card">
+        <span class="chain-card-company">WeWork</span>
+        <p class="chain-card-chain">Long-term fixed leases funded by short-term variable revenue → <strong>the gap widened with every new location opened</strong> → no system watching the relationship in real time → $47B valuation → emergency bailout.</p>
+      </div>
+    </div>
+
+    <span class="slide-num">03 / 12</span>
+  </section>
+
+  <!-- ══ SLIDE 04: PROOF — FAMOUS ══ -->
+  <section class="slide slide-proof" data-index="3" style="display:none;">
+    <div class="corner corner-tl"></div>
+    <div class="corner corner-tr"></div>
+    <div class="corner corner-bl"></div>
+    <div class="corner corner-br"></div>
+    <span class="slide-label">The Proof</span>
+
+    <div class="proof-left">
+      <div>
+        <h2 class="proof-headline">This is not a<br>theory.<br><em>It is history.</em></h2>
+        <p class="proof-para">Every one of these companies had the information. The data existed. The chain was forming — in some cases for years — before anyone named it as a chain. By the time someone did, it had already run most of its course.</p>
+      </div>
+      <p class="proof-verdict">"The chain completes itself in the space between functions — in the gap between what each team can see and what is actually happening across all of them."</p>
+    </div>
+
+    <div class="proof-right">
+      <div class="proof-case">
+        <span class="proof-case-name">Kodak</span>
+        <p class="proof-case-chain">Invented digital photography in 1975 → <strong>protected film revenue</strong> → digital investment kept marginal → competitors built capability → film revenue collapsed → bankruptcy 2012.</p>
+      </div>
+      <div class="proof-case">
+        <span class="proof-case-name">Nokia</span>
+        <p class="proof-case-chain">Engineers knew the software gap → <strong>organizational fear filtered it upward</strong> → leadership decided on false data → Apple and Google built ecosystems with no competitive answer → market share: 40% to under 1% in 7 years.</p>
+      </div>
+      <div class="proof-case">
+        <span class="proof-case-name">Boeing</span>
+        <p class="proof-case-chain">Sales committed to delivery schedules → <strong>production pressure compressed safety testing</strong> → MCAS undertested and underdisclosed → 346 deaths → $20B in charges.</p>
+      </div>
+      <div class="proof-case">
+        <span class="proof-case-name">Blockbuster</span>
+        <p class="proof-case-chain">Late fees generated $800M annually → <strong>customer resentment built the market for Netflix</strong> → financial dependency made eliminating fees impossible → competitive window closed → bankruptcy.</p>
+      </div>
+      <div class="proof-case">
+        <span class="proof-case-name">GE</span>
+        <p class="proof-case-chain">GE Capital grew to $600B in assets → <strong>one division's risk became the entire company's risk</strong> → 2008 crisis triggered the dependency → dividend cut 68% → century-old industrial empire dismantled.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ SLIDE 05: PROOF — SMALL BUSINESS ══ -->
+  <section class="slide slide-proof2" data-index="4" style="display:none;">
+    <div class="corner corner-tl"></div>
+    <div class="corner corner-tr"></div>
+    <div class="corner corner-bl"></div>
+    <div class="corner corner-br"></div>
+    <span class="slide-label">The Proof — Your Buyer</span>
+
+    <div class="proof2-top">
+      <h2 class="proof2-headline">These are not billion-dollar stories.<br><em>They are Monday morning.</em></h2>
+      <p class="proof2-sub">The same chain runs in businesses with ten people. The same invisibility. The same misdiagnosis. The same compounding cost.</p>
+    </div>
+
+    <div class="proof2-cards">
+      <div class="proof2-card">
+        <span class="proof2-card-title">The Sales Hiring Trap</span>
+        <p class="proof2-card-setup">Revenue is flat. Founder hires three salespeople. Six months later revenue is still flat. The salespeople did everything right. The problem was retention — customers churning in 60 days, offsetting every new deal closed.</p>
+        <p class="proof2-card-chain">Finance diagnosed as sales → wrong function hired → retention problem grew 6 months longer → total cost: 2× salary + the original problem unsolved.</p>
+      </div>
+      <div class="proof2-card">
+        <span class="proof2-card-title">The Support Cut</span>
+        <p class="proof2-card-setup">Cash pressure. Support team reduced to extend runway. Savings: immediate and real. What takes 90 days to arrive: churn increase, review damage, referral slowdown, higher cost of every future acquisition.</p>
+        <p class="proof2-card-chain">Finance cut ops → ops degraded customer experience → churn rose → CAC rose → financial position worse than before the cut.</p>
+      </div>
+      <div class="proof2-card">
+        <span class="proof2-card-title">The Price Increase</span>
+        <p class="proof2-card-setup">Margin pressure. Price raised. Sales slows. CEO reads it as execution failure and replaces the sales lead. New leader inherits a structural problem no execution change can fix. Margin problem still unsolved. Disrupted sales team added on top.</p>
+        <p class="proof2-card-chain">Finance decision → sales velocity dropped → misdiagnosed → talent fired → disruption added → original problem persisted.</p>
+      </div>
+    </div>
+
+    <p class="proof2-callout">Every chain has the same anatomy: a decision in one area, a consequence in another, a delay long enough that the connection disappears.</p>
+
+    <span class="slide-num">05 / 12</span>
+  </section>
+
+  <!-- ══ SLIDE 06: THE PRE-MORTEM ══ -->
+  <section class="slide slide-premortem" data-index="5" style="display:none;">
+    <div class="corner corner-tl" style="border-color:rgba(255,255,255,0.1);"></div>
+    <div class="corner corner-tr" style="border-color:rgba(255,255,255,0.1);"></div>
+    <div class="corner corner-bl" style="border-color:rgba(255,255,255,0.1);"></div>
+    <div class="corner corner-br" style="border-color:rgba(255,255,255,0.1);"></div>
+
+    <span class="premortem-eyebrow">The Category</span>
+
+    <h2 class="premortem-headline">McKinsey does the <em>post-mortem.</em><br>SelfAudit is the pre-mortem.</h2>
+
+    <div class="premortem-compare">
+      <div class="premortem-col them">
+        <span class="premortem-col-label">McKinsey / Consultants</span>
+        <span class="premortem-col-title">Post-mortem</span>
+        <p class="premortem-col-desc">Six months. Half a million dollars. They reconstruct the chain after the damage is done. They explain what went wrong and why. The damage is already paid for.</p>
+      </div>
+      <div class="premortem-vs">vs</div>
+      <div class="premortem-col us">
+        <span class="premortem-col-label">SelfAudit</span>
+        <span class="premortem-col-title">Pre-mortem</span>
+        <p class="premortem-col-desc">Continuous. $999/month. Watches for the chain forming across all functions in real time. Surfaces it while it is one link long and still correctable — not after it has run its course.</p>
+      </div>
+    </div>
+
+    <p class="premortem-close">
+      Small and mid-sized businesses have never had access to this.<br>
+      <em>Not because they lacked the intelligence to see it.</em><br>
+      Because no one built them the system to look.
+    </p>
+
+    <span class="slide-num" style="color:rgba(255,255,255,0.25);">06 / 12</span>
+  </section>
+
+  <!-- ══ SLIDE 07: THE PRODUCT ══ -->
+  <section class="slide slide-product" data-index="6" style="display:none;">
+    <div class="corner corner-tl"></div>
+    <div class="corner corner-tr"></div>
+    <div class="corner corner-bl"></div>
+    <div class="corner corner-br"></div>
+    <span class="slide-label">The Product</span>
+
+    <div class="product-left">
+      <div>
+        <h2 class="product-headline">Not a dashboard.<br>Not a chatbot.<br><em>A pre-mortem engine.</em></h2>
+        <p class="product-desc">SelfAudit reads metrics across all four business areas simultaneously, runs compound rules that fire when cross-functional patterns breach thresholds, tracks deltas over time, and surfaces the chain — with root cause, downstream consequence, and a specific next action — before the damage compounds.</p>
+      </div>
+      <p class="product-verdict">Dashboards show you what happened. Chatbots answer questions you already know to ask. SelfAudit is designed for the moment before the question exists.</p>
+    </div>
+
+    <div class="product-right">
+      <div style="font-family:var(--sans);font-size:12px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">How each chain maps to the product</div>
+      <div class="product-mapping">
+        <span class="product-mapping-label">Pattern</span>
+        <div></div>
+        <span style="font-family:var(--sans);font-size:11px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted);">SelfAudit catches it via</span>
+        <p class="product-mapping-problem">Churn elevated + pipeline healthy + revenue flat</p>
+        <span class="product-mapping-arrow">→</span>
+        <p class="product-mapping-solution">Compound rule: retention problem, not sales. Fires before hiring decision is made.</p>
+      </div>
+      <div class="product-mapping">
+        <p class="product-mapping-problem">Support cut → response times rising → satisfaction dropping</p>
+        <span class="product-mapping-arrow">→</span>
+        <p class="product-mapping-solution">Time-series delta tracking connects ops decision to projected churn impact 90 days out.</p>
+      </div>
+      <div class="product-mapping">
+        <p class="product-mapping-problem">Price raised → sales velocity dropped → close rate declined</p>
+        <span class="product-mapping-arrow">→</span>
+        <p class="product-mapping-solution">Finance-to-sales metric connection: these moved together, and this is why.</p>
+      </div>
+      <div class="product-mapping">
+        <p class="product-mapping-problem">One division's exposure growing → rest of org becoming dependent</p>
+        <span class="product-mapping-arrow">→</span>
+        <p class="product-mapping-solution">Cross-area synthesis flags when one area's performance creates systemic risk for the whole.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ SLIDE 08: TRACTION ══ -->
+  <section class="slide slide-traction" data-index="7" style="display:none;">
+    <div class="corner corner-tl"></div>
+    <div class="corner corner-tr"></div>
+    <div class="corner corner-bl"></div>
+    <div class="corner corner-br"></div>
+    <span class="slide-label">Traction</span>
+
+    <div class="traction-top">
+      <h2 class="traction-headline">The brain is built.<br><em>Pilots are running.</em></h2>
+      <p class="traction-sub">This is not a concept deck. The product is live at tryselfaudit.com. The intelligence layer — memory, synthesis, cross-functional monitoring, root cause diagnosis — is operational.</p>
+    </div>
+
+    <div class="traction-stats">
+      <div class="traction-stat">
+        <span class="traction-stat-num">70%</span>
+        <span class="traction-stat-label">Built</span>
+        <p class="traction-stat-desc">Memory, synthesis, governance, cockpit, cross-functional monitoring — live and running.</p>
+      </div>
+      <div class="traction-stat">
+        <span class="traction-stat-num">10</span>
+        <span class="traction-stat-label">Pilots Live</span>
+        <p class="traction-stat-desc">Active pilot cohort on the full intelligence layer. First renewals forming.</p>
+      </div>
+      <div class="traction-stat">
+        <span class="traction-stat-num">5</span>
+        <span class="traction-stat-label">Compound Rules</span>
+        <p class="traction-stat-desc">Cross-functional cause-effect chain detectors running continuously on every account.</p>
+      </div>
+      <div class="traction-stat">
+        <span class="traction-stat-num">$999</span>
+        <span class="traction-stat-label">Per Month</span>
+        <p class="traction-stat-desc">Priced as a fraction of a single consultant visit. Delivers what no consultant delivers continuously.</p>
+      </div>
+    </div>
+
+    <div class="traction-built">
+      <span class="traction-built-label">What is live now</span>
+      <div class="traction-built-items">
+        <span class="traction-chip">Company Memory</span>
+        <span class="traction-chip">Intelligence Synthesis</span>
+        <span class="traction-chip">Cross-functional Monitoring</span>
+        <span class="traction-chip">Root Cause Engine</span>
+        <span class="traction-chip">Compound Rule Alerts</span>
+        <span class="traction-chip">Time-Series Delta Tracking</span>
+        <span class="traction-chip">Governance Advice Layer</span>
+        <span class="traction-chip">HubSpot + Stripe Integrations</span>
+        <span class="traction-chip">Command Cockpit</span>
+      </div>
+    </div>
+
+    <span class="slide-num">08 / 12</span>
+  </section>
+
+  <!-- ══ SLIDE 09: MARKET ══ -->
+  <section class="slide slide-market" data-index="8" style="display:none;">
+    <div class="corner corner-tl"></div>
+    <div class="corner corner-tr"></div>
+    <div class="corner corner-bl"></div>
+    <div class="corner corner-br"></div>
+    <span class="slide-label">Market</span>
+
+    <div class="market-top">
+      <h2 class="market-headline">30 million businesses.<br><em>Zero pre-mortems.</em></h2>
+      <p class="market-sub">Every business generating more than $500K in annual revenue is experiencing second-order effects right now. None of them have a system built to surface them. Until now.</p>
+    </div>
+
+    <div class="market-nums">
+      <div class="market-num-block">
+        <span class="market-num-tag">TAM</span>
+        <span class="market-num">$140B</span>
+        <span class="market-num-name">SMB Business Intelligence</span>
+        <p class="market-num-desc">Global market for business intelligence, analytics, and advisory tools for businesses under $50M revenue.</p>
+      </div>
+      <div class="market-num-block">
+        <span class="market-num-tag">SAM</span>
+        <span class="market-num">$18B</span>
+        <span class="market-num-name">Operational Intelligence</span>
+        <p class="market-num-desc">Businesses $1M–$20M revenue actively spending on operational tooling, advisory, and diagnostic infrastructure.</p>
+      </div>
+      <div class="market-num-block">
+        <span class="market-num-tag">SOM</span>
+        <span class="market-num">$800M</span>
+        <span class="market-num-name">Beachhead</span>
+        <p class="market-num-desc">English-speaking SMBs $1M–$5M with HubSpot or Stripe already connected — reachable, warm, and in pain.</p>
+      </div>
+    </div>
+
+    <div class="market-insight">
+      <p class="market-insight-para">The consultant market for small business advisory is <strong>$400/hour, one-time, and generic.</strong> It reconstructs damage after the fact. SelfAudit prevents the damage continuously at 1/400th the cost per hour of access.</p>
+      <p class="market-insight-para">The category we are defining is <strong>not business intelligence.</strong> It is operational pre-mortem infrastructure — a category that does not exist yet and that we are building the first product for.</p>
+    </div>
+
+    <span class="slide-num">09 / 12</span>
+  </section>
+
+  <!-- ══ SLIDE 10: DEFENSIBILITY ══ -->
+  <section class="slide slide-defense" data-index="9" style="display:none;">
+    <div class="corner corner-tl"></div>
+    <div class="corner corner-tr"></div>
+    <div class="corner corner-bl"></div>
+    <div class="corner corner-br"></div>
+    <span class="slide-label">Defensibility</span>
+
+    <div class="defense-left">
+      <div>
+        <h2 class="defense-headline">SelfAudit gets harder<br>to copy <em>every day<br>it runs.</em></h2>
+        <p class="defense-para">The moat is not the interface. Any interface can be copied overnight. The moat is the accumulated operating memory of each business — goals, thresholds, patterns, decisions, recurring blockers, execution history — built over months of continuous diagnosis. That cannot be recreated by a competitor starting from zero.</p>
+      </div>
+      <p class="defense-callout">The interface is a commodity. The context required to diagnose a business from the inside is not. Every session deepens it.</p>
+    </div>
+
+    <div class="defense-right">
+      <div class="defense-row">
+        <span class="defense-row-num">01</span>
+        <div class="defense-row-content">
+          <span class="defense-row-title">Private Operating Memory</span>
+          <p class="defense-row-desc">Goals, thresholds, recurring blockers, decisions, risk patterns — specific to each company. Irreplaceable without starting over.</p>
+        </div>
+      </div>
+      <div class="defense-row">
+        <span class="defense-row-num">02</span>
+        <div class="defense-row-content">
+          <span class="defense-row-title">Connector Depth</span>
+          <p class="defense-row-desc">The more systems connected, the more of the company's operating state SelfAudit understands — and the higher the cost of switching to something that knows nothing.</p>
+        </div>
+      </div>
+      <div class="defense-row">
+        <span class="defense-row-num">03</span>
+        <div class="defense-row-content">
+          <span class="defense-row-title">Pattern Compound</span>
+          <p class="defense-row-desc">Every session improves future diagnosis. The system learns how this company breaks, recovers, and grows. Accuracy compounds with use.</p>
+        </div>
+      </div>
+      <div class="defense-row">
+        <span class="defense-row-num">04</span>
+        <div class="defense-row-content">
+          <span class="defense-row-title">No Political Fear</span>
+          <p class="defense-row-desc">SelfAudit does not soften findings because the CEO is in the room. It does not get fired for delivering bad news. It says what the data says — every time.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ SLIDE 11: THE ASK ══ -->
+  <section class="slide slide-ask" data-index="10" style="display:none;">
+    <div class="corner corner-tl"></div>
+    <div class="corner corner-tr"></div>
+    <div class="corner corner-bl"></div>
+    <div class="corner corner-br"></div>
+    <span class="slide-label">The Ask</span>
+
+    <div class="ask-top">
+      <h2 class="ask-headline">Raising <em>$2M</em><br>to complete the product<br>and launch the category.</h2>
+      <p class="ask-sub">The intelligence layer is built. The pilots are running. This raise funds the voice interface, connector depth, production infrastructure, and the go-to-market to define a category that does not exist yet.</p>
+    </div>
+
+    <div class="ask-body">
+      <div class="ask-amount-block">
+        <span class="ask-amount-label">Pre-seed raise</span>
+        <span class="ask-amount">$2M</span>
+        <p class="ask-amount-note"><strong>18 months runway.</strong> First 10 paying customers to 100. Category definition. Voice interface. The product founders will talk about.</p>
+      </div>
+
+      <div class="ask-use">
+        <span class="ask-use-label">Use of funds</span>
+        <div class="ask-use-row">
+          <span class="ask-arrow">→</span>
+          <span><strong>Founder salary + operations</strong> — 12 months of focused execution without survival pressure</span>
+        </div>
+        <div class="ask-use-row">
+          <span class="ask-arrow">→</span>
+          <span><strong>Voice interface</strong> — the inevitable next layer. Call your business instead of opening a screen.</span>
+        </div>
+        <div class="ask-use-row">
+          <span class="ask-arrow">→</span>
+          <span><strong>Connector depth</strong> — Xero, QuickBooks, Slack, Linear, more data, sharper chains</span>
+        </div>
+        <div class="ask-use-row">
+          <span class="ask-arrow">→</span>
+          <span><strong>Go-to-market</strong> — content, outreach, community, first 100 paying customers</span>
+        </div>
+        <div class="ask-use-row">
+          <span class="ask-arrow">→</span>
+          <span><strong>Production infrastructure</strong> — security, compliance, SOC 2 readiness, enterprise onboarding</span>
+        </div>
+      </div>
+    </div>
+
+    <p class="ask-callout">This is not a features raise. It is a category launch. The first business intelligence product built specifically to catch second-order effects before they complete.</p>
+
+    <span class="slide-num">11 / 12</span>
+  </section>
+
+  <!-- ══ SLIDE 12: CLOSE ══ -->
+  <section class="slide slide-close" data-index="11" style="display:none;">
+    <div class="corner corner-tl" style="border-color:rgba(255,255,255,0.1);"></div>
+    <div class="corner corner-tr" style="border-color:rgba(255,255,255,0.1);"></div>
+    <div class="corner corner-bl" style="border-color:rgba(255,255,255,0.1);"></div>
+    <div class="corner corner-br" style="border-color:rgba(255,255,255,0.1);"></div>
+
+    <span class="close-eyebrow">SelfAudit</span>
+
+    <h2 class="close-headline">Big companies hire McKinsey<br>to reconstruct the chain<br><em>after the damage is done.</em></h2>
+
+    <div class="close-lines">
+      <p class="close-line">SelfAudit is the pre-mortem that <em>small and mid-sized businesses</em> have never had access to.</p>
+      <p class="close-line">Not because they lacked the intelligence to see it.</p>
+      <p class="close-line">Because <em>no one built them the system to look.</em></p>
+      <p class="close-line" style="margin-top:8px;">Until now.</p>
+    </div>
+
+    <p class="close-url">tryselfaudit.com &nbsp;·&nbsp; sahej@tryselfaudit.com</p>
+
+    <span class="slide-num" style="color:rgba(255,255,255,0.2);">12 / 12</span>
+  </section>
+
+</div>
+
+<!-- ══ NAV ══ -->
+<nav class="nav">
+  <button class="nav-btn" id="prev">← Prev</button>
+  <div class="nav-dots" id="dots"></div>
+  <span class="nav-counter" id="counter">1 / 12</span>
+  <button class="nav-btn" id="next">Next →</button>
+</nav>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let current = 0;
+
+  // Scale deck to fit viewport
+  function scale() {
+    const deck = document.getElementById('deck');
+    const scaleX = window.innerWidth / 1920;
+    const scaleY = window.innerHeight / 1080;
+    const s = Math.min(scaleX, scaleY);
+    deck.style.transform = `scale(${s})`;
+    deck.style.marginLeft = `${(window.innerWidth - 1920 * s) / 2}px`;
+    deck.style.marginTop  = `${(window.innerHeight - 1080 * s) / 2}px`;
+  }
+
+  scale();
+  window.addEventListener('resize', scale);
+
+  // Build dots
+  const dotsEl = document.getElementById('dots');
+  slides.forEach((_, i) => {
+    const d = document.createElement('button');
+    d.className = 'nav-dot' + (i === 0 ? ' active' : '');
+    d.addEventListener('click', () => goTo(i));
+    dotsEl.appendChild(d);
+  });
+
+  function goTo(n) {
+    slides[current].style.display = 'none';
+    slides[current].classList.remove('active');
+    dotsEl.children[current].classList.remove('active');
+    current = n;
+    slides[current].style.display = 'flex';
+    slides[current].classList.add('active');
+    dotsEl.children[current].classList.add('active');
+    document.getElementById('counter').textContent = `${current + 1} / ${total}`;
+  }
+
+  document.getElementById('prev').addEventListener('click', () => goTo((current - 1 + total) % total));
+  document.getElementById('next').addEventListener('click', () => goTo((current + 1) % total));
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') goTo((current + 1) % total);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')                    goTo((current - 1 + total) % total);
+  });
+
+  // Init first slide
+  slides.forEach((s, i) => { if (i !== 0) s.style.display = 'none'; });
+</script>
+
+</body>
+</html>

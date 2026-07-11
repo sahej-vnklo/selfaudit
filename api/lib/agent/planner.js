@@ -2,6 +2,8 @@
 // Claude (Haiku) reads the query, business snapshot, and available sources
 // and decides what to investigate before any data is fetched.
 
+import { CLAUDE_MODEL } from '../model-config.js'
+
 const CLAUDE_API = 'https://api.anthropic.com/v1/messages'
 
 // What each source contains — shown to the planning model so it can choose intelligently
@@ -106,7 +108,7 @@ Rules:
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
-      model:      'claude-sonnet-4-6',
+      model:      CLAUDE_MODEL,
       max_tokens: 500,
       messages:   [{ role: 'user', content: prompt }],
     }),

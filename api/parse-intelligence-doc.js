@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { CLAUDE_MODEL } from './lib/model-config.js'
 import { validateUserToken } from './lib/auth.js'
 import { synthesizeUserIntelligence } from './lib/intelligence/synthesize.js'
 
@@ -68,7 +69,7 @@ export default async function handler(req, res) {
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
+        model: CLAUDE_MODEL,
         max_tokens: 1000,
         system: 'You are a financial data extractor. Extract only verifiable numbers from the document provided. Return valid JSON only, no markdown.',
         messages: [{ role: 'user', content: prompt }],

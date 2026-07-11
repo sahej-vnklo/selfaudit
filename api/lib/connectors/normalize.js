@@ -1,3 +1,7 @@
+import { METRIC_DEFINITIONS } from './metric-definitions.js'
+
+export const NORMALIZER_VERSION = '2.0.0'
+
 // Normalizes raw connector data into a single unified shape.
 // Entry point: normalizeConnectorData(connectorData) — takes output of fetchAllConnectedData.
 // Organized by category (crm, revenue, comms, support, docs, email).
@@ -10,6 +14,16 @@ function metric(key, label, value, unit, source, confidence = 'high') {
 
 function signal(type, severity, title, description, evidence, source) {
   return { type, severity, title, description, evidence, source }
+}
+
+function round(value, digits = 2) {
+  if (!Number.isFinite(value)) return 0
+  return Number(value.toFixed(digits))
+}
+
+function toNumber(value) {
+  const n = Number(value || 0)
+  return Number.isFinite(n) ? n : 0
 }
 
 export function createNormalizedOutput(provider) {
@@ -104,34 +118,6 @@ function normalizeCRM(provider, data) {
   // Entities (deals closing soon)
   out.entities.push(...closingSoon)
 
-  // Risks
-  if (openDeals.length === 0) {
-    out.risks.push(signal('pipeline', 'high', 'Empty pipeline', 'No open deals in CRM. Revenue is not being actively worked.', 'open_deals = 0', provider))
-  }
-  const highValueSoon = closingSoon.filter(d => d.amount >= 10000)
-  if (highValueSoon.length > 0) {
-    out.risks.push(signal('pipeline', 'medium',
-      `${highValueSoon.length} high-value deal${highValueSoon.length > 1 ? 's' : ''} closing in 14 days`,
-      'Deals over $10k are due soon.',
-      highValueSoon.map(d => `${d.label} $${d.amount} by ${d.closedate}`).join('; '),
-      provider,
-    ))
-  }
-  if (lifecycle.lead > 5 && lifecycle.sql === 0) {
-    out.risks.push(signal('contacts', 'medium', 'Leads not converting to SQL',
-      `${lifecycle.lead} leads with no SQLs. Qualification funnel may be broken.`,
-      `leads=${lifecycle.lead}, sql=0`, provider,
-    ))
-  }
-
-  // Opportunities
-  if (lifecycle.sql > 0) {
-    out.opportunities.push(signal('contacts', 'medium', `${lifecycle.sql} SQL${lifecycle.sql > 1 ? 's' : ''} ready for close`, 'Qualified leads ready to move to proposal or close.', `sql=${lifecycle.sql}`, provider))
-  }
-  if (newThisMonth > 0) {
-    out.opportunities.push(signal('contacts', 'low', `${newThisMonth} new contacts this month`, 'Fresh contacts — early pipeline opportunity.', `new_this_month=${newThisMonth}`, provider))
-  }
-
   return out
 }
 
@@ -179,19 +165,274 @@ function normalizeRevenue(provider, data) {
   if (newSubs30d != null)       out.metrics.push(metric('new_customers_30d','New subscribers (30d)',    newSubs30d,                    'count', provider))
   if (ltv != null)              out.metrics.push(metric('ltv',              'Estimated customer LTV',   ltv,                           'USD',   provider))
 
-  if (churnRate > 5) {
-    out.risks.push(signal('revenue', 'high', 'High monthly churn', `Churn at ${churnRate}% — revenue is leaking.`, `churn_rate=${churnRate}%`, provider))
-  } else if (churnRate > 2) {
-    out.risks.push(signal('revenue', 'medium', 'Elevated churn', `Churn at ${churnRate}% above healthy baseline.`, `churn_rate=${churnRate}%`, provider))
-  }
-  if (mrr === 0 && activeCustomers === 0) {
-    out.risks.push(signal('revenue', 'high', 'No active subscriptions', 'Zero active subscriptions found.', 'active_subs=0', provider))
-  }
-  if (newSubs30d > 0) {
-    out.opportunities.push(signal('revenue', 'low', `${newSubs30d} new subscriber${newSubs30d > 1 ? 's' : ''} in 30 days`, 'Focus on onboarding quality to protect early retention.', `new_subs_30d=${newSubs30d}`, provider))
+  return out
+}
+
+// ── Ecommerce (Shopify verified; other providers transport-only) ──────────────
+
+export function normalizeEcommerce(provider, data) {
+  const out = createNormalizedOutput(provider)
+  if (String(provider || '').toLowerCase() !== 'shopify') return out
+
+  const orders = data?.orders?.results ?? data?.orders?.data ?? data?.orders ?? data?.data?.orders ?? []
+  if (!Array.isArray(orders) || !orders.length) return out
+
+  const asOf = resolveAsOf(data, orders)
+  const windowStart = asOf ? asOf.getTime() - 30 * 24 * 60 * 60 * 1000 : null
+  const primaryCurrency = data?.shop?.currency || data?.shop?.currency_code || firstCurrency(orders)
+  const skippedCurrencies = new Set()
+  const includedOrders = []
+
+  for (const order of orders) {
+    const createdAt = parseDate(order.created_at || order.createdAt || order.processed_at)
+    if (!createdAt || (windowStart && createdAt.getTime() < windowStart) || (asOf && createdAt.getTime() > asOf.getTime())) continue
+    if (isTestOrder(order) || isCancelledBeforeFulfilment(order)) continue
+
+    const currency = order.currency || order.currency_code || order.presentment_currency || primaryCurrency
+    if (primaryCurrency && currency && currency !== primaryCurrency) {
+      if (!skippedCurrencies.has(currency)) {
+        console.warn(`[normalize] shopify skipped ${currency} order data; primary currency is ${primaryCurrency}`)
+        skippedCurrencies.add(currency)
+      }
+      continue
+    }
+
+    includedOrders.push(order)
   }
 
+  const totalOrders = includedOrders.length
+  if (!totalOrders) return out
+
+  let grossRevenue = 0
+  let refundedRevenue = 0
+  let refundedOrders = 0
+  let repeatOrders = 0
+  let refundAmountsComplete = true
+  const seenEmails = new Set()
+  const fulfilmentHours = []
+  const skuRollups = new Map()
+
+  for (const order of includedOrders.sort((a, b) => orderTime(a) - orderTime(b))) {
+    const lineItems = order.line_items ?? order.lineItems ?? []
+    const orderGross = lineItems.reduce((sum, lineItem) => sum + lineItemAmount(lineItem), 0)
+    const { total: refundTotal, complete: refundComplete } = refundAmount(order)
+    if (!refundComplete) refundAmountsComplete = false
+    grossRevenue += orderGross
+    refundedRevenue += refundTotal
+    // Refund COUNTING is presence-based; only refund DOLLARS require explicit amounts.
+    const hasRefund = (order.refunds || []).some((refund) =>
+      (refund.refund_line_items ?? refund.refundLineItems ?? []).length > 0 ||
+      (refund.transactions || []).length > 0
+    )
+    if (hasRefund) refundedOrders += 1
+
+    const email = customerEmail(order)
+    if (email) {
+      if (seenEmails.has(email)) repeatOrders += 1
+      seenEmails.add(email)
+    }
+
+    const firstFulfilmentAt = firstFulfilmentDate(order)
+    const createdAt = parseDate(order.created_at || order.createdAt || order.processed_at)
+    if (createdAt && firstFulfilmentAt && firstFulfilmentAt.getTime() >= createdAt.getTime()) {
+      fulfilmentHours.push((firstFulfilmentAt.getTime() - createdAt.getTime()) / (60 * 60 * 1000))
+    }
+
+    for (const lineItem of lineItems) {
+      const sku = String(lineItem.sku || lineItem.variant_sku || '').trim()
+      if (!sku) continue
+      const label = lineItem.title || lineItem.name || sku
+      const rollup = skuRollups.get(sku) || { type: 'sku', id: sku, label, refund_count: 0, refund_rate: 0, orders_count: 0, refunded_amount: 0, order_ids: [] }
+      rollup.orders_count += 1
+      const orderId = order.id || order.admin_graphql_api_id
+      // Cap retained order ids so aggregate SKU entities cannot grow without bound.
+      if (orderId && rollup.order_ids.length < 200 && !rollup.order_ids.includes(orderId)) rollup.order_ids.push(orderId)
+      skuRollups.set(sku, rollup)
+    }
+
+    for (const refundLine of refundedSkuAmounts(order)) {
+      const rollup = skuRollups.get(refundLine.sku) || { type: 'sku', id: refundLine.sku, label: refundLine.sku, refund_count: 0, refund_rate: 0, orders_count: 0, refunded_amount: 0, order_ids: [] }
+      rollup.refund_count += 1
+      if (refundLine.amount == null) rollup._amountsIncomplete = true
+      else if (rollup.refunded_amount != null) rollup.refunded_amount = round(rollup.refunded_amount + refundLine.amount)
+      skuRollups.set(refundLine.sku, rollup)
+    }
+  }
+
+  // A rollup with any amount-less refund cannot claim measured dollars — null it so the
+  // financial-impact layer reports tier 'none' instead of an understated "observed" figure.
+  for (const rollup of skuRollups.values()) {
+    if (rollup._amountsIncomplete) rollup.refunded_amount = null
+    delete rollup._amountsIncomplete
+  }
+
+  const netRevenue = round(grossRevenue - refundedRevenue)
+  const refundRate = round((refundedOrders / totalOrders) * 100)
+  const averageOrderValue = round(grossRevenue / totalOrders)
+  const repeatRate = round((repeatOrders / totalOrders) * 100)
+  const medianFulfilment = median(fulfilmentHours)
+
+  addDefinedMetric(out, 'daily_revenue', netRevenue, primaryCurrency || 'currency', provider)
+  if (refundAmountsComplete) addDefinedMetric(out, 'refunded_amount_30d', round(refundedRevenue), primaryCurrency || 'currency', provider)
+  addDefinedMetric(out, 'refund_rate', refundRate, '%', provider)
+  addDefinedMetric(out, 'aov', averageOrderValue, primaryCurrency || 'currency', provider)
+  addDefinedMetric(out, 'orders_count', totalOrders, 'count', provider)
+  if (medianFulfilment != null) addDefinedMetric(out, 'fulfilment_time_hrs', round(medianFulfilment), 'hours', provider)
+  addDefinedMetric(out, 'repeat_rate', repeatRate, '%', provider)
+
+  const skuEntities = [...skuRollups.values()]
+    .map((rollup) => ({
+      ...rollup,
+      order_ids: [...rollup.order_ids].sort((a, b) => a.localeCompare(b)),
+      refund_rate: rollup.orders_count > 0 ? round((rollup.refund_count / rollup.orders_count) * 100) : 0,
+      source: provider,
+    }))
+    .sort((a, b) => b.refund_count - a.refund_count || b.refund_rate - a.refund_rate || a.id.localeCompare(b.id))
+    .slice(0, 10)
+
+  out.entities.push(...skuEntities)
+
   return out
+}
+
+export function reconcileEcommerceRevenue(normalizedEcom, normalizedRevenue) {
+  const ecommerceRevenue = findMetricValue(normalizedEcom, ['daily_revenue'])
+  const revenueSystemRevenue = findMetricValue(normalizedRevenue, ['revenue_30d', 'net_revenue', 'revenue', 'daily_revenue'])
+  if (ecommerceRevenue == null || revenueSystemRevenue == null) return null
+
+  const baseline = Math.max(Math.abs(ecommerceRevenue), Math.abs(revenueSystemRevenue))
+  const delta = Math.abs(ecommerceRevenue - revenueSystemRevenue)
+  if (baseline === 0 || delta / baseline <= 0.15) return null
+
+  return signal(
+    'data-quality',
+    'medium',
+    'Revenue sources disagree',
+    'Shopify and revenue-system totals differ by more than 15%.',
+    `shopify=${round(ecommerceRevenue)}, revenue_system=${round(revenueSystemRevenue)}, variance=${round((delta / baseline) * 100)}%`,
+    'shopify+stripe',
+  )
+}
+
+function addDefinedMetric(out, key, value, unit, source) {
+  const definition = METRIC_DEFINITIONS[key]
+  if (!definition) return
+  out.metrics.push(metric(key, definition.label, value, unit, source))
+}
+
+function resolveAsOf(data, orders) {
+  const explicit = parseDate(data?.as_of || data?.fetched_at)
+  if (explicit) return explicit
+
+  const latest = orders
+    .map((order) => parseDate(order.created_at || order.createdAt || order.processed_at))
+    .filter(Boolean)
+    .sort((a, b) => b.getTime() - a.getTime())[0]
+
+  return latest || new Date()
+}
+
+function firstCurrency(orders) {
+  return orders.find((order) => order.currency || order.currency_code || order.presentment_currency)?.currency
+    || orders.find((order) => order.currency_code)?.currency_code
+    || orders.find((order) => order.presentment_currency)?.presentment_currency
+    || 'USD'
+}
+
+function parseDate(value) {
+  const date = value ? new Date(value) : null
+  return date && !Number.isNaN(date.getTime()) ? date : null
+}
+
+function orderTime(order) {
+  return parseDate(order.created_at || order.createdAt || order.processed_at)?.getTime() || 0
+}
+
+function isTestOrder(order) {
+  return Boolean(order.test || order.is_test || String(order.source_name || '').toLowerCase() === 'test')
+}
+
+function isCancelledBeforeFulfilment(order) {
+  const cancelledAt = order.cancelled_at || order.canceled_at
+  return Boolean(cancelledAt && !fulfilments(order).length)
+}
+
+function fulfilments(order) {
+  return order.fulfillments ?? order.fulfilments ?? []
+}
+
+function firstFulfilmentDate(order) {
+  return fulfilments(order)
+    .map((fulfilment) => parseDate(fulfilment.created_at || fulfilment.createdAt))
+    .filter(Boolean)
+    .sort((a, b) => a.getTime() - b.getTime())[0] || null
+}
+
+function lineItemAmount(lineItem) {
+  return toNumber(lineItem.price || lineItem.current_total_price || lineItem.total_price) * toNumber(lineItem.quantity || 1)
+}
+
+// Refund dollars must be explicit or absent — never reconstructed from list prices.
+// A partial refund reconstructed from the full line price overstates "observed" loss,
+// which is exactly the false precision the financial-impact tiers exist to prevent.
+// Returns { total, complete } — complete=false when any refund line lacks an explicit amount.
+function refundAmount(order) {
+  let total = 0
+  let complete = true
+  for (const refund of order.refunds || []) {
+    const refundLineItems = refund.refund_line_items ?? refund.refundLineItems ?? []
+    if (refundLineItems.length) {
+      for (const item of refundLineItems) {
+        const amount = refundLineAmount(item)
+        if (amount == null) complete = false
+        else total += amount
+      }
+      continue
+    }
+
+    total += (refund.transactions || [])
+      .filter((transaction) => String(transaction.kind || '').toLowerCase() === 'refund')
+      .reduce((sum, transaction) => sum + toNumber(transaction.amount), 0)
+  }
+  return { total, complete }
+}
+
+// Explicit refund amounts only (subtotal/total/amount on the refund line). Returns null
+// when the payload does not state the refunded amount.
+function refundLineAmount(item) {
+  const subtotal = item.subtotal ?? item.total ?? item.amount
+  if (subtotal != null) return toNumber(subtotal)
+  return null
+}
+
+function refundedSkuAmounts(order) {
+  const refunds = []
+  for (const refund of order.refunds || []) {
+    for (const item of refund.refund_line_items ?? refund.refundLineItems ?? []) {
+      const lineItem = item.line_item || item.lineItem || {}
+      const sku = String(lineItem.sku || item.sku || '').trim()
+      if (sku) refunds.push({ sku, amount: refundLineAmount(item) })
+    }
+  }
+  return refunds
+}
+
+function customerEmail(order) {
+  return String(order.email || order.customer?.email || order.contact_email || '').trim().toLowerCase()
+}
+
+function median(values) {
+  if (!values.length) return null
+  const sorted = [...values].sort((a, b) => a - b)
+  const midpoint = Math.floor(sorted.length / 2)
+  return sorted.length % 2 ? sorted[midpoint] : (sorted[midpoint - 1] + sorted[midpoint]) / 2
+}
+
+function findMetricValue(normalized, keys) {
+  const found = normalized?.metrics?.find((item) => keys.includes(item.key))
+  if (!found) return null
+  const value = Number(found.value)
+  return Number.isFinite(value) ? value : null
 }
 
 // ── Comms (Slack, Teams, ...) ─────────────────────────────────────────────────
@@ -219,12 +460,62 @@ function normalizeSupport(provider, data) {
   if (!tickets.length) return null
 
   out.metrics.push(metric('open_tickets', 'Open support tickets', tickets.length, 'count', provider))
+  out.entities.push(...tickets
+    .filter((ticket) => ticket?.id != null)
+    .map((ticket) => ({
+      type: 'ticket',
+      id: String(ticket.id),
+      created_at: ticketCreatedAt(ticket),
+      order_id: explicitTicketOrderId(ticket),
+      source: provider,
+    })))
 
-  if (tickets.length > 20) {
-    out.risks.push(signal('support', 'medium', 'High open ticket volume', `${tickets.length} open tickets — support queue may be backing up.`, `open_tickets=${tickets.length}`, provider))
-  }
+  const surgeRatio = supportTicketSurgeRatio(tickets, data)
+  if (surgeRatio != null) addDefinedMetric(out, 'support_ticket_surge_ratio', surgeRatio, 'ratio', provider)
 
   return out
+}
+
+function ticketCreatedAt(ticket) {
+  const created = parseDate(ticket.created_at || ticket.createdAt)
+  return created ? created.toISOString() : null
+}
+
+function explicitTicketOrderId(ticket) {
+  const raw = ticket.order_id
+    ?? ticket.orderId
+    ?? ticket.external_order_id
+    ?? ticket.externalOrderId
+    ?? ticket.associated_order_id
+    ?? ticket.order?.id
+    ?? ticket.order?.order_id
+    ?? ticket.order?.admin_graphql_api_id
+  return raw == null || raw === '' ? null : String(raw)
+}
+
+function supportTicketSurgeRatio(tickets, data) {
+  const dated = tickets
+    .map((ticket) => parseDate(ticket.created_at || ticket.createdAt))
+    .filter(Boolean)
+  if (!dated.length) return null
+
+  const newest = dated.slice().sort((a, b) => b.getTime() - a.getTime())[0]
+  const anchor = parseDate(data?.as_of || data?.fetched_at) || newest
+  const dayMs = 24 * 60 * 60 * 1000
+  const recentStart = anchor.getTime() - 9 * dayMs
+  const priorStart = anchor.getTime() - 18 * dayMs
+
+  let recent = 0
+  let prior = 0
+  for (const created of dated) {
+    const ts = created.getTime()
+    if (ts > anchor.getTime()) continue
+    if (ts >= recentStart) recent += 1
+    else if (ts >= priorStart) prior += 1
+  }
+
+  if (prior < 3) return null
+  return round(recent / prior, 2)
 }
 
 // ── Docs (Notion, Google Drive, Confluence, ...) ──────────────────────────────
@@ -252,12 +543,14 @@ function normalizeEmail(provider, data) {
 // ── Main entry point ──────────────────────────────────────────────────────────
 
 const CATEGORY_NORMALIZERS = {
-  crm:     normalizeCRM,
-  revenue: normalizeRevenue,
-  comms:   normalizeComms,
-  support: normalizeSupport,
-  docs:    normalizeDocs,
-  email:   normalizeEmail,
+  crm:       normalizeCRM,
+  revenue:   normalizeRevenue,
+  ecommerce: normalizeEcommerce,
+  Ecommerce: normalizeEcommerce,
+  comms:     normalizeComms,
+  support:   normalizeSupport,
+  docs:      normalizeDocs,
+  email:     normalizeEmail,
 }
 
 // Takes the output of fetchAllConnectedData and returns a single merged normalized shape.
@@ -408,14 +701,6 @@ export function formatNormalizedForPrompt(normalized) {
   if (normalized.signals.length) {
     lines.push('Signals:')
     normalized.signals.forEach(s => lines.push(`- ${s.title}`))
-  }
-  if (normalized.risks.length) {
-    lines.push('Risks:')
-    normalized.risks.forEach(r => lines.push(`- [${r.severity}] ${r.title}: ${r.description}`))
-  }
-  if (normalized.opportunities.length) {
-    lines.push('Opportunities:')
-    normalized.opportunities.forEach(o => lines.push(`- ${o.title}: ${o.description}`))
   }
 
   lines.push('')

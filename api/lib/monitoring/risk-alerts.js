@@ -1,25 +1,10 @@
 // risk-alerts.js — persistence and deduplication for health check risks.
-//
-// Expected Supabase table:
-//
-// create table risk_alerts (
-//   id                  uuid primary key default gen_random_uuid(),
-//   user_id             uuid not null references profiles(id) on delete cascade,
-//   health_check_id     uuid references business_health_checks(id) on delete set null,
-//   severity            text not null,
-//   category            text not null,
-//   title               text not null,
-//   description         text,
-//   evidence            jsonb,
-//   recommended_action  text,
-//   status              text not null default 'open',
-//   notification_sent   boolean not null default false,
-//   created_at          timestamptz default now(),
-//   resolved_at         timestamptz
-// );
-// create index on risk_alerts (user_id, status, created_at desc);
+// Table ownership: supabase/migrations/20260710000002_cleanup_ad_hoc_tables.sql
 
 import { createClient } from '@supabase/supabase-js'
+import { NORMALIZER_VERSION } from '../connectors/normalize.js'
+import { getExplanationContext } from '../governance/causal-engine.js'
+import { DETECTION_VERSION } from '../governance/monitoring.js'
 import { mapFindingToEscalationTier, tierRank } from './escalation.js'
 
 function getSupabase() {
@@ -65,7 +50,75 @@ function buildEvidence(risk) {
   return { raw, rootCause, impact, ...(recurring !== null ? { recurring } : {}) }
 }
 
-function buildAlertPayload(userId, healthCheckId, risk) {
+function flattenSnapshotMetrics(healthCheck) {
+  const checkedAt = healthCheck?.checked_at ?? healthCheck?.governance?.checkedAt ?? null
+  return (healthCheck?.governance?.snapshots ?? []).flatMap((snapshot) =>
+    (snapshot.metrics ?? [])
+      .filter((metric) => metric?.key && metric.value != null)
+      .map((metric) => ({
+        key: metric.key,
+        value: metric.value,
+        capturedAt: checkedAt,
+      }))
+  )
+}
+
+function relatedMetricsForRisk(risk, healthCheck) {
+  if (Array.isArray(risk.contributingMetrics) && risk.contributingMetrics.length) {
+    return risk.contributingMetrics.map((metric) => ({
+      key: metric.key,
+      value: metric.value,
+      capturedAt: healthCheck?.checked_at ?? null,
+    }))
+  }
+
+  const metricKey = risk.metricKey && risk.metricKey !== 'compound' ? risk.metricKey : null
+  if (!metricKey) return []
+  return flattenSnapshotMetrics(healthCheck).filter((metric) => metric.key === metricKey)
+}
+
+function causalChainsForRisk(risk, healthCheck) {
+  const metricKey = risk.metricKey && risk.metricKey !== 'compound' ? risk.metricKey : null
+  if (!metricKey) return []
+
+  return (healthCheck?.governance?.causalDiagnosis?.chains ?? []).filter((chain) =>
+    chain.driver === metricKey || (chain.effects ?? []).some((effect) => effect.key === metricKey)
+  )
+}
+
+export function buildEvidenceSnapshot(risk, healthCheck) {
+  const metricKey = risk.metricKey ?? null
+  const conceptContext = metricKey && metricKey !== 'compound'
+    ? (getExplanationContext([metricKey])[metricKey] ?? []).map((edge) => ({
+        id: edge.id,
+        sources: edge.sources,
+      }))
+    : []
+
+  return {
+    origin: risk.source === 'governance-ai' ? 'ai-enrichment' : (risk.source ?? 'deterministic'),
+    finding: {
+      metricKey,
+      metricValue: risk.metricValue ?? null,
+      comparator: risk.comparator ?? null,
+      thresholdValue: risk.thresholdValue ?? null,
+      areaId: risk.areaId ?? risk.category ?? null,
+      ...(risk.entityType ? { entityType: risk.entityType } : {}),
+      ...(risk.entityId ? { entityId: risk.entityId } : {}),
+      ...(risk.entityLabel ? { entityLabel: risk.entityLabel } : {}),
+    },
+    related_metrics: relatedMetricsForRisk(risk, healthCheck),
+    causal_chain: causalChainsForRisk(risk, healthCheck),
+    concept_context: conceptContext,
+    ...(risk.financialImpact ? { financialImpact: risk.financialImpact } : {}),
+    ...(risk.supportCorrelation ? { supportCorrelation: risk.supportCorrelation } : {}),
+    normalizer_version: NORMALIZER_VERSION,
+    detection_version: DETECTION_VERSION,
+    checked_at: healthCheck?.checked_at ?? healthCheck?.governance?.checkedAt ?? new Date().toISOString(),
+  }
+}
+
+function buildAlertPayload(userId, healthCheckId, risk, healthCheck) {
   return {
     user_id: userId,
     health_check_id: healthCheckId,
@@ -81,6 +134,8 @@ function buildAlertPayload(userId, healthCheckId, risk) {
     metric_value: risk.metricValue ?? null,
     threshold_value: risk.thresholdValue ?? null,
     comparator: risk.comparator ?? null,
+    evidence_snapshot: buildEvidenceSnapshot(risk, healthCheck),
+    detection_version: DETECTION_VERSION,
     status: 'open',
     notification_sent: false,
   }
@@ -106,7 +161,7 @@ export async function createRiskAlertsFromHealthCheck(userId, healthCheck) {
 
   for (const risk of alertCandidates) {
     const key = `${risk.category}::${normaliseTitle(risk.title)}`
-    const payload = buildAlertPayload(userId, healthCheckId, risk)
+    const payload = buildAlertPayload(userId, healthCheckId, risk, healthCheck)
     const existing = openIndex.get(key)
 
     if (existing) {

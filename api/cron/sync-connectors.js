@@ -10,7 +10,8 @@
 import { createClient }              from '@supabase/supabase-js'
 import { getComposioConnectionMap }              from '../lib/connectors/composio.js'
 import { fetchAllConnectedData }                from '../lib/connectors/data-fetcher.js'
-import { normalizeConnectorData, extractRawRows } from '../lib/connectors/normalize.js'
+import { METRIC_DEFINITIONS }                   from '../lib/connectors/metric-definitions.js'
+import { normalizeConnectorData, extractRawRows, NORMALIZER_VERSION } from '../lib/connectors/normalize.js'
 import { isAuthorisedCronRequest }              from '../lib/cron-auth.js'
 
 const INTELLIGENCE_TIERS = new Set(['intelligence'])
@@ -24,20 +25,42 @@ function getSupabase() {
   )
 }
 
+export function buildMetricHistoryRows(userId, normalized, syncedAt) {
+  return (normalized?.metrics ?? []).map(m => ({
+    user_id:            userId,
+    provider:           m.source,
+    metric_key:         m.key,
+    metric_value:       m.value,
+    synced_at:          syncedAt,
+    normalizer_version: NORMALIZER_VERSION,
+    window_days:        METRIC_DEFINITIONS[m.key]?.window_days ?? null,
+  }))
+}
+
+export function buildEntityHistoryRows(userId, normalized, syncedAt) {
+  return (normalized?.entities ?? [])
+    .filter(entity => entity?.type && entity?.id)
+    .map(entity => ({
+      user_id:     userId,
+      provider:    entity.source || normalized.provider,
+      entity_type: entity.type,
+      entity_id:   String(entity.id),
+      label:       entity.label ?? null,
+      dimensions:  entity,
+      synced_at:   syncedAt,
+    }))
+}
+
 async function writeHistoryRows(sb, userId, normalized, connectorData, syncedAt) {
   const ops = []
 
   // Metric history — one row per metric key per sync
-  if (normalized?.metrics?.length) {
-    const metricRows = normalized.metrics.map(m => ({
-      user_id:      userId,
-      provider:     m.source,
-      metric_key:   m.key,
-      metric_value: m.value,
-      synced_at:    syncedAt,
-    }))
-    ops.push(sb.from('connector_metric_history').insert(metricRows))
-  }
+  const metricRows = buildMetricHistoryRows(userId, normalized, syncedAt)
+  if (metricRows.length) ops.push(sb.from('connector_metric_history').insert(metricRows))
+
+  // Entity history — one row per normalized entity per sync
+  const entityRows = buildEntityHistoryRows(userId, normalized, syncedAt)
+  if (entityRows.length) ops.push(sb.from('connector_entity_history').insert(entityRows))
 
   // Raw rows — deals, subscriptions, tickets
   const { deals, subscriptions, tickets } = extractRawRows(connectorData)

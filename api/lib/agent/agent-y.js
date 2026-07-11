@@ -3,8 +3,9 @@
 // Never re-diagnoses. Takes Agent X findings as confirmed fact.
 // Output streams to the right terminal card.
 
+import { CLAUDE_MODEL } from '../model-config.js'
+
 const CLAUDE_API   = 'https://api.anthropic.com/v1/messages'
-const SONNET_MODEL = 'claude-sonnet-4-6'
 
 // ── System prompt ─────────────────────────────────────────────────────────────
 
@@ -173,7 +174,7 @@ export async function runAgentY({ query, agentXOutput, plan, contextBlocks, conv
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
-      model:      SONNET_MODEL,
+      model:      CLAUDE_MODEL,
       max_tokens: 2000,
       stream:     true,
       system:     systemPrompt,

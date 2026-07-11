@@ -1,0 +1,1786 @@
+{
+  "as_of": "2026-07-10T23:59:59.000Z",
+  "shop": {
+    "currency": "USD"
+  },
+  "orders": {
+    "results": [
+      {
+        "id": "gid://shopify/Order/0001",
+        "name": "#1001",
+        "created_at": "2026-07-02T10:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer1@example.com",
+        "customer": {
+          "email": "customer1@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-1",
+            "sku": "ATLAS-HOODIE-M",
+            "title": "Atlas Hoodie / M",
+            "quantity": 1,
+            "price": "100"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-1",
+            "created_at": "2026-07-03T10:00:00.000Z"
+          }
+        ],
+        "refunds": [
+          {
+            "id": "refund-1",
+            "created_at": "2026-07-04T10:00:00.000Z",
+            "refund_line_items": [
+              {
+                "quantity": 1,
+                "subtotal": "100",
+                "line_item": {
+                  "sku": "ATLAS-HOODIE-M",
+                  "title": "Atlas Hoodie / M",
+                  "quantity": 1,
+                  "price": "100"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "gid://shopify/Order/0002",
+        "name": "#1002",
+        "created_at": "2026-07-03T11:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer2@example.com",
+        "customer": {
+          "email": "customer2@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-2",
+            "sku": "ATLAS-HOODIE-M",
+            "title": "Atlas Hoodie / M",
+            "quantity": 1,
+            "price": "100"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-2",
+            "created_at": "2026-07-04T11:00:00.000Z"
+          }
+        ],
+        "refunds": [
+          {
+            "id": "refund-2",
+            "created_at": "2026-07-05T11:00:00.000Z",
+            "refund_line_items": [
+              {
+                "quantity": 1,
+                "subtotal": "100",
+                "line_item": {
+                  "sku": "ATLAS-HOODIE-M",
+                  "title": "Atlas Hoodie / M",
+                  "quantity": 1,
+                  "price": "100"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "gid://shopify/Order/0003",
+        "name": "#1003",
+        "created_at": "2026-07-04T12:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer3@example.com",
+        "customer": {
+          "email": "customer3@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-3",
+            "sku": "ATLAS-HOODIE-M",
+            "title": "Atlas Hoodie / M",
+            "quantity": 1,
+            "price": "100"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-3",
+            "created_at": "2026-07-05T12:00:00.000Z"
+          }
+        ],
+        "refunds": [
+          {
+            "id": "refund-3",
+            "created_at": "2026-07-06T12:00:00.000Z",
+            "refund_line_items": [
+              {
+                "quantity": 1,
+                "subtotal": "100",
+                "line_item": {
+                  "sku": "ATLAS-HOODIE-M",
+                  "title": "Atlas Hoodie / M",
+                  "quantity": 1,
+                  "price": "100"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "gid://shopify/Order/0004",
+        "name": "#1004",
+        "created_at": "2026-07-05T13:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer4@example.com",
+        "customer": {
+          "email": "customer4@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-4",
+            "sku": "ATLAS-HOODIE-M",
+            "title": "Atlas Hoodie / M",
+            "quantity": 1,
+            "price": "100"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-4",
+            "created_at": "2026-07-06T13:00:00.000Z"
+          }
+        ],
+        "refunds": [
+          {
+            "id": "refund-4",
+            "created_at": "2026-07-07T13:00:00.000Z",
+            "refund_line_items": [
+              {
+                "quantity": 1,
+                "subtotal": "100",
+                "line_item": {
+                  "sku": "ATLAS-HOODIE-M",
+                  "title": "Atlas Hoodie / M",
+                  "quantity": 1,
+                  "price": "100"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "gid://shopify/Order/0005",
+        "name": "#1005",
+        "created_at": "2026-07-06T09:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "repeat@example.com",
+        "customer": {
+          "email": "repeat@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-5",
+            "sku": "ATLAS-HOODIE-M",
+            "title": "Atlas Hoodie / M",
+            "quantity": 1,
+            "price": "100"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-5",
+            "created_at": "2026-07-07T09:00:00.000Z"
+          }
+        ],
+        "refunds": [
+          {
+            "id": "refund-5",
+            "created_at": "2026-07-08T09:00:00.000Z",
+            "refund_line_items": [
+              {
+                "quantity": 1,
+                "subtotal": "50",
+                "line_item": {
+                  "sku": "ATLAS-HOODIE-M",
+                  "title": "Atlas Hoodie / M",
+                  "quantity": 1,
+                  "price": "100"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "gid://shopify/Order/0006",
+        "name": "#1006",
+        "created_at": "2026-07-07T10:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer6@example.com",
+        "customer": {
+          "email": "customer6@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-6",
+            "sku": "ATLAS-HOODIE-M",
+            "title": "Atlas Hoodie / M",
+            "quantity": 1,
+            "price": "100"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-6",
+            "created_at": "2026-07-08T10:00:00.000Z"
+          }
+        ],
+        "refunds": [
+          {
+            "id": "refund-6",
+            "created_at": "2026-07-09T10:00:00.000Z",
+            "refund_line_items": [
+              {
+                "quantity": 1,
+                "subtotal": "50",
+                "line_item": {
+                  "sku": "ATLAS-HOODIE-M",
+                  "title": "Atlas Hoodie / M",
+                  "quantity": 1,
+                  "price": "100"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "gid://shopify/Order/0007",
+        "name": "#1007",
+        "created_at": "2026-07-08T11:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer7@example.com",
+        "customer": {
+          "email": "customer7@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-7",
+            "sku": "ATLAS-HOODIE-M",
+            "title": "Atlas Hoodie / M",
+            "quantity": 1,
+            "price": "100"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-7",
+            "created_at": "2026-07-09T11:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0008",
+        "name": "#1008",
+        "created_at": "2026-07-09T12:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer8@example.com",
+        "customer": {
+          "email": "customer8@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-8",
+            "sku": "ATLAS-HOODIE-M",
+            "title": "Atlas Hoodie / M",
+            "quantity": 1,
+            "price": "100"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-8",
+            "created_at": "2026-07-10T12:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0009",
+        "name": "#1009",
+        "created_at": "2026-07-10T13:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer9@example.com",
+        "customer": {
+          "email": "customer9@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-9",
+            "sku": "ATLAS-HOODIE-M",
+            "title": "Atlas Hoodie / M",
+            "quantity": 1,
+            "price": "100"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-9",
+            "created_at": "2026-07-11T13:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0010",
+        "name": "#1010",
+        "created_at": "2026-07-02T09:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer10@example.com",
+        "customer": {
+          "email": "customer10@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-10",
+            "sku": "ATLAS-HOODIE-M",
+            "title": "Atlas Hoodie / M",
+            "quantity": 1,
+            "price": "100"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-10",
+            "created_at": "2026-07-03T09:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0011",
+        "name": "#1011",
+        "created_at": "2026-06-11T10:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer11@example.com",
+        "customer": {
+          "email": "customer11@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-11",
+            "sku": "BREEZE-TEE-S",
+            "title": "Breeze Tee / S",
+            "quantity": 1,
+            "price": "50"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-11",
+            "created_at": "2026-06-12T10:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0012",
+        "name": "#1012",
+        "created_at": "2026-06-11T11:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer12@example.com",
+        "customer": {
+          "email": "customer12@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-12",
+            "sku": "BREEZE-TEE-S",
+            "title": "Breeze Tee / S",
+            "quantity": 1,
+            "price": "50"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-12",
+            "created_at": "2026-06-12T11:00:00.000Z"
+          }
+        ],
+        "refunds": [
+          {
+            "id": "refund-12",
+            "created_at": "2026-06-13T11:00:00.000Z",
+            "refund_line_items": [
+              {
+                "quantity": 1,
+                "subtotal": "50",
+                "line_item": {
+                  "sku": "BREEZE-TEE-S",
+                  "title": "Breeze Tee / S",
+                  "quantity": 1,
+                  "price": "50"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "gid://shopify/Order/0013",
+        "name": "#1013",
+        "created_at": "2026-06-12T12:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer13@example.com",
+        "customer": {
+          "email": "customer13@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-13",
+            "sku": "BREEZE-TEE-S",
+            "title": "Breeze Tee / S",
+            "quantity": 1,
+            "price": "50"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-13",
+            "created_at": "2026-06-13T12:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0014",
+        "name": "#1014",
+        "created_at": "2026-06-12T13:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer14@example.com",
+        "customer": {
+          "email": "customer14@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-14",
+            "sku": "BREEZE-TEE-S",
+            "title": "Breeze Tee / S",
+            "quantity": 1,
+            "price": "50"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-14",
+            "created_at": "2026-06-13T13:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0015",
+        "name": "#1015",
+        "created_at": "2026-06-13T09:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer15@example.com",
+        "customer": {
+          "email": "customer15@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-15",
+            "sku": "BREEZE-TEE-S",
+            "title": "Breeze Tee / S",
+            "quantity": 1,
+            "price": "50"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-15",
+            "created_at": "2026-06-14T09:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0016",
+        "name": "#1016",
+        "created_at": "2026-06-13T10:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer16@example.com",
+        "customer": {
+          "email": "customer16@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-16",
+            "sku": "BREEZE-TEE-S",
+            "title": "Breeze Tee / S",
+            "quantity": 1,
+            "price": "50"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-16",
+            "created_at": "2026-06-14T10:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0017",
+        "name": "#1017",
+        "created_at": "2026-06-14T11:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer17@example.com",
+        "customer": {
+          "email": "customer17@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-17",
+            "sku": "BREEZE-TEE-S",
+            "title": "Breeze Tee / S",
+            "quantity": 1,
+            "price": "50"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-17",
+            "created_at": "2026-06-15T11:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0018",
+        "name": "#1018",
+        "created_at": "2026-06-14T12:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer18@example.com",
+        "customer": {
+          "email": "customer18@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-18",
+            "sku": "BREEZE-TEE-S",
+            "title": "Breeze Tee / S",
+            "quantity": 1,
+            "price": "50"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-18",
+            "created_at": "2026-06-15T12:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0019",
+        "name": "#1019",
+        "created_at": "2026-06-15T13:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer19@example.com",
+        "customer": {
+          "email": "customer19@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-19",
+            "sku": "COAST-CAP",
+            "title": "Coast Cap",
+            "quantity": 1,
+            "price": "25"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-19",
+            "created_at": "2026-06-16T13:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0020",
+        "name": "#1020",
+        "created_at": "2026-06-15T09:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer20@example.com",
+        "customer": {
+          "email": "customer20@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-20",
+            "sku": "COAST-CAP",
+            "title": "Coast Cap",
+            "quantity": 1,
+            "price": "25"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-20",
+            "created_at": "2026-06-16T09:00:00.000Z"
+          }
+        ],
+        "refunds": [
+          {
+            "id": "refund-20",
+            "created_at": "2026-06-17T09:00:00.000Z",
+            "refund_line_items": [
+              {
+                "quantity": 1,
+                "subtotal": "10",
+                "line_item": {
+                  "sku": "COAST-CAP",
+                  "title": "Coast Cap",
+                  "quantity": 1,
+                  "price": "25"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "gid://shopify/Order/0021",
+        "name": "#1021",
+        "created_at": "2026-06-16T10:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer21@example.com",
+        "customer": {
+          "email": "customer21@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-21",
+            "sku": "COAST-CAP",
+            "title": "Coast Cap",
+            "quantity": 1,
+            "price": "25"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-21",
+            "created_at": "2026-06-17T10:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0022",
+        "name": "#1022",
+        "created_at": "2026-06-16T11:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer22@example.com",
+        "customer": {
+          "email": "customer22@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-22",
+            "sku": "COAST-CAP",
+            "title": "Coast Cap",
+            "quantity": 1,
+            "price": "25"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-22",
+            "created_at": "2026-06-17T11:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0023",
+        "name": "#1023",
+        "created_at": "2026-06-17T12:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer23@example.com",
+        "customer": {
+          "email": "customer23@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-23",
+            "sku": "COAST-CAP",
+            "title": "Coast Cap",
+            "quantity": 1,
+            "price": "25"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-23",
+            "created_at": "2026-06-18T12:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0024",
+        "name": "#1024",
+        "created_at": "2026-06-17T13:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer24@example.com",
+        "customer": {
+          "email": "customer24@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-24",
+            "sku": "COAST-CAP",
+            "title": "Coast Cap",
+            "quantity": 1,
+            "price": "25"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-24",
+            "created_at": "2026-06-18T13:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0025",
+        "name": "#1025",
+        "created_at": "2026-06-18T09:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "repeat@example.com",
+        "customer": {
+          "email": "repeat@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-25",
+            "sku": "COAST-CAP",
+            "title": "Coast Cap",
+            "quantity": 1,
+            "price": "25"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-25",
+            "created_at": "2026-06-19T09:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0026",
+        "name": "#1026",
+        "created_at": "2026-06-18T10:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer26@example.com",
+        "customer": {
+          "email": "customer26@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-26",
+            "sku": "COAST-CAP",
+            "title": "Coast Cap",
+            "quantity": 1,
+            "price": "25"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-26",
+            "created_at": "2026-06-19T10:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0027",
+        "name": "#1027",
+        "created_at": "2026-06-19T11:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer27@example.com",
+        "customer": {
+          "email": "customer27@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-27",
+            "sku": "NOVA-JOGGER-M",
+            "title": "Nova Jogger / M",
+            "quantity": 1,
+            "price": "80"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-27",
+            "created_at": "2026-06-20T11:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0028",
+        "name": "#1028",
+        "created_at": "2026-06-19T12:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer28@example.com",
+        "customer": {
+          "email": "customer28@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-28",
+            "sku": "NOVA-JOGGER-M",
+            "title": "Nova Jogger / M",
+            "quantity": 1,
+            "price": "80"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-28",
+            "created_at": "2026-06-20T12:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0029",
+        "name": "#1029",
+        "created_at": "2026-06-20T13:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer29@example.com",
+        "customer": {
+          "email": "customer29@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-29",
+            "sku": "NOVA-JOGGER-M",
+            "title": "Nova Jogger / M",
+            "quantity": 1,
+            "price": "80"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-29",
+            "created_at": "2026-06-21T13:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0030",
+        "name": "#1030",
+        "created_at": "2026-06-20T09:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer30@example.com",
+        "customer": {
+          "email": "customer30@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-30",
+            "sku": "NOVA-JOGGER-M",
+            "title": "Nova Jogger / M",
+            "quantity": 1,
+            "price": "80"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-30",
+            "created_at": "2026-06-21T09:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0031",
+        "name": "#1031",
+        "created_at": "2026-06-21T10:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer31@example.com",
+        "customer": {
+          "email": "customer31@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-31",
+            "sku": "NOVA-JOGGER-M",
+            "title": "Nova Jogger / M",
+            "quantity": 1,
+            "price": "80"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-31",
+            "created_at": "2026-06-23T10:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0032",
+        "name": "#1032",
+        "created_at": "2026-06-21T11:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer32@example.com",
+        "customer": {
+          "email": "customer32@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-32",
+            "sku": "NOVA-JOGGER-M",
+            "title": "Nova Jogger / M",
+            "quantity": 1,
+            "price": "80"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-32",
+            "created_at": "2026-06-23T11:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0033",
+        "name": "#1033",
+        "created_at": "2026-06-22T12:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer33@example.com",
+        "customer": {
+          "email": "customer33@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-33",
+            "sku": "NOVA-JOGGER-M",
+            "title": "Nova Jogger / M",
+            "quantity": 1,
+            "price": "80"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-33",
+            "created_at": "2026-06-24T12:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0034",
+        "name": "#1034",
+        "created_at": "2026-06-22T13:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer34@example.com",
+        "customer": {
+          "email": "customer34@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-34",
+            "sku": "NOVA-JOGGER-M",
+            "title": "Nova Jogger / M",
+            "quantity": 1,
+            "price": "80"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-34",
+            "created_at": "2026-06-24T13:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0035",
+        "name": "#1035",
+        "created_at": "2026-06-23T09:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer35@example.com",
+        "customer": {
+          "email": "customer35@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-35",
+            "sku": "RIDGE-BOTTLE",
+            "title": "Ridge Bottle",
+            "quantity": 1,
+            "price": "30"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-35",
+            "created_at": "2026-06-25T09:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0036",
+        "name": "#1036",
+        "created_at": "2026-06-23T10:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer36@example.com",
+        "customer": {
+          "email": "customer36@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-36",
+            "sku": "RIDGE-BOTTLE",
+            "title": "Ridge Bottle",
+            "quantity": 1,
+            "price": "30"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-36",
+            "created_at": "2026-06-25T10:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0037",
+        "name": "#1037",
+        "created_at": "2026-06-24T11:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer37@example.com",
+        "customer": {
+          "email": "customer37@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-37",
+            "sku": "RIDGE-BOTTLE",
+            "title": "Ridge Bottle",
+            "quantity": 1,
+            "price": "30"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-37",
+            "created_at": "2026-06-26T11:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0038",
+        "name": "#1038",
+        "created_at": "2026-06-24T12:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer38@example.com",
+        "customer": {
+          "email": "customer38@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-38",
+            "sku": "RIDGE-BOTTLE",
+            "title": "Ridge Bottle",
+            "quantity": 1,
+            "price": "30"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-38",
+            "created_at": "2026-06-26T12:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0039",
+        "name": "#1039",
+        "created_at": "2026-06-25T13:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer39@example.com",
+        "customer": {
+          "email": "customer39@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-39",
+            "sku": "RIDGE-BOTTLE",
+            "title": "Ridge Bottle",
+            "quantity": 1,
+            "price": "30"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-39",
+            "created_at": "2026-06-27T13:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0040",
+        "name": "#1040",
+        "created_at": "2026-06-25T09:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer40@example.com",
+        "customer": {
+          "email": "customer40@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-40",
+            "sku": "RIDGE-BOTTLE",
+            "title": "Ridge Bottle",
+            "quantity": 1,
+            "price": "30"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-40",
+            "created_at": "2026-06-27T09:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0041",
+        "name": "#1041",
+        "created_at": "2026-06-26T10:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer41@example.com",
+        "customer": {
+          "email": "customer41@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-41",
+            "sku": "RIDGE-BOTTLE",
+            "title": "Ridge Bottle",
+            "quantity": 1,
+            "price": "30"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-41",
+            "created_at": "2026-06-28T10:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0042",
+        "name": "#1042",
+        "created_at": "2026-06-26T11:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer42@example.com",
+        "customer": {
+          "email": "customer42@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-42",
+            "sku": "RIDGE-BOTTLE",
+            "title": "Ridge Bottle",
+            "quantity": 1,
+            "price": "30"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-42",
+            "created_at": "2026-06-28T11:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0043",
+        "name": "#1043",
+        "created_at": "2026-06-27T12:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer43@example.com",
+        "customer": {
+          "email": "customer43@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-43",
+            "sku": "EMBER-SOCKS",
+            "title": "Ember Socks",
+            "quantity": 1,
+            "price": "15"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-43",
+            "created_at": "2026-06-29T12:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0044",
+        "name": "#1044",
+        "created_at": "2026-06-27T13:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer44@example.com",
+        "customer": {
+          "email": "customer44@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-44",
+            "sku": "EMBER-SOCKS",
+            "title": "Ember Socks",
+            "quantity": 1,
+            "price": "15"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-44",
+            "created_at": "2026-06-29T13:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0045",
+        "name": "#1045",
+        "created_at": "2026-06-28T09:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer45@example.com",
+        "customer": {
+          "email": "customer45@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-45",
+            "sku": "EMBER-SOCKS",
+            "title": "Ember Socks",
+            "quantity": 1,
+            "price": "15"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-45",
+            "created_at": "2026-06-30T09:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0046",
+        "name": "#1046",
+        "created_at": "2026-06-28T10:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer46@example.com",
+        "customer": {
+          "email": "customer46@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-46",
+            "sku": "EMBER-SOCKS",
+            "title": "Ember Socks",
+            "quantity": 1,
+            "price": "15"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-46",
+            "created_at": "2026-06-30T10:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0047",
+        "name": "#1047",
+        "created_at": "2026-06-29T11:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer47@example.com",
+        "customer": {
+          "email": "customer47@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-47",
+            "sku": "EMBER-SOCKS",
+            "title": "Ember Socks",
+            "quantity": 1,
+            "price": "15"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-47",
+            "created_at": "2026-07-01T11:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0048",
+        "name": "#1048",
+        "created_at": "2026-06-29T12:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer48@example.com",
+        "customer": {
+          "email": "customer48@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-48",
+            "sku": "EMBER-SOCKS",
+            "title": "Ember Socks",
+            "quantity": 1,
+            "price": "15"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-48",
+            "created_at": "2026-07-01T12:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0049",
+        "name": "#1049",
+        "created_at": "2026-06-30T13:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer49@example.com",
+        "customer": {
+          "email": "customer49@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-49",
+            "sku": "ORBIT-BAG",
+            "title": "Orbit Bag",
+            "quantity": 1,
+            "price": "120"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-49",
+            "created_at": "2026-07-02T13:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0050",
+        "name": "#1050",
+        "created_at": "2026-06-30T09:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer50@example.com",
+        "customer": {
+          "email": "customer50@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-50",
+            "sku": "ORBIT-BAG",
+            "title": "Orbit Bag",
+            "quantity": 1,
+            "price": "120"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-50",
+            "created_at": "2026-07-02T09:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0051",
+        "name": "#1051",
+        "created_at": "2026-07-01T10:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer51@example.com",
+        "customer": {
+          "email": "customer51@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-51",
+            "sku": "ORBIT-BAG",
+            "title": "Orbit Bag",
+            "quantity": 1,
+            "price": "120"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-51",
+            "created_at": "2026-07-03T10:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0052",
+        "name": "#1052",
+        "created_at": "2026-07-01T11:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer52@example.com",
+        "customer": {
+          "email": "customer52@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-52",
+            "sku": "ORBIT-BAG",
+            "title": "Orbit Bag",
+            "quantity": 1,
+            "price": "120"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-52",
+            "created_at": "2026-07-03T11:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0053",
+        "name": "#1053",
+        "created_at": "2026-07-02T12:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer53@example.com",
+        "customer": {
+          "email": "customer53@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-53",
+            "sku": "ORBIT-BAG",
+            "title": "Orbit Bag",
+            "quantity": 1,
+            "price": "120"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-53",
+            "created_at": "2026-07-04T12:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0054",
+        "name": "#1054",
+        "created_at": "2026-07-02T13:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer54@example.com",
+        "customer": {
+          "email": "customer54@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-54",
+            "sku": "ORBIT-BAG",
+            "title": "Orbit Bag",
+            "quantity": 1,
+            "price": "120"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-54",
+            "created_at": "2026-07-04T13:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0055",
+        "name": "#1055",
+        "created_at": "2026-07-03T09:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer55@example.com",
+        "customer": {
+          "email": "customer55@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-55",
+            "sku": "VALE-SHORTS",
+            "title": "Vale Shorts",
+            "quantity": 1,
+            "price": "60"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-55",
+            "created_at": "2026-07-05T09:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0056",
+        "name": "#1056",
+        "created_at": "2026-07-03T10:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer56@example.com",
+        "customer": {
+          "email": "customer56@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-56",
+            "sku": "VALE-SHORTS",
+            "title": "Vale Shorts",
+            "quantity": 1,
+            "price": "60"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-56",
+            "created_at": "2026-07-05T10:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0057",
+        "name": "#1057",
+        "created_at": "2026-07-04T11:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer57@example.com",
+        "customer": {
+          "email": "customer57@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-57",
+            "sku": "VALE-SHORTS",
+            "title": "Vale Shorts",
+            "quantity": 1,
+            "price": "60"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-57",
+            "created_at": "2026-07-06T11:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0058",
+        "name": "#1058",
+        "created_at": "2026-07-04T12:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer58@example.com",
+        "customer": {
+          "email": "customer58@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-58",
+            "sku": "VALE-SHORTS",
+            "title": "Vale Shorts",
+            "quantity": 1,
+            "price": "60"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-58",
+            "created_at": "2026-07-06T12:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0059",
+        "name": "#1059",
+        "created_at": "2026-07-05T13:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer59@example.com",
+        "customer": {
+          "email": "customer59@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-59",
+            "sku": "VALE-SHORTS",
+            "title": "Vale Shorts",
+            "quantity": 1,
+            "price": "60"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-59",
+            "created_at": "2026-07-07T13:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/0060",
+        "name": "#1060",
+        "created_at": "2026-07-05T09:00:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "customer60@example.com",
+        "customer": {
+          "email": "customer60@example.com"
+        },
+        "line_items": [
+          {
+            "id": "line-60",
+            "sku": "VALE-SHORTS",
+            "title": "Vale Shorts",
+            "quantity": 1,
+            "price": "60"
+          }
+        ],
+        "fulfillments": [
+          {
+            "id": "fulfillment-60",
+            "created_at": "2026-07-07T09:00:00.000Z"
+          }
+        ],
+        "refunds": []
+      },
+      {
+        "id": "gid://shopify/Order/CANCELLED",
+        "name": "#1999",
+        "created_at": "2026-07-08T09:00:00.000Z",
+        "cancelled_at": "2026-07-08T09:30:00.000Z",
+        "currency": "USD",
+        "test": false,
+        "email": "cancelled@example.com",
+        "line_items": [
+          {
+            "id": "line-cancelled",
+            "sku": "ATLAS-HOODIE-M",
+            "title": "Atlas Hoodie / M",
+            "quantity": 1,
+            "price": "100"
+          }
+        ],
+        "fulfillments": [],
+        "refunds": []
+      }
+    ]
+  }
+}

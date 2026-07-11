@@ -49,6 +49,8 @@ export function createThresholdRule({
   summary,
   recommendation,
   rationale = '',
+  rootCause = null,
+  impact = null,
 }) {
   return {
     id,
@@ -62,6 +64,8 @@ export function createThresholdRule({
     summary,
     recommendation,
     rationale,
+    rootCause,
+    impact,
   }
 }
 
@@ -129,6 +133,8 @@ export function evaluateThresholdRule(rule, metrics) {
     summary: rule.summary,
     recommendation: rule.recommendation,
     rationale: rule.rationale,
+    rootCause: rule.rootCause ?? null,
+    impact: rule.impact ?? null,
   }
 }
 

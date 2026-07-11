@@ -29,6 +29,7 @@ export const AREA_CUSTOMER_SERVICE = createArea({
     createMetricDefinition({ key: 'resolution_time',      label: 'Resolution time',      unit: 'hours',   preferredDirection: 'lower-is-better', defaultInterpretation: 'Slow resolution usually means handoff friction or unclear ownership.' }),
     createMetricDefinition({ key: 'repeat_issue_rate',    label: 'Repeat issue rate',    unit: 'percent', preferredDirection: 'lower-is-better', defaultInterpretation: 'Repeats mean the team is treating symptoms, not root causes.' }),
     createMetricDefinition({ key: 'csat',                 label: 'Customer satisfaction', unit: 'score',  preferredDirection: 'higher-is-better', defaultInterpretation: 'Falling satisfaction is an early warning that service quality is hurting customer confidence.' }),
+    createMetricDefinition({ key: 'negative_retention_signals', label: 'Negative retention signals', unit: 'count', preferredDirection: 'lower-is-better', defaultInterpretation: 'Churn, downgrade, complaint, and escalation signals indicate customer health risk.' }),
   ],
   defaultRulePack: createRulePack({
     defaults: [
@@ -44,7 +45,8 @@ export const AREA_CUSTOMER_SERVICE = createArea({
     ],
   }),
   metricMappings: [
-    createMetricMapping({ metricKey: 'ticket_volume', transform: 'safeNumber', sources: [{ type: 'brief', path: 'operational.support_tickets_per_week' }], source: 'intelligence_brief' }),
+    createMetricMapping({ metricKey: 'ticket_volume', transform: 'safeNumber', sources: [{ type: 'normalized', field: 'open_tickets' }, { type: 'brief', path: 'operational.support_tickets_per_week' }], source: 'support' }),
+    createMetricMapping({ metricKey: 'negative_retention_signals', transform: 'computed', computation: 'negative-retention-signal-count', sources: [{ type: 'brain', path: 'retention_signals' }], source: 'company_brain' }),
   ],
 })
 
@@ -63,6 +65,7 @@ export const AREA_FINANCE_ACCOUNTING = createArea({
   },
   metricFamilies: [
     createMetricDefinition({ key: 'mrr',          label: 'Monthly recurring revenue', unit: 'currency', preferredDirection: 'higher-is-better', defaultInterpretation: 'Revenue trend matters, but on its own MRR does not tell you whether the business is healthy.' }),
+    createMetricDefinition({ key: 'active_customers', label: 'Active customers',       unit: 'count',    preferredDirection: 'higher-is-better', defaultInterpretation: 'Zero active customers means recurring revenue may have stopped or the billing connection is incomplete.' }),
     createMetricDefinition({ key: 'churn_rate',   label: 'Churn rate',                unit: 'percent',  preferredDirection: 'lower-is-better',  defaultInterpretation: 'High churn means growth effort is leaking out faster than it should.' }),
     createMetricDefinition({ key: 'burn_rate',    label: 'Burn rate',                 unit: 'currency', preferredDirection: 'lower-is-better',  defaultInterpretation: 'Burn is not always bad, but it must match runway and growth reality.' }),
     createMetricDefinition({ key: 'runway_months', label: 'Runway',                   unit: 'months',   preferredDirection: 'higher-is-better', defaultInterpretation: 'Short runway removes strategic choices and forces reactive decisions.' }),
@@ -84,6 +87,7 @@ export const AREA_FINANCE_ACCOUNTING = createArea({
   }),
   metricMappings: [
     createMetricMapping({ metricKey: 'mrr',           transform: 'safeNumber', sources: [{ type: 'integration', integration: 'stripe', field: 'mrr' },           { type: 'brief', path: 'financial.mrr' }],        source: 'stripe' }),
+    createMetricMapping({ metricKey: 'active_customers', transform: 'safeNumber', sources: [{ type: 'integration', integration: 'stripe', field: 'active_customers' }], source: 'stripe' }),
     createMetricMapping({ metricKey: 'churn_rate',    transform: 'safeNumber', sources: [{ type: 'integration', integration: 'stripe', field: 'churn_rate' },    { type: 'brief', path: 'financial.churn' }],      source: 'stripe' }),
     createMetricMapping({ metricKey: 'ltv',           transform: 'safeNumber', sources: [{ type: 'integration', integration: 'stripe', field: 'ltv' },           { type: 'brief', path: 'financial.ltv' }],        source: 'stripe' }),
     createMetricMapping({ metricKey: 'burn_rate',     transform: 'safeNumber', sources: [{ type: 'brief', path: 'financial.burn_rate' }],                        source: 'intelligence_brief' }),
@@ -111,6 +115,12 @@ export const AREA_MANAGEMENT_STRATEGY = createArea({
     createMetricDefinition({ key: 'repeated_blockers',  label: 'Repeated blockers',   unit: 'count',   preferredDirection: 'lower-is-better',  defaultInterpretation: 'Repeated blockers are a strong sign of unmanaged operational debt.' }),
     createMetricDefinition({ key: 'watchouts',          label: 'Watchouts',           unit: 'count',   preferredDirection: 'lower-is-better',  defaultInterpretation: 'Watchouts are fine if they are managed; too many means attention is diffusing.' }),
     createMetricDefinition({ key: 'followthrough_rate', label: 'Follow-through rate', unit: 'percent', preferredDirection: 'higher-is-better', defaultInterpretation: 'Low follow-through means strategy is not surviving contact with the week-to-week operation.' }),
+    createMetricDefinition({ key: 'last_session_unfollowed', label: 'Last session unfollowed', unit: 'flag', preferredDirection: 'lower-is-better', defaultInterpretation: 'A prior audit with no follow-up means accountability is missing.' }),
+    createMetricDefinition({ key: 'goal_timeline_unrealistic', label: 'Goal timeline unrealistic', unit: 'flag', preferredDirection: 'lower-is-better', defaultInterpretation: 'An unrealistic goal timeline creates pressure without a credible execution path.' }),
+    createMetricDefinition({ key: 'goal_timeline_tight', label: 'Goal timeline tight', unit: 'flag', preferredDirection: 'lower-is-better', defaultInterpretation: 'A tight timeline can still work, but only with active risk management.' }),
+    createMetricDefinition({ key: 'operational_blockers', label: 'Operational blockers', unit: 'count', preferredDirection: 'lower-is-better', defaultInterpretation: 'Multiple active blockers reduce throughput and execution pace.' }),
+    createMetricDefinition({ key: 'conversion_bottlenecks', label: 'Conversion bottlenecks', unit: 'count', preferredDirection: 'lower-is-better', defaultInterpretation: 'Known journey bottlenecks reduce the yield from sales and marketing effort.' }),
+    createMetricDefinition({ key: 'current_constraints', label: 'Current constraints', unit: 'count', preferredDirection: 'lower-is-better', defaultInterpretation: 'Stacked constraints create compound drag across the operation.' }),
   ],
   defaultRulePack: createRulePack({
     defaults: [
@@ -131,6 +141,12 @@ export const AREA_MANAGEMENT_STRATEGY = createArea({
     createMetricMapping({ metricKey: 'repeated_blockers',  transform: 'arrayLength',  sources: [{ type: 'brain', path: 'repeated_blockers' }],    source: 'company_brain' }),
     createMetricMapping({ metricKey: 'watchouts',          transform: 'arrayLength',  sources: [{ type: 'brain', path: 'watchouts' }],            source: 'company_brain' }),
     createMetricMapping({ metricKey: 'followthrough_rate', transform: 'computed',     computation: 'session-followthrough-rate', sources: [{ type: 'brain', path: 'recent_sessions' }], source: 'company_brain' }),
+    createMetricMapping({ metricKey: 'last_session_unfollowed', transform: 'computed', computation: 'last-session-unfollowed', sources: [{ type: 'brain', path: 'last_session.status' }], source: 'company_brain' }),
+    createMetricMapping({ metricKey: 'goal_timeline_unrealistic', transform: 'computed', computation: 'goal-timeline-unrealistic', sources: [{ type: 'brain', path: 'goal_timeline' }], source: 'company_brain' }),
+    createMetricMapping({ metricKey: 'goal_timeline_tight', transform: 'computed', computation: 'goal-timeline-tight', sources: [{ type: 'brain', path: 'goal_timeline' }], source: 'company_brain' }),
+    createMetricMapping({ metricKey: 'operational_blockers', transform: 'arrayLength', sources: [{ type: 'brain', path: 'operational_blockers' }], source: 'company_brain' }),
+    createMetricMapping({ metricKey: 'conversion_bottlenecks', transform: 'arrayLength', sources: [{ type: 'brain', path: 'conversion_bottlenecks' }], source: 'company_brain' }),
+    createMetricMapping({ metricKey: 'current_constraints', transform: 'arrayLength', sources: [{ type: 'brain', path: 'current_constraints' }], source: 'company_brain' }),
   ],
 })
 
@@ -153,6 +169,8 @@ export const AREA_MARKETING_SALES = createArea({
     createMetricDefinition({ key: 'lead_volume',       label: 'Lead volume',       unit: 'count',    preferredDirection: 'higher-is-better', defaultInterpretation: 'Low lead flow makes future quarters fragile even if this month still looks fine.' }),
     createMetricDefinition({ key: 'stage_conversion',  label: 'Stage conversion',  unit: 'percent',  preferredDirection: 'higher-is-better', defaultInterpretation: 'Poor conversion means demand quality or sales process is breaking down.' }),
     createMetricDefinition({ key: 'sales_cycle_days',  label: 'Sales cycle',       unit: 'days',     preferredDirection: 'lower-is-better',  defaultInterpretation: 'A long sales cycle ties up revenue and usually hides friction in the funnel.' }),
+    createMetricDefinition({ key: 'sqls',              label: 'SQLs',              unit: 'count',    preferredDirection: 'higher-is-better', defaultInterpretation: 'SQL count shows whether leads are becoming qualified opportunities.' }),
+    createMetricDefinition({ key: 'customers',         label: 'Customers in CRM',  unit: 'count',    preferredDirection: 'higher-is-better', defaultInterpretation: 'Customer count in CRM should reflect closed-won conversion and data hygiene.' }),
   ],
   defaultRulePack: createRulePack({
     defaults: [
@@ -173,6 +191,8 @@ export const AREA_MARKETING_SALES = createArea({
     createMetricMapping({ metricKey: 'pipeline_value',   transform: 'safeNumber', sources: [{ type: 'normalized', field: 'open_pipeline_value' }],                            source: 'hubspot' }),
     createMetricMapping({ metricKey: 'open_deals',       transform: 'safeNumber', sources: [{ type: 'normalized', field: 'open_deals' }],                                     source: 'hubspot' }),
     createMetricMapping({ metricKey: 'lead_volume',      transform: 'safeNumber', sources: [{ type: 'normalized', field: 'leads' }, { type: 'normalized', field: 'new_contacts_this_month' }], source: 'hubspot' }),
+    createMetricMapping({ metricKey: 'sqls',             transform: 'safeNumber', sources: [{ type: 'normalized', field: 'sqls' }], source: 'hubspot' }),
+    createMetricMapping({ metricKey: 'customers',        transform: 'safeNumber', sources: [{ type: 'normalized', field: 'customers' }], source: 'hubspot' }),
     createMetricMapping({ metricKey: 'stage_conversion', transform: 'ratio',      inputs: [{ metricKey: 'sqls', sources: [{ type: 'normalized', field: 'sqls' }] }, { metricKey: 'lead_volume' }], source: 'derived' }),
     createMetricMapping({ metricKey: 'sales_cycle_days', transform: 'safeNumber', sources: [{ type: 'brief', path: 'operational.sales_cycle' }],                              source: 'intelligence_brief' }),
   ],

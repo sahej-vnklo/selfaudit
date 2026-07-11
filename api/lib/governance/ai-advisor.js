@@ -1,10 +1,11 @@
 import { createClient } from '@supabase/supabase-js'
+import { CLAUDE_MODEL } from '../model-config.js'
 import { buildGovernanceAdvice } from './advice.js'
+import { getExplanationContext } from './causal-engine.js'
 import { findRelevantDecisions } from '../decisions/matcher.js'
 import { formatDecisionsForPrompt } from '../decisions/context.js'
 
 const CLAUDE_API = 'https://api.anthropic.com/v1/messages'
-const MODEL = 'claude-sonnet-4-6'
 
 function getSupabase() {
   return createClient(
@@ -69,14 +70,45 @@ function buildBlueprintContext(blueprint) {
   return `Industry: ${blueprint.industry ?? 'unknown'}\n\nSelected areas:\n${areaLines.join('\n\n')}${compoundLines}`
 }
 
-function buildSystemPrompt() {
+function confidenceRank(confidence) {
+  return confidence === 'high' ? 3 : confidence === 'medium' ? 2 : confidence === 'low' ? 1 : 0
+}
+
+export function buildCausalContext(governance) {
+  const metricKeys = [...new Set((governance?.findings ?? [])
+    .filter((finding) => (finding.status === 'bad' || finding.status === 'watch') && finding.metricKey && finding.metricKey !== 'compound')
+    .map((finding) => finding.metricKey))]
+
+  const context = getExplanationContext(metricKeys)
+  return Object.fromEntries(metricKeys.map((metricKey) => [
+    metricKey,
+    (context[metricKey] ?? [])
+      .slice()
+      .sort((a, b) => confidenceRank(b.confidence) - confidenceRank(a.confidence))
+      .slice(0, 5)
+      .map((edge) => compactObject({
+        id: edge.id,
+        effect: edge.effect,
+        confidence: edge.confidence,
+        conditions: edge.conditions,
+        delay: edge.delay,
+        sources: edge.sources,
+      })),
+  ]))
+}
+
+export function buildSystemPrompt() {
   return `You are TSA — The Self Audit operational strategist. You are a senior operator reviewing governance findings across a business.
 
 Your rules:
 - Keep the findings grounded in the provided evidence. Never invent numbers or events.
 - Do not overrule the deterministic finding severity or status. Your job is to sharpen interpretation.
 - Distinguish facts from assumptions and missing data inside the wording when needed.
-- Give root cause when evidence supports it. If it does not, say what is most likely and why.
+- Describe causes as "likely driver" or "consistent with", never as certain root cause, unless the evidence is arithmetic.
+- The JSON key rootCause is kept for compatibility; its value must be a likely-driver statement, not a certainty claim.
+- When you use a causal mechanism from causal_context, name its source in the diagnosis, e.g. "a known fulfilment-to-refund pattern — Factory Physics".
+- Never cite a source not present in causal_context.
+- State what remains unverified.
 - Be direct, founder-level, and operational. No filler. No motivational language.
 - Preserve the structure you are asked for and output only valid JSON.
 - Areas listed in zero_coverage_areas have NO measured data at all. Do not reference them, do not generate diagnoses or alert_candidates for them, and do not mention them in the summary.
@@ -91,10 +123,13 @@ Return JSON in this exact shape:
       "areaId": "finance-accounting",
       "title": "Runway is critical",
       "summary": "Sharper explanation of what is happening.",
-      "rootCause": "Why this is likely happening.",
+      "rootCause": "Likely driver statement. Keep this compatible key, but do not write a certainty claim.",
       "impact": "Why it matters if ignored.",
       "recommendation": "Best next move.",
-      "recurring": false
+      "recurring": false,
+      "likely_driver": "Optional: concise likely driver statement.",
+      "sources": ["Optional: source names used from causal_context only."],
+      "unverified": "Optional: what still has not been proven or directly measured."
     }
   ],
   "recommended_actions": ["Action 1", "Action 2"],
@@ -172,7 +207,7 @@ function buildFindingsByArea(governance) {
     }))
 }
 
-function buildUserMessage({ governance, brain, intelligenceBrief, deterministicAdvice, decisionMemory = [], blueprint = null }) {
+export function buildUserMessage({ governance, brain, intelligenceBrief, deterministicAdvice, decisionMemory = [], blueprint = null }) {
   const zeroCoverageAreas = (governance?.areas ?? [])
     .filter((a) => !a.coverage || a.coverage === 0)
     .map((a) => a.areaId)
@@ -181,6 +216,7 @@ function buildUserMessage({ governance, brain, intelligenceBrief, deterministicA
     business_snapshot: buildBusinessSnapshot(brain, intelligenceBrief),
     governance_summary: governance?.summary ?? {},
     findings_by_area: buildFindingsByArea(governance),
+    causal_context: buildCausalContext(governance),
     ...(zeroCoverageAreas.length > 0 ? { zero_coverage_areas: zeroCoverageAreas } : {}),
     current_output: {
       summary: deterministicAdvice.summary,
@@ -228,6 +264,7 @@ Rules:
 - Keep the same number of diagnoses unless evidence clearly does not support one of them.
 - Keep advice practical and founder-level.
 - If data is thin, say what is likely instead of pretending certainty.
+- Use causal_context only as general mechanism evidence. Name only sources present there, and say what remains unverified.
 - Recommended actions should be specific and non-duplicative.
 - Do not generate any diagnoses or alert_candidates for areas listed in zero_coverage_areas — no data was collected for them.
 - If business_blueprint is present: read it first. Let the area objectives and entity types (Deals, Customers, SupportTickets, etc.) shape the language and framing of every diagnosis. Reference the actual entities by name, not generic terms.
@@ -260,6 +297,9 @@ function mergeDiagnoses(base, enriched) {
       summary: typeof overlay.summary === 'string' && overlay.summary.trim() ? overlay.summary.trim() : item.summary,
       rootCause: typeof overlay.rootCause === 'string' && overlay.rootCause.trim() ? overlay.rootCause.trim() : item.rootCause,
       impact: typeof overlay.impact === 'string' && overlay.impact.trim() ? overlay.impact.trim() : item.impact,
+      likely_driver: typeof overlay.likely_driver === 'string' && overlay.likely_driver.trim() ? overlay.likely_driver.trim() : item.likely_driver,
+      sources: Array.isArray(overlay.sources) ? overlay.sources.filter((source) => typeof source === 'string' && source.trim()).map((source) => source.trim()) : item.sources,
+      unverified: typeof overlay.unverified === 'string' && overlay.unverified.trim() ? overlay.unverified.trim() : item.unverified,
       recommendation: typeof overlay.recommendation === 'string' && overlay.recommendation.trim()
         ? overlay.recommendation.trim()
         : item.recommendation,
@@ -350,7 +390,7 @@ export async function enrichGovernanceWithAI({
   blueprint = null,
 }) {
   const baseAdvice = deterministicAdvice ?? buildGovernanceAdvice(governance)
-  const apiKey = process.env.CLAUDE_API_KEY || process.env.VITE_CLAUDE_API_KEY
+  const apiKey = process.env.CLAUDE_API_KEY
   let decisionMemory = []
 
   if (userId) {
@@ -376,7 +416,7 @@ export async function enrichGovernanceWithAI({
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: MODEL,
+        model: CLAUDE_MODEL,
         max_tokens: 2200,
         system: buildSystemPrompt(),
         messages: [{

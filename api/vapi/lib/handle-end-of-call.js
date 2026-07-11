@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { CLAUDE_MODEL } from '../../lib/model-config.js'
 import { identifyCaller } from './identify-caller.js'
 
 const CLAUDE_API = 'https://api.anthropic.com/v1/messages'
@@ -22,7 +23,7 @@ function buildTranscript(messages = []) {
 
 // Use Claude to extract a structured summary from the transcript
 async function summariseCall(transcript, vapiSummary) {
-  const apiKey = process.env.CLAUDE_API_KEY || process.env.VITE_CLAUDE_API_KEY
+  const apiKey = process.env.CLAUDE_API_KEY
   if (!apiKey || !transcript) return null
 
   const prompt = `You are summarising a voice call between a founder and Nico, their business operator.
@@ -52,7 +53,7 @@ Extract and return ONLY valid JSON in this exact shape:
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
+      model: CLAUDE_MODEL,
       max_tokens: 600,
       messages: [{ role: 'user', content: prompt }],
     }),

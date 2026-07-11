@@ -1,11 +1,5 @@
-import { readFile } from 'node:fs/promises'
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { AREA_CATALOG } from '../blueprint/catalog/areas.js'
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
-
-let causalGraphPromise = null
+import { getMetricEdges } from '../governance/graph/index.js'
 
 function bucketDay(value) {
   const date = new Date(value)
@@ -31,20 +25,6 @@ const METRIC_DIRECTION_MAP = Object.values(AREA_CATALOG || {}).reduce((acc, area
 function clamp(value, min, max) {
   if (!Number.isFinite(value)) return min
   return Math.max(min, Math.min(max, value))
-}
-
-async function loadCausalGraph() {
-  if (causalGraphPromise) return causalGraphPromise
-
-  causalGraphPromise = readFile(path.join(__dirname, '../governance/causal-engine.js'), 'utf8')
-    .then((source) => {
-      const match = source.match(/const CAUSAL_GRAPH = \[[\s\S]*?\n\]/)
-      if (!match) return []
-      return new Function(`${match[0]}\nreturn Array.isArray(CAUSAL_GRAPH) ? CAUSAL_GRAPH : [];`)()
-    })
-    .catch(() => [])
-
-  return causalGraphPromise
 }
 
 function buildSeriesMaps(rows) {
@@ -179,7 +159,7 @@ export async function recomputeCompanyDNA(supabase, userId) {
 
   if (error || !rows?.length) return []
 
-  const causalGraph = await loadCausalGraph()
+  const causalGraph = getMetricEdges()
   if (!Array.isArray(causalGraph) || !causalGraph.length) return []
 
   const { buckets, metricMap, areaMap } = buildSeriesMaps(rows)

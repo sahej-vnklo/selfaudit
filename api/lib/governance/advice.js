@@ -42,10 +42,13 @@ function buildDiagnosisItem(areaEntry, finding) {
     thresholdValue: finding.thresholdValue,
     title:          finding.title,
     summary:        finding.summary,
-    rootCause:      buildRootCause(areaEntry, finding, metricDef),
-    impact:         buildImpact(area, finding),
+    rootCause:      finding.rootCause ?? buildRootCause(areaEntry, finding, metricDef),
+    impact:         finding.impact ?? buildImpact(area, finding),
     evidence:       `${metricDef?.label || finding.metricKey}: observed ${finding.metricValue}, threshold ${finding.comparator} ${finding.thresholdValue}`,
     recommendation: finding.recommendation,
+    entityType:     finding.entityType ?? null,
+    entityId:       finding.entityId ?? null,
+    entityLabel:    finding.entityLabel ?? null,
   }
 }
 
@@ -103,6 +106,9 @@ export function buildGovernanceAdvice(governance) {
       metricValue:        item.metricValue,
       comparator:         item.comparator,
       thresholdValue:     item.thresholdValue,
+      entityType:         item.entityType,
+      entityId:           item.entityId,
+      entityLabel:        item.entityLabel,
       status:             item.status,
       source:             'governance',
     }))

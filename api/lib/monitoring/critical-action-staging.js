@@ -1,5 +1,6 @@
 import { getActionForArtifact } from '../actions/registry.js'
 import { ARTIFACT_SYSTEM_PROMPT, ARTIFACT_TYPE_INSTRUCTIONS, ARTIFACT_JSON_SCHEMA } from '../artifacts/instructions.js'
+import { CLAUDE_MODEL } from '../model-config.js'
 
 const CLAUDE_API = 'https://api.anthropic.com/v1/messages'
 
@@ -171,7 +172,7 @@ async function generateHealthCheckArtifact(supabase, userId, alert, artifactType
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
+        model: CLAUDE_MODEL,
         max_tokens: 2000,
         system: ARTIFACT_SYSTEM_PROMPT,
         messages: [{ role: 'user', content: buildAlertPrompt(artifactType, alert, intel) }],

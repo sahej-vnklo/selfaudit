@@ -4,13 +4,15 @@
 //
 // After creating: copy the assistant ID and set VAPI_ASSISTANT_ID in your env.
 
+import { CLAUDE_MODEL } from '../lib/model-config.js'
+
 const APP_URL = process.env.APP_URL || 'https://tryselfaudit.com'
 
 export const VAPI_ASSISTANT_CONFIG = {
   name: 'Nico',
   model: {
     provider: 'anthropic',
-    model: 'claude-sonnet-4-6',
+    model: CLAUDE_MODEL,
     temperature: 0.3,
     systemPrompt: `You are Nico — a sharp, trusted operator who knows this founder's business inside and out. You are not an AI assistant. You are the person they call when they need to know what's actually going on.
 

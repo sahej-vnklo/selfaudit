@@ -6,26 +6,7 @@ import { gatherAgentContext } from './lib/agent/gather-context.js'
 import { generateAgentAnswer } from './lib/agent/generate-agent-answer.js'
 import { requireIntelligencePlan } from './lib/plans.js'
 
-/*
-  SQL — run once in Supabase Dashboard:
-
-  create table if not exists agent_findings (
-    id          uuid primary key default gen_random_uuid(),
-    user_id     uuid not null references auth.users(id) on delete cascade,
-    query       text not null,
-    intent      text,
-    answer      text,
-    full_result jsonb,
-    confidence  text,
-    created_at  timestamptz default now()
-  );
-
-  alter table agent_findings enable row level security;
-  create policy "Users see own findings" on agent_findings
-    for all using (auth.uid() = user_id);
-
-  create index on agent_findings (user_id, created_at desc);
-*/
+// Table ownership: supabase/migrations/20260710000002_cleanup_ad_hoc_tables.sql
 
 function getSupabase() {
   return createClient(
@@ -53,7 +34,7 @@ export default async function handler(req, res) {
   }
   if (!await validateUserToken(req, res, userId)) return
 
-  const apiKey = process.env.CLAUDE_API_KEY || process.env.VITE_CLAUDE_API_KEY
+  const apiKey = process.env.CLAUDE_API_KEY
   if (!apiKey) return res.status(500).json({ error: 'CLAUDE_API_KEY not configured' })
 
   const sb = getSupabase()

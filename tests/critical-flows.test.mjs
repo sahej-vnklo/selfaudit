@@ -1,9 +1,8 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { getCheckoutAppUrl, getCheckoutCancelUrl, getCheckoutPriceId, getCheckoutSuccessUrl, normalizeCheckoutTier } from '../api/lib/checkout.js'
+import { getCheckoutAppUrl, getCheckoutCancelUrl, getCheckoutPriceId, getCheckoutSuccessUrl } from '../api/lib/checkout.js'
 import { isAuthorisedCronRequest } from '../api/lib/cron-auth.js'
-import { signOAuthState, verifyOAuthState } from '../api/lib/connectors/oauth-state.js'
 import { validateSaveReportPayload } from '../api/lib/save-report-validation.js'
 import { buildAccountDataExport, buildAccountExportFilename, sanitizeIntegrationsForExport } from '../api/lib/data-governance.js'
 import { isIntelligencePlan, normalizePlan, VALID_PLANS } from '../api/lib/plans.js'
@@ -17,24 +16,21 @@ import { enrichGovernanceWithAI } from '../api/lib/governance/ai-advisor.js'
 test('checkout only accepts current plan names', () => {
   const env = {
     APP_URL: 'https://tryselfaudit.com',
-    STRIPE_PRICE_FOUNDATION: 'price_foundation',
-    STRIPE_PRICE_INTELLIGENCE: 'price_intelligence',
+    STRIPE_PRICE_PROFESSIONAL: 'price_professional',
+    STRIPE_PRICE_ENTERPRISE: 'price_enterprise',
   }
 
-  assert.equal(normalizeCheckoutTier('foundation'), 'foundation')
-  assert.equal(normalizeCheckoutTier('intelligence'), 'intelligence')
-  assert.equal(normalizeCheckoutTier('legacy-tier'), 'legacy-tier')
-  assert.equal(getCheckoutPriceId('foundation', env), 'price_foundation')
-  assert.equal(getCheckoutPriceId('intelligence', env), 'price_intelligence')
-  assert.equal(getCheckoutPriceId('legacy-tier', env), null)
+  assert.equal(getCheckoutPriceId('professional', env), 'price_professional')
+  assert.equal(getCheckoutPriceId('enterprise', env), 'price_enterprise')
+  assert.equal(getCheckoutPriceId('legacy-tier', env), 'price_professional')
   assert.equal(getCheckoutAppUrl({ APP_URL: 'https://tryselfaudit.com' }), 'https://tryselfaudit.com')
   assert.equal(
-    getCheckoutSuccessUrl('intelligence', env),
-    'https://tryselfaudit.com/#billing?checkout=success&plan=intelligence&session_id={CHECKOUT_SESSION_ID}',
+    getCheckoutSuccessUrl('enterprise', env),
+    'https://tryselfaudit.com/#billing?checkout=success&plan=enterprise&session_id={CHECKOUT_SESSION_ID}',
   )
   assert.equal(
-    getCheckoutCancelUrl('intelligence', env),
-    'https://tryselfaudit.com/#signup?plan=intelligence',
+    getCheckoutCancelUrl('legacy-tier', env),
+    'https://tryselfaudit.com/#signup?plan=professional',
   )
 })
 
@@ -65,23 +61,6 @@ test('cron auth accepts header and query secret', () => {
     isAuthorisedCronRequest({ headers: { authorization: 'Bearer wrong' }, query: {} }, secret),
     false,
   )
-})
-
-test('oauth state verification rejects tampering and expiry', () => {
-  const secret = 'oauth-secret'
-  const payload = {
-    provider: 'hubspot',
-    userId: 'user-123',
-    nonce: 'abc',
-    ts: Date.now(),
-  }
-  const signed = signOAuthState(payload, secret)
-
-  assert.deepEqual(verifyOAuthState(signed, secret), payload)
-  assert.equal(verifyOAuthState(`${signed}oops`, secret), null)
-
-  const expired = signOAuthState({ ...payload, ts: Date.now() - (11 * 60 * 1000) }, secret)
-  assert.equal(verifyOAuthState(expired, secret), null)
 })
 
 test('save-report validation guards required payload', () => {

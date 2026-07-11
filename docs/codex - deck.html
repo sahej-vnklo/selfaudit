@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Codex Deck Sequence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --paper: #f7f1ea;
+    --ink: #1f1713;
+    --body: #4f4139;
+    --quiet: #6b5a50;
+    --line: rgba(49, 31, 21, 0.14);
+    --panel: #fffaf4;
+    --ember: #a54e20;
+    --ember-soft: rgba(200, 98, 42, 0.10);
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --sans: 'Manrope', -apple-system, sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .deck-shell {
+    width: min(1120px, calc(100% - 48px));
+    margin: 0 auto;
+  }
+
+  .cover {
+    min-height: 86vh;
+    display: grid;
+    align-content: center;
+    border-bottom: 1px solid var(--line);
+    padding: 96px 0 72px;
+  }
+
+  .kicker {
+    color: var(--ember);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+
+  .cover h1 {
+    max-width: 840px;
+    font-family: var(--serif);
+    font-size: clamp(58px, 9vw, 112px);
+    font-weight: 500;
+    line-height: 0.92;
+    letter-spacing: 0;
+  }
+
+  .cover h1 em {
+    color: var(--ember);
+    font-style: italic;
+  }
+
+  .cover p {
+    max-width: 680px;
+    margin-top: 30px;
+    color: var(--body);
+    font-size: clamp(17px, 2vw, 22px);
+  }
+
+  .sequence {
+    display: grid;
+    gap: 0;
+    padding: 32px 0 72px;
+  }
+
+  .section-card {
+    min-height: 68vh;
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 56px;
+    align-items: center;
+    border-bottom: 1px solid var(--line);
+    padding: 72px 0;
+  }
+
+  .eyebrow {
+    align-self: start;
+    position: sticky;
+    top: 28px;
+    color: var(--ember);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .section-body {
+    max-width: 780px;
+  }
+
+  .section-body h2 {
+    font-family: var(--serif);
+    font-size: clamp(42px, 6vw, 76px);
+    font-weight: 500;
+    line-height: 0.98;
+    letter-spacing: 0;
+    margin-bottom: 22px;
+  }
+
+  .section-body h2 em {
+    color: var(--ember);
+    font-style: italic;
+  }
+
+  .section-body p {
+    max-width: 680px;
+    color: var(--body);
+    font-size: 18px;
+  }
+
+  .proof-line {
+    display: inline-flex;
+    margin-top: 30px;
+    padding: 10px 14px;
+    background: var(--ember-soft);
+    border: 1px solid rgba(165, 78, 32, 0.18);
+    color: var(--ink);
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .footer {
+    padding: 42px 0 56px;
+    color: var(--quiet);
+    font-size: 13px;
+    border-top: 1px solid var(--line);
+  }
+
+  @media (max-width: 760px) {
+    .deck-shell {
+      width: min(100% - 32px, 1120px);
+    }
+
+    .cover {
+      min-height: 76vh;
+      padding: 80px 0 52px;
+    }
+
+    .section-card {
+      min-height: auto;
+      grid-template-columns: 1fr;
+      gap: 20px;
+      padding: 58px 0;
+    }
+
+    .eyebrow {
+      position: static;
+    }
+
+    .section-body p {
+      font-size: 16px;
+    }
+  }
+</style>
+</head>
+<body>
+  <main class="deck-shell">
+    <section class="cover">
+      <div class="kicker">Codex Deck Sequence · 14 Core Sections</div>
+      <h1>The $2M pre-seed story for <em>SelfAudit</em></h1>
+      <p>A visual ordering draft built around investor conviction: pain, category creation, no direct competition, working product, future interface, proof, moat, scale, and the raise.</p>
+    </section>
+
+    <div class="sequence">
+      <section class="section-card">
+        <div class="eyebrow">01 · Problem</div>
+        <div class="section-body">
+          <h2>No affordable system shows founders the <em>true state</em> of the business</h2>
+          <p>There is no affordable system that helps founders understand the true state of their business in real time.</p>
+          <p>The data exists, but it is trapped across dashboards, reports, CRMs, inboxes, and team updates.</p>
+          <p>Dashboards show numbers. Reports arrive late. Managers give fragments.</p>
+          <p>By the time someone explains the pattern, the churn, pipeline risk, or cash pressure is already expensive.</p>
+          <div class="proof-line">The pain is not lack of data. It is lack of operating truth.</div>
+        </div>
+      </section>
+
+      <section class="section-card">
+        <div class="eyebrow">02 · Category Definition</div>
+        <div class="section-body">
+          <h2>SelfAudit is building the <em>operating intelligence layer</em></h2>
+          <p>SelfAudit is building the operating intelligence layer for growing companies.</p>
+          <p>A persistent business state engine that learns how the company works, watches what changes, and connects what no single tool can see.</p>
+          <p>It surfaces the brutal truth: what is breaking, why it is happening, what it will cost, and what needs to be done next.</p>
+          <p>It gives every founder a built-in strategy intelligence layer, accelerating decisions before problems become expensive.</p>
+          <div class="proof-line">This is category creation: not software around the business, intelligence inside the business.</div>
+        </div>
+      </section>
+
+      <section class="section-card">
+        <div class="eyebrow">03 · Competition</div>
+        <div class="section-body">
+          <h2>No direct competition. <em>The missing layer is ours.</em></h2>
+          <p>No direct competition.</p>
+          <p>Advisors diagnose but do not live inside the data. BI tools visualize but do not reason. Dashboards report what happened but do not explain what to do.</p>
+          <p>SelfAudit owns the missing layer: continuous diagnosis, brutal truth, root-cause reasoning, and strategy execution across the whole business.</p>
+          <p>This is not a crowded market. It is a category waiting to be owned.</p>
+          <div class="proof-line">Existing markets solve fragments. SelfAudit owns the full intelligence loop.</div>
+        </div>
+      </section>
+
+      <section class="section-card">
+        <div class="eyebrow">04 · Solution</div>
+        <div class="section-body">
+          <h2>An autonomous operating intelligence system for <em>growing businesses</em></h2>
+          <p>SelfAudit is an autonomous operating intelligence system for growing businesses.</p>
+          <p>It runs continuous reconnaissance across the company, builds memory around how the business works, and synthesizes signals across sales, support, finance, execution, goals, and prior decisions.</p>
+          <p>Every cycle makes the system sharper: it learns the company's patterns, detects compounding risk, diagnoses root causes, and applies business expertise to decide what matters now.</p>
+          <p>The output is not a report. It is a founder-ready decision: what is happening, why it is happening, what it means, and what to do next.</p>
+          <div class="proof-line">Reconnaissance, memory, synthesis, diagnosis, and decision intelligence in one system.</div>
+        </div>
+      </section>
+
+      <section class="section-card">
+        <div class="eyebrow">05 · Product</div>
+        <div class="section-body">
+          <h2>A command center for the <em>founder's business</em></h2>
+          <p>The product is a command center for the founder's business.</p>
+          <p>A live cockpit shows company health, department status, active risks, root-cause diagnoses, goal progress, and the next highest-leverage actions.</p>
+          <p>Founders can inspect any area, ask why something is happening, adjust their operating standards, and generate the execution artifact needed to act.</p>
+          <p>SelfAudit turns scattered business reality into one operating view, one diagnosis layer, and one next-move system.</p>
+          <div class="proof-line">The category becomes visible as cockpit, diagnosis, standards, and execution.</div>
+        </div>
+      </section>
+
+      <section class="section-card">
+        <div class="eyebrow">06 · Voice Interface</div>
+        <div class="section-body">
+          <h2>The next era of business software is <em>conversation with the business itself</em></h2>
+          <p>The next era of business software will not be dashboards. It will be conversation with the business itself.</p>
+          <p>SelfAudit turns a company into a speakable intelligence system: one that knows its history, monitors its present, understands its goals, diagnoses its pain, and can explain what it needs.</p>
+          <p>A founder will not wait for reports, open five dashboards, or ask managers to assemble the truth. They will ask the business directly.</p>
+          <p>This is the interface shift: from looking at software, to speaking with the operating intelligence of the company.</p>
+          <div class="proof-line">The business becomes a living operating entity the founder can question and command.</div>
+        </div>
+      </section>
+
+      <section class="section-card">
+        <div class="eyebrow">07 · Traction</div>
+        <div class="section-body">
+          <h2>The operating intelligence system is <em>already live</em></h2>
+          <p>The operating intelligence system is already live.</p>
+          <p>In one build cycle, SelfAudit shipped the core infrastructure: memory, business state, synthesis, diagnostics, cockpit, governance logic, auth, billing, artifacts, and integrations.</p>
+          <p>The product already performs the full intelligence loop: collect signals, preserve context, identify patterns, diagnose root causes, surface brutal truth, and produce next actions.</p>
+          <p>The next layer is voice and agentic workflow: the ability to speak to the business as a living operating entity, then turn the conversation into action.</p>
+          <div class="proof-line">Pre-seed traction with seed-stage product depth.</div>
+        </div>
+      </section>
+
+      <section class="section-card">
+        <div class="eyebrow">08 · Defensibility</div>
+        <div class="section-body">
+          <h2>SelfAudit gets harder to copy <em>every day it runs</em></h2>
+          <p>SelfAudit gets harder to copy every day it runs.</p>
+          <p>Each customer builds a private operating memory: goals, thresholds, decisions, recurring blockers, risk patterns, department behavior, and execution history.</p>
+          <p>As connectors deepen, the system sees more of the company; as sessions compound, it understands more of the company.</p>
+          <p>The moat is not the interface. It is the accumulated intelligence required to diagnose a business better than anything starting from zero.</p>
+          <div class="proof-line">The longer it runs, the more impossible it becomes to replace cold.</div>
+        </div>
+      </section>
+
+      <section class="section-card">
+        <div class="eyebrow">09 · Why Now</div>
+        <div class="section-body">
+          <h2>This category was not possible <em>until now</em></h2>
+          <p>This category was not possible until now.</p>
+          <p>LLMs crossed the reasoning threshold required to connect causes across departments, while inference costs collapsed enough to make continuous intelligence affordable.</p>
+          <p>SMB companies now run on API-connected systems, meaning the signals SelfAudit needs are finally accessible.</p>
+          <p>And founders are ready to trust AI with real operating work, not just content, chat, or automation.</p>
+          <div class="proof-line">Capability, cost, data access, and buyer readiness converged at once.</div>
+        </div>
+      </section>
+
+      <section class="section-card">
+        <div class="eyebrow">10 · Market</div>
+        <div class="section-body">
+          <h2>SelfAudit starts with SMBs. <em>The market is bigger than software.</em></h2>
+          <p>SelfAudit starts with growing SMBs, but the market is bigger than software.</p>
+          <p>Every company eventually needs someone to understand the business, diagnose what is breaking, and guide operating decisions.</p>
+          <p>Today that work is split across consultants, fractional executives, BI tools, managers, dashboards, and founder instinct.</p>
+          <p>SelfAudit compresses that fragmented market into one operating intelligence layer.</p>
+          <div class="proof-line">The wedge is SMB. The category is operating intelligence.</div>
+        </div>
+      </section>
+
+      <section class="section-card">
+        <div class="eyebrow">11 · Business Model</div>
+        <div class="section-body">
+          <h2>Executive intelligence, delivered as <em>software</em></h2>
+          <p>SelfAudit sells executive intelligence as software.</p>
+          <p>A founder pays a predictable subscription for the kind of operating visibility, diagnosis, and strategic guidance that usually requires consultants, analysts, or a Chief of Staff.</p>
+          <p>As the product learns the company, retention improves because the intelligence becomes more specific, more useful, and harder to replace.</p>
+          <p>The model is simple: recurring revenue, expanding product depth, and compounding customer lock-in.</p>
+          <div class="proof-line">High-value operating judgment becomes recurring software revenue.</div>
+        </div>
+      </section>
+
+      <section class="section-card">
+        <div class="eyebrow">12 · Go-to-Market</div>
+        <div class="section-body">
+          <h2>Sell the pain first. <em>Then own the category.</em></h2>
+          <p>SelfAudit enters through the founder's most urgent operating pain: churn, pipeline risk, cash pressure, support drag, unclear goals, or a business that suddenly feels too complex to hold in one head.</p>
+          <p>The first wave comes from founder communities, operator content, integration marketplaces, product-led audits, and direct founder storytelling around operational debt.</p>
+          <p>Each user does not just buy a tool. They adopt the language: operating intelligence, brutal truth, business state, and talking to the business.</p>
+          <p>That language spreads because it gives founders a name for a pain they already had.</p>
+          <div class="proof-line">The go-to-market is category education wrapped around an urgent founder problem.</div>
+        </div>
+      </section>
+
+      <section class="section-card">
+        <div class="eyebrow">13 · Team</div>
+        <div class="section-body">
+          <h2>The founder signal is <em>velocity</em></h2>
+          <p>SelfAudit was built by a founder who lived the operator problem and then shipped the system to solve it.</p>
+          <p>The solo build is the evidence: product strategy, full-stack execution, AI architecture, memory, diagnostics, billing, integrations, dashboard experience, and category thinking in one compressed cycle.</p>
+          <p>This is the profile that matters at pre-seed: someone close enough to the pain to see the category, and technical enough to build the first version without waiting for permission.</p>
+          <p>The next capital turns that founder velocity into a company.</p>
+          <div class="proof-line">At pre-seed, the product is the resume.</div>
+        </div>
+      </section>
+
+      <section class="section-card">
+        <div class="eyebrow">14 · The Ask</div>
+        <div class="section-body">
+          <h2>$2M to turn a working system into the <em>category leader</em></h2>
+          <p>SelfAudit is raising $2M to move from live operating intelligence product to category leadership.</p>
+          <p>The capital funds security hardening, product polish, deeper connectors, pilot expansion, infrastructure, the voice and agentic workflow layer, and a market launch strong enough to make Operational Intelligence stick.</p>
+          <p>The milestone is not just more features. It is proof that founders will run their companies through a persistent intelligence layer.</p>
+          <p>The opportunity is to own the category before the market fully understands it has a name.</p>
+          <div class="proof-line">This raise buys speed, category ownership, and the next interface for running a business.</div>
+        </div>
+      </section>
+    </div>
+
+    <footer class="footer">SelfAudit · Codex sequence draft · 14 sections</footer>
+  </main>
+</body>
+</html>

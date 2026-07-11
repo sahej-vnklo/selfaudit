@@ -5,8 +5,9 @@
 //   scan     — single-turn, immediate answer
 //   memory / news / discuss — specialised single-turn responses
 
+import { CLAUDE_MODEL } from '../model-config.js'
+
 const CLAUDE_API  = 'https://api.anthropic.com/v1/messages'
-const SONNET_MODEL = 'claude-sonnet-4-6'
 
 // ── System prompts per mode ───────────────────────────────────────────────────
 
@@ -258,7 +259,7 @@ export async function runAgentX({ query, plan, contextBlocks, conversationHistor
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
-      model:      SONNET_MODEL,
+      model:      CLAUDE_MODEL,
       max_tokens: 1800,
       stream:     true,
       system:     systemPrompt,

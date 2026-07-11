@@ -6,7 +6,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test:critical": "node --test tests/critical-flows.test.mjs"
+    "test:critical": "node --test tests/critical-flows.test.mjs",
+    "seed:demo": "node scripts/seed-demo.mjs"
   },
   "dependencies": {
     "@composio/client": "^0.1.0-alpha.73",

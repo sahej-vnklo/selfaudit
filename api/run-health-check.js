@@ -1,18 +1,4 @@
-// Expected Supabase table (create if not exists):
-//
-// create table business_health_checks (
-//   id                uuid primary key default gen_random_uuid(),
-//   user_id           uuid not null references profiles(id) on delete cascade,
-//   checked_at        timestamptz not null,
-//   health_score      int,
-//   risks             jsonb,
-//   opportunities     jsonb,
-//   summary           text,
-//   recommended_actions jsonb,
-//   evidence          jsonb,
-//   created_at        timestamptz default now()
-// );
-// create index on business_health_checks (user_id, checked_at desc);
+// Table ownership: supabase/migrations/20260710000002_cleanup_ad_hoc_tables.sql
 
 import { createClient } from '@supabase/supabase-js'
 import { runBusinessHealthCheck } from './lib/monitoring/health-check.js'

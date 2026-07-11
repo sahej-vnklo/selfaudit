@@ -12,7 +12,7 @@ export async function askQuestion(userId, question) {
     return "I didn't catch the question. Could you repeat that?"
   }
 
-  const apiKey = process.env.CLAUDE_API_KEY || process.env.VITE_CLAUDE_API_KEY
+  const apiKey = process.env.CLAUDE_API_KEY
   if (!apiKey) throw new Error('CLAUDE_API_KEY not configured')
 
   const [brain, connectionMap] = await Promise.allSettled([

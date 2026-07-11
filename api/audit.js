@@ -10,6 +10,7 @@
 // - Store feedback on user acceptance/rejection for future improvement
 
 import { createClient } from '@supabase/supabase-js'
+import { CLAUDE_MODEL } from './lib/model-config.js'
 import { validateUserToken } from './lib/auth.js'
 import { fetchAllConnectedData } from './lib/connectors/data-fetcher.js'
 import { normalizeConnectorData, formatNormalizedForPrompt } from './lib/connectors/normalize.js'
@@ -1048,7 +1049,7 @@ export default async function handler(req, res) {
       method: 'POST',
       headers,
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
+        model: CLAUDE_MODEL,
         max_tokens: isReport ? (goalMode ? 4000 : 3200) : 1024,
         system: buildSystemPrompt(industry, domain, intelligenceBrief, userMemory, goalMode, goal, goalTimeline, goalBaseline, businessState, patterns, connectorContext, sessionContinuity, governanceContext, schemaContext, biHistoryContext),
         messages: finalMessages,
@@ -1117,7 +1118,7 @@ export default async function handler(req, res) {
               method: 'POST',
               headers,
               body: JSON.stringify({
-                model: 'claude-sonnet-4-6',
+                model: CLAUDE_MODEL,
                 max_tokens: goalMode ? 4000 : 3200,
                 system: buildSystemPrompt(industry, domain, intelligenceBrief, userMemory, goalMode, goal, goalTimeline, goalBaseline, businessState, patterns, connectorContext, sessionContinuity, governanceContext, schemaContext, biHistoryContext),
                 messages: retryMessages,

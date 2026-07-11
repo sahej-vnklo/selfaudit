@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
   process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_SERVICE_ROLE_KEY,
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
   { auth: { persistSession: false } }
 )
 
@@ -84,7 +84,7 @@ function buildEmailHtml({ mode, name, code }) {
 }
 
 async function sendEmail({ to, subject, html }) {
-  const resendApiKey = process.env.RESEND_API_KEY || process.env.VITE_RESEND_API_KEY
+  const resendApiKey = process.env.RESEND_API_KEY
   if (!resendApiKey) {
     throw new Error('RESEND_API_KEY not configured')
   }

@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Codex Deck 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --paper: #f7f1ea;
+    --ink: #1f1713;
+    --body: #4f4139;
+    --quiet: #6b5a50;
+    --line: rgba(49, 31, 21, 0.14);
+    --panel: #fffaf4;
+    --ember: #a54e20;
+    --ember-soft: rgba(200, 98, 42, 0.10);
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --sans: 'Manrope', -apple-system, sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .deck-shell {
+    width: min(1120px, calc(100% - 48px));
+    margin: 0 auto;
+  }
+
+  .cover {
+    min-height: 86vh;
+    display: grid;
+    align-content: center;
+    border-bottom: 1px solid var(--line);
+    padding: 96px 0 72px;
+  }
+
+  .kicker {
+    color: var(--ember);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+
+  .cover h1 {
+    max-width: 900px;
+    font-family: var(--serif);
+    font-size: clamp(58px, 9vw, 112px);
+    font-weight: 500;
+    line-height: 0.92;
+    letter-spacing: 0;
+  }
+
+  .cover h1 em {
+    color: var(--ember);
+    font-style: italic;
+  }
+
+  .cover p {
+    max-width: 720px;
+    margin-top: 30px;
+    color: var(--body);
+    font-size: clamp(17px, 2vw, 22px);
+  }
+
+  .sequence {
+    display: grid;
+    gap: 0;
+    padding: 32px 0 72px;
+  }
+
+  .section-card {
+    min-height: 68vh;
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 56px;
+    align-items: center;
+    border-bottom: 1px solid var(--line);
+    padding: 72px 0;
+  }
+
+  .eyebrow {
+    align-self: start;
+    position: sticky;
+    top: 28px;
+    color: var(--ember);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .section-body {
+    max-width: 820px;
+  }
+
+  .section-body h2 {
+    font-family: var(--serif);
+    font-size: clamp(42px, 6vw, 76px);
+    font-weight: 500;
+    line-height: 0.98;
+    letter-spacing: 0;
+    margin-bottom: 24px;
+  }
+
+  .section-body h2 em {
+    color: var(--ember);
+    font-style: italic;
+  }
+
+  .section-body p {
+    max-width: 720px;
+    color: var(--body);
+    font-size: 18px;
+    margin-bottom: 14px;
+  }
+
+  .lede {
+    max-width: 760px;
+    color: var(--body);
+    font-size: 20px;
+    line-height: 1.65;
+    margin-bottom: 28px;
+  }
+
+  .big-statement {
+    font-family: var(--serif);
+    font-size: clamp(46px, 7vw, 84px);
+    font-weight: 500;
+    line-height: 0.98;
+    letter-spacing: 0;
+    margin-bottom: 28px;
+  }
+
+  .big-statement em {
+    color: var(--ember);
+    font-style: italic;
+  }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 28px;
+  }
+
+  .card-grid.two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .deck-card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 20px 22px;
+  }
+
+  .deck-card.strong {
+    background: var(--ember-soft);
+    border-color: rgba(165, 78, 32, 0.22);
+  }
+
+  .card-label {
+    color: var(--ember);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .card-title {
+    color: var(--ink);
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1.35;
+    margin-bottom: 8px;
+  }
+
+  .card-copy {
+    color: var(--body);
+    font-size: 13.5px;
+    line-height: 1.65;
+  }
+
+  .matrix {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-top: 28px;
+  }
+
+  .matrix-row {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 18px 20px;
+  }
+
+  .matrix-row span {
+    display: block;
+    color: var(--ember);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .matrix-row strong {
+    display: block;
+    color: var(--ink);
+    font-size: 15px;
+    margin-bottom: 5px;
+  }
+
+  .matrix-row p {
+    color: var(--body);
+    font-size: 13.5px;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .system-stack {
+    display: grid;
+    gap: 10px;
+    margin-top: 28px;
+  }
+
+  .stack-item {
+    display: grid;
+    grid-template-columns: 44px 170px 1fr;
+    gap: 16px;
+    align-items: center;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px 18px;
+  }
+
+  .stack-num {
+    font-family: var(--serif);
+    color: var(--ember);
+    font-size: 30px;
+    line-height: 1;
+  }
+
+  .stack-name {
+    color: var(--ink);
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  .stack-copy {
+    color: var(--body);
+    font-size: 13.5px;
+    line-height: 1.55;
+  }
+
+  .quote-panel {
+    background: var(--ember-soft);
+    border-left: 3px solid var(--ember);
+    border-radius: 0 10px 10px 0;
+    padding: 22px 26px;
+    margin-top: 28px;
+  }
+
+  .quote-panel p {
+    color: var(--ink);
+    font-family: var(--serif);
+    font-size: 22px;
+    font-style: italic;
+    line-height: 1.45;
+    margin: 0;
+  }
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+    margin-top: 30px;
+    padding-top: 28px;
+    border-top: 1px solid var(--line);
+  }
+
+  .stat-value {
+    font-family: var(--serif);
+    color: var(--ink);
+    font-size: 50px;
+    line-height: 1;
+  }
+
+  .stat-value span {
+    color: var(--ember);
+  }
+
+  .stat-label {
+    color: var(--quiet);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
+
+  .market-row,
+  .ask-table {
+    display: grid;
+    gap: 12px;
+    margin-top: 28px;
+  }
+
+  .market-item,
+  .ask-row {
+    display: grid;
+    grid-template-columns: 210px 1fr 130px;
+    gap: 20px;
+    align-items: center;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 18px 22px;
+  }
+
+  .market-name,
+  .ask-name {
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 800;
+  }
+
+  .market-copy,
+  .ask-copy {
+    color: var(--body);
+    font-size: 13.5px;
+    line-height: 1.55;
+  }
+
+  .market-size,
+  .ask-amount {
+    color: var(--ember);
+    font-family: var(--serif);
+    font-size: 28px;
+    text-align: right;
+    line-height: 1;
+  }
+
+  .milestone-list {
+    display: grid;
+    gap: 10px;
+    margin-top: 28px;
+  }
+
+  .milestone {
+    display: grid;
+    grid-template-columns: 12px 1fr;
+    gap: 12px;
+    align-items: start;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px 18px;
+    color: var(--body);
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--ember);
+    margin-top: 6px;
+  }
+
+  .signal {
+    display: inline-flex;
+    margin-top: 18px;
+    padding: 10px 14px;
+    background: var(--ember-soft);
+    border: 1px solid rgba(165, 78, 32, 0.18);
+    color: var(--ink);
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  .footer {
+    padding: 42px 0 56px;
+    color: var(--quiet);
+    font-size: 13px;
+    border-top: 1px solid var(--line);
+  }
+
+  @media (max-width: 760px) {
+    .deck-shell {
+      width: min(100% - 32px, 1120px);
+    }
+
+    .cover {
+      min-height: 76vh;
+      padding: 80px 0 52px;
+    }
+
+    .section-card {
+      min-height: auto;
+      grid-template-columns: 1fr;
+      gap: 20px;
+      padding: 58px 0;
+    }
+
+    .eyebrow {
+      position: static;
+    }
+
+    .section-body p {
+      font-size: 16px;
+    }
+
+    .card-grid,
+    .card-grid.two,
+    .matrix,
+    .stat-row {
+      grid-template-columns: 1fr;
+    }
+
+    .stack-item,
+    .market-item,
+    .ask-row {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    .market-size,
+    .ask-amount {
+      text-align: left;
+    }
+  }
+</style>
+</head>
+<body>
+  <main class="deck-shell">
+    <section class="cover">
+      <div class="kicker">Codex Deck 2 · $2M Pre-Seed Narrative</div>
+      <h1>SelfAudit is building the <em>operating intelligence layer</em> for growing companies.</h1>
+      <p>A tighter investor sequence around the real thesis: founders do not need more dashboards. They need a business state engine that tells the truth, diagnoses the cause, and moves them toward the next decision.</p>
+    </section>
+
+    <div class="sequence">
+      <section class="section-card">
+        <div class="eyebrow">01 · Problem</div>
+        <div class="section-body">
+          <div class="big-statement">There is no affordable system for founders to know the <em>true state</em> of their business in real time.</div>
+          <div class="card-grid">
+            <div class="deck-card">
+              <div class="card-label">The Data Exists</div>
+              <div class="card-title">It is trapped in fragments.</div>
+              <div class="card-copy">Dashboards, reports, CRMs, inboxes, support queues, finance tools, manager updates, and founder instinct all hold pieces of the truth.</div>
+            </div>
+            <div class="deck-card">
+              <div class="card-label">The Signal Arrives Late</div>
+              <div class="card-title">Numbers appear before meaning does.</div>
+              <div class="card-copy">Dashboards show numbers. Reports arrive late. Managers give fragments. Nobody connects the operating pattern early enough.</div>
+            </div>
+            <div class="deck-card strong">
+              <div class="card-label">The Cost Compounds</div>
+              <div class="card-title">By the time it is explained, it is expensive.</div>
+              <div class="card-copy">Churn, pipeline risk, support drag, and cash pressure are visible before they hurt. Founders usually see them after they already have.</div>
+            </div>
+          </div>
+          <div class="quote-panel">
+            <p>The problem is not missing data. It is missing operating truth.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-card">
+        <div class="eyebrow">02 · Category Definition</div>
+        <div class="section-body">
+          <h2>The new category is <em>operating intelligence</em>.</h2>
+          <p class="lede">A persistent business state engine that learns how the company works, watches what changes, connects what no single tool can see, and tells the founder the truth while there is still time to act.</p>
+          <div class="system-stack">
+            <div class="stack-item">
+              <div class="stack-num">01</div>
+              <div class="stack-name">Business State</div>
+              <div class="stack-copy">A living model of goals, thresholds, decisions, departments, patterns, and operating context.</div>
+            </div>
+            <div class="stack-item">
+              <div class="stack-num">02</div>
+              <div class="stack-name">Brutal Truth</div>
+              <div class="stack-copy">What is breaking, why it is happening, what it will cost, and what needs to be done next.</div>
+            </div>
+            <div class="stack-item">
+              <div class="stack-num">03</div>
+              <div class="stack-name">Strategy Intelligence</div>
+              <div class="stack-copy">Built-in business expertise that accelerates decisions before problems become expensive.</div>
+            </div>
+          </div>
+          <div class="signal">Not software around the business. Intelligence inside the business.</div>
+        </div>
+      </section>
+
+      <section class="section-card">
+        <div class="eyebrow">03 · Competition</div>
+        <div class="section-body">
+          <h2>No direct competition. <em>Only incomplete substitutes.</em></h2>
+          <div class="matrix">
+            <div class="matrix-row">
+              <span>Advisors</span>
+              <strong>Diagnose, but do not live inside the data.</strong>
+              <p>High-context humans are expensive, episodic, and slow to ramp.</p>
+            </div>
+            <div class="matrix-row">
+              <span>BI Tools</span>
+              <strong>Visualize, but do not reason.</strong>
+              <p>They explain one domain at a time and still require the founder to interpret the pattern.</p>
+            </div>
+            <div class="matrix-row">
+              <span>Dashboards</span>
+              <strong>Report what happened, not what to do.</strong>
+              <p>They make the problem visible after someone knows where to look.</p>
+            </div>
+            <div class="matrix-row">
+              <span>SelfAudit</span>
+              <strong>Owns the missing layer.</strong>
+              <p>Continuous diagnosis, brutal truth, root-cause reasoning, and strategy execution across the whole business.</p>
+            </div>
+          </div>
+          <div class="quote-panel">
+            <p>This is not a crowded market. It is a category waiting to be owned.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-card">
+        <div class="eyebrow">04 · Solution</div>
+        <div class="section-body">
+          <h2>Reconnaissance, memory, synthesis, diagnosis, and action. <em>One system.</em></h2>
+          <div class="system-stack">
+            <div class="stack-item">
+              <div class="stack-num">01</div>
+              <div class="stack-name">Reconnaissance</div>
+              <div class="stack-copy">Continuously reads signals across sales, support, finance, execution, goals, and prior decisions.</div>
+            </div>
+            <div class="stack-item">
+              <div class="stack-num">02</div>
+              <div class="stack-name">Memory</div>
+              <div class="stack-copy">Builds context around how the business works, what has changed, and what patterns keep returning.</div>
+            </div>
+            <div class="stack-item">
+              <div class="stack-num">03</div>
+              <div class="stack-name">Synthesis</div>
+              <div class="stack-copy">Connects signals across departments and finds compounding factors no single tool can see.</div>
+            </div>
+            <div class="stack-item">
+              <div class="stack-num">04</div>
+              <div class="stack-name">Diagnosis</div>
+              <div class="stack-copy">Identifies root causes, risk severity, likely cost, and the operating truth behind the symptom.</div>
+            </div>
+            <div class="stack-item">
+              <div class="stack-num">05</div>
+              <div class="stack-name">Action</div>
+              <div class="stack-copy">Produces the founder-ready decision: what is happening, what it means, and what to do next.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-card">
+        <div class="eyebrow">05 · Product</div>
+        <div class="section-body">
+          <h2>A command center for the <em>founder's business</em>.</h2>
+          <div class="card-grid two">
+            <div class="deck-card">
+              <div class="card-label">Cockpit</div>
+              <div class="card-title">Company health, department status, and active risks in one operating view.</div>
+              <div class="card-copy">The founder sees what needs attention before they have to ask five people for five different updates.</div>
+            </div>
+            <div class="deck-card">
+              <div class="card-label">Diagnosis Layer</div>
+              <div class="card-title">Root causes, compounding factors, and likely consequences.</div>
+              <div class="card-copy">Not just "support is red." Why it is red, what it affects, and whether it is becoming a business-level risk.</div>
+            </div>
+            <div class="deck-card">
+              <div class="card-label">Standards</div>
+              <div class="card-title">The system watches the founder's business rules.</div>
+              <div class="card-copy">Thresholds, goals, operating norms, and definitions of healthy are specific to the company.</div>
+            </div>
+            <div class="deck-card strong">
+              <div class="card-label">Execution</div>
+              <div class="card-title">Every finding can become an artifact.</div>
+              <div class="card-copy">Action plan. Outreach email. Team brief. SOP. Founder decision memo. Diagnosis moves toward implementation.</div>
+            </div>
+          </div>
+          <div class="signal">The product does not summarize the business. It operationalizes it.</div>
+        </div>
+      </section>
+
+      <section class="section-card">
+        <div class="eyebrow">06 · Voice Interface</div>
+        <div class="section-body">
+          <div class="big-statement">The next era of business software is <em>conversation with the business itself</em>.</div>
+          <div class="card-grid">
+            <div class="deck-card">
+              <div class="card-label">Knows History</div>
+              <div class="card-title">The business remembers.</div>
+              <div class="card-copy">Goals, previous decisions, recurring blockers, old diagnoses, and what has changed since the last check-in.</div>
+            </div>
+            <div class="deck-card">
+              <div class="card-label">Monitors Present</div>
+              <div class="card-title">The business can answer now.</div>
+              <div class="card-copy">Live signals, cockpit state, active risks, department status, connector data, and current operating health.</div>
+            </div>
+            <div class="deck-card strong">
+              <div class="card-label">Explains Needs</div>
+              <div class="card-title">The business can say what it needs.</div>
+              <div class="card-copy">Why churn is rising. Why volume is high. What changed this week. What needs attention. What move comes next.</div>
+            </div>
+          </div>
+          <div class="quote-panel">
+            <p>A founder will not wait for reports, open five dashboards, or ask managers to assemble the truth. They will ask the business directly.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-card">
+        <div class="eyebrow">07 · Traction</div>
+        <div class="section-body">
+          <h2>The operating intelligence system is <em>already live</em>.</h2>
+          <div class="milestone-list">
+            <div class="milestone"><div class="dot"></div><div><strong>Core infrastructure shipped:</strong> memory, business state, synthesis, diagnostics, cockpit, governance logic, auth, billing, artifacts, and integrations.</div></div>
+            <div class="milestone"><div class="dot"></div><div><strong>Full intelligence loop working:</strong> collect signals, preserve context, identify patterns, diagnose root causes, surface brutal truth, and produce next actions.</div></div>
+            <div class="milestone"><div class="dot"></div><div><strong>Next layer:</strong> voice and agentic workflow, so a founder can speak to the business as a living operating entity and turn the conversation into action.</div></div>
+          </div>
+          <div class="stat-row">
+            <div>
+              <div class="stat-value">1<span>x</span></div>
+              <div class="stat-label">Build cycle</div>
+            </div>
+            <div>
+              <div class="stat-value">10<span>+</span></div>
+              <div class="stat-label">Core systems shipped</div>
+            </div>
+            <div>
+              <div class="stat-value">0<span>-1</span></div>
+              <div class="stat-label">Category proof</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-card">
+        <div class="eyebrow">08 · Defensibility</div>
+        <div class="section-body">
+          <h2>The moat is the intelligence that <em>accumulates</em>.</h2>
+          <div class="system-stack">
+            <div class="stack-item">
+              <div class="stack-num">01</div>
+              <div class="stack-name">Private Memory</div>
+              <div class="stack-copy">Goals, thresholds, decisions, recurring blockers, risk patterns, department behavior, and execution history.</div>
+            </div>
+            <div class="stack-item">
+              <div class="stack-num">02</div>
+              <div class="stack-name">Connector Depth</div>
+              <div class="stack-copy">The more systems connected, the more of the company's operating state SelfAudit can understand.</div>
+            </div>
+            <div class="stack-item">
+              <div class="stack-num">03</div>
+              <div class="stack-name">Pattern Compound</div>
+              <div class="stack-copy">Every session improves future diagnosis because the system learns how this company breaks, recovers, and grows.</div>
+            </div>
+            <div class="stack-item">
+              <div class="stack-num">04</div>
+              <div class="stack-name">Switching Cost</div>
+              <div class="stack-copy">The interface can be copied. The accumulated context required to diagnose from the inside cannot be recreated overnight.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-card">
+        <div class="eyebrow">09 · Why Now</div>
+        <div class="section-body">
+          <h2>This category was not possible <em>until now</em>.</h2>
+          <div class="card-grid">
+            <div class="deck-card">
+              <div class="card-label">Model Quality</div>
+              <div class="card-title">Reasoning crossed the threshold.</div>
+              <div class="card-copy">Cross-department causal analysis requires models that can synthesize messy business context.</div>
+            </div>
+            <div class="deck-card">
+              <div class="card-label">Cost Curve</div>
+              <div class="card-title">Continuous intelligence became affordable.</div>
+              <div class="card-copy">Inference cost compression makes SMB pricing possible without turning the product into enterprise software.</div>
+            </div>
+            <div class="deck-card">
+              <div class="card-label">Connected Stack</div>
+              <div class="card-title">The signals are finally accessible.</div>
+              <div class="card-copy">SMB companies now run on API-connected CRMs, finance tools, support systems, and operating software.</div>
+            </div>
+          </div>
+          <div class="signal">Capability, cost, data access, and founder readiness converged at once.</div>
+        </div>
+      </section>
+
+      <section class="section-card">
+        <div class="eyebrow">10 · Market</div>
+        <div class="section-body">
+          <h2>The wedge is SMB. <em>The market is operating judgment.</em></h2>
+          <div class="market-row">
+            <div class="market-item">
+              <div>
+                <div class="market-name">Advisory & Fractional Executives</div>
+              </div>
+              <div class="market-copy">High-cost operating judgment: consultants, fractional leaders, advisors, analysts, and Chief of Staff work.</div>
+              <div class="market-size">$40B+</div>
+            </div>
+            <div class="market-item">
+              <div>
+                <div class="market-name">Business Intelligence</div>
+              </div>
+              <div class="market-copy">Tools that visualize business data but still require people to interpret what it means and what to do.</div>
+              <div class="market-size">$35B+</div>
+            </div>
+            <div class="market-item">
+              <div>
+                <div class="market-name">Operational Intelligence Gap</div>
+              </div>
+              <div class="market-copy">Growing companies that need operating diagnosis but cannot afford executive infrastructure.</div>
+              <div class="market-size">Uncontested</div>
+            </div>
+          </div>
+          <div class="stat-row">
+            <div>
+              <div class="stat-value">5<span>M+</span></div>
+              <div class="stat-label">Target businesses</div>
+            </div>
+            <div>
+              <div class="stat-value">$<span>99</span></div>
+              <div class="stat-label">Starting wedge</div>
+            </div>
+            <div>
+              <div class="stat-value">50<span>x</span></div>
+              <div class="stat-label">Advisory compression</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-card">
+        <div class="eyebrow">11 · Business Model</div>
+        <div class="section-body">
+          <h2>Executive intelligence becomes <em>recurring software revenue</em>.</h2>
+          <div class="card-grid">
+            <div class="deck-card">
+              <div class="card-label">Subscription</div>
+              <div class="card-title">Predictable monthly revenue.</div>
+              <div class="card-copy">A founder pays for continuous operating visibility, diagnosis, and strategic guidance.</div>
+            </div>
+            <div class="deck-card">
+              <div class="card-label">Expansion</div>
+              <div class="card-title">More connectors, more intelligence.</div>
+              <div class="card-copy">Product depth increases as more business systems feed the operating brain.</div>
+            </div>
+            <div class="deck-card strong">
+              <div class="card-label">Retention</div>
+              <div class="card-title">The product learns the company.</div>
+              <div class="card-copy">The intelligence becomes more specific, more useful, and harder to replace over time.</div>
+            </div>
+          </div>
+          <div class="signal">High-value operating judgment, delivered continuously, at software margins.</div>
+        </div>
+      </section>
+
+      <section class="section-card">
+        <div class="eyebrow">12 · Go-to-Market</div>
+        <div class="section-body">
+          <h2>The first market is founders who can feel the business <em>outgrowing their head</em>.</h2>
+          <div class="card-grid two">
+            <div class="deck-card">
+              <div class="card-label">Pain-Led Entry</div>
+              <div class="card-title">Churn, pipeline risk, cash pressure, support drag, unclear goals.</div>
+              <div class="card-copy">The product enters when the founder knows something is wrong but cannot see the whole picture.</div>
+            </div>
+            <div class="deck-card">
+              <div class="card-label">Founder Communities</div>
+              <div class="card-title">The ICP already gathers in public.</div>
+              <div class="card-copy">Operator content, founder circles, launch moments, and direct founder storytelling create the first wave.</div>
+            </div>
+            <div class="deck-card">
+              <div class="card-label">Integration Marketplaces</div>
+              <div class="card-title">Distribution near live business data.</div>
+              <div class="card-copy">HubSpot and future connectors place SelfAudit beside the tools founders already use to run the company.</div>
+            </div>
+            <div class="deck-card strong">
+              <div class="card-label">Category Language</div>
+              <div class="card-title">The market repeats what it finally has words for.</div>
+              <div class="card-copy">Operational debt. Business state. Brutal truth. Talking to the business. Language becomes distribution.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-card">
+        <div class="eyebrow">13 · Team</div>
+        <div class="section-body">
+          <h2>The founder signal is <em>velocity under ambiguity</em>.</h2>
+          <div class="card-grid two">
+            <div class="deck-card strong">
+              <div class="card-label">Founder-Market Fit</div>
+              <div class="card-title">Close enough to the pain to see the category.</div>
+              <div class="card-copy">The product comes from lived operator frustration, not a trend-chasing AI wrapper.</div>
+            </div>
+            <div class="deck-card">
+              <div class="card-label">Builder Proof</div>
+              <div class="card-title">Technical enough to ship without waiting for permission.</div>
+              <div class="card-copy">AI architecture, memory, diagnostics, governance logic, billing, integrations, and dashboard experience already shipped.</div>
+            </div>
+          </div>
+          <div class="quote-panel">
+            <p>At pre-seed, the product is the resume. The next capital turns founder velocity into company velocity.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-card">
+        <div class="eyebrow">14 · The Ask</div>
+        <div class="section-body">
+          <h2>$2M to turn the first operating intelligence system into the <em>category leader</em>.</h2>
+          <div class="ask-table">
+            <div class="ask-row">
+              <div class="ask-name">Product Hardening</div>
+              <div class="ask-copy">Security, reliability, polish, onboarding, and the production finish required for investor-grade pilots.</div>
+              <div class="ask-amount">Core</div>
+            </div>
+            <div class="ask-row">
+              <div class="ask-name">Connector Depth</div>
+              <div class="ask-copy">More live business systems feeding the operating brain: revenue, CRM, support, docs, and workflow data.</div>
+              <div class="ask-amount">Data</div>
+            </div>
+            <div class="ask-row">
+              <div class="ask-name">Voice + Agentic Workflow</div>
+              <div class="ask-copy">The next interface: speaking to the business, diagnosing live, and turning the conversation into action.</div>
+              <div class="ask-amount">Future</div>
+            </div>
+            <div class="ask-row">
+              <div class="ask-name">Category Launch</div>
+              <div class="ask-copy">Founder-led distribution, pilots, proof, narrative, and enough market force to make Operational Intelligence stick.</div>
+              <div class="ask-amount">$2M</div>
+            </div>
+          </div>
+          <div class="signal">This raise buys speed, proof, and the next interface for running a business.</div>
+        </div>
+      </section>
+    </div>
+
+    <footer class="footer">SelfAudit · Codex Deck 2 · 14 sections</footer>
+  </main>
+</body>
+</html>

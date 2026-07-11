@@ -1,18 +1,5 @@
 // /api/custom-metrics — CRUD for user-defined custom metrics per area.
-//
-// Expected table (create in Supabase if not exists):
-//
-// create table user_custom_metrics (
-//   id          uuid primary key default gen_random_uuid(),
-//   user_id     uuid not null references profiles(id) on delete cascade,
-//   area_id     text not null,
-//   name        text not null,
-//   value       numeric not null,
-//   unit        text not null default '',
-//   created_at  timestamptz default now(),
-//   updated_at  timestamptz default now()
-// );
-// create index on user_custom_metrics (user_id, area_id);
+// Table ownership: supabase/migrations/20260710000002_cleanup_ad_hoc_tables.sql
 
 import { createClient } from '@supabase/supabase-js'
 import { validateUserToken } from './lib/auth.js'

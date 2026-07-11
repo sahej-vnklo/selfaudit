@@ -88,6 +88,19 @@ function applyTransform(mapping, ctx, resolved) {
         const followedThrough = sessions.filter((s) => done.has(String(s?.status || '').toLowerCase())).length
         return sessions.length > 0 ? Number(((followedThrough / sessions.length) * 100).toFixed(1)) : null
       }
+      if (computation === 'negative-retention-signal-count') {
+        const signals = ctx.brain?.retention_signals ?? []
+        return signals.filter((s) => /churn|cancel|downgrade|at.?risk|complaint|escalat/i.test(String(s))).length
+      }
+      if (computation === 'last-session-unfollowed') {
+        return ctx.brain?.last_session?.status === 'unknown (not followed up)' ? 1 : 0
+      }
+      if (computation === 'goal-timeline-unrealistic') {
+        return String(ctx.brain?.goal_timeline || '').toLowerCase().includes('unrealistic') ? 1 : 0
+      }
+      if (computation === 'goal-timeline-tight') {
+        return String(ctx.brain?.goal_timeline || '').toLowerCase().includes('tight') ? 1 : 0
+      }
       return null
     }
 

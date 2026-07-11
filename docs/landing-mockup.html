@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SelfAudit — Landing Page Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0a0707;
+    --surface: #110b0a;
+    --surface2: #1a1110;
+    --border: rgba(244,235,227,0.08);
+    --border2: rgba(244,235,227,0.15);
+    --text: #f4ebe3;
+    --muted: #a89a91;
+    --faint: rgba(244,235,227,0.32);
+    --ember: #C8622A;
+    --ember-light: rgba(200,98,42,0.1);
+    --ember-text: #e07843;
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --sans: 'Manrope', -apple-system, sans-serif;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family: var(--sans); background: var(--bg); color: var(--text); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; height: 60px; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 48px;
+    background: rgba(10,7,7,0.88); backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo { display: flex; align-items: center; gap: 10px; }
+  .nav-logo-hex { width: 26px; height: 26px; color: var(--ember); }
+  .nav-logo-text { font-family: var(--serif); font-size: 20px; font-weight: 500; letter-spacing: -0.01em; }
+  .nav-links { display: flex; align-items: center; gap: 32px; font-size: 13.5px; color: var(--muted); }
+  .nav-links a { color: var(--muted); text-decoration: none; transition: color 0.15s; }
+  .nav-links a:hover { color: var(--text); }
+  .nav-cta { padding: 9px 22px; background: var(--ember); border-radius: 8px; color: white; font-size: 13.5px; font-weight: 600; border: none; cursor: pointer; }
+
+  /* ── ANNOTATION BADGE ── */
+  .annotation {
+    position: absolute; top: 12px; right: 16px;
+    font-size: 9.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 3px 9px; border-radius: 100px;
+    border: 1px solid rgba(200,98,42,0.4);
+    color: var(--ember-text); background: var(--ember-light);
+    white-space: nowrap;
+  }
+  .placeholder {
+    background: var(--surface); border: 1px dashed rgba(244,235,227,0.12);
+    border-radius: 12px; padding: 32px 40px; text-align: center;
+    font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--faint);
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 120px 48px 80px; text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 40%, rgba(200,98,42,0.07) 0%, transparent 70%),
+      radial-gradient(ellipse 60% 40% at 30% 70%, rgba(200,98,42,0.04) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  /* Mock 3D cube outline */
+  .hero-visual {
+    position: absolute; inset: 0;
+    background:
+      linear-gradient(135deg, transparent 20%, rgba(200,98,42,0.02) 50%, transparent 80%);
+    opacity: 0.6;
+  }
+  .hero-badge {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--ember-text); border: 1px solid rgba(200,98,42,0.3);
+    padding: 5px 16px; border-radius: 100px; margin-bottom: 28px;
+    display: inline-block; position: relative;
+  }
+  .hero-title {
+    font-family: var(--serif);
+    font-size: clamp(52px, 7vw, 82px);
+    font-weight: 500; line-height: 1.05;
+    margin-bottom: 18px; position: relative;
+    max-width: 900px;
+  }
+  .hero-title em { font-style: italic; color: var(--ember-text); }
+  .hero-sub {
+    font-size: 17px; color: var(--muted); max-width: 520px;
+    line-height: 1.65; margin-bottom: 16px; position: relative;
+  }
+  .hero-price-line {
+    font-size: 13px; color: var(--faint); margin-bottom: 36px; position: relative;
+    letter-spacing: 0.02em;
+  }
+  .hero-price-line strong { color: var(--ember-text); font-weight: 600; }
+  .hero-actions { display: flex; gap: 12px; align-items: center; position: relative; }
+  .btn-primary { padding: 12px 28px; background: var(--ember); border-radius: 9px; color: white; font-size: 14px; font-weight: 600; border: none; cursor: pointer; }
+  .btn-ghost { padding: 12px 22px; background: transparent; border: 1px solid var(--border2); border-radius: 9px; color: var(--muted); font-size: 14px; font-weight: 500; cursor: pointer; }
+  .change-badge { position: absolute; top: -30px; right: -10px; font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ember-text); background: var(--ember-light); border: 1px solid rgba(200,98,42,0.3); padding: 2px 7px; border-radius: 4px; white-space: nowrap; }
+
+  /* ── PAIN SECTION ── */
+  .pain-section {
+    padding: 100px 48px; max-width: 860px; margin: 0 auto;
+    position: relative;
+  }
+  .section-tag {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--ember-text); margin-bottom: 20px;
+  }
+  .pain-headline {
+    font-family: var(--serif);
+    font-size: clamp(36px, 4vw, 52px);
+    font-weight: 500; line-height: 1.1; color: var(--text);
+    margin-bottom: 32px;
+  }
+  .pain-headline em { font-style: italic; color: var(--ember-text); }
+  .pain-body { font-size: 16px; color: var(--muted); line-height: 1.85; margin-bottom: 22px; }
+  .pain-body strong { color: var(--text); }
+
+  /* ── $150K STRIP ── */
+  .price-strip {
+    border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    padding: 36px 48px; text-align: center;
+    position: relative;
+  }
+  .price-strip-inner {
+    max-width: 800px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: center; gap: 32px;
+    flex-wrap: wrap;
+  }
+  .price-strip-item {
+    display: flex; flex-direction: column; gap: 4px;
+    align-items: center;
+  }
+  .price-big {
+    font-family: var(--serif);
+    font-size: 48px; font-weight: 500; line-height: 1;
+  }
+  .price-big.crossed { color: var(--faint); text-decoration: line-through; }
+  .price-big.ember { color: var(--ember-text); }
+  .price-label { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint); }
+  .price-vs { font-family: var(--serif); font-size: 28px; color: var(--border2); }
+  .price-strip-line {
+    font-size: 13px; color: var(--muted); margin-top: 12px; max-width: 480px; margin-left: auto; margin-right: auto;
+  }
+
+  /* ── SECTION PLACEHOLDER ── */
+  .existing-section {
+    padding: 60px 48px; max-width: 1100px; margin: 0 auto;
+    position: relative;
+  }
+
+  /* ── CAUSAL CHAIN (inside What's Breaking) ── */
+  .causal-section {
+    padding: 100px 48px; max-width: 1100px; margin: 0 auto;
+    position: relative;
+  }
+  .causal-headline {
+    font-family: var(--serif);
+    font-size: clamp(32px, 3.5vw, 46px);
+    font-weight: 500; color: var(--text); line-height: 1.15;
+    margin-bottom: 40px; max-width: 640px;
+  }
+  .causal-chain {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 36px 44px;
+    margin-bottom: 40px;
+    position: relative; overflow: hidden;
+  }
+  .causal-chain::before {
+    content: '';
+    position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    background: linear-gradient(to bottom, var(--ember) 0%, rgba(200,98,42,0.2) 100%);
+  }
+  .causal-chain-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--ember-text); margin-bottom: 18px;
+  }
+  .causal-chain-text {
+    font-family: var(--serif); font-size: 26px; font-weight: 500;
+    color: var(--text); line-height: 1.4; font-style: italic;
+  }
+  .causal-chain-text em { color: var(--ember-text); font-style: normal; }
+  .causal-note {
+    font-size: 13.5px; color: var(--muted); line-height: 1.65; margin-top: 18px;
+  }
+  .cards-row {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+  }
+  .mini-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 18px 20px;
+  }
+  .mini-card-num {
+    font-family: var(--serif); font-size: 32px; font-weight: 500;
+    color: var(--ember-text); line-height: 1; margin-bottom: 6px;
+  }
+  .mini-card-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint); margin-bottom: 6px; }
+  .mini-card-text { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+  /* ── NOT X SECTION ── */
+  .notx-section {
+    padding: 100px 48px; max-width: 900px; margin: 0 auto;
+    border-top: 1px solid var(--border);
+    position: relative;
+  }
+  .notx-headline {
+    font-family: var(--serif);
+    font-size: clamp(36px, 4vw, 54px);
+    font-weight: 500; color: var(--text); line-height: 1.1;
+    margin-bottom: 12px;
+  }
+  .notx-headline em { font-style: italic; color: var(--ember-text); }
+  .notx-sub {
+    font-size: 15px; color: var(--muted); line-height: 1.6;
+    margin-bottom: 48px; max-width: 540px;
+  }
+  .notx-list { display: flex; flex-direction: column; gap: 0; }
+  .notx-row {
+    display: grid; grid-template-columns: 190px 1fr;
+    padding: 22px 0; border-bottom: 1px solid var(--border);
+    align-items: start; gap: 32px;
+  }
+  .notx-row:last-child { border-bottom: none; }
+  .notx-label {
+    font-size: 14px; font-weight: 700; color: var(--text);
+    padding-top: 2px; display: flex; align-items: center; gap: 10px;
+  }
+  .notx-label::before {
+    content: '—'; color: var(--ember-text); font-weight: 400;
+  }
+  .notx-body { font-size: 14px; color: var(--muted); line-height: 1.7; }
+  .notx-body strong { color: var(--text); }
+  .notx-closer {
+    margin-top: 48px; padding: 28px 36px;
+    background: var(--ember-light); border: 1px solid rgba(200,98,42,0.25);
+    border-radius: 12px;
+    font-family: var(--serif); font-size: 20px; font-style: italic;
+    color: var(--text); line-height: 1.5;
+  }
+
+  /* ── DIVIDER ── */
+  hr { border: none; border-top: 1px solid var(--border); }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <svg class="nav-logo-hex" viewBox="0 0 32 32" fill="none">
+      <path d="M16,2 L28.1,9 L28.1,23 L16,30 L3.9,23 L3.9,9 Z" stroke="currentColor" strokeWidth="1.8" fill="none"/>
+      <path d="M16,9.5 L21.6,12.75 L21.6,19.25 L16,22.5 L10.4,19.25 L10.4,12.75 Z" stroke="currentColor" strokeWidth="1.4" fill="none"/>
+    </svg>
+    <span class="nav-logo-text">SelfAudit</span>
+  </div>
+  <div class="nav-links">
+    <a href="#">How It Works</a>
+    <a href="#">Pricing</a>
+  </div>
+  <button class="nav-cta">Start Audit</button>
+</nav>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION 1 — HERO  (updated subhead + price line)
+═══════════════════════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-visual"></div>
+  <div class="annotation">Updated — new subhead + price line added</div>
+
+  <div class="hero-badge">AI Chief of Staff · Now Available</div>
+
+  <h1 class="hero-title">
+    The AI Chief of Staff<br>
+    for <em>growing businesses</em>
+  </h1>
+
+  <p class="hero-sub">
+    Monitors your business across every department. Connects the dots.
+    Tells you what's wrong before you thought to check.
+  </p>
+
+  <p class="hero-price-line">
+    A real Chief of Staff costs <strong>$150,000 a year.</strong>
+    SelfAudit is <strong>$99 a month.</strong>
+  </p>
+
+  <div class="hero-actions">
+    <button class="btn-primary">Start free audit</button>
+    <button class="btn-ghost">See how it works</button>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION 2 — PAIN PARAGRAPH  (new section)
+═══════════════════════════════════════════════════════ -->
+<section style="padding: 100px 48px; border-top: 1px solid var(--border); position: relative;">
+<div style="max-width: 800px; margin: 0 auto; position: relative;">
+  <div class="annotation">New section — pain paragraph</div>
+
+  <div class="section-tag">The problem</div>
+  <h2 class="pain-headline">
+    By the time you find out<br>
+    something is wrong — it's<br>
+    already <em>expensive.</em>
+  </h2>
+
+  <p class="pain-body">
+    The churn didn't start this month — it started building three months ago in a support queue nobody escalated. The pipeline didn't collapse overnight — it thinned deal by deal while you were heads-down in product. The cash position didn't get tight this quarter — it got tight because a hiring decision in February was compounding silently in the background. <strong>Every one of these problems was visible in the data before it became a crisis. The signals were there. Nobody was reading them.</strong>
+  </p>
+
+  <p class="pain-body">
+    Founders don't fail because they stop paying attention. They fail because they outgrew their ability to synthesise every department simultaneously — and the only hire that fixes it costs $200,000 a year. SelfAudit closes that gap. Not with more dashboards or more data to stare at — with a system that watches, synthesises, and briefs you. <strong>So you walk in Monday morning knowing exactly what's wrong, why it happened, and what to do about it.</strong>
+  </p>
+</div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION 3 — $150K STRIP  (new — 1 line callout)
+═══════════════════════════════════════════════════════ -->
+<div class="price-strip" style="position: relative;">
+  <div class="annotation">New — price comparison strip</div>
+  <div class="price-strip-inner">
+    <div class="price-strip-item">
+      <div class="price-big crossed">$150K</div>
+      <div class="price-label">Chief of Staff · per year</div>
+    </div>
+    <div class="price-vs">vs</div>
+    <div class="price-strip-item">
+      <div class="price-big ember">$99</div>
+      <div class="price-label">SelfAudit · per month</div>
+    </div>
+  </div>
+  <p class="price-strip-line">The seat that was only available to companies who could afford the hire is now available to every founder building something real.</p>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     EXISTING — SIX LOOPS  (no change)
+═══════════════════════════════════════════════════════ -->
+<div class="existing-section">
+  <div class="placeholder">
+    ↓ EXISTING SECTION — Six Loops. One System. — no changes ↓
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION 5 — WHAT'S BREAKING  (causal chain added inside)
+═══════════════════════════════════════════════════════ -->
+<section class="causal-section" style="position: relative;">
+  <div class="annotation">Enhanced — causal chain added inside existing section</div>
+
+  <div class="section-tag">The system that already knows</div>
+  <h2 class="causal-headline">
+    The problem isn't the data.<br>
+    It's that nobody is connecting it.
+  </h2>
+
+  <div class="causal-chain">
+    <div class="causal-chain-label">Cross-department root cause</div>
+    <div class="causal-chain-text">
+      "Your hiring freeze caused your support backlog,
+      which drove your churn,
+      which is <em>shortening your runway.</em>"
+    </div>
+    <p class="causal-note">No single tool sees this. HubSpot knows your pipeline. Stripe knows your revenue. Zendesk knows your tickets. SelfAudit knows how all three connect — and tells you before it becomes a crisis.</p>
+  </div>
+
+  <div class="cards-row">
+    <div class="mini-card">
+      <div class="mini-card-label">Tuesday</div>
+      <div class="mini-card-text">Customer response time starts rising. 18hr → 26hr. Silent.</div>
+    </div>
+    <div class="mini-card">
+      <div class="mini-card-label">Wednesday · SelfAudit flags</div>
+      <div class="mini-card-text" style="color: var(--ember-text);">Breach of your 24hr standard. Root cause: one agent carrying 200 tickets. Fix: redistribute.</div>
+    </div>
+    <div class="mini-card">
+      <div class="mini-card-label">Without SelfAudit</div>
+      <div class="mini-card-text">You find out Friday at 4pm when the client emails to complain.</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION — COMPOUNDING INTELLIGENCE  (new)
+═══════════════════════════════════════════════════════ -->
+<section style="padding: 100px 48px; border-top: 1px solid var(--border); position: relative;">
+<div style="max-width: 1060px; margin: 0 auto; position: relative;">
+  <div class="annotation">New section — Compounding Intelligence moat</div>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center;">
+
+    <div>
+      <div class="section-tag">Moat 03 · Compounding Intelligence</div>
+      <h2 style="font-family: var(--serif); font-size: clamp(36px, 4vw, 52px); font-weight: 500; line-height: 1.1; color: var(--text); margin-bottom: 20px;">
+        Gets smarter about<br>
+        <em style="font-style: italic; color: var(--ember-text);">your business</em><br>
+        every session.
+      </h2>
+      <p style="font-size: 15px; color: var(--muted); line-height: 1.75; margin-bottom: 20px;">
+        Every audit you run, every question you ask, every connector you add — it all builds a model of your specific business. After three months, SelfAudit knows your structural blockers, your recurring patterns, your decision history.
+      </p>
+      <p style="font-size: 15px; color: var(--muted); line-height: 1.75; margin-bottom: 32px;">
+        No other AI tool does this. ChatGPT starts blank every session. Dashboards have no memory. <strong style="color: var(--text);">Leave SelfAudit and you lose months of operational intelligence built specifically around your business.</strong> It doesn't export. It doesn't transfer. That intelligence is yours — and it compounds every time you use it.
+      </p>
+      <div style="display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--faint);">
+        <div style="width: 6px; height: 6px; border-radius: 50%; background: var(--ember); flex-shrink: 0;"></div>
+        The switching cost is your history. Every session you skip is intelligence you don't build.
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <!-- Timeline of compounding -->
+      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px;">
+        <div style="font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint); margin-bottom: 6px;">Session 1</div>
+        <div style="font-size: 13.5px; color: var(--muted); line-height: 1.5;">SelfAudit learns your core offer, your biggest bottleneck, your active goal.</div>
+        <div style="height: 3px; background: var(--surface2); border-radius: 100px; margin-top: 12px; overflow: hidden;"><div style="width: 15%; height: 100%; background: var(--ember); border-radius: 100px;"></div></div>
+      </div>
+      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px;">
+        <div style="font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint); margin-bottom: 6px;">After 1 month</div>
+        <div style="font-size: 13.5px; color: var(--muted); line-height: 1.5;">Recurring blockers identified. Decision patterns tracked. Repeated problems named.</div>
+        <div style="height: 3px; background: var(--surface2); border-radius: 100px; margin-top: 12px; overflow: hidden;"><div style="width: 42%; height: 100%; background: var(--ember); border-radius: 100px;"></div></div>
+      </div>
+      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px;">
+        <div style="font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint); margin-bottom: 6px;">After 3 months</div>
+        <div style="font-size: 13.5px; color: var(--muted); line-height: 1.5;">SelfAudit has a complete operational trajectory. Knows what you fixed, what keeps coming back, and the root cause you keep stepping around.</div>
+        <div style="height: 3px; background: var(--surface2); border-radius: 100px; margin-top: 12px; overflow: hidden;"><div style="width: 78%; height: 100%; background: var(--ember); border-radius: 100px;"></div></div>
+      </div>
+      <div style="background: var(--ember-light); border: 1px solid rgba(200,98,42,0.25); border-radius: 12px; padding: 20px 24px;">
+        <div style="font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ember-text); margin-bottom: 6px;">After 6 months</div>
+        <div style="font-size: 13.5px; color: var(--text); line-height: 1.5;">No human advisor could replicate what SelfAudit now knows about your business. And it gets sharper every session.</div>
+        <div style="height: 3px; background: rgba(200,98,42,0.15); border-radius: 100px; margin-top: 12px; overflow: hidden;"><div style="width: 100%; height: 100%; background: var(--ember); border-radius: 100px;"></div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     EXISTING — VERDICTS  (no change)
+═══════════════════════════════════════════════════════ -->
+<div class="existing-section">
+  <div class="placeholder">
+    ↓ EXISTING SECTION — Not Testimonials. Verdicts. — no changes ↓
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     SECTION 7 — NOT X  (replaces Fortune 500 section)
+═══════════════════════════════════════════════════════ -->
+<section class="notx-section" style="position: relative;">
+  <div class="annotation">Replaces Fortune 500 section</div>
+
+  <div class="section-tag">Clear on what it isn't</div>
+  <h2 class="notx-headline">
+    Not a chatbot.<br>Not a dashboard.<br>
+    <em>Not what you think.</em>
+  </h2>
+  <p class="notx-sub">Every tool you've tried before has left you doing the thinking. SelfAudit is built differently. Here's exactly what it isn't — and what that means for you.</p>
+
+  <div class="notx-list">
+    <div class="notx-row">
+      <div class="notx-label">Not a chatbot</div>
+      <div class="notx-body">Chatbots are stateless. They start blank every session, wait to be asked, and forget everything when you close the tab. SelfAudit has memory — it monitors without being asked and gets smarter about your business every session.</div>
+    </div>
+    <div class="notx-row">
+      <div class="notx-label">Not a dashboard</div>
+      <div class="notx-body">Dashboards show you numbers and make you do the thinking. SelfAudit does the thinking — it tells you what the numbers mean across all departments, connected, with a recommended move.</div>
+    </div>
+    <div class="notx-row">
+      <div class="notx-label">Not a BI tool</div>
+      <div class="notx-body">BI tools require a data team, visualise one domain at a time, and tell you what happened. SelfAudit tells you <strong>why it happened</strong>, how it connects to three other things, and what to do. <strong>No data team required.</strong></div>
+    </div>
+    <div class="notx-row">
+      <div class="notx-label">Not a consultant</div>
+      <div class="notx-body">Consultants charge $15,000/month, spend 90 days learning your business, and leave. SelfAudit knows your business continuously at $99/month — and gets more accurate the longer you use it.</div>
+    </div>
+    <div class="notx-row">
+      <div class="notx-label">Not a reporting tool</div>
+      <div class="notx-body">Reports are retrospective — they tell you what went wrong last quarter. SelfAudit is proactive — it catches the signal <strong>before it becomes a reportable problem.</strong></div>
+    </div>
+    <div class="notx-row">
+      <div class="notx-label">Not generic AI</div>
+      <div class="notx-body">Generic AI gives you industry advice based on nothing specific to you. SelfAudit gives you advice based on your actual business — your thresholds, your history, your patterns, your connectors.</div>
+    </div>
+    <div class="notx-row">
+      <div class="notx-label">Not enterprise software</div>
+      <div class="notx-body">Not for teams of analysts with six-month implementation timelines. Built for a single founder who needs answers on Monday morning without a team to prep the data.</div>
+    </div>
+    <div class="notx-row">
+      <div class="notx-label">Not a recommendation engine</div>
+      <div class="notx-body">It doesn't just tell you what to do. It produces the deliverable — the email, the SOP, the action plan. <strong>From diagnosis to done in one session.</strong></div>
+    </div>
+  </div>
+
+  <div class="notx-closer">
+    "SelfAudit is a new category: Operational Intelligence. The synthesis layer that sits above every tool and tells the founder what's actually happening across their business — continuously, specifically, and at $99 a month."
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     EXISTING — FAQ + CTA  (no change)
+═══════════════════════════════════════════════════════ -->
+<div class="existing-section">
+  <div class="placeholder">
+    ↓ EXISTING SECTIONS — FAQ + Stop Guessing CTA — no changes ↓
+  </div>
+</div>
+
+<div style="height: 80px;"></div>
+
+</body>
+</html>
