@@ -60,8 +60,26 @@ function normalizeIndustryId(value) {
   return String(value || '').trim().toLowerCase().replace(/[_\s]+/g, '-')
 }
 
+// Persisted schemas carry frozen COPIES of catalog compound rules; text fields
+// added to the catalog later (rootCause/impact) are missing from older schemas.
+// Backfill display texts from the catalog by rule id — user-customized
+// conditions/thresholds in the stored rule always win.
+const CATALOG_COMPOUND_BY_ID = new Map(
+  Object.values(COMPOUND_RULES_BY_INDUSTRY).flat().map((rule) => [rule.id, rule])
+)
+
 function resolveCompoundRules(schema, brain) {
-  if (schema?.compoundRules) return schema.compoundRules
+  if (schema?.compoundRules) {
+    return schema.compoundRules.map((rule) => {
+      const catalog = CATALOG_COMPOUND_BY_ID.get(rule.id)
+      if (!catalog) return rule
+      return {
+        ...rule,
+        rootCause: rule.rootCause ?? catalog.rootCause ?? null,
+        impact: rule.impact ?? catalog.impact ?? null,
+      }
+    })
+  }
   const industryId = normalizeIndustryId(schema?.industryId || schema?.industry_id || schema?.industry || brain?.industry)
   return COMPOUND_RULES_BY_INDUSTRY[industryId] ?? []
 }

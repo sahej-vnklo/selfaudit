@@ -465,6 +465,34 @@ test('compound rules carry authored because and if-ignored text end to end', () 
   })
 })
 
+test('stale persisted schema compound rules backfill texts from the catalog', () => {
+  // Schemas saved before WP8 carry frozen rule copies without rootCause/impact.
+  const staleStoredRule = {
+    id: 'compound:cash-fragility',
+    conditions: [
+      { metricKey: 'churn_rate', comparator: 'gt', value: 5 },
+      { metricKey: 'runway_months', comparator: 'lt', value: 9 },
+    ],
+    title: 'Cash fragility',
+    summary: 'High churn combined with short runway creates compounding financial pressure.',
+    recommendation: 'Treat churn reduction and cash conservation as a single priority.',
+    severity: 'critical',
+  }
+  const governance = runGovernanceMonitoring({
+    schema: {
+      industryId: 'saas-software',
+      areas: [getArea('finance-accounting')],
+      compoundRules: [staleStoredRule],
+    },
+    userMetrics: { churn_rate: 6, runway_months: 8 },
+    checkedAt: '2026-07-14T12:00:00.000Z',
+  })
+  const finding = governance.compoundFindings.find((item) => item.id === 'compound:cash-fragility')
+
+  assert.equal(finding?.rootCause, 'The likely driver is revenue retention weakening while the cash buffer is already narrow.')
+  assert.equal(finding?.impact, 'If ignored, the company has less room to fix churn before cash decisions become reactive.')
+})
+
 test('authored compound texts are complete and avoid forbidden verdict phrasing', () => {
   const allCompoundRules = [
     ...COMPOUND_RULES_SAAS,
