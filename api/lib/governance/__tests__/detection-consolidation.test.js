@@ -4,6 +4,22 @@ import test from 'node:test'
 import shopifyFixture from '../../connectors/__tests__/fixtures/shopify-orders.json' with { type: 'json' }
 import { mergeNormalized, normalizeConnectorData, normalizeEcommerce } from '../../connectors/normalize.js'
 import { getArea } from '../../blueprint/catalog/index.js'
+import { createArea } from '../../blueprint/schema.js'
+import {
+  COMPOUND_RULES_CONSTRUCTION,
+  COMPOUND_RULES_CONSUMER_APP,
+  COMPOUND_RULES_ECOMMERCE,
+  COMPOUND_RULES_HEALTHCARE,
+  COMPOUND_RULES_HOSPITALITY,
+  COMPOUND_RULES_LOGISTICS,
+  COMPOUND_RULES_MANUFACTURING,
+  COMPOUND_RULES_MARKETPLACE,
+  COMPOUND_RULES_PS,
+  COMPOUND_RULES_REAL_ESTATE,
+  COMPOUND_RULES_SAAS,
+  COMPOUND_RULES_WHOLESALE,
+} from '../../blueprint/catalog/areas.js'
+import { buildAreaMetricSnapshots } from '../metric-snapshots.js'
 import { runGovernanceMonitoring, toLegacyRisk } from '../monitoring.js'
 
 const schema = {
@@ -347,6 +363,132 @@ test('legacy risk shape remains stable', () => {
     'rootCause',
     'impact',
   ])
+})
+
+test('manual user metrics count as honest coverage and manual sources', () => {
+  const financeSchema = { areas: [getArea('finance-accounting')] }
+  const snapshots = buildAreaMetricSnapshots({
+    schema: financeSchema,
+    userMetrics: { runway_months: 4 },
+    checkedAt: '2026-07-14T12:00:00.000Z',
+  })
+
+  assert.equal(snapshots[0].coverage, 1)
+  assert.deepEqual(snapshots[0].sources, ['manual'])
+  assert.deepEqual(snapshots[0].metrics, [{ key: 'runway_months', value: 4, source: 'manual' }])
+
+  const governance = runGovernanceMonitoring({
+    schema: financeSchema,
+    userMetrics: { runway_months: 4 },
+    checkedAt: '2026-07-14T12:00:00.000Z',
+  })
+
+  assert.equal(governance.areas[0].status, 'bad')
+  assert.notEqual(governance.areas[0].summary, 'No live signals yet for Finance & Accounting.')
+})
+
+test('rule-less custom areas stay no-signal: values fill but do not count as signal', () => {
+  const customArea = createArea({ id: 'custom-area', label: 'Custom Area' })
+  const snapshots = buildAreaMetricSnapshots({
+    schema: { areas: [customArea] },
+    userMetrics: { custom_metric: 7 },
+    checkedAt: '2026-07-14T12:00:00.000Z',
+  })
+
+  // available for cross-area evaluation…
+  assert.deepEqual(snapshots[0].metricsByKey, { custom_metric: 7 })
+  // …but no borrowed-signal green lamp for an area that cannot evaluate anything
+  assert.equal(snapshots[0].coverage, 0)
+  assert.deepEqual(snapshots[0].sources, [])
+})
+
+test('areas only count manual signal for metrics they own', () => {
+  const snapshots = buildAreaMetricSnapshots({
+    schema: { areas: [getArea('finance-accounting')] },
+    userMetrics: { runway_months: 4, csat: 57 },
+    checkedAt: '2026-07-14T12:00:00.000Z',
+  })
+
+  // csat fills for compound evaluation but is not finance's own signal
+  assert.equal(snapshots[0].metricsByKey.csat, 57)
+  assert.deepEqual(snapshots[0].metrics, [{ key: 'runway_months', value: 4, source: 'manual' }])
+  assert.equal(snapshots[0].coverage, 1)
+})
+
+test('simulation metric overrides still do not count as coverage', () => {
+  const snapshots = buildAreaMetricSnapshots({
+    schema: { areas: [getArea('finance-accounting')] },
+    metricOverrides: { runway_months: 4 },
+    checkedAt: '2026-07-14T12:00:00.000Z',
+  })
+
+  assert.equal(snapshots[0].coverage, 0)
+  assert.deepEqual(snapshots[0].sources, [])
+  assert.deepEqual(snapshots[0].metrics, [])
+  assert.equal(snapshots[0].metricsByKey.runway_months, 4)
+})
+
+test('catalog threshold rationale populates rootCause without duplicating impact', () => {
+  const governance = runGovernanceMonitoring({
+    schema: { areas: [getArea('finance-accounting')] },
+    userMetrics: { runway_months: 4 },
+    checkedAt: '2026-07-14T12:00:00.000Z',
+  })
+  const finding = governance.findings.find((item) => item.id === 'finance-accounting:runway-bad')
+
+  assert.equal(finding?.rootCause, 'Below six months, financial fragility becomes an existential operating issue.')
+  assert.equal(finding?.impact, null)
+})
+
+test('compound rules carry authored because and if-ignored text end to end', () => {
+  const governance = runGovernanceMonitoring({
+    schema: {
+      industryId: 'saas-software',
+      areas: [getArea('finance-accounting')],
+    },
+    userMetrics: { churn_rate: 6, runway_months: 8 },
+    checkedAt: '2026-07-14T12:00:00.000Z',
+  })
+  const finding = governance.compoundFindings.find((item) => item.id === 'compound:cash-fragility')
+  const risk = governance.risks.find((item) => item.title === 'Cash fragility')
+
+  assert.deepEqual({
+    rootCause: finding?.rootCause,
+    impact: finding?.impact,
+    riskRootCause: risk?.rootCause,
+    riskImpact: risk?.impact,
+  }, {
+    rootCause: 'The likely driver is revenue retention weakening while the cash buffer is already narrow.',
+    impact: 'If ignored, the company has less room to fix churn before cash decisions become reactive.',
+    riskRootCause: 'The likely driver is revenue retention weakening while the cash buffer is already narrow.',
+    riskImpact: 'If ignored, the company has less room to fix churn before cash decisions become reactive.',
+  })
+})
+
+test('authored compound texts are complete and avoid forbidden verdict phrasing', () => {
+  const allCompoundRules = [
+    ...COMPOUND_RULES_SAAS,
+    ...COMPOUND_RULES_ECOMMERCE,
+    ...COMPOUND_RULES_MANUFACTURING,
+    ...COMPOUND_RULES_PS,
+    ...COMPOUND_RULES_MARKETPLACE,
+    ...COMPOUND_RULES_CONSUMER_APP,
+    ...COMPOUND_RULES_HOSPITALITY,
+    ...COMPOUND_RULES_HEALTHCARE,
+    ...COMPOUND_RULES_WHOLESALE,
+    ...COMPOUND_RULES_LOGISTICS,
+    ...COMPOUND_RULES_CONSTRUCTION,
+    ...COMPOUND_RULES_REAL_ESTATE,
+  ]
+
+  assert.equal(allCompoundRules.length, 21)
+  for (const rule of allCompoundRules) {
+    assert.ok(rule.rootCause?.trim(), `${rule.id} missing rootCause`)
+    assert.ok(rule.impact?.trim(), `${rule.id} missing impact`)
+    assert.notEqual(rule.rootCause, rule.impact, `${rule.id} duplicated rootCause and impact`)
+    assert.doesNotMatch(rule.rootCause, /is caused by|root cause/i)
+    assert.doesNotMatch(rule.impact, /is caused by|root cause/i)
+  }
 })
 
 test('deterministic governance text avoids verdict language', () => {

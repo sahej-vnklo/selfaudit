@@ -5,7 +5,7 @@ import { buildMetricHistoryRows, buildEntityHistoryRows } from '../../../cron/sy
 import { METRIC_DEFINITIONS } from '../../connectors/metric-definitions.js'
 import { NORMALIZER_VERSION } from '../../connectors/normalize.js'
 import { DETECTION_VERSION } from '../../governance/monitoring.js'
-import { buildEvidenceSnapshot } from '../risk-alerts.js'
+import { buildAlertPayload, buildEvidenceSnapshot, dedupeAlertPayloadsWithinRun, shouldSkipExistingOpenAlert } from '../risk-alerts.js'
 
 test('evidence snapshot builder freezes alert facts and context', () => {
   const risk = {
@@ -137,6 +137,85 @@ test('AI-originated alert candidates are marked as enrichment evidence', () => {
   )
 
   assert.equal(snapshot.origin, 'ai-enrichment')
+})
+
+test('alert payload carries because and if-ignored evidence text', () => {
+  const payload = buildAlertPayload(
+    '00000000-0000-0000-0000-000000000001',
+    '00000000-0000-0000-0000-000000000002',
+    {
+      severity: 'critical',
+      category: 'cross-area',
+      title: 'Cash fragility',
+      description: 'High churn combined with short runway creates compounding financial pressure.',
+      evidence: 'Cross-area compound signal',
+      recommended_action: 'Treat churn reduction and cash conservation as a single priority.',
+      source: 'governance-compound',
+      rootCause: 'The likely driver is revenue retention weakening while the cash buffer is already narrow.',
+      impact: 'If ignored, the company has less room to fix churn before cash decisions become reactive.',
+      metricKey: 'compound',
+    },
+    { checked_at: '2026-07-14T12:00:00.000Z', governance: { snapshots: [], causalDiagnosis: { chains: [] } } }
+  )
+
+  assert.deepEqual(payload.evidence, {
+    raw: 'Cross-area compound signal',
+    rootCause: 'The likely driver is revenue retention weakening while the cash buffer is already narrow.',
+    impact: 'If ignored, the company has less room to fix churn before cash decisions become reactive.',
+  })
+})
+
+test('same-run alert dedup keeps the highest severity for twin keys', () => {
+  const payloads = [
+    { category: 'management-strategy', title: 'Follow-through is materially weak', severity: 'medium' },
+    { category: 'management-strategy', title: 'Follow-through is materially weak', severity: 'high' },
+    { category: 'management-strategy', title: 'Goal progress below target', severity: 'medium' },
+  ]
+
+  const deduped = dedupeAlertPayloadsWithinRun(payloads)
+
+  assert.equal(deduped.length, 2)
+  assert.deepEqual(
+    deduped.map((payload) => [payload.title, payload.severity]),
+    [
+      ['Follow-through is materially weak', 'high'],
+      ['Goal progress below target', 'medium'],
+    ]
+  )
+})
+
+test('same-run alert dedup keeps different keys unaffected', () => {
+  const deduped = dedupeAlertPayloadsWithinRun([
+    { category: 'marketing-sales', title: 'Pipeline warning', severity: 'low' },
+    { category: 'marketing-sales', title: 'Pipeline warning', severity: 'medium' },
+    { category: 'customer-service', title: 'Pipeline warning', severity: 'high' },
+  ])
+
+  assert.equal(deduped.length, 2)
+  assert.deepEqual(
+    deduped.map((payload) => [payload.category, payload.title, payload.severity]),
+    [
+      ['marketing-sales', 'Pipeline warning', 'medium'],
+      ['customer-service', 'Pipeline warning', 'high'],
+    ]
+  )
+})
+
+test('pre-existing open alert dedup still skips non-escalating duplicates', () => {
+  assert.equal(
+    shouldSkipExistingOpenAlert(
+      { severity: 'high', escalation_tier: 'alert' },
+      { severity: 'medium', escalation_tier: 'flag' }
+    ),
+    true
+  )
+  assert.equal(
+    shouldSkipExistingOpenAlert(
+      { severity: 'medium', escalation_tier: 'flag' },
+      { severity: 'critical', escalation_tier: 'critical' }
+    ),
+    false
+  )
 })
 
 test('sync metric row builder stamps version and metric definition window', () => {

@@ -86,6 +86,8 @@ function evaluateCompoundRules(compoundRules, combinedMetrics) {
       title:           rule.title,
       summary:         rule.summary,
       recommendation:  rule.recommendation,
+      rootCause:       rule.rootCause ?? null,
+      impact:          rule.impact ?? null,
       metricKey:       'compound',
       comparator:      'compound',
       thresholdValue:  null,

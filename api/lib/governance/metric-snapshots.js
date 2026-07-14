@@ -20,6 +20,23 @@ function metric(key, value, source) {
   return { key, value, source }
 }
 
+// Fill-only user metrics. Values fill metricsByKey for ANY unresolved key (compound
+// rules combine metrics across areas), but only keys this area OWNS (allowedKeys —
+// its mapping metricKeys) count as signal: a coverage row with source 'manual'.
+// Otherwise a rule-less custom area would glow green from borrowed numbers it has
+// no ability to evaluate — the "no signal" lamp must stay honest in both directions.
+function addUserMetrics(ctx, metricsByKey, metrics, allowedKeys) {
+  if (!ctx.userMetrics || typeof ctx.userMetrics !== 'object') return
+
+  for (const [key, value] of Object.entries(ctx.userMetrics)) {
+    if (value != null && Number.isFinite(Number(value)) && metricsByKey[key] == null) {
+      const numericValue = Number(value)
+      metricsByKey[key] = numericValue
+      if (allowedKeys?.has(key)) metrics.push(metric(key, numericValue, 'manual'))
+    }
+  }
+}
+
 function safeNumber(value) {
   if (value == null) return null
   const parsed = Number(value)
@@ -124,8 +141,14 @@ function applyTransform(mapping, ctx, resolved) {
 
 function buildSnapshotForArea(area, ctx, checkedAt) {
   if (!Array.isArray(area.metricMappings) || area.metricMappings.length === 0) {
-    return { areaId: area.id, checkedAt, metrics: [], metricsByKey: {}, sources: [], coverage: 0 }
+    // No mappings = no keys this area owns: values may fill for cross-area
+    // evaluation, but none count as signal — the area honestly stays 'no-signal'.
+    const metricsByKey = {}
+    addUserMetrics(ctx, metricsByKey, [], null)
+    return { areaId: area.id, checkedAt, metrics: [], metricsByKey, sources: [], coverage: 0 }
   }
+
+  const ownedKeys = new Set(area.metricMappings.map((m) => m.metricKey))
 
   const resolved = {}
   const metrics  = []
@@ -153,7 +176,6 @@ function buildSnapshotForArea(area, ctx, checkedAt) {
   }
 
   const valid   = metrics.filter(Boolean)
-  const sources = [...new Set(valid.map((m) => m.source).filter(Boolean))]
   const metricsByKey = normalizeGovernanceMetrics(valid)
 
   // metricOverrides: force-write (used by simulation to test hypothetical values)
@@ -167,13 +189,9 @@ function buildSnapshotForArea(area, ctx, checkedAt) {
 
   // userMetrics: fill-only — user-defined values from Logic page.
   // Only applied when a connector or brain hasn't already resolved the key.
-  if (ctx.userMetrics && typeof ctx.userMetrics === 'object') {
-    for (const [key, value] of Object.entries(ctx.userMetrics)) {
-      if (value != null && Number.isFinite(Number(value)) && metricsByKey[key] == null) {
-        metricsByKey[key] = Number(value)
-      }
-    }
-  }
+  addUserMetrics(ctx, metricsByKey, valid, ownedKeys)
+
+  const sources = [...new Set(valid.map((m) => m.source).filter(Boolean))]
 
   return {
     areaId: area.id,

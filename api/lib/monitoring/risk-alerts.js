@@ -7,6 +7,8 @@ import { getExplanationContext } from '../governance/causal-engine.js'
 import { DETECTION_VERSION } from '../governance/monitoring.js'
 import { mapFindingToEscalationTier, tierRank } from './escalation.js'
 
+const SEVERITY_RANK = { low: 1, medium: 2, high: 3, critical: 4 }
+
 function getSupabase() {
   return createClient(
     process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
@@ -118,7 +120,7 @@ export function buildEvidenceSnapshot(risk, healthCheck) {
   }
 }
 
-function buildAlertPayload(userId, healthCheckId, risk, healthCheck) {
+export function buildAlertPayload(userId, healthCheckId, risk, healthCheck) {
   return {
     user_id: userId,
     health_check_id: healthCheckId,
@@ -141,6 +143,29 @@ function buildAlertPayload(userId, healthCheckId, risk, healthCheck) {
   }
 }
 
+function severityRank(severity) {
+  return SEVERITY_RANK[String(severity || '').toLowerCase()] ?? 0
+}
+
+export function dedupeAlertPayloadsWithinRun(payloads) {
+  const byKey = new Map()
+
+  for (const payload of payloads) {
+    const key = `${payload.category}::${normaliseTitle(payload.title)}`
+    const existing = byKey.get(key)
+    if (!existing || severityRank(payload.severity) > severityRank(existing.severity)) {
+      byKey.set(key, payload)
+    }
+  }
+
+  return [...byKey.values()]
+}
+
+export function shouldSkipExistingOpenAlert(existing, payload) {
+  const existingTier = existing?.escalation_tier || mapFindingToEscalationTier(existing)
+  return tierRank(payload.escalation_tier) <= tierRank(existingTier)
+}
+
 // Creates risk alerts from a health check result, skipping duplicates unless the
 // incoming alert has escalated above the currently open tier.
 export async function createRiskAlertsFromHealthCheck(userId, healthCheck) {
@@ -152,8 +177,8 @@ export async function createRiskAlertsFromHealthCheck(userId, healthCheck) {
   // Load existing open alerts to deduplicate
   const openIndex = await loadOpenAlertIndex(sb, userId)
 
-  const toInsert = []
   const updatedAlerts = []
+  const newPayloads = []
   const alertCandidates = [
     ...(healthCheck.risks ?? []),
     ...(healthCheck.governance?.alert_candidates ?? []),
@@ -165,8 +190,7 @@ export async function createRiskAlertsFromHealthCheck(userId, healthCheck) {
     const existing = openIndex.get(key)
 
     if (existing) {
-      const existingTier = existing.escalation_tier || mapFindingToEscalationTier(existing)
-      if (tierRank(payload.escalation_tier) <= tierRank(existingTier)) continue
+      if (shouldSkipExistingOpenAlert(existing, payload)) continue
 
       const { data: updated, error: updateError } = await sb
         .from('risk_alerts')
@@ -198,8 +222,10 @@ export async function createRiskAlertsFromHealthCheck(userId, healthCheck) {
       continue
     }
 
-    toInsert.push(payload)
+    newPayloads.push(payload)
   }
+
+  const toInsert = dedupeAlertPayloadsWithinRun(newPayloads)
 
   if (toInsert.length === 0) return updatedAlerts
 

@@ -133,7 +133,7 @@ export function evaluateThresholdRule(rule, metrics) {
     summary: rule.summary,
     recommendation: rule.recommendation,
     rationale: rule.rationale,
-    rootCause: rule.rootCause ?? null,
+    rootCause: rule.rootCause ?? rule.rationale ?? null,
     impact: rule.impact ?? null,
   }
 }

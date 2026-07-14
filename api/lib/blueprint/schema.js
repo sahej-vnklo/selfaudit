@@ -29,8 +29,8 @@ export function createMetricMapping({ metricKey, transform, sources = [], inputs
   return { metricKey, transform, sources, inputs, computation, source }
 }
 
-export function createCompoundRule({ id, conditions, title, summary, recommendation, severity = 'high', status = 'bad' }) {
-  return { id, conditions, title, summary, recommendation, severity, status }
+export function createCompoundRule({ id, conditions, title, summary, recommendation, rootCause = null, impact = null, severity = 'high', status = 'bad' }) {
+  return { id, conditions, title, summary, recommendation, rootCause, impact, severity, status }
 }
 
 export function createArea({
