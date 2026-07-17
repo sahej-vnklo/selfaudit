@@ -58,7 +58,7 @@ function BurgerMenu({ onClose, onLogoClick, onNav, onAnchor }) {
       </header>
 
       <div className="menu-body">
-        <div className="menu-col left">
+        <div className="menu-col">
           <div className="menu-eyebrow">Explore</div>
           <div className="menu-group">
             <button className="menu-cat" onClick={() => onAnchor('origin')}>Origin</button>
@@ -69,10 +69,6 @@ function BurgerMenu({ onClose, onLogoClick, onNav, onAnchor }) {
               <button className="menu-sublink" onClick={() => onAnchor('dispatch')}>Dispatch</button>
             </div>
           </div>
-        </div>
-
-        <div className="menu-col right">
-          <div className="menu-eyebrow">Company</div>
           <div className="menu-group">
             <button className="menu-cat" onClick={() => onNav('about')}>About</button>
           </div>

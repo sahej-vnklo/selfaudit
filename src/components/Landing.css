@@ -348,7 +348,7 @@
   flex-shrink: 0;
 }
 .sa-home .menu-logo-wrap { display: flex; align-items: center; gap: 12px; cursor: pointer; }
-.sa-home .menu-logo-text { font-family: var(--wordmark-font); font-size: 24px; font-weight: 600; letter-spacing: -0.02em; color: var(--ink); line-height: 1; }
+.sa-home .menu-logo-text { font-family: var(--sans); font-size: 22px; font-weight: 500; letter-spacing: -0.02em; color: var(--ink); line-height: 1; }
 .sa-home .menu-close-btn {
   display: inline-flex;
   align-items: center;
@@ -371,15 +371,6 @@
   max-width: 1040px;
   margin: 0 auto;
   padding: clamp(48px, 7vh, 96px) 56px 88px;
-  display: grid;
-  grid-template-columns: 1.25fr 1fr;
-  gap: 0;
-}
-
-.sa-home .menu-col.left { padding-right: clamp(36px, 4vw, 64px); }
-.sa-home .menu-col.right {
-  padding-left: clamp(36px, 4vw, 64px);
-  border-left: 1px solid var(--line);
 }
 
 .sa-home .menu-eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: 0.26em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 34px; }
@@ -388,7 +379,7 @@
 
 .sa-home .menu-cat {
   display: inline-block;
-  font-family: var(--wordmark-font);
+  font-family: var(--sans);
   font-weight: 600;
   font-size: clamp(26px, 3vw, 38px);
   line-height: 1.1;
@@ -466,7 +457,7 @@
   transition: color .2s;
 }
 .sa-home .menu-contact-close:hover { color: var(--ink); }
-.sa-home .menu-contact-title { font-family: var(--wordmark-font); font-size: 28px; font-weight: 600; letter-spacing: -0.02em; color: var(--ink); margin-bottom: 8px; }
+.sa-home .menu-contact-title { font-family: var(--sans); font-size: 26px; font-weight: 600; letter-spacing: -0.02em; color: var(--ink); margin-bottom: 8px; }
 .sa-home .menu-contact-sub { font-size: 14px; color: var(--ink-2); line-height: 1.6; margin-bottom: 24px; }
 .sa-home .menu-contact-fields { display: flex; flex-direction: column; gap: 12px; margin-bottom: 8px; }
 .sa-home .menu-contact-input,
@@ -506,11 +497,5 @@
 
 @media (max-width: 860px) {
   .sa-home .menu-top { padding: 0 26px; }
-  .sa-home .menu-body { grid-template-columns: 1fr; padding: 48px 26px 72px; }
-  .sa-home .menu-col.left { padding-right: 0; padding-bottom: 56px; }
-  .sa-home .menu-col.right {
-    padding-left: 0; border-left: none;
-    border-top: 1px solid var(--line);
-    padding-top: 56px;
-  }
+  .sa-home .menu-body { padding: 48px 26px 72px; }
 }
