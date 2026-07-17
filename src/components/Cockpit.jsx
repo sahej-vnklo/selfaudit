@@ -26,7 +26,8 @@ const C = {
   greenText:     'var(--green-text)',
 }
 
-const SERIF = '"Cormorant Garamond", "Times New Roman", serif'
+const DISPLAY_FONT = '-apple-system, "Helvetica Neue", "Inter", Arial, sans-serif'
+const MONO = '"SF Mono", "JetBrains Mono", ui-monospace, Menlo, monospace'
 
 // escalate / alert / critical → full newspaper article with approve/skip
 const ACTIONABLE_TIERS = new Set(['escalate', 'alert', 'critical'])
@@ -394,23 +395,23 @@ function StrategicPriorityCard({ priority, userId, userEmail, commChannels, save
 
       <div style={{ paddingBottom: 20, borderBottom: `1px solid ${C.border}` }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 7 }}>
-          <span style={{ padding: '2px 7px', borderRadius: 4, background: sev.bg, color: sev.color, border: `1px solid ${sev.border}`, fontSize: 10, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+          <span style={{ fontFamily: MONO, padding: '2px 7px', borderRadius: 4, background: sev.bg, color: sev.color, border: `1px solid ${sev.border}`, fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
             {sev.label}
           </span>
           <span style={{ fontSize: 12, color: C.textMuted }}>{theme_label}</span>
           {isRecurring && (
-            <span style={{ padding: '2px 7px', borderRadius: 4, background: 'rgba(251,146,60,0.1)', color: '#f97316', border: '1px solid rgba(251,146,60,0.25)', fontSize: 10, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+            <span style={{ fontFamily: MONO, padding: '2px 7px', borderRadius: 4, background: 'rgba(251,146,60,0.1)', color: '#f97316', border: '1px solid rgba(251,146,60,0.25)', fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
               Recurring
             </span>
           )}
           <span style={{ marginLeft: 'auto', fontSize: 11, color: C.textFaint }}>{timeAgo(lead.created_at)}</span>
         </div>
 
-        <h3 style={{ fontFamily: SERIF, fontSize: 30, fontWeight: 600, color: C.text, lineHeight: 1.15, margin: '0 0 8px' }}>
+        <h3 style={{ fontFamily: DISPLAY_FONT, fontSize: 30, fontWeight: 600, letterSpacing: '-0.015em', color: C.text, lineHeight: 1.15, margin: '0 0 8px' }}>
           {lead.title}
         </h3>
         {lead.description && (
-          <p style={{ fontFamily: SERIF, fontSize: 13, fontStyle: 'italic', color: C.textMuted, lineHeight: 1.65, margin: '0 0 12px' }}>
+          <p style={{ fontFamily: DISPLAY_FONT, fontSize: 13, color: C.textMuted, lineHeight: 1.65, margin: '0 0 12px' }}>
             {lead.description}
           </p>
         )}
@@ -485,7 +486,7 @@ function WatchBrief({ alert, areaLabel }) {
     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 9, padding: '9px 0', borderBottom: `1px solid ${C.border}` }}>
       <div style={{ width: 7, height: 7, borderRadius: '50%', background: C.amber, flexShrink: 0, marginTop: 4 }} />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 13, fontFamily: SERIF, fontWeight: 500, color: C.text, lineHeight: 1.3, marginBottom: 2 }}>{alert.title}</div>
+        <div style={{ fontSize: 13, fontFamily: DISPLAY_FONT, fontWeight: 500, color: C.text, lineHeight: 1.3, marginBottom: 2 }}>{alert.title}</div>
         <div style={{ fontSize: 11, color: C.textFaint }}>{subtitle}</div>
       </div>
     </div>
@@ -497,7 +498,7 @@ function OpportunityBrief({ text }) {
     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 9, padding: '9px 0', borderBottom: `1px solid ${C.border}` }}>
       <div style={{ width: 7, height: 7, borderRadius: '50%', background: C.green, flexShrink: 0, marginTop: 4 }} />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 13, fontFamily: SERIF, fontWeight: 500, color: C.text, lineHeight: 1.4 }}>{text}</div>
+        <div style={{ fontSize: 13, fontFamily: DISPLAY_FONT, fontWeight: 500, color: C.text, lineHeight: 1.4 }}>{text}</div>
       </div>
     </div>
   )
@@ -605,7 +606,7 @@ export default function CockpitSection({ user, navigateSection }) {
       {/* Header — company identity + AI summary */}
       <div style={{ background: 'var(--d-surface)', border: '1px solid var(--d-border)', borderRadius: 12, padding: '18px 22px', display: 'flex', alignItems: 'center', gap: 20 }}>
         <div style={{ flexShrink: 0 }}>
-          <div style={{ fontFamily: SERIF, fontSize: 24, fontWeight: 500, color: C.text, lineHeight: 1.15 }}>
+          <div style={{ fontFamily: DISPLAY_FONT, fontSize: 24, fontWeight: 600, letterSpacing: '-0.015em', color: C.text, lineHeight: 1.15 }}>
             {data.company_name || 'My Business'}
           </div>
           {(data.selected_areas || []).length > 0 && (
@@ -718,7 +719,7 @@ export default function CockpitSection({ user, navigateSection }) {
 
           {/* Areas */}
           <div style={{ background: 'var(--d-surface)', border: '1px solid var(--d-border)', borderRadius: 10, padding: '14px 16px' }}>
-            <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.textFaint, marginBottom: 10 }}>Areas</div>
+            <div style={{ fontFamily: MONO, fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.textFaint, marginBottom: 10 }}>Areas</div>
             {(data.selected_areas || []).length === 0 ? (
               <div style={{ fontSize: 12, color: C.textFaint, lineHeight: 1.5 }}>Complete onboarding to see area status.</div>
             ) : (
@@ -735,7 +736,7 @@ export default function CockpitSection({ user, navigateSection }) {
           {/* Metrics */}
           {metrics.length > 0 && (
             <div style={{ background: 'var(--d-surface)', border: '1px solid var(--d-border)', borderRadius: 10, padding: '14px 16px' }}>
-              <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.textFaint, marginBottom: 10 }}>Metrics</div>
+              <div style={{ fontFamily: MONO, fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.textFaint, marginBottom: 10 }}>Metrics</div>
               {metrics.map((item, i) => {
                 const isBad = item.trend === 'up-bad' || item.trend === 'down-bad'
                 const valColor = isBad ? C.redText : (item.trend !== 'flat' ? C.amberText : C.text)
@@ -755,7 +756,7 @@ export default function CockpitSection({ user, navigateSection }) {
             onClick={() => navigateSection?.('home')}
             style={{ background: 'var(--d-surface)', border: '1px solid var(--d-border)', borderRadius: 10, padding: '14px 16px', textAlign: 'left', cursor: 'pointer', width: '100%' }}
           >
-            <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.textFaint, marginBottom: 6 }}>Ask anything</div>
+            <div style={{ fontFamily: MONO, fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.textFaint, marginBottom: 6 }}>Ask anything</div>
             <div style={{ fontSize: 12, color: C.textMuted, lineHeight: 1.5, marginBottom: 10 }}>Deep-dive any alert or talk through what's going on.</div>
             <div style={{ fontSize: 12, color: C.accentText, display: 'flex', alignItems: 'center', gap: 4, fontWeight: 500 }}>
               Open chat
@@ -768,7 +769,7 @@ export default function CockpitSection({ user, navigateSection }) {
             <div style={{ background: 'var(--d-surface)', border: `1px solid ${C.amber}33`, borderRadius: 10, padding: '14px 16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={C.amber} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.amber }}>Blind spots</span>
+                <span style={{ fontFamily: MONO, fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.amber }}>Blind spots</span>
                 <span style={{ fontSize: 11, color: C.textFaint, marginLeft: 'auto' }}>{data.probing_queue.length} area{data.probing_queue.length !== 1 ? 's' : ''}</span>
               </div>
               <div style={{ fontSize: 12, color: C.textMuted, lineHeight: 1.5, marginBottom: 10 }}>
@@ -793,7 +794,7 @@ export default function CockpitSection({ user, navigateSection }) {
                       width: '100%',
                     }}
                   >
-                    <div style={{ fontSize: 10, fontWeight: 600, color: C.amberText, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 3 }}>{item.areaLabel}</div>
+                    <div style={{ fontFamily: MONO, fontSize: 10, fontWeight: 600, color: C.amberText, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 3 }}>{item.areaLabel}</div>
                     <div style={{ fontSize: 12, color: C.text, lineHeight: 1.4 }}>{item.question}</div>
                   </button>
                 ))}

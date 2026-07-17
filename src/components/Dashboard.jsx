@@ -2044,12 +2044,12 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
           </button>
 
           <nav className="dash-nav">
-            <button className={`dash-navbtn${section === 'cockpit' ? ' active' : ''}`} data-label="Cockpit" aria-label="Cockpit" type="button" onClick={() => navigateSection('cockpit')}>
+            <button className={`dash-navbtn${section === 'cockpit' ? ' active' : ''}`} data-label="Sentinel" aria-label="Sentinel" type="button" onClick={() => navigateSection('cockpit')}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/>
                 <rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/>
               </svg>
-              <span className="navlabel">Cockpit</span>
+              <span className="navlabel">Sentinel</span>
             </button>
             <button className={`dash-navbtn${section === 'home' ? ' active' : ''}`} data-label="Command" aria-label="Command" type="button" onClick={() => navigateSection('home')}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
