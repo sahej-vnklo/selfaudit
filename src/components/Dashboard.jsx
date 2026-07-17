@@ -812,6 +812,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
   })
   const themeVars = getThemeVars(theme)
   const [profile, setProfile] = useState(null)
+  const [companyName, setCompanyName] = useState('')
   const [businessState, setBusinessState] = useState(null)
   const [businessStateLoading, setBusinessStateLoading] = useState(true)
   const [healthIntel, setHealthIntel]   = useState(null)
@@ -1091,7 +1092,10 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
           throw new Error(data?.error || 'Could not load schema status.')
         }
 
-        if (!cancelled) setHasSchema(!!data?.schema)
+        if (!cancelled) {
+          setHasSchema(!!data?.schema)
+          setCompanyName(data?.schema?.customBusinessName?.trim() || '')
+        }
       } catch (error) {
         console.warn('[dashboard] schema status load failed:', error?.message || error)
         if (!cancelled) setHasSchema(true)
@@ -1915,38 +1919,14 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
 
       {/* ── Top bar ───────────────────────────────────────────────────────── */}
       <header className="dash-topbar">
-        <div className="dash-logo" onClick={() => navigateSection('home')}>
-          <span className="logo-mark">
-            <svg viewBox="0 0 32 32" fill="none" width="26" height="26">
-              <g stroke="currentColor" strokeLinejoin="round" strokeLinecap="round" fill="none">
-                <path d="M16,2 L28.1,9 L28.1,23 L16,30 L3.9,23 L3.9,9 Z" strokeWidth="1.8"/>
-                <path d="M16,9.5 L21.6,12.75 L21.6,19.25 L16,22.5 L10.4,19.25 L10.4,12.75 Z" strokeWidth="1.4"/>
-                <path d="M16,2 L16,9.5 M28.1,9 L21.6,12.75 M28.1,23 L21.6,19.25 M16,30 L16,22.5 M3.9,23 L10.4,19.25 M3.9,9 L10.4,12.75" strokeWidth="1.2"/>
-              </g>
-            </svg>
-          </span>
-          <span className="logo-text">SelfAudit</span>
+        <div
+          className="dash-logo"
+          onClick={() => navigateSection('home')}
+          aria-label={`${companyName || 'Company'} home`}
+          title={companyName || 'Company'}
+        >
+          <span className="logo-text">{companyName || 'Company'}</span>
         </div>
-
-        {(() => {
-          const artifactMode = currentMode?.mode === 'diagnose' || currentMode?.mode === 'goal'
-          const hasNewResults = agentYDone && sessionActive && artifactMode
-          return (
-            <button
-              className="dash-status"
-              type="button"
-              onClick={() => setShowResultsPanel(p => !p)}
-            >
-              <span className="dot" style={hasNewResults ? { background: 'var(--green)', boxShadow: '0 0 10px -1px var(--green)' } : {}} />
-              {hasNewResults ? 'Results ready' : 'Execution Panel'}
-              <span className="chev">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d={showResultsPanel ? 'M18 15l-6-6-6 6' : 'M6 9l6 6 6-6'}/>
-                </svg>
-              </span>
-            </button>
-          )
-        })()}
 
         <div className="dash-top-right">
           <button className="dash-pill" type="button" onClick={() => navigateSection(section === 'oversight' ? 'home' : 'oversight')}>
