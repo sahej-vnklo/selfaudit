@@ -6,7 +6,7 @@ import OriginMap from './home/OriginMap.jsx'
 import './Landing.css'
 
 // ── Burger menu overlay ───────────────────────────────────────────────────────
-function BurgerMenu({ onClose, onLogoClick, onNav }) {
+function BurgerMenu({ onClose, onLogoClick, onNav, onAnchor }) {
   const [showContact, setShowContact] = useState(false)
   const [contactEmail, setContactEmail] = useState('')
   const [contactMsg, setContactMsg] = useState('')
@@ -61,17 +61,13 @@ function BurgerMenu({ onClose, onLogoClick, onNav }) {
         <div className="menu-col left">
           <div className="menu-eyebrow">Explore</div>
           <div className="menu-group">
-            <button className="menu-cat">Platform</button>
+            <button className="menu-cat" onClick={() => onAnchor('origin')}>Origin</button>
             <div className="menu-sublist">
-              <button className="menu-sublink" onClick={() => onNav('intelligence-layer')}>The Intelligence Layer</button>
-              <button className="menu-sublink" onClick={() => onNav('live-ontology')}>Live Ontology</button>
+              <button className="menu-sublink" onClick={() => onAnchor('sentinel')}>Sentinel</button>
+              <button className="menu-sublink" onClick={() => onAnchor('foresight')}>Foresight</button>
+              <button className="menu-sublink" onClick={() => onAnchor('counsel')}>Counsel</button>
+              <button className="menu-sublink" onClick={() => onAnchor('dispatch')}>Dispatch</button>
             </div>
-          </div>
-          <div className="menu-group">
-            <button className="menu-cat" onClick={() => onNav('voice')}>What's Next</button>
-          </div>
-          <div className="menu-group">
-            <button className="menu-cat" onClick={() => onNav('capabilities')}>Capabilities</button>
           </div>
         </div>
 
@@ -271,6 +267,13 @@ export default function Landing({ onStart, session, openMenu, onMenuOpened }) {
     window.location.hash = hash
   }, [])
 
+  const handleAnchor = useCallback((id) => {
+    setMenuOpen(false)
+    requestAnimationFrame(() => {
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    })
+  }, [])
+
   // ── Reveal-on-scroll for section copy ─────────────────────────────────────
   useEffect(() => {
     const els = document.querySelectorAll('.sa-home .reveal')
@@ -293,6 +296,7 @@ export default function Landing({ onStart, session, openMenu, onMenuOpened }) {
           onClose={() => setMenuOpen(false)}
           onLogoClick={handleLogoClick}
           onNav={handleNav}
+          onAnchor={handleAnchor}
         />
       )}
 
@@ -356,7 +360,7 @@ export default function Landing({ onStart, session, openMenu, onMenuOpened }) {
           <p className="caps-intro reveal">Four capabilities, operational from the day the business is modeled. Each one answers a question every operator carries.</p>
 
           {CAPABILITIES.map((cap) => (
-            <div className="cap" key={cap.name}>
+            <div className="cap" id={cap.name.toLowerCase()} key={cap.name}>
               <div className="cap-text reveal">
                 <div className="q">{cap.q}</div>
                 <div className="wordmark">{cap.name}</div>
