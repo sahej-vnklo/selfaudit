@@ -77,8 +77,10 @@ function BurgerMenu({ onClose, onLogoClick, onNav }) {
 
         <div className="menu-col right">
           <div className="menu-eyebrow">Company</div>
-          <div className="menu-stack">
+          <div className="menu-group">
             <button className="menu-cat" onClick={() => onNav('about')}>About</button>
+          </div>
+          <div className="menu-group">
             <button className="menu-cat" onClick={() => setShowContact(true)}>Contact</button>
           </div>
         </div>
