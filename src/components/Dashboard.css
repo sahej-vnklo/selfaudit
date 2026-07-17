@@ -170,6 +170,13 @@
 .sa-dash .dash-nav {
   display: flex; flex-direction: column; align-items: center; gap: 6px;
 }
+.sa-dash .dash-nav-divider {
+  width: 28px;
+  height: 1px;
+  margin: 8px 0;
+  background: var(--d-border-strong);
+  flex: none;
+}
 .sa-dash .dash-side-foot {
   margin-top: auto;
   display: flex; flex-direction: column; align-items: center; gap: 6px;
@@ -212,9 +219,9 @@
 .sa-dash .dash-navbtn svg { width: 19px; height: 19px; }
 .sa-dash .dash-navbtn:hover { color: var(--fg); background: oklch(0.6 0.18 35 / 0.06); }
 .sa-dash .dash-navbtn.active {
-  color: var(--ember);
-  background: oklch(0.6 0.18 35 / 0.1);
-  border-color: oklch(0.6 0.18 35 / 0.3);
+  color: #d4553a;
+  background: rgba(212, 85, 58, 0.07);
+  border-color: rgba(212, 85, 58, 0.34);
 }
 
 /* Tooltip on hover (collapsed state) */
@@ -228,7 +235,7 @@
   background: var(--bg-3);
   border: 1px solid var(--line-2);
   border-radius: 6px;
-  font-family: "Manrope", -apple-system, system-ui, sans-serif;
+  font-family: "Titillium Web", -apple-system, "Helvetica Neue", "Inter", Arial, sans-serif;
   font-size: 12px; font-weight: 500;
   color: var(--fg);
   white-space: nowrap;
@@ -241,8 +248,9 @@
 
 /* Inline nav label (hidden by default, shown when expanded) */
 .sa-dash .navlabel {
-  font-family: "Manrope", -apple-system, system-ui, sans-serif;
-  font-size: 14.5px; font-weight: 500;
+  font-family: "Titillium Web", -apple-system, "Helvetica Neue", "Inter", Arial, sans-serif;
+  font-size: 16px; font-weight: 600;
+  letter-spacing: -0.01em;
   white-space: nowrap;
   overflow: hidden;
   max-width: 0;
@@ -258,6 +266,10 @@
 }
 .sa-dash.rail-open .dash-nav,
 .sa-dash.rail-open .dash-side-foot { align-items: stretch; }
+.sa-dash.rail-open .dash-nav-divider {
+  width: 100%;
+  margin: 8px 0;
+}
 .sa-dash.rail-open .dash-rail-toggle,
 .sa-dash.rail-open .dash-navbtn {
   width: 100%;

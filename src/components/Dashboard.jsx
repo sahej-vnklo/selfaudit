@@ -1397,6 +1397,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
       return
     }
     history.pushState({ section: sectionName }, '', `#${nextSection}`)
+    setShowResultsPanel(false)
     setSection(sectionName)
     setDeptView(view)
     if (tab) setAccountTab(tab)
@@ -2046,22 +2047,31 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
           <nav className="dash-nav">
             <button className={`dash-navbtn${section === 'cockpit' ? ' active' : ''}`} data-label="Sentinel" aria-label="Sentinel" type="button" onClick={() => navigateSection('cockpit')}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/>
-                <rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/>
+                <path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10.5V21h13V10.5M9.5 21v-6h5v6"/>
               </svg>
               <span className="navlabel">Sentinel</span>
             </button>
-            <button className={`dash-navbtn${section === 'home' ? ' active' : ''}`} data-label="Command" aria-label="Command" type="button" onClick={() => navigateSection('home')}>
+            <button className={`dash-navbtn${section === 'simulate' ? ' active' : ''}`} data-label="Foresight" aria-label="Foresight" type="button" onClick={() => navigateSection('simulate')}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9 6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3z"/>
+                <path d="M4 19V5M4 19h16"/><path d="m7 15 4-5 3 3 5-7"/>
               </svg>
-              <span className="navlabel">Command</span>
+              <span className="navlabel">Foresight</span>
             </button>
-            <button className={`dash-navbtn${section === 'simulate' ? ' active' : ''}`} data-label="Simulate" aria-label="Simulate" type="button" onClick={() => navigateSection('simulate')}>
+            <button className={`dash-navbtn${section === 'home' ? ' active' : ''}`} data-label="Counsel" aria-label="Counsel" type="button" onClick={() => navigateSection('home')}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/>
+                <path d="M5 5.5A3.5 3.5 0 0 1 8.5 2h7A3.5 3.5 0 0 1 19 5.5v7a3.5 3.5 0 0 1-3.5 3.5H13l-3.5 3v-3h-1A3.5 3.5 0 0 1 5 12.5z"/>
+                <path d="M9 9h.01M12 9h.01M15 9h.01"/>
               </svg>
-              <span className="navlabel">Simulate</span>
+              <span className="navlabel">Counsel</span>
+            </button>
+
+            <div className="dash-nav-divider" aria-hidden="true" />
+
+            <button className={`dash-navbtn${showResultsPanel ? ' active' : ''}`} data-label="Dispatch" aria-label="Dispatch" type="button" onClick={() => setShowResultsPanel(p => !p)}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m21 3-8.2 18-2.1-7.7L3 11.2 21 3Z"/><path d="m10.7 13.3 4.8-4.8"/>
+              </svg>
+              <span className="navlabel">Dispatch</span>
             </button>
           </nav>
 
