@@ -240,7 +240,7 @@
 .sa-dash.rail-open .dash-side {
   width: 144px;
   align-items: stretch;
-  padding: 13px 10px;
+  padding: 85px 10px 13px;
 }
 .sa-dash.rail-open .dash-nav,
 .sa-dash.rail-open .dash-side-foot { align-items: stretch; }
