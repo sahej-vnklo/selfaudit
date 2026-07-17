@@ -1977,10 +1977,10 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
       {showResultsPanel && (
         <div style={{
           position: 'fixed',
-          top: 68,
-          left: sidebarExpanded ? 214 : 66,
+          top: 54,
+          left: sidebarExpanded ? 171 : 53,
           right: 0,
-          height: 'calc(100vh - 68px)',
+          height: 'calc(100vh - 54px)',
           background: 'var(--bg)',
           borderLeft: '1px solid var(--d-border)',
           overflow: 'auto',

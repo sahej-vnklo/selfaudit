@@ -31,12 +31,12 @@
 
 /* ─── Top bar ────────────────────────────────────────────────────────────────*/
 .sa-dash .dash-topbar {
-  height: 68px;
+  height: 54px;
   flex: none;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  padding: 0 22px;
+  padding: 0 18px;
   background: var(--bg);
   border-bottom: 1px solid var(--d-border);
   z-index: 20;
@@ -51,14 +51,14 @@
   color: inherit;
 }
 .sa-dash .dash-logo .logo-mark {
-  width: 26px; height: 26px;
+  width: 21px; height: 21px;
   display: grid; place-items: center;
   color: var(--ember);
 }
-.sa-dash .dash-logo .logo-mark svg { color: var(--ember); }
+.sa-dash .dash-logo .logo-mark svg { width: 21px; height: 21px; color: var(--ember); }
 .sa-dash .dash-logo .logo-text {
   font-family: "Cormorant Garamond", "Times New Roman", serif;
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 500;
   letter-spacing: -0.01em;
   color: var(--fg);
@@ -69,13 +69,13 @@
   justify-self: center;
   display: inline-flex;
   align-items: center;
-  gap: 11px;
-  padding: 8px 12px 8px 14px;
+  gap: 9px;
+  padding: 6px 10px 6px 11px;
   background: var(--d-raised);
   border: 1px solid var(--d-border-strong);
   border-radius: 10px;
   box-shadow: var(--d-btn-shadow);
-  font-size: 14.5px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--fg);
   cursor: pointer;
@@ -84,7 +84,7 @@
 }
 .sa-dash .dash-status:hover { border-color: var(--fg-mute); }
 .sa-dash .dash-status .dot {
-  width: 8px; height: 8px;
+  width: 6px; height: 6px;
   border-radius: 50%;
   background: var(--ok);
   box-shadow: 0 0 10px -1px var(--ok);
@@ -92,42 +92,42 @@
 }
 .sa-dash .dash-status .count {
   font-family: "JetBrains Mono", ui-monospace, monospace;
-  font-size: 12px; font-weight: 500;
+  font-size: 10px; font-weight: 500;
   color: var(--fg-dim);
 }
 .sa-dash .dash-status .chev {
   color: var(--fg-mute);
   display: inline-flex;
 }
-.sa-dash .dash-status .chev svg { width: 15px; height: 15px; }
+.sa-dash .dash-status .chev svg { width: 12px; height: 12px; }
 
 /* right cluster */
 .sa-dash .dash-top-right {
   justify-self: end;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 .sa-dash .dash-pill {
   display: inline-flex; align-items: center; gap: 8px;
-  padding: 8px 13px;
+  padding: 6px 10px;
   background: var(--d-raised);
   border: 1px solid var(--d-border-strong);
   border-radius: 9px;
   box-shadow: var(--d-btn-shadow);
   font-family: "Manrope", -apple-system, system-ui, sans-serif;
-  font-size: 14px; font-weight: 500;
+  font-size: 11px; font-weight: 500;
   color: var(--fg-dim);
   cursor: pointer;
   white-space: nowrap;
   transition: border-color .2s, color .2s, background .2s;
 }
 .sa-dash .dash-pill:hover { border-color: var(--fg-mute); color: var(--fg); }
-.sa-dash .dash-pill svg { width: 16px; height: 16px; color: var(--fg-mute); flex: none; transition: color .2s; }
+.sa-dash .dash-pill svg { width: 13px; height: 13px; color: var(--fg-mute); flex: none; transition: color .2s; }
 .sa-dash .dash-pill:hover svg { color: var(--ember); }
 
 .sa-dash .dash-iconbtn {
-  width: 38px; height: 38px;
+  width: 31px; height: 31px;
   display: inline-flex; align-items: center; justify-content: center;
   background: var(--d-raised);
   border: 1px solid var(--d-border-strong);
@@ -138,7 +138,7 @@
   transition: border-color .2s, color .2s, background .2s;
 }
 .sa-dash .dash-iconbtn:hover { border-color: var(--ember); color: var(--ember); background: oklch(0.6 0.18 35 / 0.06); }
-.sa-dash .dash-iconbtn svg { width: 17px; height: 17px; }
+.sa-dash .dash-iconbtn svg { width: 14px; height: 14px; }
 
 /* Sun/moon theme icon swap */
 .sa-dash .icon-sun  { display: none; }
@@ -155,40 +155,40 @@
 
 /* ─── Icon rail sidebar ──────────────────────────────────────────────────────*/
 .sa-dash .dash-side {
-  width: 66px;
+  width: 53px;
   background: var(--bg);
   border-right: 1px solid var(--d-border);
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 16px 0;
-  gap: 6px;
+  padding: 13px 0;
+  gap: 5px;
   overflow: hidden;
   transition: width 0.22s cubic-bezier(.2,.7,.2,1);
   flex-shrink: 0;
 }
 .sa-dash .dash-nav {
-  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
 }
 .sa-dash .dash-nav-divider {
-  width: 28px;
+  width: 23px;
   height: 1px;
-  margin: 8px 0;
+  margin: 6px 0;
   background: var(--d-border-strong);
   flex: none;
 }
 .sa-dash .dash-side-foot {
   margin-top: auto;
-  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
 }
 
 /* Rail toggle button */
 .sa-dash .dash-rail-toggle {
-  width: 42px; height: 42px;
+  width: 34px; height: 34px;
   flex: none;
   display: inline-flex; align-items: center; justify-content: center;
-  margin-bottom: 8px;
-  border-radius: 10px;
+  margin-bottom: 6px;
+  border-radius: 8px;
   border: 1px solid var(--d-border-strong);
   background: var(--d-raised);
   color: var(--fg-mute);
@@ -201,14 +201,14 @@
   background: oklch(0.6 0.18 35 / 0.06);
   border-color: var(--fg-mute);
 }
-.sa-dash .dash-rail-toggle svg { width: 18px; height: 18px; }
+.sa-dash .dash-rail-toggle svg { width: 14px; height: 14px; }
 
 /* Nav buttons */
 .sa-dash .dash-navbtn {
   position: relative;
-  width: 42px; height: 42px;
+  width: 34px; height: 34px;
   display: inline-flex; align-items: center; justify-content: center;
-  border-radius: 10px;
+  border-radius: 8px;
   border: 1px solid transparent;
   background: transparent;
   color: var(--fg-mute);
@@ -216,7 +216,7 @@
   transition: color .2s, background .2s, border-color .2s;
   flex-shrink: 0;
 }
-.sa-dash .dash-navbtn svg { width: 19px; height: 19px; }
+.sa-dash .dash-navbtn svg { width: 15px; height: 15px; }
 .sa-dash .dash-navbtn:hover { color: var(--fg); background: oklch(0.6 0.18 35 / 0.06); }
 .sa-dash .dash-navbtn.active {
   color: #d4553a;
@@ -228,15 +228,15 @@
 .sa-dash .dash-navbtn::after {
   content: attr(data-label);
   position: absolute;
-  left: calc(100% + 12px);
+  left: calc(100% + 10px);
   top: 50%;
   transform: translateY(-50%) translateX(-4px);
-  padding: 5px 10px;
+  padding: 4px 8px;
   background: var(--bg-3);
   border: 1px solid var(--line-2);
   border-radius: 6px;
   font-family: "Titillium Web", -apple-system, "Helvetica Neue", "Inter", Arial, sans-serif;
-  font-size: 12px; font-weight: 500;
+  font-size: 10px; font-weight: 500;
   color: var(--fg);
   white-space: nowrap;
   opacity: 0;
@@ -249,7 +249,7 @@
 /* Inline nav label (hidden by default, shown when expanded) */
 .sa-dash .navlabel {
   font-family: "Titillium Web", -apple-system, "Helvetica Neue", "Inter", Arial, sans-serif;
-  font-size: 16px; font-weight: 600;
+  font-size: 13px; font-weight: 600;
   letter-spacing: -0.01em;
   white-space: nowrap;
   overflow: hidden;
@@ -260,24 +260,24 @@
 
 /* ─── Expanded rail ──────────────────────────────────────────────────────────*/
 .sa-dash.rail-open .dash-side {
-  width: 180px;
+  width: 144px;
   align-items: stretch;
-  padding: 16px 12px;
+  padding: 13px 10px;
 }
 .sa-dash.rail-open .dash-nav,
 .sa-dash.rail-open .dash-side-foot { align-items: stretch; }
 .sa-dash.rail-open .dash-nav-divider {
   width: 100%;
-  margin: 8px 0;
+  margin: 6px 0;
 }
 .sa-dash.rail-open .dash-rail-toggle,
 .sa-dash.rail-open .dash-navbtn {
   width: 100%;
   justify-content: flex-start;
-  gap: 13px;
-  padding: 0 13px;
+  gap: 10px;
+  padding: 0 10px;
 }
-.sa-dash.rail-open .dash-rail-toggle { padding: 0 12px; }
+.sa-dash.rail-open .dash-rail-toggle { padding: 0 10px; }
 .sa-dash.rail-open .navlabel { max-width: 160px; opacity: 1; }
 .sa-dash.rail-open .dash-navbtn::after { display: none; }
 
@@ -285,8 +285,8 @@
 .sa-dash .dash-content {
   display: flex;
   flex-direction: column;
-  gap: 22px;
-  padding: 26px 30px;
+  gap: 18px;
+  padding: 21px 24px;
   min-height: 0;
   overflow: hidden;
 }
@@ -462,6 +462,6 @@
 /* ─── Responsive ─────────────────────────────────────────────────────────────*/
 @media (max-width: 820px) {
   .sa-dash .dash-cards { grid-template-columns: 1fr; }
-  .sa-dash .dash-status { font-size: 13px; }
+  .sa-dash .dash-status { font-size: 10.5px; }
   .sa-dash .dash-pill { display: none; }
 }
