@@ -95,9 +95,10 @@
   gap: 10px;
   position: relative;
   z-index: 2;
-  color: #fff;
-  mix-blend-mode: difference;
+  transition: color 0.18s ease;
 }
+.sa-home .nav-over-dark .logo { color: #fff; }
+.sa-home .nav-over-light .logo { color: var(--ink); }
 .sa-home .nav-actions {
   display: flex;
   align-items: center;

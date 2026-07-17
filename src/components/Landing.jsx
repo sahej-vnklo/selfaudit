@@ -233,6 +233,7 @@ const FrameDots = () => (
 export default function Landing({ onStart, session, openMenu, onMenuOpened }) {
   const posthog = usePostHog()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [navOverDark, setNavOverDark] = useState(true)
 
   useEffect(() => {
     if (openMenu) {
@@ -285,6 +286,35 @@ export default function Landing({ onStart, session, openMenu, onMenuOpened }) {
     return () => obs.disconnect()
   }, [])
 
+  useEffect(() => {
+    let animationFrame = null
+    const darkSections = document.querySelectorAll('.sa-home .hero-matrix, .sa-home .closing')
+
+    const updateNavContrast = () => {
+      animationFrame = null
+      const sampleY = 40
+      const isOverDark = Array.from(darkSections).some((sectionEl) => {
+        const rect = sectionEl.getBoundingClientRect()
+        return rect.top <= sampleY && rect.bottom >= sampleY
+      })
+      setNavOverDark(isOverDark)
+    }
+
+    const scheduleUpdate = () => {
+      if (animationFrame !== null) return
+      animationFrame = requestAnimationFrame(updateNavContrast)
+    }
+
+    updateNavContrast()
+    window.addEventListener('scroll', scheduleUpdate, { passive: true })
+    window.addEventListener('resize', scheduleUpdate)
+    return () => {
+      window.removeEventListener('scroll', scheduleUpdate)
+      window.removeEventListener('resize', scheduleUpdate)
+      if (animationFrame !== null) cancelAnimationFrame(animationFrame)
+    }
+  }, [])
+
   return (
     <div className="sa-home">
       {menuOpen && (
@@ -297,7 +327,7 @@ export default function Landing({ onStart, session, openMenu, onMenuOpened }) {
       )}
 
       {/* NAV */}
-      <nav className="nav">
+      <nav className={`nav ${navOverDark ? 'nav-over-dark' : 'nav-over-light'}`}>
         <div className="wrap nav-inner">
           <a className="logo" href="#" onClick={(e) => { e.preventDefault(); handleLogoClick() }}>SelfAudit</a>
           <div className="nav-actions">

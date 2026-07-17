@@ -1957,10 +1957,10 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
       {showResultsPanel && (
         <div style={{
           position: 'fixed',
-          top: 72,
+          top: 0,
           left: sidebarExpanded ? 144 : 53,
           right: 0,
-          height: 'calc(100vh - 72px)',
+          height: '100vh',
           background: 'var(--bg)',
           borderLeft: '1px solid var(--d-border)',
           overflow: 'auto',
@@ -1969,7 +1969,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
         }}>
           {/* Immediate session output — shown while generateReport runs in background */}
           {agentYDone && !sessionSaved && agentYStream ? (
-            <div style={{ padding: '28px' }}>
+            <div style={{ padding: '100px 28px 28px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
                 <svg style={{ animation: 'spin 1s linear infinite', flexShrink: 0, color: 'var(--fg-mute)' }} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                   <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
@@ -1988,7 +1988,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
               </div>
             </div>
           ) : reports.length > 0 ? (
-            <div style={{ padding: '28px 28px 28px' }}>
+            <div style={{ padding: '100px 28px 28px' }}>
               <ExecutionPanel
                 key={reports[0]?.id ?? 'empty'}
                 reports={reports}
@@ -2000,7 +2000,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
               />
             </div>
           ) : (
-            <div style={{ color: 'var(--fg-mute)', fontSize: '0.85rem', textAlign: 'center', padding: '48px 0' }}>
+            <div style={{ color: 'var(--fg-mute)', fontSize: '0.85rem', textAlign: 'center', padding: '120px 0 48px' }}>
               Complete a /diagnose session to generate your execution panel.
             </div>
           )}
@@ -2073,7 +2073,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
         </aside>
 
         {/* ── Main content ─────────────────────────────────────────────────── */}
-        <main className="dash-content">
+        <main className={`dash-content${section !== 'home' ? ' has-section-scroll' : ''}`}>
 
           {/* Command / Home — two agent cards + command bar */}
           {section === 'home' && (
