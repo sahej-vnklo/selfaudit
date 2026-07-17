@@ -104,18 +104,18 @@ const THEME_ORDER = ['dark', 'light']
 const THEMES = {
   // ── Dark — ember on near-black ───────────────────────────────────────────
   dark: {
-    bg:            '#0a0707',
-    surface:       '#110b0a',
-    surface2:      '#1a1110',
-    surface3:      '#18120f',
-    panel:         '#18120f',
-    panelAlt:      '#241a16',
-    border:        'rgba(244, 235, 227, 0.08)',
-    border2:       'rgba(244, 235, 227, 0.14)',
-    text:          '#f4ebe3',
-    textSecondary: '#a89a91',
-    textMuted:     '#6b5f58',
-    textFaint:     'rgba(244, 235, 227, 0.32)',
+    bg:            '#0b0c0e',
+    surface:       '#131519',
+    surface2:      '#191b20',
+    surface3:      '#1d2025',
+    panel:         '#15171b',
+    panelAlt:      '#1c1f24',
+    border:        'rgba(242, 243, 245, 0.08)',
+    border2:       'rgba(242, 243, 245, 0.14)',
+    text:          '#f2f3f5',
+    textSecondary: '#adb2ba',
+    textMuted:     '#737983',
+    textFaint:     'rgba(242, 243, 245, 0.32)',
     accent:        'oklch(0.68 0.18 35)',
     accentLight:   'oklch(0.68 0.18 35 / 0.12)',
     accentText:    'oklch(0.78 0.16 40)',
@@ -130,10 +130,10 @@ const THEMES = {
     greenText:     'oklch(0.78 0.16 150)',
     blue:          'oklch(0.72 0.12 250)',
     violet:        'oklch(0.7 0.14 290)',
-    sand:          '#a89a91',
-    white:         '#f4ebe3',
-    overlay:       'rgba(10, 7, 7, 0.72)',
-    overlaySoft:   'rgba(10, 7, 7, 0.4)',
+    sand:          '#adb2ba',
+    white:         '#f2f3f5',
+    overlay:       'rgba(9, 10, 12, 0.74)',
+    overlaySoft:   'rgba(9, 10, 12, 0.42)',
   },
   // ── Light — ember on white paper ─────────────────────────────────────────
   light: {
@@ -209,13 +209,13 @@ function getThemeVars(theme) {
   // Dashboard-specific surface tokens (injected as CSS vars for Dashboard.css)
   // Glass surface treatment — gradient fill + inset highlight + layered shadow + hairline border
   const dSurface    = dark
-    ? 'linear-gradient(155deg, #261c17 0%, #16100d 100%)'
+    ? 'linear-gradient(155deg, #1d2025 0%, #111317 100%)'
     : 'linear-gradient(155deg, #fcfcfd 0%, #ececee 100%)'
   const dRaised     = dark
-    ? 'linear-gradient(180deg, #2c221c 0%, #1e1612 100%)'
+    ? 'linear-gradient(180deg, #22252b 0%, #17191e 100%)'
     : 'linear-gradient(180deg, #ffffff 0%, #f1f1f3 100%)'
-  const dBorder       = dark ? 'rgba(244,235,227,0.17)' : 'rgba(20,16,15,0.16)'
-  const dBorderStrong = dark ? 'rgba(244,235,227,0.28)' : 'rgba(20,16,15,0.26)'
+  const dBorder       = dark ? 'rgba(242,243,245,0.14)' : 'rgba(20,16,15,0.16)'
+  const dBorderStrong = dark ? 'rgba(242,243,245,0.24)' : 'rgba(20,16,15,0.26)'
   const dShadow     = dark
     ? '0 2px 5px rgba(0,0,0,0.5), 0 18px 40px -20px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.07)'
     : '0 1px 2px rgba(20,16,15,0.07), 0 12px 28px -16px rgba(20,16,15,0.24), 0 0 0 1px rgba(20,16,15,0.04), inset 0 1px 0 rgba(255,255,255,0.9)'
@@ -225,7 +225,15 @@ function getThemeVars(theme) {
   // Kept for sub-component backward-compat (PanelCard, KpiCard etc. use --rich-* vars)
   const rich = theme === 'light'
     ? { heroSurface: LIGHT_HERO_SURFACE, panelSurface: LIGHT_PANEL_SURFACE, heroBorder: LIGHT_HERO_BORDER, panelBorder: LIGHT_PANEL_BORDER, heroInset: LIGHT_HERO_INSET, heroShadow: LIGHT_HERO_SHADOW, panelShadow: LIGHT_PANEL_SHADOW }
-    : { heroSurface: DARK_HERO_SURFACE,  panelSurface: DARK_PANEL_SURFACE,  heroBorder: DARK_HERO_BORDER,  panelBorder: DARK_PANEL_BORDER,  heroInset: DARK_HERO_INSET,  heroShadow: DARK_HERO_SHADOW,  panelShadow: DARK_PANEL_SHADOW  }
+    : {
+        heroSurface: 'linear-gradient(180deg, rgba(28,31,36,0.97) 0%, rgba(13,15,18,0.99) 100%)',
+        panelSurface: 'linear-gradient(180deg, rgba(31,34,40,0.96) 0%, rgba(18,20,24,0.99) 100%)',
+        heroBorder: '1px solid rgba(242,243,245,0.16)',
+        panelBorder: '1px solid rgba(242,243,245,0.12)',
+        heroInset: '0 0 0 1px rgba(255,255,255,0.05) inset',
+        heroShadow: '0 18px 40px rgba(0,0,0,0.38)',
+        panelShadow: 'inset 0 1px 0 rgba(255,255,255,0.035), 0 14px 30px rgba(0,0,0,0.26)',
+      }
   return {
     // ── Semantic tokens (G.xxx aliases) ──────────────────────────────────
     '--bg':             C.bg,

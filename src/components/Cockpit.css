@@ -20,16 +20,16 @@
   font-family: var(--sentinel-body-font);
 }
 .sa-dash[data-theme="dark"] .sentinel-page {
-  --sentinel-white: #17181b;
-  --sentinel-off: #1e2024;
-  --sentinel-ink: #f4ebe3;
-  --sentinel-ink-2: #c9ccd1;
-  --sentinel-ink-3: #8a8e96;
-  --sentinel-line: #2a2c31;
+  --sentinel-white: var(--surface);
+  --sentinel-off: var(--surface2);
+  --sentinel-ink: var(--text);
+  --sentinel-ink-2: var(--text-secondary);
+  --sentinel-ink-3: var(--text-muted);
+  --sentinel-line: var(--border2);
   --sentinel-breach: #e05c3a;
   --sentinel-breach-soft: rgba(224, 92, 58, 0.09);
-  --sentinel-surface: #17181b;
-  --sentinel-canvas: #0e0f11;
+  --sentinel-surface: var(--surface);
+  --sentinel-canvas: var(--bg);
 }
 
 .sentinel-page h1,
