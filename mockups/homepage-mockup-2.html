@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SelfAudit — Homepage Mockup 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --white: #FFFFFF;
+    --off: #F6F6F4;
+    --ink: #14161A;
+    --ink-2: #4B4F57;
+    --ink-3: #9DA1A8;
+    --line: #E4E4E1;
+    --breach: #D4553A;
+    --breach-dim: #B4381E;
+    --ok: #3FA36C;
+    --panel: #0E0F11;
+    --panel-2: #17181B;
+    --panel-3: #1E2024;
+    --panel-line: #2A2C31;
+    --panel-text: #C9CCD1;
+    --panel-dim: #8A8E96;
+    --panel-faint: #5C6067;
+    --mono: "SF Mono", "JetBrains Mono", ui-monospace, Menlo, monospace;
+    --sans: -apple-system, "Helvetica Neue", "Inter", Arial, sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--white);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 0 36px; }
+  .label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .btn {
+    display: inline-block;
+    background: var(--ink);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    padding: 14px 30px;
+    border-radius: 3px;
+    text-decoration: none;
+    letter-spacing: 0.01em;
+    transition: background 0.15s;
+  }
+  .btn:hover { background: #000; }
+  .btn.inverse { background: #fff; color: var(--ink); }
+  .btn.inverse:hover { background: var(--off); }
+
+  /* reveal on scroll */
+  .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .reveal.in { opacity: 1; transform: none; }
+
+  /* ---------- nav ---------- */
+  nav {
+    position: fixed;
+    top: 22px;
+    left: 0;
+    right: 0;
+    z-index: 80;
+    background: transparent;
+  }
+  .nav-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 104px;
+    padding: 16px 28px;
+    background: linear-gradient(180deg, rgba(84, 107, 137, 0.78), rgba(38, 56, 79, 0.72));
+    backdrop-filter: blur(18px) saturate(130%);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 18px;
+    box-shadow: 0 18px 40px rgba(7,10,15,0.28);
+  }
+  .logo {
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: rgba(255,255,255,0.94);
+  }
+  .logo-mark {
+    width: 22px;
+    height: 22px;
+    border: 2px solid rgba(255,255,255,0.82);
+    border-radius: 50%;
+    position: relative;
+  }
+  .logo-mark::after {
+    content: "";
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-left: 2px solid rgba(255,255,255,0.82);
+    border-bottom: 2px solid rgba(255,255,255,0.82);
+    left: 4px;
+    bottom: -2px;
+    border-bottom-left-radius: 3px;
+    transform: rotate(-45deg);
+  }
+  .nav-links { display: none; }
+  .nav-actions { display: flex; align-items: stretch; gap: 14px; }
+  .nav-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 188px;
+    padding: 0 28px;
+    background: rgba(255,255,255,0.97);
+    color: var(--ink);
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 500;
+    border: 1px solid rgba(9,10,12,0.26);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.65);
+  }
+  .nav-cta:hover { background: #fff; }
+  .nav-icon-group {
+    display: flex;
+    align-items: stretch;
+    border: 1px solid rgba(9,10,12,0.26);
+    background: rgba(255,255,255,0.97);
+  }
+  .nav-icon {
+    width: 62px;
+    display: grid;
+    place-items: center;
+    position: relative;
+  }
+  .nav-icon + .nav-icon { border-left: 1px solid rgba(9,10,12,0.2); }
+  .nav-icon.search::before {
+    content: "";
+    width: 19px;
+    height: 19px;
+    border: 2px solid rgba(20,22,26,0.78);
+    border-radius: 50%;
+    display: block;
+    box-sizing: border-box;
+  }
+  .nav-icon.search::after {
+    content: "";
+    position: absolute;
+    width: 10px;
+    height: 2px;
+    background: rgba(20,22,26,0.78);
+    transform: rotate(45deg);
+    right: 15px;
+    bottom: 31px;
+    border-radius: 2px;
+  }
+  .nav-icon.menu::before,
+  .nav-icon.menu::after,
+  .nav-icon.menu span {
+    content: "";
+    position: absolute;
+    width: 30px;
+    height: 2px;
+    background: rgba(20,22,26,0.78);
+    border-radius: 2px;
+  }
+  .nav-icon.menu::before { top: 34px; }
+  .nav-icon.menu span { top: 43px; left: 16px; }
+  .nav-icon.menu::after { top: 52px; }
+
+  /* ---------- hero slot (separate file: hero-section.html) ---------- */
+  .hero-slot { height: 100vh; background: var(--panel); }
+  .hero-slot iframe { width: 100%; height: 100%; border: 0; display: block; }
+
+  /* ---------- manifesto ---------- */
+  .manifesto { padding: 170px 0; background: var(--white); }
+  .manifesto p {
+    font-size: clamp(32px, 4.4vw, 58px);
+    font-weight: 500;
+    line-height: 1.16;
+    letter-spacing: -0.02em;
+    max-width: 1080px;
+  }
+  .manifesto .dim { color: var(--ink-3); }
+
+  /* ---------- product frame chrome ---------- */
+  .frame {
+    background: var(--panel);
+    border: 1px solid var(--panel-line);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 34px 70px -34px rgba(14,15,17,0.5);
+  }
+  .frame-bar {
+    display: flex; align-items: center; gap: 7px;
+    padding: 11px 16px; border-bottom: 1px solid var(--panel-line);
+  }
+  .fdot { width: 10px; height: 10px; border-radius: 50%; }
+  .fdot:nth-child(1) { background: #FF5F57; }
+  .fdot:nth-child(2) { background: #FEBC2E; }
+  .fdot:nth-child(3) { background: #28C840; }
+  .frame-title { font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; color: var(--panel-faint); margin-left: 10px; text-transform: uppercase; }
+  .frame-body { padding: 22px; }
+  .flabel { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.16em; color: var(--panel-faint); text-transform: uppercase; }
+
+  /* ---------- origin ---------- */
+  .origin { background: var(--off); border-top: 1px solid var(--line); padding: 130px 0; }
+  .wordmark { font-family: 'Titillium Web', var(--sans); font-size: clamp(52px, 7vw, 96px); font-weight: 600; letter-spacing: -0.03em; line-height: 1; }
+  .origin-tag { font-size: 21px; color: var(--ink-2); margin: 18px 0 60px; max-width: 640px; }
+  /* foundation map — separate file: foundation-map.html, embedded the same way as the hero. Map on the left, overview as a vertical right rail. */
+  .origin-body { display: grid; grid-template-columns: 1fr 260px; align-items: stretch; padding: 0 !important; }
+  .fmap-slot { width: 100%; aspect-ratio: 1664 / 1010; background: #08090B; }
+  .fmap-slot iframe { width: 100%; height: 100%; border: 0; display: block; }
+  .overview-panel { background: var(--panel-2); border-left: 1px solid var(--panel-line); border-radius: 0; padding: 20px 20px; margin-top: 0; display: flex; flex-direction: column; justify-content: center; }
+  .overview-panel > p { font-size: 12.5px; color: var(--panel-text); line-height: 1.65; margin-top: 10px; }
+  .origin-points { list-style: none; margin-top: 60px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; }
+  .origin-points li { border-top: 2px solid var(--ink); padding-top: 18px; }
+  .origin-points .k { font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; display: block; margin-bottom: 10px; }
+  .origin-points .v { font-size: 15px; color: var(--ink-2); }
+
+  /* ---------- capabilities ---------- */
+  .caps { padding: 130px 0 40px; background: var(--white); border-top: 1px solid var(--line); }
+  .caps-intro { font-size: 21px; color: var(--ink-2); margin: 16px 0 90px; max-width: 620px; }
+  .cap {
+    display: grid; grid-template-columns: 0.85fr 1.15fr; gap: 70px;
+    align-items: center; padding: 80px 0; border-top: 1px solid var(--line);
+  }
+  .cap .q { font-size: 22px; font-weight: 500; color: var(--ink-3); margin-bottom: 14px; letter-spacing: -0.01em; }
+  .cap .wordmark { font-size: clamp(40px, 4.8vw, 64px); margin-bottom: 18px; }
+  .cap .desc { font-size: 16.5px; color: var(--ink-2); max-width: 420px; }
+  .cap .keys { display: block; font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.1em; color: var(--ink-3); margin-top: 20px; text-transform: uppercase; line-height: 2; }
+
+  /* sentinel frame */
+  .alert-hero {
+    border: 1px solid var(--breach); border-radius: 8px; background: var(--panel-2);
+    padding: 18px 20px; margin-bottom: 14px;
+  }
+  .alert-hero .tag { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.16em; color: var(--breach); text-transform: uppercase; display: block; margin-bottom: 8px; }
+  .alert-hero h6 { color: #FDFDFC; font-size: 19px; font-weight: 600; margin-bottom: 4px; }
+  .alert-hero .amt { color: #E8836B; font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
+  .alert-hero .sub { color: var(--panel-dim); font-size: 12px; margin-top: 4px; }
+  .sig-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 11px 14px; border: 1px solid var(--panel-line); border-radius: 6px;
+    margin-bottom: 8px; background: var(--panel-2);
+  }
+  .sig-row .t { font-size: 12.5px; color: var(--panel-text); }
+  .sig-row .d { font-family: var(--mono); font-size: 10px; color: var(--panel-dim); }
+  .sig-row .amt { font-family: var(--mono); font-size: 12px; color: #E8836B; }
+
+  /* foresight frame */
+  .scen-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+  .scen {
+    border: 1px solid var(--panel-line); border-radius: 8px; background: var(--panel-2); padding: 14px 16px;
+  }
+  .scen .flabel { display: block; margin-bottom: 8px; }
+  .scen h6 { color: #FDFDFC; font-size: 14px; font-weight: 600; margin-bottom: 10px; }
+  .scen .kv { display: flex; justify-content: space-between; font-size: 12px; color: var(--panel-dim); padding: 3px 0; }
+  .scen .kv b { color: var(--panel-text); font-weight: 600; font-family: var(--mono); font-size: 11.5px; }
+  .scen.rec { border-color: #2E5C44; }
+  .scen .recchip {
+    display: inline-block; font-family: var(--mono); font-size: 9px; letter-spacing: 0.12em;
+    color: #7BC79B; border: 1px solid #2E5C44; padding: 2px 7px; border-radius: 3px; margin-bottom: 8px; text-transform: uppercase;
+  }
+  .fore-note { font-family: var(--mono); font-size: 10.5px; color: var(--panel-dim); line-height: 1.8; padding: 12px 14px; border: 1px dashed var(--panel-line); border-radius: 6px; }
+  .fore-note .hl { color: #E8836B; }
+
+  /* counsel frame */
+  .quest {
+    border: 1px solid var(--panel-line); border-radius: 8px; background: var(--panel-2);
+    padding: 14px 16px; margin-bottom: 12px; color: #FDFDFC; font-size: 14.5px;
+  }
+  .quest .flabel { display: block; margin-bottom: 6px; }
+  .verdict-card { border: 1px solid var(--breach); border-radius: 8px; background: var(--panel-2); padding: 16px 18px; display: grid; grid-template-columns: 1fr auto; gap: 18px; }
+  .verdict-card .flabel { color: var(--breach); display: block; margin-bottom: 8px; }
+  .verdict-card p { color: var(--panel-text); font-size: 13.5px; line-height: 1.55; }
+  .conf { text-align: right; }
+  .conf .num { color: #FDFDFC; font-size: 22px; font-weight: 700; font-family: var(--mono); }
+  .conf .flabel { margin-top: 4px; }
+  .drivers { display: flex; gap: 8px; margin-top: 12px; }
+  .driver { flex: 1; border: 1px solid var(--panel-line); border-radius: 6px; padding: 10px 12px; background: var(--panel-2); }
+  .driver .n { font-family: var(--mono); font-size: 10px; color: #E8836B; display: block; margin-bottom: 4px; }
+  .driver .t { font-size: 11.5px; color: var(--panel-dim); }
+
+  /* dispatch frame */
+  .art-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 14px; border: 1px solid var(--panel-line); border-radius: 6px;
+    margin-bottom: 8px; background: var(--panel-2);
+  }
+  .art-row .t { font-size: 12.5px; color: var(--panel-text); font-family: var(--mono); }
+  .status { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.12em; padding: 3px 8px; border-radius: 3px; text-transform: uppercase; }
+  .status.ready { color: var(--panel-dim); border: 1px solid var(--panel-line); }
+  .status.approved { color: #7BC79B; border: 1px solid #2E5C44; }
+  .approve-note { font-size: 11px; color: var(--panel-faint); font-family: var(--mono); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 12px; text-align: center; }
+
+  /* ---------- engagement ---------- */
+  .engagement { padding: 130px 0; background: var(--off); border-top: 1px solid var(--line); }
+  .engagement h2 { font-size: clamp(34px, 4vw, 52px); font-weight: 500; letter-spacing: -0.02em; margin: 18px 0 70px; line-height: 1.08; }
+  .eng-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  .eng-card { background: var(--white); padding: 40px 34px 46px; }
+  .eng-card .n { font-family: var(--mono); font-size: 11px; color: var(--ink-3); display: block; margin-bottom: 22px; letter-spacing: 0.16em; }
+  .eng-card h4 { font-size: 20px; font-weight: 600; margin-bottom: 10px; letter-spacing: -0.01em; }
+  .eng-card p { font-size: 15px; color: var(--ink-2); }
+  .security-line {
+    margin-top: 1px; padding: 22px 34px; border: 1px solid var(--line); border-top: none;
+    font-size: 14.5px; color: var(--ink-2);
+    display: flex; gap: 16px; align-items: baseline; background: var(--white);
+  }
+  .security-line .k { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.16em; color: var(--ink); text-transform: uppercase; white-space: nowrap; }
+
+  /* ---------- closing ---------- */
+  .closing { background: var(--panel); text-align: center; padding: 160px 0; position: relative; overflow: hidden; }
+  .closing h2 {
+    font-size: clamp(40px, 5.4vw, 72px); font-weight: 500; letter-spacing: -0.025em;
+    color: #FDFDFC; line-height: 1.05; margin-bottom: 44px;
+  }
+  .closing .dim { color: #6E727A; }
+
+  footer { border-top: 1px solid var(--line); padding: 38px 0 50px; background: var(--white); }
+  .foot-inner { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--ink-3); }
+  .foot-inner a { color: var(--ink-3); text-decoration: none; margin-left: 24px; }
+  .foot-inner a:hover { color: var(--ink); }
+
+  @media (max-width: 940px) {
+    .cap { grid-template-columns: 1fr; gap: 34px; }
+    .origin-points { grid-template-columns: 1fr; }
+    .eng-grid { grid-template-columns: 1fr; }
+    .origin-body { grid-template-columns: 1fr; }
+    .overview-panel { border-left: none; border-top: 1px solid var(--panel-line); }
+    .scen-grid, .verdict-card { grid-template-columns: 1fr; }
+    .drivers { flex-direction: column; }
+    nav { top: 14px; }
+    .nav-inner { min-height: 82px; padding: 14px 16px; border-radius: 14px; }
+    .nav-cta { min-width: 150px; font-size: 14px; padding: 0 18px; }
+    .nav-icon { width: 54px; }
+  }
+</style>
+  <style>
+    html,
+    body {
+      background: #050608 !important;
+    }
+
+    nav {
+      top: 14px !important;
+    }
+
+    .nav-inner {
+      min-height: 68px !important;
+      padding: 10px 18px 10px 20px !important;
+      border-radius: 10px !important;
+      background:
+        linear-gradient(180deg, rgba(91, 98, 109, 0.72) 0%, rgba(78, 84, 94, 0.66) 100%) !important;
+      border: 1px solid rgba(255, 255, 255, 0.08) !important;
+      box-shadow:
+        0 12px 28px rgba(0, 0, 0, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+      backdrop-filter: blur(18px) saturate(110%) !important;
+      -webkit-backdrop-filter: blur(18px) saturate(110%) !important;
+      overflow: hidden !important;
+    }
+
+    .nav-logo {
+      transform: scale(0.94);
+      transform-origin: left center;
+    }
+
+    .nav-actions {
+      display: flex !important;
+      align-items: center !important;
+      gap: 14px !important;
+      position: relative !important;
+      z-index: 2 !important;
+    }
+
+    .nav-cta {
+      height: 38px !important;
+      min-width: 200px !important;
+      padding: 0 24px !important;
+      border-radius: 0 !important;
+      font-size: 15px !important;
+      letter-spacing: 0 !important;
+    }
+
+    .nav-icon-group {
+      display: inline-flex !important;
+      align-items: stretch !important;
+      position: relative !important;
+      border-radius: 0 !important;
+      overflow: hidden !important;
+    }
+
+    .nav-utility {
+      width: 58px !important;
+      height: 38px !important;
+      position: relative !important;
+    }
+
+    .nav-utility svg,
+    .nav-utility i,
+    .nav-utility span {
+      position: static !important;
+    }
+
+    #hero,
+    .hero,
+    .hero-section,
+    section.hero,
+    iframe[src*="hero-section"] {
+      background: #050608 !important;
+    }
+  </style>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      var cta = document.querySelector(".nav-cta");
+      if (cta) cta.textContent = "Book a Demo";
+    });
+  </script>
+  <style>
+    .nav-inner {
+      min-height: 64px !important;
+      padding: 9px 16px 9px 18px !important;
+    }
+
+    .nav-actions {
+      gap: 12px !important;
+    }
+
+    .nav-cta {
+      height: 36px !important;
+      min-width: 186px !important;
+      padding: 0 22px !important;
+      font-size: 14px !important;
+      font-weight: 500 !important;
+    }
+
+    .nav-icon-group {
+      background: #f6f7fb !important;
+      border-radius: 0 !important;
+      overflow: hidden !important;
+    }
+
+    .nav-utility {
+      width: 56px !important;
+      height: 36px !important;
+      display: grid !important;
+      place-items: center !important;
+      position: relative !important;
+      overflow: hidden !important;
+    }
+
+    .nav-utility > * {
+      display: none !important;
+    }
+
+    .nav-utility::before,
+    .nav-utility::after {
+      content: "" !important;
+      position: absolute !important;
+      display: block !important;
+    }
+
+  </style>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      var cta = document.querySelector(".nav-cta");
+      if (cta) cta.textContent = "Book a Demo";
+
+      document.querySelectorAll(".nav-icon-group .nav-utility").forEach(function (node) {
+        node.innerHTML = "";
+      });
+
+      var actions = document.querySelector(".nav-actions");
+      if (actions) {
+        actions.innerHTML =
+          '<a class="nav-cta" href="#book">Book a Demo</a>' +
+          '<div class="nav-icon-group" aria-hidden="true">' +
+          '<button class="nav-utility nav-menu" type="button" aria-label="Menu"></button>' +
+          "</div>";
+      }
+    });
+  </script>
+  <style>
+    .nav-inner {
+      min-height: 52px !important;
+      padding: 7px 16px 7px 18px !important;
+      align-items: center !important;
+      background: linear-gradient(180deg, rgba(91, 98, 109, 0.4) 0%, rgba(78, 84, 94, 0.34) 100%) !important;
+      backdrop-filter: blur(22px) saturate(140%) !important;
+      -webkit-backdrop-filter: blur(22px) saturate(140%) !important;
+    }
+
+    .nav-actions {
+      display: flex !important;
+      align-items: center !important;
+      gap: 12px !important;
+      flex: 0 0 auto !important;
+    }
+
+    .nav-cta {
+      height: 32px !important;
+      min-width: 172px !important;
+      padding: 0 20px !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-size: 13.5px !important;
+      font-weight: 500 !important;
+      line-height: 1 !important;
+      white-space: nowrap !important;
+    }
+
+    .nav-icon-group {
+      display: inline-flex !important;
+      align-items: stretch !important;
+      background: #f6f7fb !important;
+      border: 1px solid rgba(17, 22, 30, 0.2) !important;
+      border-radius: 0 !important;
+      overflow: hidden !important;
+      flex: 0 0 auto !important;
+    }
+
+    .nav-utility {
+      width: 52px !important;
+      height: 32px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      border: 0 !important;
+      border-radius: 0 !important;
+      background: transparent !important;
+      position: relative !important;
+      display: block !important;
+      flex: 0 0 52px !important;
+      appearance: none !important;
+      -webkit-appearance: none !important;
+      box-shadow: none !important;
+      outline: none !important;
+      overflow: hidden !important;
+    }
+
+    .nav-utility + .nav-utility {
+      border-left: 1px solid rgba(17, 22, 30, 0.15) !important;
+    }
+
+    .nav-utility::before,
+    .nav-utility::after {
+      content: "" !important;
+      position: absolute !important;
+      display: block !important;
+    }
+
+    .nav-menu::before {
+      width: 20px !important;
+      height: 2px !important;
+      background: rgba(26, 31, 39, 0.8) !important;
+      top: 10px !important;
+      left: 18px !important;
+      box-shadow:
+        0 7px 0 rgba(26, 31, 39, 0.8),
+        0 14px 0 rgba(26, 31, 39, 0.8) !important;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ============ NAV ============ -->
+<nav>
+  <div class="wrap nav-inner">
+    <a class="logo" href="#">SelfAudit</a>
+    <div class="nav-links">
+      <a href="#origin">Origin</a>
+      <a href="#capabilities">Capabilities</a>
+      <a href="#engagement">Engagement</a>
+    </div>
+    <div class="nav-actions">
+      <a class="nav-cta" href="#book">Get Started</a>
+      <div class="nav-icon-group" aria-hidden="true">
+        <div class="nav-icon search"></div>
+        <div class="nav-icon menu"><span></span></div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ============ 1. HERO (swappable — edit mockups/hero-section.html) ============ -->
+<header class="hero-slot">
+  <iframe src="hero-section.html?v=3" title="SelfAudit hero"></iframe>
+</header>
+
+<!-- ============ 2. MANIFESTO ============ -->
+<section class="manifesto">
+  <div class="wrap">
+    <p class="reveal">Our software models the <span class="dim">causal structure</span> of a business — every area, every relationship, every standard — and powers every decision with what it knows: what is breaking, why, and what happens next.</p>
+  </div>
+</section>
+
+<!-- ============ 3. ORIGIN ============ -->
+<section class="origin" id="origin">
+  <div class="wrap">
+    <!-- removed eyebrow: <span class="label">The Foundation</span> -->
+    <div class="wordmark reveal">Origin</div>
+    <p class="origin-tag reveal">The causal model of the business. The system of record for cause and effect.</p>
+
+    <div class="frame reveal">
+      <div class="frame-bar">
+        <span class="fdot"></span><span class="fdot"></span><span class="fdot"></span>
+        <span class="frame-title">SelfAudit — Origin · Business Model · Causal Structure</span>
+      </div>
+      <div class="frame-body origin-body">
+        <div class="fmap-slot">
+          <iframe src="foundation-map.html?v=2" title="SelfAudit foundation map"></iframe>
+        </div>
+
+        <aside class="overview-panel">
+          <span class="flabel">Model Overview</span>
+          <p>This is your business, modeled — not a generic industry benchmark. Every area above is built from your real data and your real standards, and Origin already knows how they affect each other: what a slip in one causes downstream, and how fast. That connected model is what every signal, simulation, and verdict in SelfAudit is grounded in.</p>
+        </aside>
+      </div>
+    </div>
+
+    <ul class="origin-points">
+      <li class="reveal"><span class="k">Modeled, not indexed</span><span class="v">Not a pile of documents or a dashboard of metrics. A working model of how the business behaves — areas, relationships, time lags, consequences.</span></li>
+      <li class="reveal"><span class="k">Your standards</span><span class="v">Every threshold is defined by the operator. Margin above 60%. Response under 4 hours. Runway never below 8 months. Origin holds the line continuously.</span></li>
+      <li class="reveal"><span class="k">Cause and effect</span><span class="v">Origin models how one decision ripples through every part of the business — a pricing change touching margin this quarter, retention the next. Every capability below runs on that model.</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ 4. CAPABILITIES ============ -->
+<section class="caps" id="capabilities">
+  <div class="wrap">
+    <span class="label">Built on Origin</span>
+    <p class="caps-intro reveal">Four capabilities, operational from the day the business is modeled. Each one answers a question every operator carries.</p>
+
+    <!-- SENTINEL -->
+    <div class="cap">
+      <div class="cap-text reveal">
+        <div class="q">What is breaking?</div>
+        <div class="wordmark">Sentinel</div>
+        <p class="desc">Continuous loss detection. Margin leaks, churn chains, runway truth — caught, quantified, and ranked before they compound.</p>
+        <span class="keys">Loss detection · Margin leak · Churn chain · Cash-runway truth</span>
+      </div>
+      <div class="frame reveal">
+        <div class="frame-bar">
+          <span class="fdot"></span><span class="fdot"></span><span class="fdot"></span>
+          <span class="frame-title">Sentinel — Loss Detection</span>
+        </div>
+        <div class="frame-body">
+          <div class="alert-hero">
+            <span class="tag">High impact detected</span>
+            <h6>Margin Leak — Vendor Contracts</h6>
+            <span class="amt">$38,200</span>
+            <div class="sub">Annualized impact · COGS +2.8% · runway −6.1 days</div>
+          </div>
+          <div class="flabel" style="margin-bottom: 8px;">Active signals — ranked</div>
+          <div class="sig-row"><span class="t">Vendor cost per unit increasing <span class="d">· +16% vs contract baseline</span></span><span class="amt">$19,400</span></div>
+          <div class="sig-row"><span class="t">Freight surcharges rising <span class="d">· +22% vs baseline</span></span><span class="amt">$11,300</span></div>
+          <div class="sig-row"><span class="t">Discount leakage on renewals <span class="d">· +9% vs baseline</span></span><span class="amt">$7,500</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FORESIGHT -->
+    <div class="cap">
+      <div class="cap-text reveal">
+        <div class="q">What happens if?</div>
+        <div class="wordmark">Foresight</div>
+        <p class="desc">Decisions simulated before they are made. A knowledge layer answers what is. Only a causal model answers what if.</p>
+        <span class="keys">What-if simulation · Scenario comparison · Consequence projection</span>
+      </div>
+      <div class="frame reveal">
+        <div class="frame-bar">
+          <span class="fdot"></span><span class="fdot"></span><span class="fdot"></span>
+          <span class="frame-title">Foresight — What-If Simulation</span>
+        </div>
+        <div class="frame-body">
+          <div class="scen-grid">
+            <div class="scen">
+              <span class="flabel">Scenario A</span>
+              <h6>Hire 2 warehouse leads</h6>
+              <div class="kv"><span>Investment</span><b>$164,000/yr</b></div>
+              <div class="kv"><span>Annual impact</span><b>+$210,000</b></div>
+              <div class="kv"><span>Payback</span><b>9.4 months</b></div>
+            </div>
+            <div class="scen rec">
+              <span class="recchip">Recommended</span>
+              <h6>Automate inventory reconciliation</h6>
+              <div class="kv"><span>Investment</span><b>$22,000/yr</b></div>
+              <div class="kv"><span>Annual impact</span><b>+$390,000</b></div>
+              <div class="kv"><span>Payback</span><b>2.1 months</b></div>
+            </div>
+          </div>
+          <div class="fore-note">&gt; what if we delay the Q3 price increase by one quarter?<br>margin <span class="hl">−1.8pt through Q3</span> · revenue at risk $46K/mo · runway <span class="hl">−11 days</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COUNSEL -->
+    <div class="cap">
+      <div class="cap-text reveal">
+        <div class="q">Why is it happening?</div>
+        <div class="wordmark">Counsel</div>
+        <p class="desc">Ask the business anything and receive a verdict backed by the model — the drivers, the evidence, and where automation would pay for itself.</p>
+        <span class="keys">Ask anything · Root-cause verdicts · AI opportunity mapping</span>
+      </div>
+      <div class="frame reveal">
+        <div class="frame-bar">
+          <span class="fdot"></span><span class="fdot"></span><span class="fdot"></span>
+          <span class="frame-title">Counsel — Root Cause</span>
+        </div>
+        <div class="frame-body">
+          <div class="quest">
+            <span class="flabel">Question</span>
+            What is driving blended CAC up this quarter?
+          </div>
+          <div class="verdict-card">
+            <div>
+              <span class="flabel">Verdict</span>
+              <p>Primary driver identified: paid spend is concentrated in a saturated channel, pushing budget into lower-intent audiences, while inbound sales-cycle length is up 18%. Channel mix, not creative fatigue, explains most of the increase.</p>
+            </div>
+            <div class="conf">
+              <div class="num">82%</div>
+              <span class="flabel">Confidence</span>
+            </div>
+          </div>
+          <div class="drivers">
+            <div class="driver"><span class="n">2.1x</span><span class="t">Paid spend concentrated in saturated channel</span></div>
+            <div class="driver"><span class="n">1.7x</span><span class="t">Inbound sales-cycle length increase</span></div>
+            <div class="driver"><span class="n">1.4x</span><span class="t">Lead quality decline, top-of-funnel</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DISPATCH -->
+    <div class="cap">
+      <div class="cap-text reveal">
+        <div class="q">Now what?</div>
+        <div class="wordmark">Dispatch</div>
+        <p class="desc">From verdict to fix. Every diagnosis ships with its artifact — the SOP, the sequence, the brief — executed only on approval.</p>
+        <span class="keys">Execution artifacts · SOPs · Sequences · Board reports</span>
+      </div>
+      <div class="frame reveal">
+        <div class="frame-bar">
+          <span class="fdot"></span><span class="fdot"></span><span class="fdot"></span>
+          <span class="frame-title">Dispatch — Execution Queue</span>
+        </div>
+        <div class="frame-body">
+          <div class="flabel" style="margin-bottom: 8px;">Artifacts — from verdict #147</div>
+          <div class="art-row"><span class="t">channel_reallocation_plan</span><span class="status approved">Approved · Executed</span></div>
+          <div class="art-row"><span class="t">inbound_sales_cycle_playbook</span><span class="status ready">Awaiting approval</span></div>
+          <div class="art-row"><span class="t">paid_spend_reduction_sop.pdf</span><span class="status ready">Awaiting approval</span></div>
+          <div class="art-row"><span class="t">board_update_q3.pdf</span><span class="status approved">Approved · Delivered</span></div>
+          <div class="approve-note">Nothing executes without operator approval</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============ 5. ENGAGEMENT ============ -->
+<section class="engagement" id="engagement">
+  <div class="wrap">
+    <!-- removed eyebrow: <span class="label">Engagement</span> -->
+    <h2 class="reveal">Deployed with you.<br>Not downloaded by you.</h2>
+    <div class="eng-grid reveal">
+      <div class="eng-card">
+        <span class="n">01 — THE DEMO</span>
+        <h4>The system, live</h4>
+        <p>Thirty minutes. A real problem traced through a modeled business — signal, chain, verdict, fix.</p>
+      </div>
+      <div class="eng-card">
+        <span class="n">02 — THE MODELING</span>
+        <h4>Origin, built for you</h4>
+        <p>In the first week we map your areas, define your standards, and connect your data. The business leaves modeled.</p>
+      </div>
+      <div class="eng-card">
+        <span class="n">03 — THE WATCH</span>
+        <h4>Continuous operation</h4>
+        <p>Sentinel runs against your standards permanently. Verdicts when something breaks. Execution only on your approval.</p>
+      </div>
+    </div>
+    <div class="security-line">
+      <span class="k">Security</span>
+      <span>Customer data is encrypted, isolated per deployment, and never used for training. Full documentation available in the demo.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6. CLOSING ============ -->
+<section class="closing" id="book">
+  <div class="wrap">
+    <h2 class="reveal">Every business deserves<br><span class="dim">to know why.</span></h2>
+    <a class="btn inverse" href="#">Book a Demo</a>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot-inner">
+    <span>© 2026 SelfAudit — Enterprise Intelligence</span>
+    <span>
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#">Security</a>
+    </span>
+  </div>
+</footer>
+
+<script>
+  // scroll reveal
+  (function () {
+    var obs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add('in'); obs.unobserve(e.target); }
+      });
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.reveal').forEach(function (n) { obs.observe(n); });
+  })();
+</script>
+
+</body>
+</html>

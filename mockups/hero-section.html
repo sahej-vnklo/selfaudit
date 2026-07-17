@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>SelfAudit — Enterprise Intelligence Hero</title>
+<style>
+:root{
+  --bg:#090a0c;
+  --panel:#111317;
+  --panel-2:#15181d;
+  --line:rgba(255,255,255,.10);
+  --line-soft:rgba(255,255,255,.055);
+  --text:#f6f5f2;
+  --muted:#9a9da4;
+  --brick:#b4381e;
+  --brick-bright:#e05c3a;
+  --success:#4eb98b;
+  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Helvetica,Arial,sans-serif;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);font-family:var(--font);color:var(--text)}
+body{overflow-x:hidden}
+.hero{
+  position:relative;
+  min-height:100svh;
+  overflow:hidden;
+  isolation:isolate;
+  background:
+    radial-gradient(circle at 50% 38%,rgba(180,56,30,.09),transparent 27%),
+    radial-gradient(circle at 50% 115%,rgba(105,124,160,.10),transparent 36%),
+    #090a0c;
+}
+.hero::before{
+  content:"";
+  position:absolute;inset:0;z-index:2;pointer-events:none;
+  /* history: original ellipse 46% 37% at 50% 48%, rgba(9,10,12,.87), rgba(9,10,12,.34) 61%, transparent 100% */
+  /* was (too wide, dimmed whole canvas): ellipse 64% 54% at 50% 48%, rgba(9,10,12,.93), rgba(9,10,12,.5) 55%, transparent 100% */
+  /* was (too short, subhead/CTA poked out the bottom): ellipse 36% 28% at 50% 47%, rgba(9,10,12,.97), rgba(9,10,12,.6) 48%, transparent 78% */
+  /* was (width % scales off full hero width, so on wide screens the radius washed out the whole canvas): ellipse 38% 38% at 50% 49%, rgba(9,10,12,.98), rgba(9,10,12,.9) 55%, rgba(9,10,12,.25) 82%, transparent 100% */
+  background:
+    linear-gradient(180deg,rgba(9,10,12,.78) 0%,rgba(9,10,12,.10) 17%,rgba(9,10,12,.14) 73%,rgba(9,10,12,.86) 100%),
+    radial-gradient(ellipse 46% 29% at 50% 51%,rgba(9,10,12,.86) 0%,rgba(9,10,12,.68) 45%,rgba(9,10,12,.28) 75%,transparent 100%);
+}
+.hero::after{
+  content:"";position:absolute;inset:0;z-index:5;pointer-events:none;
+  box-shadow:inset 0 0 160px rgba(0,0,0,.82);
+}
+.matrix-shell{
+  position:absolute;
+  inset:0;
+  z-index:1;
+  display:flex;
+  align-items:stretch;
+  justify-content:center;
+  padding:64px 24px 22px;
+  transform:perspective(1500px) rotateX(1.1deg) scale(1.018);
+  transform-origin:50% 42%;
+}
+.matrix-shell::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);
+  background-size:68px 68px;
+  opacity:.55;
+}
+.matrix{
+  width:min(1800px,calc(100vw - 36px));
+  min-width:1460px;
+  display:grid;
+  grid-template-columns:repeat(13,minmax(98px,1fr));
+  gap:4px;
+  align-items:stretch;
+  mask-image:linear-gradient(90deg,transparent 0,#000 3%,#000 97%,transparent 100%);
+}
+.column{
+  display:grid;
+  grid-template-rows:minmax(34px,auto) repeat(9,minmax(0,1fr));
+  gap:4px;
+  min-width:0;
+  perspective:640px;
+}
+.column-title{
+  position:relative;
+  display:flex;
+  align-items:flex-end;
+  padding:0 9px 12px;
+  font-family:var(--mono);
+  font-size:11px;
+  line-height:1.15;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:rgba(255,255,255,.82);
+  font-weight:650;
+  border-bottom:1px solid rgba(255,255,255,.16);
+  background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,0));
+  text-shadow:0 1px 10px rgba(0,0,0,.55);
+}
+.column-title::before{
+  content:"";position:absolute;left:9px;bottom:-1px;width:42px;height:2px;
+  background:var(--col);
+  box-shadow:0 0 14px color-mix(in srgb,var(--col) 78%,transparent);
+}
+.card{
+  position:relative;
+  min-width:0;
+  height:100%;
+  padding:8px 9px 7px;
+  border:1px solid var(--line-soft);
+  border-radius:0;
+  background:linear-gradient(180deg,rgba(24,27,32,.91),rgba(15,17,21,.92));
+  box-shadow:0 6px 18px rgba(0,0,0,.22);
+  overflow:hidden;
+  color:rgba(247,247,245,.74);
+  font-size:11.55px;
+  line-height:1.15;
+  letter-spacing:-.005em;
+  display:flex;
+  align-items:center;
+  opacity:0;
+  transform-style:preserve-3d;
+  backface-visibility:hidden;
+  transform:rotateX(-100deg);
+  transform-origin:50% 0%;
+  transition:border-color .58s ease,background .58s ease,
+    transform .71s cubic-bezier(.22,.75,.24,1.28),
+    opacity .27s linear;
+}
+.card::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(105deg,transparent 20%,rgba(255,255,255,.045) 48%,transparent 75%);
+  transform:translateX(-120%);
+}
+.card.revealed{
+  opacity:1;
+  transform:rotateX(0deg);
+}
+.card.revealed::after{animation:sheen .75s ease both}
+.card.signal{
+  border-color:rgba(224,92,58,.58);
+  background:linear-gradient(180deg,rgba(69,28,20,.82),rgba(25,16,15,.93));
+  color:#fff3ef;
+  box-shadow:0 0 0 1px rgba(180,56,30,.12),0 0 26px rgba(180,56,30,.16),0 8px 22px rgba(0,0,0,.28);
+}
+.card.signal::before{
+  content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--brick-bright);box-shadow:0 0 10px rgba(224,92,58,.9)
+}
+.card.good{
+  border-color:rgba(78,185,139,.38);
+  background:linear-gradient(180deg,rgba(18,52,41,.55),rgba(14,24,21,.9));
+}
+.card .label{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card .metric{display:block;font-family:var(--mono);font-size:8.8px;color:rgba(255,255,255,.38);margin-top:3px;letter-spacing:.03em}
+@keyframes sheen{from{transform:translateX(-120%)}to{transform:translateX(120%)}}
+
+/* chain cascade — sequential pulse across the causal path */
+@keyframes chainpulse{
+  0%,72%,100%{box-shadow:0 0 0 1px rgba(180,56,30,.12),0 0 26px rgba(180,56,30,.16),0 8px 22px rgba(0,0,0,.28);border-color:rgba(224,92,58,.58)}
+  8%,30%{box-shadow:0 0 0 2px rgba(224,92,58,.6),0 0 42px rgba(224,92,58,.55),0 8px 22px rgba(0,0,0,.28);border-color:rgba(224,92,58,.95)}
+}
+.card.chain{animation:chainpulse 7.6s ease-in-out infinite}
+.card.chain.c1{animation-delay:0s}
+.card.chain.c2{animation-delay:1.15s}
+.card.chain.c3{animation-delay:2.3s}
+.card.chain.c4{animation-delay:3.45s}
+
+@keyframes cellflip{
+  0%{
+    transform:rotateX(0deg) rotateY(0deg);
+    background:linear-gradient(180deg,rgba(24,27,32,.91),rgba(15,17,21,.92));
+    color:rgba(247,247,245,.74);
+    border-color:var(--line-soft);
+  }
+  48%{
+    transform:rotateX(0deg) rotateY(90deg);
+    background:linear-gradient(180deg,rgba(24,27,32,.91),rgba(15,17,21,.92));
+    color:rgba(247,247,245,.74);
+    border-color:var(--line-soft);
+  }
+  50%{
+    transform:rotateX(0deg) rotateY(90deg);
+    background:#F5F4F1;
+    color:#121418;
+    border-color:rgba(255,255,255,.92);
+  }
+  52%{
+    transform:rotateX(0deg) rotateY(90deg);
+    background:#F5F4F1;
+    color:#121418;
+    border-color:rgba(255,255,255,.92);
+  }
+  100%{
+    transform:rotateX(0deg) rotateY(0deg);
+    background:#F5F4F1;
+    color:#121418;
+    border-color:rgba(255,255,255,.92);
+  }
+}
+
+@keyframes cellflipback{
+  0%{
+    transform:rotateX(0deg) rotateY(0deg);
+    background:#F5F4F1;
+    color:#121418;
+    border-color:rgba(255,255,255,.92);
+  }
+  48%{
+    transform:rotateX(0deg) rotateY(-90deg);
+    background:#F5F4F1;
+    color:#121418;
+    border-color:rgba(255,255,255,.92);
+  }
+  50%{
+    transform:rotateX(0deg) rotateY(-90deg);
+    background:linear-gradient(180deg,rgba(24,27,32,.91),rgba(15,17,21,.92));
+    color:rgba(247,247,245,.74);
+    border-color:var(--line-soft);
+  }
+  52%{
+    transform:rotateX(0deg) rotateY(-90deg);
+    background:linear-gradient(180deg,rgba(24,27,32,.91),rgba(15,17,21,.92));
+    color:rgba(247,247,245,.74);
+    border-color:var(--line-soft);
+  }
+  100%{
+    transform:rotateX(0deg) rotateY(0deg);
+    background:linear-gradient(180deg,rgba(24,27,32,.91),rgba(15,17,21,.92));
+    color:rgba(247,247,245,.74);
+    border-color:var(--line-soft);
+  }
+}
+
+.card.flipping{
+  animation:cellflip 1.35s cubic-bezier(.22,.72,.22,1) both;
+}
+.card.flipping-back{
+  animation:cellflipback 1.35s cubic-bezier(.22,.72,.22,1) both;
+}
+.card.flipping.signal,
+.card.flipping.good,
+.card.flipping-back.signal,
+.card.flipping-back.good{
+  box-shadow:0 6px 18px rgba(0,0,0,.22);
+}
+.card.flipping::before,
+.card.flipping-back::before{
+  opacity:0;
+}
+.card.flipping .metric,
+.card.flipping-back .metric{
+  color:rgba(18,20,24,.52);
+}
+
+.hero-copy{
+  position:absolute;
+  z-index:4;
+  left:50%;top:48%;
+  transform:translate(-50%,-50%);
+  width:min(1040px,88vw);
+  text-align:center;
+  pointer-events:none;
+}
+h1{
+  margin:0;
+  font-size:clamp(46px,6.1vw,92px);
+  line-height:.98;
+  letter-spacing:-.04em;
+  font-weight:500;
+  color:#faf9f6;
+  text-shadow:0 4px 30px rgba(0,0,0,.65);
+}
+.sub{
+  max-width:640px;margin:14px auto 0;
+  color:rgba(255,255,255,.65);
+  font-size:clamp(15px,1.25vw,19px);
+  line-height:1.45;
+  text-shadow:0 2px 18px rgba(0,0,0,.78);
+}
+@media(max-width:1100px){
+  .matrix-shell{padding-left:0;padding-right:0}
+  .matrix{min-width:1420px;width:1420px}
+  .hero-copy{top:48%}
+}
+@media(max-width:720px){
+  .matrix-shell{padding-top:54px;justify-content:flex-start;transform:translateX(-510px) scale(.93)}
+  .hero-copy{top:47%;width:88vw}
+  h1{font-size:48px}
+  .sub{font-size:15px;max-width:390px}
+}
+@media(prefers-reduced-motion:reduce){
+  .card{opacity:1;transform:none}
+  .card.revealed::after{animation:none}
+  .card.chain{animation:none}
+  .card.flipping,
+  .card.flipping-back{animation:none}
+}
+</style>
+  <style>
+    html,
+    body {
+      background: #050608 !important;
+      overflow-x: hidden !important;
+    }
+
+    .hero,
+    .hero-section,
+    main,
+    section {
+      background: #050608 !important;
+    }
+
+    .matrix-shell {
+      padding: 96px 24px 24px !important;
+      min-height: auto !important;
+      height: auto !important;
+      box-sizing: border-box !important;
+    }
+  </style>
+</head>
+<body>
+<section class="hero" aria-label="SelfAudit Enterprise Intelligence hero">
+  <div class="matrix-shell" aria-hidden="true"><div class="matrix" id="matrix"></div></div>
+  <div class="hero-copy">
+    <h1>Enterprise Intelligence<br>for Every Business.</h1>
+    <p class="sub">The judgment of a Fortune 500 operations floor, delivered as software.</p>
+  </div>
+</section>
+<script id="hero-data" type="application/json">{"pillars": {"str": "Strategy", "mkt": "Marketing & Sales", "prd": "Product", "fin": "Finance", "ops": "Operations", "tec": "Technology & Enterprise Systems", "ppl": "People & Organization", "ext": "Legal & External Environment", "mi": "Customer & Market Intelligence", "ent": "Entrepreneurship & Scale", "dat": "Data & Measurement (horizontal)", "rsk": "Risk & Control (horizontal)", "chg": "Change & Transformation (horizontal)"}, "nodesByPillar": {"str": [{"id": "str.vision-mission", "name": "Vision & Mission", "pillar": "str"}, {"id": "str.strategic-planning", "name": "Strategic Planning", "pillar": "str"}, {"id": "str.business-model-design", "name": "Business Model Design", "pillar": "str"}, {"id": "str.competitive-advantage", "name": "Competitive Advantage", "pillar": "str"}, {"id": "str.growth-strategy", "name": "Growth Strategy", "pillar": "str"}, {"id": "str.capital-allocation", "name": "Capital Allocation", "pillar": "str"}, {"id": "str.strategy-execution", "name": "Strategy Execution", "pillar": "str"}, {"id": "str.innovation-strategy", "name": "Innovation Strategy", "pillar": "str"}, {"id": "str.mergers-acquisitions", "name": "Mergers & Acquisitions", "pillar": "str"}], "mkt": [{"id": "mkt.customer-segmentation", "name": "Customer Segmentation", "pillar": "mkt"}, {"id": "mkt.ideal-customer-profile", "name": "Ideal Customer Profile", "pillar": "mkt"}, {"id": "mkt.value-proposition", "name": "Value Proposition", "pillar": "mkt"}, {"id": "mkt.positioning", "name": "Positioning", "pillar": "mkt"}, {"id": "mkt.demand-generation", "name": "Demand Generation", "pillar": "mkt"}, {"id": "mkt.funnel-conversion", "name": "Funnel & Conversion", "pillar": "mkt"}, {"id": "mkt.customer-success", "name": "Customer Success", "pillar": "mkt"}, {"id": "mkt.retention-churn", "name": "Retention & Churn", "pillar": "mkt"}, {"id": "mkt.cac-ltv-attribution", "name": "CAC, LTV & Attribution", "pillar": "mkt"}], "prd": [{"id": "prd.product-strategy", "name": "Product Strategy", "pillar": "prd"}, {"id": "prd.product-market-fit", "name": "Product-Market Fit", "pillar": "prd"}, {"id": "prd.customer-discovery", "name": "Customer Discovery", "pillar": "prd"}, {"id": "prd.jobs-to-be-done", "name": "Jobs To Be Done", "pillar": "prd"}, {"id": "prd.roadmap-prioritization", "name": "Roadmap Prioritization", "pillar": "prd"}, {"id": "prd.product-analytics", "name": "Product Analytics", "pillar": "prd"}, {"id": "prd.product-led-growth", "name": "Product-Led Growth", "pillar": "prd"}, {"id": "prd.product-operations", "name": "Product Operations", "pillar": "prd"}, {"id": "prd.platform-ecosystem", "name": "Platform & Ecosystem", "pillar": "prd"}], "fin": [{"id": "fin.financial-statements", "name": "Financial Statements", "pillar": "fin"}, {"id": "fin.revenue", "name": "Revenue", "pillar": "fin"}, {"id": "fin.cogs", "name": "COGS", "pillar": "fin"}, {"id": "fin.gross-margin", "name": "Gross Margin", "pillar": "fin"}, {"id": "fin.operating-expenses", "name": "Operating Expenses", "pillar": "fin"}, {"id": "fin.cash-flow", "name": "Cash Flow", "pillar": "fin"}, {"id": "fin.cash-runway", "name": "Cash Runway", "pillar": "fin"}, {"id": "fin.unit-economics", "name": "Unit Economics", "pillar": "fin"}, {"id": "fin.financial-forecasting", "name": "Financial Forecasting", "pillar": "fin"}], "ops": [{"id": "ops.operations-strategy", "name": "Operations Strategy", "pillar": "ops"}, {"id": "ops.process-design", "name": "Process Design", "pillar": "ops"}, {"id": "ops.theory-of-constraints", "name": "Theory of Constraints", "pillar": "ops"}, {"id": "ops.capacity-planning", "name": "Capacity Planning", "pillar": "ops"}, {"id": "ops.service-delivery", "name": "Service Delivery", "pillar": "ops"}, {"id": "ops.quality-management", "name": "Quality Management", "pillar": "ops"}, {"id": "ops.operational-kpis", "name": "Operational KPIs", "pillar": "ops"}, {"id": "ops.sla-management", "name": "SLA Management", "pillar": "ops"}, {"id": "ops.continuous-improvement", "name": "Continuous Improvement", "pillar": "ops"}], "tec": [{"id": "tec.enterprise-architecture", "name": "Enterprise Architecture", "pillar": "tec"}, {"id": "tec.business-analysis", "name": "Business Analysis", "pillar": "tec"}, {"id": "tec.bpm-workflow", "name": "BPM & Workflow", "pillar": "tec"}, {"id": "tec.apis-integration", "name": "APIs & Integration", "pillar": "tec"}, {"id": "tec.master-data-management", "name": "Master Data Management", "pillar": "tec"}, {"id": "tec.ai-llms", "name": "AI & LLMs", "pillar": "tec"}, {"id": "tec.ai-agents-automation", "name": "AI Agents & Automation", "pillar": "tec"}, {"id": "tec.digital-transformation", "name": "Digital Transformation", "pillar": "tec"}, {"id": "tec.technical-debt", "name": "Technical Debt", "pillar": "tec"}], "ppl": [{"id": "ppl.organizational-design", "name": "Organizational Design", "pillar": "ppl"}, {"id": "ppl.hiring", "name": "Hiring", "pillar": "ppl"}, {"id": "ppl.performance-management", "name": "Performance Management", "pillar": "ppl"}, {"id": "ppl.culture", "name": "Culture", "pillar": "ppl"}, {"id": "ppl.team-effectiveness", "name": "Team Effectiveness", "pillar": "ppl"}, {"id": "ppl.leadership", "name": "Leadership", "pillar": "ppl"}, {"id": "ppl.executive-communication", "name": "Executive Communication", "pillar": "ppl"}, {"id": "ppl.incentive-design", "name": "Incentive Design", "pillar": "ppl"}, {"id": "ppl.key-person-dependency", "name": "Key-Person Dependency", "pillar": "ppl"}], "ext": [{"id": "ext.legal-fundamentals", "name": "Legal Fundamentals", "pillar": "ext"}, {"id": "ext.contracts", "name": "Contracts", "pillar": "ext"}, {"id": "ext.regulation-compliance", "name": "Regulation & Compliance", "pillar": "ext"}, {"id": "ext.privacy-data-protection", "name": "Privacy & Data Protection", "pillar": "ext"}, {"id": "ext.corporate-governance", "name": "Corporate Governance", "pillar": "ext"}, {"id": "ext.macroeconomics", "name": "Macroeconomics", "pillar": "ext"}, {"id": "ext.geopolitics-policy", "name": "Geopolitics & Policy", "pillar": "ext"}, {"id": "ext.esg-sustainability", "name": "ESG & Sustainability", "pillar": "ext"}, {"id": "ext.intellectual-property", "name": "Intellectual Property", "pillar": "ext"}], "mi": [{"id": "mi.market-research-methods", "name": "Market Research Methods", "pillar": "mi"}, {"id": "mi.customer-interviews", "name": "Customer Interviews", "pillar": "mi"}, {"id": "mi.voice-of-customer", "name": "Voice of Customer", "pillar": "mi"}, {"id": "mi.competitive-intelligence", "name": "Competitive Intelligence", "pillar": "mi"}, {"id": "mi.win-loss-analysis", "name": "Win-Loss Analysis", "pillar": "mi"}, {"id": "mi.market-sizing", "name": "Market Sizing", "pillar": "mi"}, {"id": "mi.trend-analysis", "name": "Trend Analysis", "pillar": "mi"}], "ent": [{"id": "ent.zero-to-one", "name": "Zero to One", "pillar": "ent"}, {"id": "ent.founder-led-sales", "name": "Founder-Led Sales", "pillar": "ent"}, {"id": "ent.stage-transitions", "name": "Stage Transitions", "pillar": "ent"}, {"id": "ent.fundraising-strategy", "name": "Fundraising Strategy", "pillar": "ent"}, {"id": "ent.scaling-pathologies", "name": "Scaling Pathologies", "pillar": "ent"}, {"id": "ent.founder-psychology", "name": "Founder Psychology", "pillar": "ent"}, {"id": "ent.exit-paths", "name": "Exit Paths", "pillar": "ent"}], "dat": [{"id": "dat.statistics-fundamentals", "name": "Statistics Fundamentals", "pillar": "dat"}, {"id": "dat.experimentation", "name": "Experimentation", "pillar": "dat"}, {"id": "dat.sql", "name": "SQL", "pillar": "dat"}, {"id": "dat.bi-dashboards", "name": "BI & Dashboards", "pillar": "dat"}, {"id": "dat.data-modeling-warehousing", "name": "Data Modeling & Warehousing", "pillar": "dat"}, {"id": "dat.etl-pipelines", "name": "ETL & Pipelines", "pillar": "dat"}, {"id": "dat.metric-design", "name": "Metric Design", "pillar": "dat"}, {"id": "dat.forecasting-methods", "name": "Forecasting Methods", "pillar": "dat"}, {"id": "dat.predictive-analytics", "name": "Predictive Analytics", "pillar": "dat"}], "rsk": [{"id": "rsk.risk-taxonomy", "name": "Risk Taxonomy", "pillar": "rsk"}, {"id": "rsk.risk-process", "name": "Risk Process", "pillar": "rsk"}, {"id": "rsk.risk-appetite", "name": "Risk Appetite", "pillar": "rsk"}, {"id": "rsk.internal-controls", "name": "Internal Controls", "pillar": "rsk"}, {"id": "rsk.cyber-risk", "name": "Cyber Risk", "pillar": "rsk"}, {"id": "rsk.vendor-risk", "name": "Vendor Risk", "pillar": "rsk"}, {"id": "rsk.business-continuity", "name": "Business Continuity", "pillar": "rsk"}, {"id": "rsk.data-governance", "name": "Data Governance", "pillar": "rsk"}, {"id": "rsk.concentration-risk", "name": "Concentration Risk", "pillar": "rsk"}], "chg": [{"id": "chg.change-management", "name": "Change Management", "pillar": "chg"}, {"id": "chg.adoption-design", "name": "Adoption Design", "pillar": "chg"}, {"id": "chg.resistance-diagnosis", "name": "Resistance Diagnosis", "pillar": "chg"}, {"id": "chg.transformation-design", "name": "Transformation Design", "pillar": "chg"}, {"id": "chg.communication-cascades", "name": "Communication Cascades", "pillar": "chg"}]}}</script>
+<script>
+(() => {
+  const DATA = JSON.parse(document.getElementById('hero-data').textContent);
+  const matrix = document.getElementById('matrix');
+  const colors = {
+    str:'#4f8fce',mkt:'#d76a4b',prd:'#40a583',fin:'#7aa94b',ops:'#c88831',tec:'#d15b82',
+    ppl:'#d85b57',ext:'#898a89',mi:'#7166ca',ent:'#2d8b72',dat:'#3678b5',rsk:'#a84d35',chg:'#a84b74'
+  };
+  const short = {
+    str:'Strategy',mkt:'Marketing + Sales',prd:'Product',fin:'Finance',ops:'Operations',tec:'Technology',
+    ppl:'People',ext:'Legal + External',mi:'Market Intelligence',ent:'Scale',dat:'Data',rsk:'Risk + Control',chg:'Transformation'
+  };
+  // causal cascade: an SLA breach in Operations compounds into churn, margin,
+  // and cash runway. Sequence order drives the chain-pulse timing below.
+  const chainOrder = ['ops.sla-management','mkt.retention-churn','fin.gross-margin','fin.cash-runway'];
+  const special = {
+    'ops.sla-management': ['signal','SLA breach · 6.2h'],
+    'mkt.retention-churn': ['signal','Churn chain · +18%'],
+    'fin.gross-margin': ['signal','Margin leak · -3.2%'],
+    'fin.cash-runway': ['signal','Runway · -1.7 mo'],
+    'tec.ai-agents-automation': ['good','AI impact · $276K'],
+    'dat.predictive-analytics': ['good','Forecast · high confidence']
+  };
+  const keys = Object.keys(DATA.pillars);
+  keys.forEach((key, colIndex) => {
+    const col = document.createElement('div');
+    col.className = 'column';
+    col.style.setProperty('--col', colors[key] || '#888');
+    const title = document.createElement('div');
+    title.className = 'column-title';
+    title.textContent = short[key] || DATA.pillars[key];
+    col.appendChild(title);
+    (DATA.nodesByPillar[key] || []).forEach((node,rowIndex) => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.dataset.row = rowIndex;
+      card.dataset.col = colIndex;
+      card.dataset.id = node.id;
+      if (special[node.id]) card.classList.add(special[node.id][0]);
+      const body = document.createElement('span'); body.className='label'; body.textContent=node.name;
+      if (special[node.id]) {
+        const wrap = document.createElement('span');
+        wrap.appendChild(body);
+        const metric = document.createElement('span'); metric.className='metric'; metric.textContent=special[node.id][1];
+        wrap.appendChild(metric);
+        card.appendChild(wrap);
+      } else card.appendChild(body);
+      col.appendChild(card);
+    });
+    matrix.appendChild(col);
+  });
+
+  // mark the cascade path so it pulses in causal sequence
+  chainOrder.forEach((id, i) => {
+    const el = matrix.querySelector('.card[data-id="'+id+'"]');
+    if (el) el.classList.add('chain', 'c'+(i+1));
+  });
+
+  // build once — every column unfolds top to bottom, in parallel, no re-collapse loop
+  const allCards = [...matrix.querySelectorAll('.card')];
+  const byCol = {};
+  allCards.forEach(el => { (byCol[el.dataset.col] = byCol[el.dataset.col] || []).push(el); });
+  Object.values(byCol).forEach(colEls => colEls.sort((a,b) => +a.dataset.row - +b.dataset.row));
+
+  function build(){
+    const baseDelay = 386, rowStep = 251;
+    // columns are clustered into tiers so the drop cascades left to right
+    // instead of every column unfolding on the same clock.
+    // col order: str,mkt,prd, fin,ops,tec, ppl,ext,mi, ent,dat,rsk, chg
+    // finance/ops/tech and scale/data/risk-control share one tier (same timing)
+    const tierByCol = [0,0,0, 1,1,1, 2,2,2, 1,1,1, 3];
+    const groupStep = rowStep * 1.5; // ~1.5 cells between tiers
+    let maxFinish = 0;
+    Object.keys(byCol).forEach(colKey => {
+      const col = Number(colKey);
+      const colEls = byCol[colKey];
+      const groupIndex = tierByCol[col] ?? 0;
+      const colStart = baseDelay + groupIndex * groupStep;
+      colEls.forEach((el, i) => setTimeout(() => el.classList.add('revealed'), colStart + i*rowStep));
+      maxFinish = Math.max(maxFinish, colStart + (colEls.length - 1) * rowStep);
+    });
+    return maxFinish;
+  }
+  const heroCopy = document.querySelector('.hero-copy');
+  function isUnderHeroCopy(el){
+    const pad = 28;
+    const t = heroCopy.getBoundingClientRect();
+    const r = el.getBoundingClientRect();
+    return r.right > t.left - pad && r.left < t.right + pad &&
+           r.bottom > t.top - pad && r.top < t.bottom + pad;
+  }
+  function randomFlipLoop(){
+    const pool = allCards.filter(el => !el.classList.contains('flipping') && !el.classList.contains('flipping-back') && !isUnderHeroCopy(el));
+    if(!pool.length) return;
+    const cell = pool[Math.floor(Math.random() * pool.length)];
+    cell.classList.add('flipping');
+    cell.addEventListener('animationend', function onFlip(e){
+      if (e.animationName !== 'cellflip') return;
+      cell.removeEventListener('animationend', onFlip);
+      cell.classList.remove('flipping');
+      cell.classList.add('flipping-back');
+      cell.addEventListener('animationend', function onFlipBack(ev){
+        if (ev.animationName !== 'cellflipback') return;
+        cell.removeEventListener('animationend', onFlipBack);
+        cell.classList.remove('flipping-back');
+      });
+    });
+  }
+
+  if(!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const buildDuration = build();
+    setTimeout(() => {
+      randomFlipLoop();
+      setInterval(randomFlipLoop, 2875);
+    }, buildDuration + 2000);
+  } else allCards.forEach(el => el.classList.add('revealed'));
+
+})();
+</script>
+</body>
+</html>
