@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { initSupabase } from '../lib/supabase.js'
+import './Cockpit.css'
 
 const C = {
   bg:            'var(--bg)',
@@ -27,27 +28,9 @@ const C = {
 }
 
 const DISPLAY_FONT = '-apple-system, "Helvetica Neue", "Inter", Arial, sans-serif'
-const MONO = '"SF Mono", "JetBrains Mono", ui-monospace, Menlo, monospace'
 
-// escalate / alert / critical → full newspaper article with approve/skip
+// escalate / alert / critical → ranked top signals; lower tiers stay in Watching
 const ACTIONABLE_TIERS = new Set(['escalate', 'alert', 'critical'])
-
-const STATUS_DOT_COLOR = {
-  bad:         'var(--red)',
-  watch:       'var(--amber)',
-  good:        'var(--green)',
-  'no-signal': 'var(--border2)',
-}
-
-const STATUS_DOT_LABEL = {
-  bad: 'critical', watch: 'watch', good: 'good', 'no-signal': 'no signal',
-}
-
-function sevStyle(severity) {
-  if (severity === 'critical') return { label: 'Critical', bg: C.redBg,   color: C.redText,   border: C.red   }
-  if (severity === 'high')     return { label: 'High',     bg: C.amberBg, color: C.amberText, border: C.amber }
-  return                              { label: 'Medium',   bg: C.amberBg, color: C.amberText, border: C.amber }
-}
 
 function timeAgo(isoStr) {
   if (!isoStr) return null
@@ -344,136 +327,6 @@ function ApprovePopup({ lead, userId, userEmail, commChannels, savedCommPref, on
   )
 }
 
-// ── Strategic priority card (clusters of actionable alerts) ─────────────────
-
-function StrategicPriorityCard({ priority, userId, userEmail, commChannels, savedCommPref, onDone }) {
-  const [busy, setBusy]         = useState(false)
-  const [err, setErr]           = useState(null)
-  const [expanded, setExpanded] = useState(false)
-  const [showPopup, setShowPopup] = useState(false)
-
-  const { lead, theme_label, covered_count, covered_titles } = priority
-  const sev              = sevStyle(lead.severity)
-  const rootCause        = lead.evidence?.rootCause
-  const impact           = lead.evidence?.impact
-  const isRecurring      = lead.evidence?.recurring === true
-  const hasStagedArtifact = lead.execution_staged && !!lead.evidence?.pending_action_id
-  const approveLabel     = hasStagedArtifact
-    ? `Approve: ${lead.evidence?.pending_action_label ?? 'Action Plan'}`
-    : 'Approve action'
-
-  async function doSkip() {
-    if (busy) return
-    setBusy(true); setErr(null)
-    try {
-      const sb = await initSupabase()
-      const { data: { session } } = await sb.auth.getSession()
-      const res = await fetch('/api/update-risk-alert', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json', ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}) },
-        body:    JSON.stringify({ userId, alertId: lead.id, status: 'acknowledged' }),
-      })
-      const payload = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(payload?.error || 'Could not skip')
-      onDone(lead.id)
-    } catch (e) { setErr(e.message); setBusy(false) }
-  }
-
-  return (
-    <>
-      {showPopup && (
-        <ApprovePopup
-          lead={lead}
-          userId={userId}
-          userEmail={userEmail}
-          commChannels={commChannels}
-          savedCommPref={savedCommPref}
-          onSuccess={() => { setShowPopup(false); onDone(lead.id) }}
-          onClose={() => setShowPopup(false)}
-        />
-      )}
-
-      <div style={{ paddingBottom: 20, borderBottom: `1px solid ${C.border}` }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 7 }}>
-          <span style={{ fontFamily: MONO, padding: '2px 7px', borderRadius: 4, background: sev.bg, color: sev.color, border: `1px solid ${sev.border}`, fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-            {sev.label}
-          </span>
-          <span style={{ fontSize: 12, color: C.textMuted }}>{theme_label}</span>
-          {isRecurring && (
-            <span style={{ fontFamily: MONO, padding: '2px 7px', borderRadius: 4, background: 'rgba(251,146,60,0.1)', color: '#f97316', border: '1px solid rgba(251,146,60,0.25)', fontSize: 10, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-              Recurring
-            </span>
-          )}
-          <span style={{ marginLeft: 'auto', fontSize: 11, color: C.textFaint }}>{timeAgo(lead.created_at)}</span>
-        </div>
-
-        <h3 style={{ fontFamily: DISPLAY_FONT, fontSize: 30, fontWeight: 600, letterSpacing: '-0.015em', color: C.text, lineHeight: 1.15, margin: '0 0 8px' }}>
-          {lead.title}
-        </h3>
-        {lead.description && (
-          <p style={{ fontFamily: DISPLAY_FONT, fontSize: 13, color: C.textMuted, lineHeight: 1.65, margin: '0 0 12px' }}>
-            {lead.description}
-          </p>
-        )}
-
-        {rootCause && (
-          <p style={{ fontSize: 13, lineHeight: 1.7, color: C.text, margin: '0 0 7px' }}>
-            <span style={{ fontWeight: 600, color: C.textMuted, marginRight: 5 }}>Because</span>{rootCause}
-          </p>
-        )}
-        {impact && (
-          <p style={{ fontSize: 13, lineHeight: 1.7, color: C.text, margin: '0 0 7px' }}>
-            <span style={{ fontWeight: 600, color: C.textMuted, marginRight: 5 }}>If ignored</span>{impact}
-          </p>
-        )}
-
-        {lead.recommended_action && (
-          <div style={{ background: C.surface3, border: `1px solid ${C.border2}`, borderRadius: 8, padding: '10px 14px', margin: '12px 0', fontSize: 13, lineHeight: 1.65 }}>
-            <span style={{ fontWeight: 600, color: C.green, marginRight: 5 }}>Fix</span>
-            <span style={{ color: C.text }}>{lead.recommended_action}</span>
-          </div>
-        )}
-
-        {covered_count > 1 && (
-          <div style={{ marginTop: 10, marginBottom: 4 }}>
-            <button
-              type="button"
-              onClick={() => setExpanded(e => !e)}
-              style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: 11, color: C.textFaint, display: 'flex', alignItems: 'center', gap: 4 }}
-            >
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: expanded ? 'rotate(90deg)' : 'none', transition: 'transform 0.15s' }} aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
-              Covers {covered_count} alerts in this area
-            </button>
-            {expanded && covered_titles.length > 0 && (
-              <div style={{ marginTop: 6, paddingLeft: 14, display: 'flex', flexDirection: 'column', gap: 3 }}>
-                {covered_titles.map((title, i) => (
-                  <div key={i} style={{ fontSize: 11, color: C.textFaint }}>· {title}</div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12 }}>
-          <button
-            type="button"
-            onClick={() => setShowPopup(true)}
-            disabled={busy}
-            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 13px', borderRadius: 6, border: `1px solid ${C.green}`, background: C.greenBg, color: C.greenText, fontSize: 12, fontWeight: 600, cursor: busy ? 'not-allowed' : 'pointer', opacity: busy ? 0.6 : 1 }}
-          >
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
-            {approveLabel}
-          </button>
-          <button type="button" onClick={doSkip} disabled={busy} style={{ padding: '6px 10px', borderRadius: 6, border: `1px solid ${C.border}`, background: 'transparent', color: C.textMuted, fontSize: 12, cursor: busy ? 'not-allowed' : 'pointer', opacity: busy ? 0.6 : 1 }}>
-            Skip for now
-          </button>
-          {err && <span style={{ fontSize: 11, color: C.redText, marginLeft: 4 }}>{err}</span>}
-        </div>
-      </div>
-    </>
-  )
-}
-
 // ── Watching brief (lower-tier alerts) ──────────────────────────────────────
 
 function WatchBrief({ alert, areaLabel }) {
@@ -504,6 +357,155 @@ function OpportunityBrief({ text }) {
   )
 }
 
+function SignalListItem({ signal, selected, onSelect }) {
+  return (
+    <button
+      type="button"
+      className={`sentinel-signal${selected ? ' selected' : ''}`}
+      aria-pressed={selected}
+      onClick={() => onSelect(signal.id)}
+    >
+      <span className="sentinel-signal-rank">{String(signal.rank).padStart(2, '0')}</span>
+      <span className="sentinel-signal-copy">
+        <span className="sentinel-signal-title">{signal.title}</span>
+        <span className="sentinel-signal-description">{signal.issue_summary}</span>
+      </span>
+      <span className={`sentinel-signal-impact${signal.financial_impact ? '' : ' unquantified'}`}>
+        {signal.financial_impact?.display || 'Not quantified'}
+      </span>
+    </button>
+  )
+}
+
+function SummaryRow({ label, children, className = '' }) {
+  return (
+    <div className={`sentinel-summary-row${className ? ` ${className}` : ''}`}>
+      <div className="sentinel-summary-label">{label}</div>
+      <div className="sentinel-summary-value">{children}</div>
+    </div>
+  )
+}
+
+function SignalSummaryPanel({ signal, alert, user, commChannels, savedCommPref, navigateSection, onDone }) {
+  const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState(null)
+  const [showPopup, setShowPopup] = useState(false)
+
+  useEffect(() => {
+    setBusy(false)
+    setErr(null)
+    setShowPopup(false)
+  }, [signal?.id])
+
+  if (!signal || !alert) {
+    return (
+      <aside className="sentinel-summary empty" aria-live="polite">
+        <h2>Signal summary</h2>
+        <p>Select a signal to review its evidence and recommended next step.</p>
+      </aside>
+    )
+  }
+
+  const approveLabel = signal.execution_staged && alert.evidence?.pending_action_label
+    ? `Approve: ${alert.evidence.pending_action_label}`
+    : 'Approve action'
+
+  async function doSkip() {
+    if (busy) return
+    setBusy(true)
+    setErr(null)
+    try {
+      const sb = await initSupabase()
+      const { data: { session } } = await sb.auth.getSession()
+      const response = await fetch('/api/update-risk-alert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}) },
+        body: JSON.stringify({ userId: user?.id, alertId: alert.id, status: 'acknowledged' }),
+      })
+      const payload = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(payload?.error || 'Could not skip')
+      onDone(alert.id)
+    } catch (error) {
+      setErr(error.message)
+      setBusy(false)
+    }
+  }
+
+  function viewFullAnalysis() {
+    sessionStorage.setItem(
+      'sa_probe_question',
+      `Give me a full analysis of this signal: ${signal.title}. Context: ${signal.issue_summary}`,
+    )
+    navigateSection?.('home')
+  }
+
+  return (
+    <>
+      {showPopup && (
+        <ApprovePopup
+          lead={alert}
+          userId={user?.id}
+          userEmail={user?.email}
+          commChannels={commChannels}
+          savedCommPref={savedCommPref}
+          onSuccess={() => { setShowPopup(false); onDone(alert.id) }}
+          onClose={() => setShowPopup(false)}
+        />
+      )}
+
+      <aside className="sentinel-summary" aria-live="polite">
+        <div className="sentinel-summary-head">
+          <h2>Signal summary</h2>
+          <span className="sentinel-selected-chip">Selected ✓</span>
+        </div>
+
+        <SummaryRow label="Signal" className="primary">
+          <strong>{signal.title}</strong>
+        </SummaryRow>
+
+        <SummaryRow label="Issue summary">{signal.issue_summary}</SummaryRow>
+
+        <SummaryRow label="Likely driver">
+          {signal.likely_driver || 'The available evidence does not identify a likely driver yet.'}
+        </SummaryRow>
+
+        {signal.impact_summary && (
+          <SummaryRow label="If ignored">{signal.impact_summary}</SummaryRow>
+        )}
+
+        <SummaryRow label={signal.affected_label}>
+          <span className="sentinel-summary-icon" aria-hidden="true">◎</span>
+          {signal.affected_detail}
+        </SummaryRow>
+
+        <SummaryRow label={signal.financial_impact?.label || 'Financial impact'} className="financial">
+          <span className={signal.financial_impact ? 'quantified-impact' : 'unquantified-impact'}>
+            {signal.financial_impact?.display || 'Not quantified'}
+          </span>
+          {signal.financial_impact?.basis && <small>{signal.financial_impact.basis}</small>}
+        </SummaryRow>
+
+        <SummaryRow label="Urgency">
+          <strong>{signal.urgency.label}</strong> — {signal.urgency.detail}
+        </SummaryRow>
+
+        <SummaryRow label="Responsible area">{signal.area_label}</SummaryRow>
+
+        <SummaryRow label="Recommended next step">
+          {signal.recommended_next_step || 'Review the signal and assign the next operating step.'}
+        </SummaryRow>
+
+        <div className="sentinel-summary-actions">
+          <button type="button" className="sentinel-analysis-btn" onClick={viewFullAnalysis}>View full analysis →</button>
+          <button type="button" className="sentinel-approve-btn" onClick={() => setShowPopup(true)} disabled={busy}>{approveLabel}</button>
+          <button type="button" className="sentinel-skip-btn" onClick={doSkip} disabled={busy}>Skip for now</button>
+        </div>
+        {err && <div className="sentinel-summary-error">{err}</div>}
+      </aside>
+    </>
+  )
+}
+
 // ── Main component ───────────────────────────────────────────────────────────
 
 export default function CockpitSection({ user, navigateSection }) {
@@ -513,6 +515,7 @@ export default function CockpitSection({ user, navigateSection }) {
   const [monitoring, setMonitoring] = useState(false)
   const [error, setError]           = useState(null)
   const [dismissed, setDismissed]   = useState(new Set())
+  const [selectedSignalId, setSelectedSignalId] = useState(null)
 
   const fetchData = useCallback(async () => {
     if (!user?.id) return
@@ -535,6 +538,13 @@ export default function CockpitSection({ user, navigateSection }) {
   }, [user?.id])
 
   useEffect(() => { fetchData() }, [fetchData])
+
+  useEffect(() => {
+    const available = (data?.top_signals || []).filter((signal) => !dismissed.has(signal.id))
+    setSelectedSignalId((current) => (
+      available.some((signal) => signal.id === current) ? current : (available[0]?.id || null)
+    ))
+  }, [data, dismissed])
 
   const runHealthCheck = async (fromReadyState = false) => {
     if (!user?.id || refreshing) return
@@ -586,14 +596,13 @@ export default function CockpitSection({ user, navigateSection }) {
   // ── Derived values ──────────────────────────────────────────────────────
   const areaLabelById = new Map((data.selected_areas || []).map(a => [a.id, a.label]))
   const getAreaLabel  = (id) => areaLabelById.get(id) || (id || '').replace(/-/g, ' ').replace(/^[a-z]/, c => c.toUpperCase())
-
-  const priorities        = (data.strategic_priorities || []).filter(p => !dismissed.has(p.lead.id))
-  const totalAlertsCovered = priorities.reduce((sum, p) => sum + p.covered_count, 0)
-  const watching          = (data.alerts || []).filter(a => !dismissed.has(a.id) && !ACTIONABLE_TIERS.has(a.escalation_tier))
-
-  const summaryText = data.cross_dept_insight || 'No critical issues flagged from the latest health check.'
-  const checkLabel  = data.last_checked ? timeAgo(data.last_checked) : null
-  const metrics     = data.cos?.at_a_glance || []
+  const topSignals    = (data.top_signals || []).filter((signal) => !dismissed.has(signal.id))
+  const selectedSignal = topSignals.find((signal) => signal.id === selectedSignalId) || topSignals[0] || null
+  const selectedAlert = selectedSignal
+    ? (data.alerts || []).find((alert) => alert.id === selectedSignal.id) || null
+    : null
+  const watching      = (data.alerts || []).filter(a => !dismissed.has(a.id) && !ACTIONABLE_TIERS.has(a.escalation_tier))
+  const checkLabel    = data.last_checked ? timeAgo(data.last_checked) : null
 
   function handleDone(alertId) {
     setDismissed(prev => new Set([...prev, alertId]))
@@ -601,41 +610,26 @@ export default function CockpitSection({ user, navigateSection }) {
 
   // ── Render ──────────────────────────────────────────────────────────────
   return (
-    <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
-
-      {/* Header — company identity + AI summary */}
-      <div style={{ background: 'var(--d-surface)', border: '1px solid var(--d-border)', borderRadius: 12, padding: '18px 22px', display: 'flex', alignItems: 'center', gap: 20 }}>
-        <div style={{ flexShrink: 0 }}>
-          <div style={{ fontFamily: DISPLAY_FONT, fontSize: 24, fontWeight: 600, letterSpacing: '-0.015em', color: C.text, lineHeight: 1.15 }}>
-            {data.company_name || 'My Business'}
-          </div>
-          {(data.selected_areas || []).length > 0 && (
-            <div style={{ fontSize: 12, color: C.textFaint, marginTop: 3 }}>
-              {data.selected_areas.length} area{data.selected_areas.length !== 1 ? 's' : ''} monitored
-            </div>
-          )}
+    <div className="sentinel-page">
+      <header className="sentinel-toolbar">
+        <div>
+          <h1>Top Signals</h1>
+          <p>Ranked by estimated financial impact where quantified</p>
         </div>
-
-        <div style={{ flex: 1, paddingLeft: 20, borderLeft: '1px solid var(--d-border)' }}>
-          <p style={{ fontSize: 14, color: C.text, lineHeight: 1.65, margin: '0 0 10px' }}>{summaryText}</p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 12, color: C.textFaint, flexWrap: 'wrap' }}>
-            <span style={{ width: 7, height: 7, borderRadius: '50%', background: C.green, display: 'inline-block', animation: 'cockpit-pulse 2.4s ease-in-out infinite' }} />
-            <style>{`@keyframes cockpit-pulse { 0%,100%{opacity:1} 50%{opacity:.35} }`}</style>
-            {checkLabel ? `Checked ${checkLabel}` : 'No checks run yet'}
-            <span style={{ color: C.border2 }}>·</span>
-            <span>{nextCheckLabel()}</span>
-            <button type="button" onClick={runHealthCheck} disabled={refreshing} style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 6, background: 'transparent', border: '1px solid var(--d-border)', color: C.textMuted, fontSize: 11.5, fontWeight: 500, cursor: refreshing ? 'not-allowed' : 'pointer', opacity: refreshing ? 0.5 : 1 }}>
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={refreshing ? { animation: 'spin 1s linear infinite' } : {}} aria-hidden="true"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-              <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
-              {refreshing ? 'Running…' : 'Refresh'}
-            </button>
-          </div>
+        <div className="sentinel-update">
+          <span className="sentinel-update-dot" />
+          <span>{checkLabel ? `Updated ${checkLabel}` : 'No checks run yet'}</span>
+          <span>·</span>
+          <span>{nextCheckLabel()}</span>
+          <button type="button" className="sentinel-refresh" onClick={runHealthCheck} disabled={refreshing}>
+            {refreshing ? 'Running…' : 'Refresh'}
+          </button>
         </div>
-      </div>
+      </header>
 
       {/* Logic nudge — shown when user has neither connectors nor custom metrics */}
       {!data.metrics_configured && !data.has_connectors && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: C.amberBg, border: `1px solid ${C.amber}`, borderRadius: 10, padding: '11px 16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: C.amberBg, border: `1px solid ${C.amber}`, borderRadius: 4, padding: '11px 16px', marginBottom: 14 }}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: C.amber, flexShrink: 0 }} aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
           <span style={{ fontSize: 13, color: C.amberText, flex: 1, lineHeight: 1.5 }}>
             Monitoring is paused. Connect your tools or add metrics manually so the system has something to evaluate.
@@ -650,159 +644,77 @@ export default function CockpitSection({ user, navigateSection }) {
         </div>
       )}
 
-      {/* Body — newspaper feed (left) + sidebar (right) */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 220px', gap: 16, alignItems: 'start' }}>
+      {(data.probing_queue || []).length > 0 && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: C.amberBg, border: `1px solid ${C.amber}55`, borderRadius: 4, padding: '10px 14px', marginBottom: 14 }}>
+          <span style={{ fontSize: 12, color: C.amberText, flex: 1 }}>
+            {data.probing_queue.length} blind area{data.probing_queue.length !== 1 ? 's need' : ' needs'} more evidence.
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              sessionStorage.setItem('sa_probe_question', data.probing_queue[0].question)
+              navigateSection?.('home')
+            }}
+            style={{ color: C.amberText, background: 'transparent', border: `1px solid ${C.amber}`, borderRadius: 3, padding: '5px 10px', fontSize: 11 }}
+          >
+            Review blind spots →
+          </button>
+        </div>
+      )}
 
-        {/* Left — alert feed */}
-        <div>
-          {/* Top priorities */}
-          <div style={{ borderTop: `2px solid ${C.text}`, paddingTop: 8, marginBottom: 18, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-            <span style={{ fontSize: 13, fontWeight: 500, color: C.text }}>Top priorities</span>
-            {totalAlertsCovered > 0 && (
-              <span style={{ fontSize: 11, color: C.textFaint }}>{totalAlertsCovered} alert{totalAlertsCovered !== 1 ? 's' : ''} distilled</span>
-            )}
-          </div>
-
-          {priorities.length === 0 ? (
-            <div style={{ fontSize: 13, color: C.greenText, background: C.greenBg, border: `1px solid ${C.green}`, borderRadius: 8, padding: '10px 14px', marginBottom: 20 }}>
-              No critical issues right now. Business is running clean.
-            </div>
+      <div className="sentinel-workspace">
+        <section className="sentinel-list-pane" aria-label="Top signals">
+          {topSignals.length === 0 ? (
+            <div className="sentinel-empty-signals">No critical issues right now. Business is running clean.</div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-              {priorities.map(priority => (
-                <StrategicPriorityCard
-                  key={priority.lead.id}
-                  priority={priority}
-                  userId={user?.id}
-                  userEmail={user?.email}
-                  commChannels={data.comm_channels}
-                  savedCommPref={data.saved_comm_pref}
-                  onDone={handleDone}
+            <div className="sentinel-signal-list">
+              {topSignals.map((signal) => (
+                <SignalListItem
+                  key={signal.id}
+                  signal={signal}
+                  selected={signal.id === selectedSignal?.id}
+                  onSelect={setSelectedSignalId}
                 />
               ))}
             </div>
           )}
+        </section>
 
-          {/* Opportunities */}
-          {(data.opportunities || []).length > 0 && (
-            <>
-              <div style={{ borderTop: `2px solid ${C.green}`, paddingTop: 8, marginTop: priorities.length > 0 ? 24 : 4, marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                <span style={{ fontSize: 13, fontWeight: 500, color: C.greenText }}>Opportunities</span>
-                <span style={{ fontSize: 11, color: C.textFaint }}>{data.opportunities.length} signal{data.opportunities.length !== 1 ? 's' : ''}</span>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 20px' }}>
-                {data.opportunities.map((text, i) => (
-                  <OpportunityBrief key={i} text={text} />
-                ))}
-              </div>
-            </>
-          )}
+        <SignalSummaryPanel
+          signal={selectedSignal}
+          alert={selectedAlert}
+          user={user}
+          commChannels={data.comm_channels}
+          savedCommPref={data.saved_comm_pref}
+          navigateSection={navigateSection}
+          onDone={handleDone}
+        />
+      </div>
 
-          {/* Watching */}
-          {watching.length > 0 && (
-            <>
-              <div style={{ borderTop: `2px solid ${C.text}`, paddingTop: 8, marginTop: ((data.opportunities || []).length > 0 || priorities.length > 0) ? 24 : 4, marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                <span style={{ fontSize: 13, fontWeight: 500, color: C.text }}>Watching</span>
-                <span style={{ fontSize: 11, color: C.textFaint }}>{watching.length} signal{watching.length !== 1 ? 's' : ''}</span>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 20px' }}>
-                {watching.map(alert => (
-                  <WatchBrief key={alert.id} alert={alert} areaLabel={getAreaLabel(alert.category)} />
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* Right — sidebar */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-
-          {/* Areas */}
-          <div style={{ background: 'var(--d-surface)', border: '1px solid var(--d-border)', borderRadius: 10, padding: '14px 16px' }}>
-            <div style={{ fontFamily: MONO, fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.textFaint, marginBottom: 10 }}>Areas</div>
-            {(data.selected_areas || []).length === 0 ? (
-              <div style={{ fontSize: 12, color: C.textFaint, lineHeight: 1.5 }}>Complete onboarding to see area status.</div>
-            ) : (
-              (data.selected_areas || []).map(area => (
-                <div key={area.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0', fontSize: 12 }}>
-                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: STATUS_DOT_COLOR[area.status] || STATUS_DOT_COLOR['no-signal'], flexShrink: 0 }} />
-                  <span style={{ color: C.text, flex: 1 }}>{area.label}</span>
-                  <span style={{ color: C.textFaint, fontSize: 11 }}>{STATUS_DOT_LABEL[area.status] || 'no signal'}</span>
-                </div>
-              ))
-            )}
-          </div>
-
-          {/* Metrics */}
-          {metrics.length > 0 && (
-            <div style={{ background: 'var(--d-surface)', border: '1px solid var(--d-border)', borderRadius: 10, padding: '14px 16px' }}>
-              <div style={{ fontFamily: MONO, fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.textFaint, marginBottom: 10 }}>Metrics</div>
-              {metrics.map((item, i) => {
-                const isBad = item.trend === 'up-bad' || item.trend === 'down-bad'
-                const valColor = isBad ? C.redText : (item.trend !== 'flat' ? C.amberText : C.text)
-                return (
-                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', fontSize: 12, borderBottom: i < metrics.length - 1 ? '1px solid var(--d-border)' : 'none' }}>
-                    <span style={{ color: C.textMuted }}>{item.label}</span>
-                    <span style={{ fontWeight: 500, color: valColor }}>{item.value}</span>
-                  </div>
-                )
-              })}
+      <div className="sentinel-lower">
+        {(data.opportunities || []).length > 0 && (
+          <>
+            <div style={{ borderTop: `2px solid ${C.green}`, paddingTop: 8, marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+              <span style={{ fontSize: 13, fontWeight: 500, color: C.greenText }}>Opportunities</span>
+              <span style={{ fontSize: 11, color: C.textFaint }}>{data.opportunities.length} signal{data.opportunities.length !== 1 ? 's' : ''}</span>
             </div>
-          )}
-
-          {/* Chat link */}
-          <button
-            type="button"
-            onClick={() => navigateSection?.('home')}
-            style={{ background: 'var(--d-surface)', border: '1px solid var(--d-border)', borderRadius: 10, padding: '14px 16px', textAlign: 'left', cursor: 'pointer', width: '100%' }}
-          >
-            <div style={{ fontFamily: MONO, fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.textFaint, marginBottom: 6 }}>Ask anything</div>
-            <div style={{ fontSize: 12, color: C.textMuted, lineHeight: 1.5, marginBottom: 10 }}>Deep-dive any alert or talk through what's going on.</div>
-            <div style={{ fontSize: 12, color: C.accentText, display: 'flex', alignItems: 'center', gap: 4, fontWeight: 500 }}>
-              Open chat
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 20px' }}>
+              {data.opportunities.map((text, i) => <OpportunityBrief key={i} text={text} />)}
             </div>
-          </button>
+          </>
+        )}
 
-          {/* Blind spots probing card */}
-          {(data.probing_queue || []).length > 0 && (
-            <div style={{ background: 'var(--d-surface)', border: `1px solid ${C.amber}33`, borderRadius: 10, padding: '14px 16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={C.amber} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                <span style={{ fontFamily: MONO, fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.amber }}>Blind spots</span>
-                <span style={{ fontSize: 11, color: C.textFaint, marginLeft: 'auto' }}>{data.probing_queue.length} area{data.probing_queue.length !== 1 ? 's' : ''}</span>
-              </div>
-              <div style={{ fontSize: 12, color: C.textMuted, lineHeight: 1.5, marginBottom: 10 }}>
-                The system has no data for these areas yet. Click to answer.
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {data.probing_queue.slice(0, 3).map((item) => (
-                  <button
-                    key={item.areaId}
-                    type="button"
-                    onClick={() => {
-                      sessionStorage.setItem('sa_probe_question', item.question)
-                      navigateSection?.('home')
-                    }}
-                    style={{
-                      background: C.amberBg,
-                      border: `1px solid ${C.amber}44`,
-                      borderRadius: 7,
-                      padding: '8px 10px',
-                      textAlign: 'left',
-                      cursor: 'pointer',
-                      width: '100%',
-                    }}
-                  >
-                    <div style={{ fontFamily: MONO, fontSize: 10, fontWeight: 600, color: C.amberText, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 3 }}>{item.areaLabel}</div>
-                    <div style={{ fontSize: 12, color: C.text, lineHeight: 1.4 }}>{item.question}</div>
-                  </button>
-                ))}
-              </div>
+        {watching.length > 0 && (
+          <>
+            <div style={{ borderTop: `2px solid ${C.text}`, paddingTop: 8, marginTop: (data.opportunities || []).length > 0 ? 24 : 4, marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+              <span style={{ fontSize: 13, fontWeight: 500, color: C.text }}>Watching</span>
+              <span style={{ fontSize: 11, color: C.textFaint }}>{watching.length} signal{watching.length !== 1 ? 's' : ''}</span>
             </div>
-          )}
-
-        </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 20px' }}>
+              {watching.map(alert => <WatchBrief key={alert.id} alert={alert} areaLabel={getAreaLabel(alert.category)} />)}
+            </div>
+          </>
+        )}
       </div>
     </div>
   )

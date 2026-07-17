@@ -7,6 +7,7 @@ import { validateUserToken } from './lib/auth.js'
 import { getIndustry, getArea } from './lib/blueprint/catalog/index.js'
 import { getCommChannelProviders } from './lib/connectors/registry.js'
 import { getComposioConnectionMap } from './lib/connectors/composio.js'
+import { buildTopSignals } from '../shared/cockpit-signals.js'
 
 const AREA_META = {
   'customer-service':     { name: 'Support',        role: 'Head of Customer Support',  key_metric: 'first_response_time', metric_label: 'Avg. Response Time', unit: 'h' },
@@ -283,6 +284,7 @@ export default async function handler(req, res) {
   }
 
   const strategicPriorities = buildStrategicPriorities(alerts)
+  const topSignals = buildTopSignals(alerts, selectedAreas)
 
   // ── Per-area top issues from risk_alerts ──────────────────────────────────
   const issuesByArea = {}
@@ -348,6 +350,7 @@ export default async function handler(req, res) {
     company_name:         companyName,
     selected_areas:       selectedAreas,
     alerts:               alerts,
+    top_signals:          topSignals,
     strategic_priorities: strategicPriorities,
     last_checked:       hc?.checked_at ?? null,
     health_score:       hc?.health_score ?? null,
