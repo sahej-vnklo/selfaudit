@@ -395,7 +395,7 @@ async function downloadArtifactPdf(artifact, artifactLabel) {
   shell.style.padding = '40px'
   shell.style.background = '#F7F5EF'
   shell.style.color = '#1D241B'
-  shell.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+  shell.style.fontFamily = '-apple-system, "Helvetica Neue", "Inter", Arial, sans-serif'
   shell.style.zIndex = '-1'
 
   const title = document.createElement('h1')
@@ -403,7 +403,7 @@ async function downloadArtifactPdf(artifact, artifactLabel) {
   title.style.fontSize = '30px'
   title.style.lineHeight = '1.15'
   title.style.margin = '0 0 12px'
-  title.style.fontFamily = 'Georgia, "Times New Roman", serif'
+  title.style.fontFamily = '"Titillium Web", -apple-system, "Helvetica Neue", "Inter", Arial, sans-serif'
   title.style.fontWeight = '600'
   shell.appendChild(title)
 
@@ -1197,7 +1197,7 @@ const ep = {
     fontWeight: 600,
     maxWidth: 840,
     marginBottom: 10,
-    fontFamily: '"Cormorant Garamond", "Times New Roman", serif',
+    fontFamily: 'var(--font-heading)',
   },
   recommendedBody: {
     fontSize: 14,

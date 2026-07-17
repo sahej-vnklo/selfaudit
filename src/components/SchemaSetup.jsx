@@ -427,7 +427,7 @@ export default function SchemaSetup({ user, onComplete }) {
               padding: '48px 44px',
             }}>
               <h1 style={{
-                fontFamily: '"Cormorant Garamond", "Times New Roman", serif',
+                fontFamily: 'var(--font-heading)',
                 fontSize: 'clamp(28px, 2.8vw, 40px)',
                 fontWeight: 500,
                 lineHeight: 1.15,
@@ -580,7 +580,7 @@ export default function SchemaSetup({ user, onComplete }) {
                 padding: '60px 44px 48px',
               }}>
                 <h1 style={{
-                  fontFamily: '"Cormorant Garamond", "Times New Roman", serif',
+                  fontFamily: 'var(--font-heading)',
                   fontSize: 'clamp(28px, 2.8vw, 40px)',
                   fontWeight: 500,
                   lineHeight: 1.15,

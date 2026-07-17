@@ -105,7 +105,7 @@
   border-left: 3px solid var(--ember);
   background: oklch(0.52 0.18 32 / 0.06);
   border-radius: 0 10px 10px 0;
-  font-family: var(--serif);
+  font-family: var(--sans);
   font-size: clamp(20px, 2.2vw, 28px);
   font-weight: 400;
   font-style: italic;

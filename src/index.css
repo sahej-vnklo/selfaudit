@@ -41,8 +41,11 @@
   --gray-400: #B0ADA4;
   --gray-600: #6B6860;
   --gray-800: #2C2B28;
-  --serif: 'DM Serif Display', Georgia, serif;
-  --sans: 'DM Sans', system-ui, sans-serif;
+  --font-heading: 'Titillium Web', -apple-system, 'Helvetica Neue', 'Inter', Arial, sans-serif;
+  --font-body: -apple-system, 'Helvetica Neue', 'Inter', Arial, sans-serif;
+  /* Backward-compatible aliases used by older page-level styles. */
+  --serif: var(--font-heading);
+  --sans: var(--font-body);
   --radius: 8px;
   --radius-lg: 12px;
   --shadow-soft: 0 20px 48px rgba(0, 0, 0, 0.28);
@@ -68,6 +71,10 @@ body {
   color: var(--text-primary);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
 }
 
 button { font-family: var(--sans); cursor: pointer; border: none; outline: none; }

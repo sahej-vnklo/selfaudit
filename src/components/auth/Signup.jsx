@@ -12,8 +12,8 @@ const C = {
   line2:       'rgba(26, 17, 16, 0.16)',
   ember:       'oklch(0.52 0.18 32)',
   emberGlow:   'oklch(0.5 0.19 33)',
-  serif:       '"Cormorant Garamond", "Times New Roman", serif',
-  sans:        '"Manrope", -apple-system, system-ui, sans-serif',
+  serif:       '"Titillium Web", -apple-system, "Helvetica Neue", "Inter", Arial, sans-serif',
+  sans:        '-apple-system, "Helvetica Neue", "Inter", Arial, sans-serif',
   mono:        '"JetBrains Mono", ui-monospace, monospace',
 }
 

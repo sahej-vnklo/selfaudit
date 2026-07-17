@@ -9,8 +9,8 @@
   --ember-glow: oklch(0.58 0.18 35);
   --line:       rgba(10, 7, 7, 0.10);
   --line-2:     rgba(10, 7, 7, 0.16);
-  --serif:      "Cormorant Garamond", "Times New Roman", serif;
-  --sans:       "Manrope", -apple-system, system-ui, sans-serif;
+  --serif:      "Titillium Web", -apple-system, "Helvetica Neue", "Inter", Arial, sans-serif;
+  --sans:       -apple-system, "Helvetica Neue", "Inter", Arial, sans-serif;
   --mono:       "JetBrains Mono", ui-monospace, monospace;
 
   background:             var(--bg);
@@ -285,7 +285,7 @@
 .uc-sev-critical { color: oklch(0.78 0.16 40); }
 .uc-sev-high     { color: rgba(244,235,227,0.6); }
 .uc-verdict-quote {
-  font-family: var(--serif);
+  font-family: var(--sans);
   font-size: clamp(20px, 2.2vw, 30px);
   font-weight: 400;
   line-height: 1.35;

@@ -9,7 +9,7 @@
 /* ─── Reset index.css globals inside dashboard ──────────────────────────────*/
 .sa-dash a           { text-decoration: none; color: inherit; }
 .sa-dash a:hover     { opacity: 1; }
-.sa-dash button      { font-family: "Manrope", -apple-system, system-ui, sans-serif; }
+.sa-dash button      { font-family: var(--font-body); }
 .sa-dash button:hover:not(:disabled),
 .sa-dash button:active:not(:disabled) {
   transform: none;
@@ -24,7 +24,7 @@
   flex-direction: column;
   background: var(--bg);
   color: var(--fg);
-  font-family: "Manrope", -apple-system, system-ui, sans-serif;
+  font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   overflow: hidden;
 }
@@ -90,7 +90,7 @@
   border: 1px solid rgba(9, 10, 12, 0.26);
   border-radius: 3px;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
-  font-family: "Manrope", -apple-system, system-ui, sans-serif;
+  font-family: var(--font-body);
   font-size: 11px; font-weight: 500;
   color: #14161a;
   cursor: pointer;
@@ -319,7 +319,7 @@
   margin-bottom: 9px;
 }
 .sa-dash .card-title {
-  font-family: "Cormorant Garamond", "Times New Roman", serif;
+  font-family: var(--font-heading);
   font-weight: 600;
   font-size: clamp(22px, 2.2vw, 28px);
   line-height: 1.05;
@@ -383,7 +383,7 @@
   background: transparent;
   border: none;
   color: var(--fg);
-  font-family: "Manrope", -apple-system, system-ui, sans-serif;
+  font-family: var(--font-body);
   font-size: 16px;
   outline: none;
   -webkit-appearance: none;
@@ -401,7 +401,7 @@
   border: 1px solid oklch(0.62 0.18 35 / 0.5);
   border-radius: 10px;
   color: var(--ember);
-  font-family: "Manrope", -apple-system, system-ui, sans-serif;
+  font-family: var(--font-body);
   font-size: 14px; font-weight: 500;
   cursor: pointer; white-space: nowrap;
   transition: border-color .2s, color .2s, background .2s;

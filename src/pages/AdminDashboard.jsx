@@ -198,7 +198,8 @@ const G = {
 }
 
 const MONO = '"DM Mono", ui-monospace, monospace'
-const SANS = '"DM Sans", system-ui, -apple-system, sans-serif'
+const SANS = '-apple-system, "Helvetica Neue", "Inter", Arial, sans-serif'
+const HEADING = '"Titillium Web", -apple-system, "Helvetica Neue", "Inter", Arial, sans-serif'
 
 function IconMail() {
   return (
@@ -653,7 +654,7 @@ function ReportSchemaB({ p }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {p.headline && (
-        <div style={{ color: G.text, fontSize: 16, fontWeight: 500, lineHeight: 1.5 }}>
+        <div style={{ color: G.text, fontSize: 16, fontWeight: 500, lineHeight: 1.5, fontFamily: HEADING }}>
           {p.headline}
         </div>
       )}
@@ -690,7 +691,7 @@ function ReportSchemaExecution({ p }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {p.headline && (
-        <p style={{ fontSize: 17, fontWeight: 700, color: G.ink, lineHeight: 1.4 }}>{p.headline}</p>
+        <p style={{ fontSize: 17, fontWeight: 700, color: G.ink, lineHeight: 1.4, fontFamily: HEADING }}>{p.headline}</p>
       )}
       <TextSection label="Execution Context" text={p.execution_context} />
       {deliveryPlan.length > 0 && (
@@ -722,7 +723,7 @@ function ReportSchemaA({ p }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
       {p.headline && (
-        <div style={{ color: G.text, fontSize: 16, fontWeight: 500, lineHeight: 1.5 }}>
+        <div style={{ color: G.text, fontSize: 16, fontWeight: 500, lineHeight: 1.5, fontFamily: HEADING }}>
           {p.headline}
         </div>
       )}
@@ -816,7 +817,7 @@ function ReportSchemaGoal({ p }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       {p.headline && (
-        <p style={{ fontSize: 17, fontWeight: 700, color: G.ink, lineHeight: 1.4 }}>{p.headline}</p>
+        <p style={{ fontSize: 17, fontWeight: 700, color: G.ink, lineHeight: 1.4, fontFamily: HEADING }}>{p.headline}</p>
       )}
 
       <TextSection label="Verdict" text={p.overall_verdict} />
@@ -970,7 +971,7 @@ function AdminSidebar({ session, navSection, onNav, userCount }) {
       padding: '16px 12px 12px',
     }}>
       <div style={{ marginBottom: 18, padding: '0 4px' }}>
-        <div style={{ color: G.text, fontSize: 16, letterSpacing: '-0.03em' }}>
+        <div style={{ color: G.text, fontSize: 16, letterSpacing: '-0.03em', fontFamily: HEADING }}>
           self<span style={{ color: G.accentText }}>audit</span>
         </div>
         <div style={{ color: G.textFaint, fontSize: 11, marginTop: 6, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
@@ -1134,7 +1135,7 @@ function UsersTable({ users, detailCache, onSelectUser, title = 'Users' }) {
   return (
     <div style={{ ...panelStyle({ padding: '16px 18px' }) }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
-        <div style={{ color: G.text, fontSize: 13 }}>{title}</div>
+        <div style={{ color: G.text, fontSize: 13, fontFamily: HEADING }}>{title}</div>
         <div style={{ color: G.textFaint, fontSize: 11, ...monoStyle() }}>{filtered.length} rows</div>
       </div>
 
@@ -1592,7 +1593,7 @@ function UserDetailView({ user, detail, onBack, onTierChange, tierSaving, sessio
       <div style={{ ...panelStyle({ padding: '18px 18px 16px' }) }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 14, flexWrap: 'wrap' }}>
           <div>
-            <div style={{ color: G.text, fontSize: 20, marginBottom: 4 }}>{user.name || '(no name)'}</div>
+            <div style={{ color: G.text, fontSize: 20, marginBottom: 4, fontFamily: HEADING }}>{user.name || '(no name)'}</div>
             <div style={{ color: G.textMuted, fontSize: 13 }}>{user.email}</div>
           </div>
           <TierEditor email={user.email} tier={profile?.tier || user.tier} onChange={onTierChange} saving={tierSaving} />

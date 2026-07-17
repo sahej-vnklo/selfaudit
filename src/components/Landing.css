@@ -352,7 +352,7 @@
   flex-shrink: 0;
 }
 .sa-home .menu-logo-wrap { display: flex; align-items: center; gap: 12px; cursor: pointer; }
-.sa-home .menu-logo-text { font-family: var(--sans); font-size: 22px; font-weight: 500; letter-spacing: -0.02em; color: var(--ink); line-height: 1; }
+.sa-home .menu-logo-text { font-family: var(--wordmark-font); font-size: 22px; font-weight: 500; letter-spacing: -0.02em; color: var(--ink); line-height: 1; }
 .sa-home .menu-close-btn {
   display: inline-flex;
   align-items: center;
@@ -383,7 +383,7 @@
 
 .sa-home .menu-cat {
   display: inline-block;
-  font-family: var(--sans);
+  font-family: var(--wordmark-font);
   font-weight: 600;
   font-size: clamp(26px, 3vw, 38px);
   line-height: 1.1;
@@ -461,7 +461,7 @@
   transition: color .2s;
 }
 .sa-home .menu-contact-close:hover { color: var(--ink); }
-.sa-home .menu-contact-title { font-family: var(--sans); font-size: 26px; font-weight: 600; letter-spacing: -0.02em; color: var(--ink); margin-bottom: 8px; }
+.sa-home .menu-contact-title { font-family: var(--wordmark-font); font-size: 26px; font-weight: 600; letter-spacing: -0.02em; color: var(--ink); margin-bottom: 8px; }
 .sa-home .menu-contact-sub { font-size: 14px; color: var(--ink-2); line-height: 1.6; margin-bottom: 24px; }
 .sa-home .menu-contact-fields { display: flex; flex-direction: column; gap: 12px; margin-bottom: 8px; }
 .sa-home .menu-contact-input,

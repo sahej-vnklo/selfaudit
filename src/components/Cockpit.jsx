@@ -27,7 +27,7 @@ const C = {
   greenText:     'var(--green-text)',
 }
 
-const DISPLAY_FONT = '-apple-system, "Helvetica Neue", "Inter", Arial, sans-serif'
+const DISPLAY_FONT = '"Titillium Web", -apple-system, "Helvetica Neue", "Inter", Arial, sans-serif'
 
 // escalate / alert / critical → ranked top signals; lower tiers stay in Watching
 const ACTIONABLE_TIERS = new Set(['escalate', 'alert', 'critical'])

@@ -35,7 +35,7 @@ function createScopedStyles() {
 
     .nav-callout,
     .statement {
-      font-family: Georgia, "Times New Roman", serif;
+      font-family: "Titillium Web", -apple-system, "Helvetica Neue", "Inter", Arial, sans-serif;
       font-style: italic;
       letter-spacing: -0.01em;
     }

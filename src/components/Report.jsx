@@ -669,12 +669,15 @@ function buildReportHtml(report, userInfo, theme) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SelfAudit Report — ${e(report.headline)}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:${C.bg};color:${C.text};font-size:14px;line-height:1.6}
+body{font-family:-apple-system,'Helvetica Neue','Inter',Arial,sans-serif;background:${C.bg};color:${C.text};font-size:14px;line-height:1.6}
 .wrap{max-width:680px;margin:0 auto;padding:48px 32px 80px}
 .label{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:${C.accent};margin-bottom:12px;display:block}
-h1{font-size:28px;font-weight:400;line-height:1.2;margin-bottom:14px;color:${C.text}}
+h1{font-family:'Titillium Web',-apple-system,'Helvetica Neue','Inter',Arial,sans-serif;font-size:28px;font-weight:400;line-height:1.2;margin-bottom:14px;color:${C.text}}
 .verdict{font-size:15px;color:${C.textSoft};line-height:1.7;margin-bottom:14px}
 .meta{font-size:12px;color:${C.textMuted}}
 .section{margin-bottom:36px}
@@ -1135,7 +1138,7 @@ const styles = {
   keyMessage: {
     background: 'var(--surface2)', borderRadius: 'var(--radius)', padding: '1.25rem 1.5rem'
   },
-  keyMessageText: { fontSize: 16, color: 'var(--text)', lineHeight: 1.6, margin: 0, fontFamily: 'var(--serif)', fontWeight: 400 },
+  keyMessageText: { fontSize: 16, color: 'var(--text)', lineHeight: 1.6, margin: 0, fontFamily: 'var(--font-body)', fontWeight: 400 },
   trajectoryWrap: {
     background: 'var(--surface)', border: '0.5px solid var(--gray-200)',
     borderRadius: 'var(--radius)', padding: '1.125rem', overflowX: 'auto'

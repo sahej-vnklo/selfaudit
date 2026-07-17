@@ -161,7 +161,7 @@ const styles = {
     marginBottom: 10,
   },
   title: {
-    fontFamily: '"DM Serif Display", serif',
+    fontFamily: 'var(--font-heading)',
     fontSize: 'clamp(32px, 5vw, 48px)',
     lineHeight: 1.05,
     margin: '0 0 10px',
