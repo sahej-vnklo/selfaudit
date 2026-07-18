@@ -1,5 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import { existsSync, readFileSync } from 'node:fs'
 
 import { getCheckoutAppUrl, getCheckoutCancelUrl, getCheckoutPriceId, getCheckoutSuccessUrl } from '../api/lib/checkout.js'
 import { isAuthorisedCronRequest } from '../api/lib/cron-auth.js'
@@ -14,6 +15,13 @@ import { buildGovernanceAdvice } from '../api/lib/governance/advice.js'
 import { enrichGovernanceWithAI } from '../api/lib/governance/ai-advisor.js'
 import { isConversational } from '../api/lib/agent/planner.js'
 import { buildCounselSources, canOfferCounselReport, normalizeCounselResult } from '../api/lib/agent/counsel.js'
+
+test('every explicitly configured Vercel function exists', () => {
+  const config = JSON.parse(readFileSync(new URL('../vercel.json', import.meta.url), 'utf8'))
+  for (const functionPath of Object.keys(config.functions || {})) {
+    assert.equal(existsSync(new URL(`../${functionPath}`, import.meta.url)), true, `${functionPath} is missing`)
+  }
+})
 
 test('checkout only accepts current plan names', () => {
   const env = {

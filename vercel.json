@@ -9,7 +9,7 @@
     "api/connect/composio/preview.js":    { "memory": 256 },
     "api/connect/disconnect.js":          { "memory": 256 },
     "api/connect/status.js":              { "memory": 256 },
-    "api/dual-agent.js":                  { "memory": 512, "maxDuration": 60 },
+    "api/counsel.js":                     { "memory": 512, "maxDuration": 60 },
     "api/vapi/webhook.js":                { "memory": 512, "maxDuration": 60 }
   },
   "crons": [
