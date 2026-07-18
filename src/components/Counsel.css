@@ -79,9 +79,6 @@
 .counsel-kicker { color: var(--ember); font-size: 0.8125rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
 .counsel-header h1 { margin: 4px 0 2px; font-size: clamp(1.625rem, 2vw, 2rem); line-height: 1.05; color: var(--fg); }
 .counsel-header p { margin: 0; color: var(--fg-dim); font-size: 0.9375rem; }
-.counsel-live { display: flex; align-items: center; gap: 7px; color: var(--fg-dim); font-size: 0.8125rem; white-space: nowrap; margin-top: 5px; }
-.counsel-live i { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 9px color-mix(in srgb, var(--ok) 65%, transparent); }
-
 .counsel-conversation { min-height: 0; overflow-y: auto; padding: 18px max(24px, 6vw) 22px; scroll-behavior: smooth; }
 .counsel-empty { height: 100%; display: grid; place-items: center; color: var(--fg-mute); font-size: 0.875rem; }
 .counsel-welcome { max-width: 700px; margin: clamp(14px, 3vh, 34px) auto 0; text-align: center; }
@@ -193,7 +190,6 @@
   .counsel-shell { grid-template-columns: 1fr; }
   .counsel-history { display: none; }
   .counsel-header { padding: 20px; }
-  .counsel-live { display: none; }
   .counsel-conversation { padding: 24px 18px 28px; }
   .counsel-starters { grid-template-columns: 1fr; }
   .counsel-composer-wrap { padding: 10px 16px 14px; }

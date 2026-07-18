@@ -279,7 +279,6 @@ export default function Counsel({ user, onOpenSentinel, onOpenForesight, onCreat
             <h1>Talk to your business.</h1>
             <p>I investigate the relevant data before giving you a view.</p>
           </div>
-          <div className="counsel-live"><i /> Connected intelligence</div>
         </header>
 
         <div className="counsel-conversation">
