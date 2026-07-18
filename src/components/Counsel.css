@@ -22,7 +22,9 @@
   align-items: center;
   justify-content: space-between;
   padding: 16px 14px 12px;
+  height: var(--counsel-header-height);
   min-height: var(--counsel-header-height);
+  max-height: var(--counsel-header-height);
   box-sizing: border-box;
   border-bottom: 1px solid var(--d-border);
 }
@@ -68,7 +70,9 @@
   justify-content: space-between;
   gap: 24px;
   padding: 14px 26px 12px;
+  height: var(--counsel-header-height);
   min-height: var(--counsel-header-height);
+  max-height: var(--counsel-header-height);
   box-sizing: border-box;
   border-bottom: 1px solid var(--d-border);
 }
