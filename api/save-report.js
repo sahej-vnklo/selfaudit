@@ -255,7 +255,7 @@ export default async function handler(req, res) {
       }).catch(e => console.warn('[save-report] user email failed:', e.message))
     }
 
-    return res.status(200).json({ success: true })
+    return res.status(200).json({ success: true, reportId: savedReport?.id ?? null })
   } catch (err) {
     return res.status(500).json({ error: err.message })
   }

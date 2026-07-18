@@ -10,6 +10,7 @@ import DepartmentPage from './DepartmentPage.jsx'
 import SchemaSetup from './SchemaSetup.jsx'
 import SchemaManager from './SchemaManager.jsx'
 import SimulationPage from './SimulationPage.jsx'
+import Counsel from './Counsel.jsx'
 import LogicPage from './LogicPage.jsx'
 import { OPERATIONAL_AREAS } from '../lib/governance/areaRegistry.js'
 import './Dashboard.css'
@@ -371,8 +372,8 @@ const LEGACY_NOTIFICATION_AREA_MAP = {
   customer_experience: 'customer_health',
 }
 const GOVERNANCE_AREA_LABELS = Object.fromEntries(OPERATIONAL_AREAS.map((area) => [area.id, area.label]))
-const SECTIONS = ['home', 'cockpit', 'oversight', 'intelligence', 'alerts', 'connectors', 'simulate', 'agent', 'billing', 'account']
-const INTELLIGENCE_ONLY_SECTIONS = new Set(['oversight', 'alerts', 'connectors', 'agent'])
+const SECTIONS = ['home', 'cockpit', 'oversight', 'intelligence', 'alerts', 'connectors', 'simulate', 'billing', 'account']
+const INTELLIGENCE_ONLY_SECTIONS = new Set(['oversight', 'alerts', 'connectors'])
 const WELCOME_TOUR_ROLLOUT_AT = Date.parse('2026-05-24T00:30:00-04:00')
 
 function normalizeTier(raw) {
@@ -854,39 +855,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
   const [decisionLogOpen, setDecisionLogOpen]         = useState(false)
   const [decisionLogFeedback, setDecisionLogFeedback] = useState([])
 
-  // ── Dual-agent engine state ───────────────────────────────────────────────
-  const [cmdInput,        setCmdInput]        = useState('')
-  const [sessionActive,   setSessionActive]   = useState(false)
-  const [agentState,      setAgentState]      = useState('idle')
-  // 'idle' | 'planning' | 'agent_x' | 'agent_y' | 'complete' | 'error'
-  const [agentXStream,    setAgentXStream]    = useState('')
-  const [agentYStream,    setAgentYStream]    = useState('')
-  const [agentXDone,      setAgentXDone]      = useState(false)
-  const [agentYDone,      setAgentYDone]      = useState(false)
-  const [sessionSaved,    setSessionSaved]    = useState(false)
-  const [dualHistory,     setDualHistory]     = useState([])
-  const [agentError,      setAgentError]      = useState(null)
-  const [currentMode,     setCurrentMode]     = useState(null)
-  // currentMode: { mode, label, xLabel, yLabel }
-  const [sessionLog,      setSessionLog]      = useState([])
-  // sessionLog: [{ query, xOutput, yOutput, mode, label, xLabel, yLabel }]
-  const [sessionResultCount, setSessionResultCount] = useState(0)
-  const [showResultsPanel,   setShowResultsPanel]   = useState(false)
-  const [selectedMode,       setSelectedMode]       = useState(null)
-  // null = auto-detect | 'diagnose' | 'goal' | 'scan'
-  const agentXScrollRef  = useRef(null)
-  const agentYScrollRef  = useRef(null)
-  const agentXFinalRef   = useRef('')  // tracks Agent X full output for history
-
-  // Pick up a probe question dropped into sessionStorage by the cockpit blind-spots card
-  useEffect(() => {
-    if (section !== 'home') return
-    const probe = sessionStorage.getItem('sa_probe_question')
-    if (!probe) return
-    sessionStorage.removeItem('sa_probe_question')
-    setCmdInput(probe)
-    setTimeout(() => document.querySelector('.dash-cmd-input')?.focus(), 80)
-  }, [section])
+  const [showResultsPanel, setShowResultsPanel] = useState(false)
 
   const name = profile?.name?.trim() || user?.user_metadata?.name?.trim() || ''
   const email = user?.email || ''
@@ -1135,28 +1104,6 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
       if (data) setReports(data)
     } catch { /* non-blocking */ }
   }, [user?.id])
-
-  // Poll DB for new report when panel is open after a session and save hasn't completed yet
-  useEffect(() => {
-    if (!showResultsPanel || !agentYDone || sessionSaved || !user?.id) return
-    const knownFirstId = reports[0]?.id ?? null
-    const interval = setInterval(async () => {
-      try {
-        const sb = await initSupabase()
-        const { data } = await sb
-          .from('reports')
-          .select('id, title, content, headline, industry, domain, conversation_mode, status, created_at')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false })
-          .limit(24)
-        if (data && data[0]?.id && data[0].id !== knownFirstId) {
-          setReports(data)
-          setSessionSaved(true)
-        }
-      } catch { /* non-blocking */ }
-    }, 6000)
-    return () => clearInterval(interval)
-  }, [showResultsPanel, agentYDone, sessionSaved, user?.id])
 
   useEffect(() => {
     if (section !== 'billing') return
@@ -1481,32 +1428,32 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
     }
   }
 
-  // ── Save dual-agent session as a report ──────────────────────────────────
-  // Called after a full diagnosis completes. Runs generateReport() in the
-  // background (second Claude call) then saves to reports table.
-  const saveSessionAsReport = async (history, mode) => {
-    if (!user?.id) return
+  // Reports are deliberate Counsel outputs, never an automatic end state.
+  const createCounselReport = async (history, reportKind = 'auto') => {
+    if (!user?.id) throw new Error('Sign in to create a report')
     try {
       const sb = await initSupabase()
       const { data: { session: s } } = await sb.auth.getSession()
       const token = s?.access_token || ''
 
-      // Convert dual-agent history to AuditChat message format
+      // Convert the persistent Counsel conversation to the report generator format.
       const messages = (history || []).reduce((acc, msg) => {
-        if (msg.role === 'user')    acc.push({ role: 'user',      content: msg.content })
-        if (msg.role === 'agent_x') acc.push({ role: 'assistant', content: msg.content })
+        if (msg.role === 'user')      acc.push({ role: 'user', content: msg.content })
+        if (msg.role === 'assistant') acc.push({ role: 'assistant', content: msg.content })
         return acc
       }, [])
 
-      if (messages.length < 2) return
+      if (messages.length < 2) throw new Error('Counsel needs more conversation before creating a report')
+      const statedGoal = messages.filter((message) => message.role === 'user').at(-1)?.content || ''
+      const isGoalReport = reportKind === 'goal'
 
       // Generate structured report from conversation
       const report = await generateReport(messages, {
         industry:     profile?.industry || '',
         domain:       profile?.domain || '',
         userId:       user.id,
-        goalMode:     mode === 'goal',
-        goal:         '',
+        goalMode:     isGoalReport,
+        goal:         isGoalReport ? statedGoal : '',
         goalTimeline: '',
         goalBaseline: '',
         token,
@@ -1524,7 +1471,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
           report,
           industry:     profile?.industry || '',
           domain:       profile?.domain || '',
-          goalMode:     mode === 'goal',
+          goalMode:     isGoalReport,
           goalTimeline: '',
           goalBaseline: '',
           userEmail:    user.email || '',
@@ -1536,7 +1483,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
         const saved = await saveRes.json()
         // Prepend to reports state so Sessions tab shows it immediately
         setReports(prev => [{
-          id:                saved.reportId || crypto.randomUUID(),
+          id:                saved.reportId,
           title:             report.headline,
           headline:          report.headline,
           content:           JSON.stringify(report),
@@ -1547,214 +1494,14 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
           status:            'unknown',
           created_at:        new Date().toISOString(),
         }, ...prev].slice(0, 24))
-        // Signal that the new report is in state — button can now say "Results ready"
-        setSessionSaved(true)
-        setSessionResultCount(prev => prev + 1)
+        setShowResultsPanel(true)
+        return saved.reportId
       }
+      const saveError = await saveRes.json().catch(() => ({}))
+      throw new Error(saveError.error || 'Could not save the report')
     } catch (err) {
-      console.warn('[saveSessionAsReport] failed:', err.message)
-    }
-  }
-
-  // ── Dual-agent engine ────────────────────────────────────────────────────
-
-  const resetSession = () => {
-    setSessionActive(false)
-    setAgentState('idle')
-    setAgentXStream('')
-    setAgentYStream('')
-    setAgentXDone(false)
-    setAgentYDone(false)
-    setAgentError(null)
-    setCmdInput('')
-    setCurrentMode(null)
-    setSessionLog([])
-    setDualHistory([])      // reset so pills reappear on next session
-    setSelectedMode(null)   // reset selected mode
-    setSessionResultCount(0)
-    setSessionSaved(false)
-    setShowResultsPanel(false)
-    agentXFinalRef.current = ''
-  }
-
-  const activateSession = () => {
-    resetSession()
-    setSessionActive(true)
-    // Do NOT clear cmdInput — user may have typed something already
-    setTimeout(() => {
-      document.querySelector('.dash-cmd-input')?.focus()
-    }, 50)
-  }
-
-  const submitDualAgent = async () => {
-    let rawInput = cmdInput.trim()
-    if (!rawInput || agentState === 'planning' || agentState === 'agent_x' || agentState === 'agent_y') return
-
-    // Parse slash-command prefix and strip it from query
-    let parsedMode = selectedMode
-    const slashMatch = rawInput.match(/^\/(\w+)\s+(.+)/s)
-    if (slashMatch) {
-      const cmd = slashMatch[1].toLowerCase()
-      if (['diagnose', 'goal', 'scan'].includes(cmd)) {
-        parsedMode = cmd
-        rawInput = slashMatch[2].trim()
-      }
-    }
-    const q = rawInput
-    if (!q) return
-
-    // Auto-activate session if not active yet
-    if (!sessionActive) setSessionActive(true)
-
-    // Save ALL completed turns to session log so history persists between messages
-    if (agentXStream || agentYStream) {
-      setSessionLog((prev) => [...prev, {
-        query:   q,
-        xOutput: agentXStream,
-        yOutput: agentYStream,
-        mode:    currentMode?.mode || 'diagnose',
-        label:   currentMode?.label || 'DIAGNOSING',
-        xLabel:  currentMode?.xLabel || 'AGENT X',
-        yLabel:  currentMode?.yLabel || 'AGENT Y',
-      }])
-    }
-
-    setCmdInput('')
-    setAgentState('planning')
-    setAgentXStream('')
-    setAgentYStream('')
-    setAgentXDone(false)
-    setAgentYDone(false)
-    setAgentError(null)
-    setCurrentMode(null)
-    agentXFinalRef.current = ''
-
-    try {
-      const sb = await initSupabase()
-      const { data: { session: s } } = await sb.auth.getSession()
-      const token = s?.access_token || ''
-
-      const res = await fetch('/api/dual-agent', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          query:               q,
-          userId:              user?.id ?? null,
-          conversationHistory: dualHistory.slice(-8),
-          industry:            profile?.industry ?? null,
-          domain:              profile?.domain   ?? null,
-          // Use explicit selection, or carry the last active mode, or default to diagnose
-          modeOverride:        parsedMode ?? currentMode?.mode ?? 'diagnose',
-        }),
-      })
-
-      if (!res.ok || !res.body) {
-        setAgentState('error')
-        setAgentError('Could not connect to the engine. Try again.')
-        return
-      }
-
-      const reader  = res.body.getReader()
-      const decoder = new TextDecoder()
-      let   buffer  = ''
-      let   currentEvent = ''
-
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-
-        buffer += decoder.decode(value, { stream: true })
-        const lines = buffer.split('\n')
-        buffer = lines.pop() ?? ''
-
-        for (const line of lines) {
-          if (line.startsWith('event: ')) {
-            currentEvent = line.slice(7).trim()
-          } else if (line.startsWith('data: ')) {
-            let data
-            try { data = JSON.parse(line.slice(6)) } catch { continue }
-
-            switch (currentEvent) {
-              case 'mode':
-                setCurrentMode(data)
-                break
-              case 'status':
-                break
-              case 'agent_x_start':
-                setAgentState('agent_x')
-                break
-              case 'agent_x_token':
-                agentXFinalRef.current += (data.token || '')
-                setAgentXStream((prev) => {
-                  const next = prev + (data.token || '')
-                  requestAnimationFrame(() => {
-                    if (agentXScrollRef.current) {
-                      agentXScrollRef.current.scrollTop = agentXScrollRef.current.scrollHeight
-                    }
-                  })
-                  return next
-                })
-                break
-              case 'agent_x_complete':
-                setAgentXDone(true)
-                break
-              case 'agent_y_start':
-                setAgentState('agent_y')
-                break
-              case 'agent_y_token':
-                setAgentYStream((prev) => {
-                  const next = prev + (data.token || '')
-                  requestAnimationFrame(() => {
-                    if (agentYScrollRef.current) {
-                      agentYScrollRef.current.scrollTop = agentYScrollRef.current.scrollHeight
-                    }
-                  })
-                  return next
-                })
-                break
-              case 'agent_y_complete': {
-                const isGathering = data.output === '__gathering__'
-                setAgentYDone(true)
-                setAgentState('complete')
-                if (!isGathering) setSelectedMode(null)
-                const newHistory = [
-                  ...dualHistory,
-                  { role: 'user',    content: q },
-                  { role: 'agent_x', content: agentXFinalRef.current || '' },
-                  ...(!isGathering ? [{ role: 'agent_y', content: data.output || '' }] : []),
-                ]
-                setDualHistory(newHistory)
-                // Save as a proper report in the background (non-blocking)
-                if (!isGathering && agentXFinalRef.current) {
-                  saveSessionAsReport(newHistory, parsedMode || 'diagnose').catch(() => {})
-                }
-                break
-              }
-                break
-              case 'session_result':
-                if (data.componentCount > 0) {
-                  setSessionResultCount(data.componentCount)
-                }
-                break
-              case 'error':
-                setAgentState('error')
-                setAgentError(data.message || 'Engine error')
-                break
-              case 'done':
-                if (agentState !== 'complete' && agentState !== 'error') {
-                  setAgentState('complete')
-                }
-                break
-            }
-          }
-        }
-      }
-    } catch (err) {
-      setAgentState('error')
-      setAgentError(err.message || 'Connection failed')
+      console.warn('[createCounselReport] failed:', err.message)
+      throw err
     }
   }
 
@@ -1774,19 +1521,6 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
     } finally {
       setPortalLoading(false)
     }
-  }
-
-  const sectionMeta = {
-    home: '/ command centre',
-    oversight: '/ operational oversight',
-    reports: '/ reports',
-    intelligence: '/ Intelligence Brief',
-    'business-state': '/ What We Know',
-    alerts: '/ alerts',
-    connectors: '/ connectors',
-    agent: '/ Ask SelfAudit',
-    billing: '/ billing',
-    account: '/ account',
   }
 
   const toggleTheme = () => {
@@ -1975,27 +1709,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
           boxShadow: '-4px 0 24px rgba(0,0,0,0.08)',
           zIndex: 200,
         }}>
-          {/* Immediate session output — shown while generateReport runs in background */}
-          {agentYDone && !sessionSaved && agentYStream ? (
-            <div style={{ padding: '100px 28px 28px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
-                <svg style={{ animation: 'spin 1s linear infinite', flexShrink: 0, color: 'var(--fg-mute)' }} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                  <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-                </svg>
-                <span style={{ fontSize: 13, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--fg-mute)' }}>
-                  Structuring execution plan — updates automatically
-                </span>
-              </div>
-              <div style={{ background: 'var(--d-surface)', border: '1px solid var(--d-border)', borderRadius: 12, padding: '22px 24px' }}>
-                <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--fg-mute)', marginBottom: 14 }}>
-                  Agent Y · Session output
-                </div>
-                <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '0.8125rem', lineHeight: 1.85, color: 'var(--text)', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-                  {agentYStream}
-                </div>
-              </div>
-            </div>
-          ) : reports.length > 0 ? (
+          {reports.length > 0 ? (
             <div style={{ padding: '100px 28px 28px' }}>
               <ExecutionPanel
                 key={reports[0]?.id ?? 'empty'}
@@ -2009,7 +1723,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
             </div>
           ) : (
             <div style={{ color: 'var(--fg-mute)', fontSize: '0.85rem', textAlign: 'center', padding: '120px 0 48px' }}>
-              Complete a /diagnose session to generate your execution panel.
+              Create a report from Counsel to prepare work for Dispatch.
             </div>
           )}
         </div>
@@ -2083,431 +1797,14 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
         {/* ── Main content ─────────────────────────────────────────────────── */}
         <main className={`dash-content${section !== 'home' ? ' has-section-scroll' : ''}`}>
 
-          {/* Command / Home — two agent cards + command bar */}
+          {/* Counsel — one evidence-aware, persistent conversation */}
           {section === 'home' && (
-            <>
-              {hasSchema === false && <SchemaSetup user={user} onComplete={() => {
-                setHasSchema(true)
-                history.pushState({ section: 'cockpit' }, '', '#cockpit')
-                setSection('cockpit')
-              }} />}
-              <div className="dash-cards">
-                {auditJustCompleted ? (
-                  <>
-                    <section className="dash-card" aria-label="Agent X — Diagnostic engine" />
-                    <section className="dash-card" aria-label="Agent Y — Solution engine">
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: '6px', color: 'var(--muted)' }}>
-                        <div style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text)' }}>Audit complete.</div>
-                        <div style={{ fontSize: '0.8125rem' }}>Check Results in the nav bar.</div>
-                        <button
-                          type="button"
-                          onClick={onAuditCompletedAck}
-                          style={{ marginTop: '12px', padding: '4px 14px', borderRadius: '20px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', fontSize: '0.8125rem', cursor: 'pointer' }}
-                        >
-                          Dismiss
-                        </button>
-                      </div>
-                    </section>
-                  </>
-                ) : (() => {
-                  // Terminal line renderer — applies color by content type
-                  const renderTerminalLines = (text, accentColor = '#4ade80') => {
-                    if (!text) return null
-                    return text.split('\n').map((line, i) => {
-                      let color = 'var(--text)'
-                      let fontWeight = 'normal'
-                      let opacity = 1
-                      let fontSize = '0.8125rem'
-                      let marginTop = 0
-
-                      if (/^CRITICAL/.test(line))  { color = 'var(--red-text)'; fontWeight = '700' }
-                      else if (/^HIGH/.test(line)) { color = 'var(--amber-text)'; fontWeight = '700' }
-                      else if (/^MEDIUM/.test(line)){ color = 'var(--amber-text)'; fontWeight = '600' }
-                      else if (/^LOW/.test(line))  { color = 'var(--text-muted)' }
-                      else if (/^(DIAGNOSIS|ROOT CAUSE|WHAT TO STOP|DATA GAPS)/.test(line)) {
-                        color = 'var(--text)'; fontWeight = '700'; fontSize = '0.8125rem'
-                        marginTop = 12
-                      }
-                      else if (/^(SOLUTIONS|STOP DOING|EXECUTION ORDER|CONTINGENT ON)/.test(line)) {
-                        color = 'var(--text)'; fontWeight = '700'; fontSize = '0.8125rem'
-                        marginTop = 12
-                      }
-                      else if (/^(IMMEDIATE|BUILD NEXT)/.test(line)) {
-                        color = 'var(--accent-text)'; fontWeight = '700'
-                      }
-                      else if (/^━+$/.test(line))  {
-                        return <div key={i} style={{ height: 1, background: 'var(--border)', margin: '4px 0 8px' }} />
-                      }
-                      else if (/^(Evidence:|Addresses:|Effort:|Owner:|Confidence:)/.test(line)) {
-                        color = 'var(--text-muted)'; fontSize = '0.8125rem'
-                      }
-
-                      return (
-                        <div key={i} style={{ color, fontWeight, opacity, fontSize, marginTop, minHeight: line ? undefined : '0.6em', letterSpacing: '0.01em' }}>
-                          {line || ''}
-                        </div>
-                      )
-                    })
-                  }
-
-                  // Show terminal mode when session is active or engines are running
-                  if (sessionActive || agentState !== 'idle') {
-                    const xActive   = agentState === 'agent_x' || agentState === 'planning'
-                    const yActive   = agentState === 'agent_y'
-                    const xComplete = agentXDone
-                    const yComplete = agentYDone
-
-                    return (
-                      <>
-                        {/* Agent X — Diagnostic terminal */}
-                        <section className="dash-card" aria-label="Agent X — Diagnostic engine">
-                          <header className="card-head" style={{ borderBottom: '1px solid var(--d-border)' }}>
-                            <div className="card-head-text">
-                              <div className="card-eyebrow" style={{ color: '#4ade80' }}>Agent X</div>
-                              <h2 className="card-title">Diagnostic engine</h2>
-                            </div>
-                            <div className="card-status" style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 13, gap: 6 }}>
-                              <span style={{
-                                width: 7, height: 7, borderRadius: '50%', display: 'inline-block', flexShrink: 0,
-                                background: xActive ? '#4ade80' : xComplete ? '#4ade80' : 'var(--d-border2)',
-                                boxShadow: (xActive || xComplete) ? '0 0 8px #4ade80' : 'none',
-                              }} />
-                              <span style={{ color: xActive ? '#4ade80' : xComplete ? '#4ade80' : 'var(--text-muted)' }}>
-                                {xActive
-                                  ? (currentMode?.xLabel || 'SCANNING')
-                                  : xComplete
-                                    ? (currentMode?.xLabel || 'DONE')
-                                    : selectedMode === 'diagnose' ? 'DIAGNOSING'
-                                    : selectedMode === 'goal'     ? 'GOAL MODE'
-                                    : selectedMode === 'scan'     ? 'SCANNING'
-                                    : 'STANDBY'}
-                              </span>
-                            </div>
-                          </header>
-                          {/* Agent X terminal — always dark container */}
-                          <div style={{ flex: 1, padding: '10px 12px 12px', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-                            <div
-                              ref={agentXScrollRef}
-                              style={{ flex: 1, overflow: 'auto', minHeight: 0, border: '1px solid var(--d-border)', borderRadius: 8, padding: '14px 16px', fontFamily: '"JetBrains Mono", ui-monospace, monospace', fontSize: '0.8125rem', lineHeight: 1.85, wordBreak: 'break-word' }}
-                            >
-                              {/* Past turns — compact history */}
-                              {sessionLog.map((turn, i) => (
-                                <div key={i} style={{ marginBottom: 10, paddingBottom: 10, borderBottom: '1px solid rgba(74,222,128,0.08)', opacity: 0.5 }}>
-                                  <div style={{ color: 'rgba(74,222,128,0.5)', fontSize: '0.8125rem', marginBottom: 4, letterSpacing: '0.08em' }}>[{turn.label}] {String(turn.query || '').slice(0, 60)}</div>
-                                  {renderTerminalLines(String(turn.xOutput || '').split('\n').slice(0, 4).join('\n'), '#4ade80')}
-                                  {(turn.xOutput || '').split('\n').length > 4 && <div style={{ color: 'rgba(74,222,128,0.3)' }}>…</div>}
-                                </div>
-                              ))}
-                              {/* Current state */}
-                              {agentState === 'idle' && !agentXStream && (
-                                <div style={{ color: 'var(--text-faint)' }}>{'> AGENT_X // STANDBY'}</div>
-                              )}
-                              {agentState === 'planning' && !agentXStream && (
-                                <div style={{ color: 'rgba(74,222,128,0.5)' }}>{'> routing'}<span style={{ animation: 'termBlink 1s step-end infinite', color: '#4ade80' }}>█</span></div>
-                              )}
-                              {agentXStream.length > 0 && agentState === 'agent_x' && agentXStream.length < 10 && (
-                                <div style={{ color: 'var(--text-muted)', marginBottom: 8 }}>{'> AGENT_X // DIAGNOSTIC_ENGINE'}</div>
-                              )}
-                              {renderTerminalLines(agentXStream, '#4ade80')}
-                              {xActive && agentXStream && <span style={{ color: '#4ade80', opacity: 0.8 }}>█</span>}
-                              {agentState === 'error' && agentError && <div style={{ color: '#ff6b6b' }}>{'> ERROR: '}{agentError}</div>}
-                            </div>
-                          </div>
-                        </section>
-
-                        {/* Agent Y — Solution terminal */}
-                        <section className="dash-card" aria-label="Agent Y — Solution engine">
-                          <header className="card-head" style={{ borderBottom: '1px solid var(--d-border)' }}>
-                            <div className="card-head-text">
-                              <div className="card-eyebrow" style={{ color: '#fb923c' }}>Agent Y</div>
-                              <h2 className="card-title">Solution engine</h2>
-                            </div>
-                            <div className="card-status" style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 13, gap: 6 }}>
-                              <span style={{
-                                width: 7, height: 7, borderRadius: '50%', display: 'inline-block', flexShrink: 0,
-                                background: yActive ? '#fb923c' : yComplete ? '#fb923c' : 'var(--d-border2)',
-                                boxShadow: (yActive || yComplete) ? '0 0 8px #fb923c' : 'none',
-                              }} />
-                              <span style={{ color: yActive ? '#fb923c' : yComplete ? '#fb923c' : 'var(--text-muted)' }}>
-                                {yActive
-                                  ? (currentMode?.yLabel || 'PROPOSING')
-                                  : yComplete
-                                    ? (currentMode?.yLabel || 'DONE')
-                                    : selectedMode === 'diagnose' ? 'SOLUTIONS'
-                                    : selectedMode === 'goal'     ? 'FASTEST PATH'
-                                    : selectedMode === 'scan'     ? 'QUICK ACTIONS'
-                                    : xComplete ? 'STARTING' : 'WAITING'}
-                              </span>
-                            </div>
-                          </header>
-                          {/* Agent Y terminal — always dark container */}
-                          <div style={{ flex: 1, padding: '10px 12px 12px', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-                            <div
-                              ref={agentYScrollRef}
-                              style={{ flex: 1, overflow: 'auto', minHeight: 0, border: '1px solid var(--d-border)', borderRadius: 8, padding: '14px 16px', fontFamily: '"JetBrains Mono", ui-monospace, monospace', fontSize: '0.8125rem', lineHeight: 1.85, wordBreak: 'break-word' }}
-                            >
-                              {/* Past turns — compact history */}
-                              {sessionLog.map((turn, i) => (
-                                <div key={i} style={{ marginBottom: 10, paddingBottom: 10, borderBottom: '1px solid rgba(251,146,60,0.08)', opacity: 0.5 }}>
-                                  <div style={{ color: 'rgba(251,146,60,0.5)', fontSize: '0.8125rem', marginBottom: 4, letterSpacing: '0.08em' }}>[{turn.yLabel}] {String(turn.query || '').slice(0, 60)}</div>
-                                  {turn.yOutput && turn.yOutput !== '__gathering__'
-                                    ? renderTerminalLines(String(turn.yOutput).split('\n').slice(0, 4).join('\n'), '#fb923c')
-                                    : <div style={{ color: 'rgba(251,146,60,0.3)' }}>{'> gathering context...'}</div>}
-                                  {(turn.yOutput || '').split('\n').length > 4 && <div style={{ color: 'rgba(251,146,60,0.3)' }}>…</div>}
-                                </div>
-                              ))}
-                              {/* Current state */}
-                              {agentState === 'idle' && !agentYStream && (
-                                <div style={{ color: 'var(--text-faint)' }}>{'> AGENT_Y // STANDBY'}</div>
-                              )}
-                              {(agentState === 'planning' || agentState === 'agent_x') && !agentYStream && (
-                                <div style={{ color: 'rgba(251,146,60,0.3)' }}>{'> waiting for Agent X...'}</div>
-                              )}
-                              {agentState === 'complete' && !agentYStream && agentYDone && (
-                                <div style={{ color: 'rgba(251,146,60,0.4)' }}>
-                                  <div>{'> AGENT_Y // STANDING BY'}</div>
-                                  <div style={{ marginTop: 6, opacity: 0.7 }}>{'> Reply to Agent X to continue'}</div>
-                                  {(currentMode?.mode === 'diagnose' || currentMode?.mode === 'goal') && (
-                                    <div style={{ marginTop: 10 }}>
-                                      <button
-                                        type="button"
-                                        onClick={() => setShowResultsPanel(true)}
-                                        style={{
-                                          background: 'none',
-                                          border: '0.5px solid rgba(251,146,60,0.25)',
-                                          borderRadius: 6,
-                                          color: 'rgba(251,146,60,0.7)',
-                                          fontSize: '0.8125rem',
-                                          letterSpacing: '0.08em',
-                                          padding: '5px 10px',
-                                          cursor: 'pointer',
-                                          fontFamily: '"JetBrains Mono", monospace',
-                                        }}
-                                      >
-                                        {'> See execution panel →'}
-                                      </button>
-                                    </div>
-                                  )}
-                                </div>
-                              )}
-                              {agentYStream.length > 0 && agentState === 'agent_y' && agentYStream.length < 10 && (
-                                <div style={{ color: 'rgba(251,146,60,0.5)', marginBottom: 8 }}>{'> AGENT_Y // SOLUTION_ENGINE'}</div>
-                              )}
-                              {renderTerminalLines(agentYStream, '#fb923c')}
-                              {yActive && agentYStream && <span style={{ color: '#fb923c', opacity: 0.8 }}>█</span>}
-                            </div>
-                          </div>
-                        </section>
-                      </>
-                    )
-                  }
-
-                  // Idle state — no active session
-                  const hasMemory     = (reports?.length ?? 0) > 0 || !!latestParsedContent?.headline
-                  const hasConnectors = (healthIntel?.governance_areas_with_signals ?? 0) > 0
-                  const idleState     = hasConnectors ? 'connectors' : hasMemory ? 'memory' : 'empty'
-                  const lastHeadline  = latestParsedContent?.headline || null
-                  const topAction     = latestParsedContent?.priority_actions?.[0] || null
-                  const govSummary    = healthIntel?.governance_summary || null
-                  const topAction2    = healthIntel?.health_check_actions?.[0] || null
-                  const checkedAt     = healthIntel?.governance_checked_at
-                    ? new Date(healthIntel.governance_checked_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
-                    : null
-
-                  return (
-                    <>
-                      <section className="dash-card" aria-label="Agent X — Diagnostic engine">
-                        <header className="card-head">
-                          <div className="card-head-text">
-                            <div className="card-eyebrow">Agent X</div>
-                            <h2 className="card-title">Diagnostic engine</h2>
-                          </div>
-                          <div className="card-status">
-                            <span className="cs-dot" style={{ background: idleState === 'empty' ? 'var(--muted)' : idleState === 'connectors' ? '#4CAF50' : '#FFC107' }} />
-                            {idleState === 'empty' ? 'Waiting' : idleState === 'connectors' ? 'Monitoring' : 'Ready'}
-                          </div>
-                        </header>
-                        <div style={{ padding: '16px 20px', flex: 1, display: 'flex', flexDirection: 'column', gap: 16 }}>
-                          {/* Capability lines — always shown at top */}
-                          <div style={{ paddingBottom: 14, borderBottom: '1px solid var(--d-border)' }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                              <div>
-                                <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '0.8125rem', color: 'var(--ember)', letterSpacing: '0.04em', marginRight: 8 }}>/diagnose</span>
-                                <span style={{ fontSize: '0.8125rem', color: 'var(--fg-dim)' }}>finds root causes, not symptoms</span>
-                              </div>
-                              <div>
-                                <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '0.8125rem', color: 'rgba(74,222,128,0.6)', letterSpacing: '0.04em', marginRight: 8 }}>/scan</span>
-                                <span style={{ fontSize: '0.8125rem', color: 'var(--fg-dim)' }}>investigates a specific question with evidence</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </section>
-
-                      <section className="dash-card" aria-label="Agent Y — Solution engine">
-                        <header className="card-head">
-                          <div className="card-head-text">
-                            <div className="card-eyebrow">Agent Y</div>
-                            <h2 className="card-title">Solution engine</h2>
-                          </div>
-                          <div className="card-status">
-                            <span className="cs-dot" style={{ background: idleState === 'empty' ? 'var(--muted)' : '#4CAF50' }} />
-                            {idleState === 'empty' ? 'Standby' : 'Proposing'}
-                          </div>
-                        </header>
-                        <div style={{ padding: '16px 20px', flex: 1, display: 'flex', flexDirection: 'column', gap: 16 }}>
-                          {/* Capability lines — always shown at top */}
-                          <div style={{ paddingBottom: 14, borderBottom: '1px solid var(--d-border)' }}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                              <div>
-                                <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '0.8125rem', color: 'var(--ember)', letterSpacing: '0.04em', marginRight: 8 }}>/goal</span>
-                                <span style={{ fontSize: '0.8125rem', color: 'var(--fg-dim)' }}>maps the gap and sequences the fastest path</span>
-                              </div>
-                              <div>
-                                <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '0.8125rem', color: 'rgba(251,146,60,0.6)', letterSpacing: '0.04em', marginRight: 8 }}>/scan</span>
-                                <span style={{ fontSize: '0.8125rem', color: 'var(--fg-dim)' }}>gives 3 quick actions from the investigation</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </section>
-                    </>
-                  )
-                })()}
-              </div>
-
-              {/* ── Command bar — collapsed pill or expanded input ──────── */}
-              {(() => {
-                const isEnginesRunning = agentState === 'planning' || agentState === 'agent_x' || agentState === 'agent_y'
-                const isExpanded       = selectedMode !== null || sessionActive || agentState !== 'idle'
-
-                const PILLS = [
-                  { key: 'diagnose', label: 'diagnose', desc: 'find root causes' },
-                  { key: 'goal',     label: 'goal',     desc: 'map a goal' },
-                  { key: 'scan',     label: 'scan',     desc: 'investigate fast' },
-                ]
-
-                if (!isExpanded) {
-                  // ── Collapsed: centered skill picker ──────────────────────
-                  return (
-                    <div style={{ display: 'flex', justifyContent: 'center' }}>
-                      <div style={{
-                        display: 'inline-flex', alignItems: 'center', gap: 2,
-                        padding: '10px 14px',
-                        background: 'var(--d-surface)',
-                        border: '1px solid var(--d-border)',
-                        borderRadius: 40,
-                        boxShadow: 'var(--d-shadow)',
-                      }}>
-                        {PILLS.map(({ key, label, desc }) => (
-                          <button
-                            key={key}
-                            type="button"
-                            onClick={() => {
-                              setSelectedMode(key)
-                              setSessionActive(true)
-                              setTimeout(() => document.querySelector('.dash-cmd-input')?.focus(), 80)
-                            }}
-                            title={desc}
-                            style={{
-                              padding: '6px 14px',
-                              borderRadius: 30,
-                              border: 'none',
-                              background: 'transparent',
-                              color: 'var(--fg)',
-                              fontFamily: '"JetBrains Mono", monospace',
-                              fontSize: '0.8125rem',
-                              letterSpacing: '0.05em',
-                              cursor: 'pointer',
-                              transition: 'color .15s, background .15s',
-                              whiteSpace: 'nowrap',
-                            }}
-                            onMouseEnter={e => { e.currentTarget.style.color = 'var(--ember)'; e.currentTarget.style.background = 'oklch(0.62 0.18 35 / 0.1)' }}
-                            onMouseLeave={e => { e.currentTarget.style.color = 'var(--fg)'; e.currentTarget.style.background = 'transparent' }}
-                          >
-                            {label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )
-                }
-
-                // ── Expanded: full input bar ───────────────────────────────
-                return (
-                  <div className="dash-cmd">
-                    {/* End session */}
-                    <button
-                      className="dash-newbtn"
-                      type="button"
-                      onClick={resetSession}
-                    >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M18 6L6 18M6 6l12 12"/>
-                      </svg>
-                      End
-                    </button>
-                    <span className="dash-cmd-div" />
-
-                    {/* Status dots */}
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-                      <span style={{ display: 'inline-flex', gap: 4 }}>
-                        <i style={{ width: 6, height: 6, borderRadius: '50%', display: 'block', background: isEnginesRunning ? 'var(--ember)' : 'rgba(255,255,255,0.15)' }} />
-                        <i style={{ width: 6, height: 6, borderRadius: '50%', display: 'block', background: agentState === 'agent_y' || agentState === 'complete' ? '#4CAF50' : 'rgba(255,255,255,0.15)' }} />
-                      </span>
-                      {isEnginesRunning && (
-                        <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 13, color: 'var(--fg-mute)', letterSpacing: '0.03em' }}>
-                          {agentState === 'planning' ? 'thinking…'
-                            : agentState === 'agent_x' ? `${currentMode?.xLabel || 'x'}…`
-                            : `${currentMode?.yLabel || 'y'}…`}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Input */}
-                    <input
-                      className="dash-cmd-input"
-                      type="text"
-                      value={cmdInput}
-                      autoFocus
-                      onChange={(e) => setCmdInput(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault()
-                          if (cmdInput.trim()) submitDualAgent()
-                        }
-                      }}
-                      placeholder={
-                        isEnginesRunning
-                          ? 'Engines running…'
-                          : selectedMode === 'diagnose'
-                            ? dualHistory.length === 0 ? 'What\'s going on in your business?' : 'Reply to continue the diagnosis…'
-                            : selectedMode === 'goal'
-                              ? dualHistory.length === 0 ? 'What\'s the goal and by when?' : 'Reply to continue mapping your goal…'
-                              : selectedMode === 'scan'
-                                ? 'What do you want to investigate?'
-                                : 'Continue the session…'
-                      }
-                      disabled={isEnginesRunning}
-                    />
-
-                    {/* Send */}
-                    <button
-                      className="dash-cmd-send"
-                      type="button"
-                      aria-label="Send"
-                      disabled={!cmdInput.trim() || isEnginesRunning}
-                      onClick={() => { if (cmdInput.trim()) submitDualAgent() }}
-                    >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M12 19V5M5 12l7-7 7 7"/>
-                      </svg>
-                    </button>
-                  </div>
-                )
-              })()}
-
-            </>
+            <Counsel
+              user={user}
+              onOpenSentinel={() => navigateSection('cockpit')}
+              onOpenForesight={() => navigateSection('simulate')}
+              onCreateReport={createCounselReport}
+            />
           )}
 
           {/* All other sections — scrollable content */}
@@ -2550,7 +1847,6 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
               {section === 'simulate'  && (
                 <SimulationPage userId={user?.id} />
               )}
-              {section === 'agent'      && <AgentSection user={user} />}
               {section === 'cockpit'    && <CockpitSection user={user} navigateSection={navigateSection} />}
               {section === 'dept-customer-service'    && <DepartmentPage areaId="customer-service"    user={user} navigateSection={navigateSection} view={deptView} />}
               {section === 'dept-marketing-sales'     && <DepartmentPage areaId="marketing-sales"     user={user} navigateSection={navigateSection} view={deptView} />}
@@ -6386,365 +5682,6 @@ function ConnectorsSection({ user }) {
       )}
     </PageShell>
   )
-}
-
-const FIX_PRIORITY_LABEL = {
-  immediate:   { label: 'Immediate', color: '#A32D2D' },
-  this_week:   { label: 'This week', color: '#BA7517' },
-  this_month:  { label: 'This month', color: '#6B6860' },
-  monitor:     { label: 'Monitor',    color: '#6B6860' },
-}
-
-const CONFIDENCE_COLOR = { high: G.green, medium: G.amber, low: G.red }
-
-function AgentSection({ user }) {
-  const [query, setQuery]             = useState('')
-  const [loading, setLoading]         = useState(false)
-  const [result, setResult]           = useState(null)
-  const [error, setError]             = useState(null)
-  const [history, setHistory]         = useState([])
-  const textareaRef                   = useRef(null)
-
-  const SUGGESTED = [
-    'Why is revenue not growing?',
-    'What is blocking my pipeline?',
-    'Should I hire a salesperson now?',
-    'What is my biggest risk right now?',
-    'Where am I losing customers?',
-  ]
-
-  async function submit(q) {
-    const trimmed = (q || query).trim()
-    if (!trimmed || loading) return
-    setLoading(true)
-    setError(null)
-    setResult(null)
-
-    try {
-      const sb    = await initSupabase()
-      const { data: { session } } = await sb.auth.getSession()
-      const token = session?.access_token || null
-
-      const res = await fetch('/api/agent-query', {
-        method: 'POST',
-        headers: {
-          'Content-Type':  'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          query:               trimmed,
-          userId:              user?.id,
-          conversationHistory: history.slice(-6),
-        }),
-      })
-
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Agent query failed')
-
-      setResult(data)
-      setHistory((prev) => [
-        ...prev,
-        { role: 'user', content: trimmed },
-        { role: 'assistant', content: data.answer },
-      ])
-      setQuery('')
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  function handleKeyDown(e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      submit()
-    }
-  }
-
-  const fp = result?.fix_priority ? (FIX_PRIORITY_LABEL[result.fix_priority] || null) : null
-  const isConversational = result?.intent === 'conversational'
-
-  return (
-    <PageShell
-      title="Ask SelfAudit"
-      sub="Your operational strategist. Investigates your live business data before answering."
-    >
-      {/* Suggested prompts (only when no result yet) */}
-      {!result && !loading && (
-        <div style={agent.suggestedWrap}>
-          {SUGGESTED.map((s) => (
-            <button
-              key={s}
-              type="button"
-              style={agent.suggestedChip}
-              onClick={() => { setQuery(s); submit(s) }}
-            >
-              {s}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Input */}
-      <div style={agent.inputWrap}>
-        <textarea
-          ref={textareaRef}
-          style={agent.textarea}
-          placeholder="Ask anything about your business…"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={handleKeyDown}
-          rows={1}
-          disabled={loading}
-        />
-        <button
-          type="button"
-          style={{ ...agent.sendBtn, opacity: loading || !query.trim() ? 0.45 : 1 }}
-          onClick={() => submit()}
-          disabled={loading || !query.trim()}
-        >
-          {loading ? '…' : '→'}
-        </button>
-      </div>
-
-      {error && <div style={agent.errorBox}>{error}</div>}
-
-      {loading && (
-        <div style={agent.thinkingBox}>
-          <span style={agent.thinkingDot} />
-          SelfAudit is planning the investigation…
-        </div>
-      )}
-
-      {/* Result card */}
-      {result && (
-        <div style={agent.resultCard}>
-          {/* Header row — hidden for conversational responses */}
-          {!isConversational && (
-            <div style={agent.resultHeader}>
-              <span style={agent.intentTag}>{(result.intent || '').replace(/_/g, ' ')}</span>
-              {fp && (
-                <span style={{ ...agent.priorityTag, color: fp.color, borderColor: fp.color }}>
-                  {fp.label}
-                </span>
-              )}
-              {result.confidence && (
-                <span style={{ ...agent.confidenceTag, color: CONFIDENCE_COLOR[result.confidence] || G.textMuted }}>
-                  {result.confidence} confidence
-                </span>
-              )}
-              {result.severity_score != null && (
-                <span style={agent.severityTag}>severity {result.severity_score}/10</span>
-              )}
-            </div>
-          )}
-
-          {/* Answer */}
-          <p style={agent.answerText}>{result.answer}</p>
-
-          {/* Investigation plan — what TSA decided to check and why */}
-          {!isConversational && result.investigation_plan?.hypothesis && (
-            <div style={agent.hypothesisBlock}>
-              <div style={agent.hypothesisLabel}>Hypothesis going in</div>
-              <p style={agent.hypothesisText}>{result.investigation_plan.hypothesis}</p>
-              {result.investigation_plan.focus_areas?.length > 0 && (
-                <div style={agent.focusAreaRow}>
-                  {result.investigation_plan.focus_areas.map((f) => (
-                    <span key={f} style={agent.focusChip}>{f}</span>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Root cause */}
-          {result.root_cause && (
-            <div style={agent.subSection}>
-              <div style={agent.subLabel}>Root cause</div>
-              <p style={agent.subText}>{result.root_cause}</p>
-            </div>
-          )}
-
-          {/* Financial impact */}
-          {result.financial_impact && (
-            <div style={agent.subSection}>
-              <div style={agent.subLabel}>Financial impact</div>
-              <p style={agent.subText}>{result.financial_impact}</p>
-            </div>
-          )}
-
-          {/* Execution plan */}
-          {result.execution_plan?.length > 0 && (
-            <div style={agent.subSection}>
-              <div style={agent.subLabel}>Execution plan</div>
-              <ol style={agent.planList}>
-                {result.execution_plan.map((step, i) => (
-                  <li key={i} style={agent.planItem}>{step}</li>
-                ))}
-              </ol>
-            </div>
-          )}
-
-          {/* Evidence */}
-          {result.evidence?.length > 0 && (
-            <div style={agent.subSection}>
-              <div style={agent.subLabel}>Evidence used</div>
-              <ul style={agent.bulletList}>
-                {result.evidence.map((e, i) => <li key={i} style={agent.bulletItem}>{e}</li>)}
-              </ul>
-            </div>
-          )}
-
-          {/* Risks + Opportunities row */}
-          {(result.risks_found?.length > 0 || result.opportunities_found?.length > 0) && (
-            <div style={agent.roRow}>
-              {result.risks_found?.length > 0 && (
-                <div style={agent.roBox}>
-                  <div style={{ ...agent.subLabel, color: G.red }}>Risks identified</div>
-                  <ul style={agent.bulletList}>
-                    {result.risks_found.map((r, i) => <li key={i} style={agent.bulletItem}>{r}</li>)}
-                  </ul>
-                </div>
-              )}
-              {result.opportunities_found?.length > 0 && (
-                <div style={agent.roBox}>
-                  <div style={{ ...agent.subLabel, color: G.green }}>Opportunities</div>
-                  <ul style={agent.bulletList}>
-                    {result.opportunities_found.map((o, i) => <li key={i} style={agent.bulletItem}>{o}</li>)}
-                  </ul>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Follow-up question */}
-          {result.follow_up_question && (
-            <button
-              type="button"
-              style={agent.followUpBtn}
-              onClick={() => { setQuery(result.follow_up_question); submit(result.follow_up_question) }}
-            >
-              ↪ {result.follow_up_question}
-            </button>
-          )}
-
-          {/* Missing data / assumptions */}
-          {(result.missing_data?.length > 0 || result.assumptions?.length > 0) && (
-            <details style={agent.detailsBlock}>
-              <summary style={agent.detailsSummary}>Assumptions &amp; missing data</summary>
-              {result.assumptions?.length > 0 && (
-                <ul style={agent.bulletList}>
-                  {result.assumptions.map((a, i) => <li key={i} style={agent.bulletItem}>{a}</li>)}
-                </ul>
-              )}
-              {result.missing_data?.length > 0 && (
-                <ul style={{ ...agent.bulletList, color: G.amber }}>
-                  {result.missing_data.map((m, i) => <li key={i} style={agent.bulletItem}>{m}</li>)}
-                </ul>
-              )}
-            </details>
-          )}
-
-          {/* Data sources */}
-          {result.data_sources_used?.length > 0 && (
-            <div style={agent.sourcesRow}>
-              {result.data_sources_used.map((s) => (
-                <span key={s} style={agent.sourceChip}>{s.replace(/_/g, ' ')}</span>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Ask another */}
-      {result && (
-        <button type="button" style={agent.resetBtn} onClick={() => { setResult(null); setError(null) }}>
-          Ask another question
-        </button>
-      )}
-    </PageShell>
-  )
-}
-
-const agent = {
-  suggestedWrap: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 },
-  suggestedChip: {
-    background: 'transparent', border: `1px solid ${G.border}`, borderRadius: 20,
-    padding: '6px 14px', fontSize: 13, color: G.textSecondary, cursor: 'pointer',
-    whiteSpace: 'nowrap',
-  },
-  inputWrap: { display: 'flex', gap: 8, marginBottom: 16, alignItems: 'stretch' },
-  textarea: {
-    flex: 1, background: G.surface, border: `1px solid ${G.border}`, borderRadius: 999,
-    color: G.text, fontSize: 14, padding: '18px 20px', resize: 'none',
-    fontFamily: 'inherit', lineHeight: 1.5, outline: 'none',
-    minHeight: 62,
-    boxSizing: 'border-box',
-  },
-  sendBtn: {
-    background: G.text, color: G.black, border: 'none', borderRadius: 18,
-    width: 62, height: 62, fontSize: 22, cursor: 'pointer', flexShrink: 0,
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-  },
-  errorBox: {
-    background: G.redBg, border: `1px solid ${G.red}`, color: G.redText,
-    borderRadius: 8, padding: '10px 14px', fontSize: 13, marginBottom: 12,
-  },
-  thinkingBox: {
-    display: 'flex', alignItems: 'center', gap: 8, color: G.textMuted,
-    fontSize: 13, padding: '12px 0',
-  },
-  thinkingDot: {
-    width: 8, height: 8, borderRadius: '50%', background: G.accent,
-    display: 'inline-block', animation: 'pulse 1.2s ease-in-out infinite',
-  },
-  resultCard: {
-    background: G.surface, border: `1px solid ${G.border}`, borderRadius: 12,
-    padding: 24, marginBottom: 16,
-  },
-  resultHeader: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16, alignItems: 'center' },
-  intentTag: {
-    background: G.surface2, color: G.textSecondary, fontSize: 13,
-    padding: '3px 10px', borderRadius: 20, textTransform: 'uppercase', letterSpacing: '0.06em',
-  },
-  priorityTag: {
-    fontSize: 13, padding: '3px 10px', borderRadius: 20,
-    border: '1px solid', textTransform: 'uppercase', letterSpacing: '0.06em',
-  },
-  confidenceTag: { fontSize: 13, fontWeight: 500 },
-  severityTag: { fontSize: 13, color: G.textMuted },
-  answerText: { fontSize: 15, color: G.text, lineHeight: 1.7, margin: '0 0 20px' },
-  hypothesisBlock: { background: G.surface2, borderRadius: 8, padding: '12px 16px', marginBottom: 20 },
-  hypothesisLabel: { fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.08em', color: G.textMuted, fontWeight: 600, marginBottom: 6 },
-  hypothesisText: { fontSize: 13, color: G.textSecondary, lineHeight: 1.6, margin: '0 0 8px', fontStyle: 'italic' },
-  focusAreaRow: { display: 'flex', flexWrap: 'wrap', gap: 6 },
-  focusChip: { fontSize: 13, color: G.textMuted, background: G.surface, border: `1px solid ${G.border}`, borderRadius: 12, padding: '2px 10px' },
-  subSection: { marginBottom: 16 },
-  subLabel: { fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.07em', color: G.textMuted, marginBottom: 6, fontWeight: 600 },
-  subText: { fontSize: 14, color: G.textSecondary, lineHeight: 1.6, margin: 0 },
-  planList: { paddingLeft: 20, margin: 0 },
-  planItem: { fontSize: 14, color: G.textSecondary, lineHeight: 1.7, marginBottom: 4 },
-  bulletList: { paddingLeft: 18, margin: 0 },
-  bulletItem: { fontSize: 13, color: G.textSecondary, lineHeight: 1.6, marginBottom: 2 },
-  roRow: { display: 'flex', gap: 16, marginBottom: 16, flexWrap: 'wrap' },
-  roBox: { flex: 1, minWidth: 180 },
-  followUpBtn: {
-    display: 'block', width: '100%', textAlign: 'left', background: G.surface2,
-    border: `1px solid ${G.border}`, borderRadius: 8, padding: '10px 14px',
-    fontSize: 13, color: G.textSecondary, cursor: 'pointer', marginBottom: 16,
-  },
-  detailsBlock: { marginBottom: 12 },
-  detailsSummary: { fontSize: 13, color: G.textMuted, cursor: 'pointer', marginBottom: 6 },
-  sourcesRow: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 12 },
-  sourceChip: {
-    background: G.surface2, color: G.textFaint, fontSize: 13,
-    padding: '2px 8px', borderRadius: 10,
-  },
-  resetBtn: {
-    background: 'transparent', border: `1px solid ${G.border}`, borderRadius: 8,
-    padding: '8px 18px', fontSize: 13, color: G.textSecondary, cursor: 'pointer',
-  },
 }
 
 function VoicePhoneSetup({ user, currentPhone, onSaved }) {

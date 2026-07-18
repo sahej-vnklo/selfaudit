@@ -39,9 +39,12 @@ const CONVERSATIONAL_PATTERNS = [
 
 export function isConversational(query) {
   const q = String(query || '').trim()
-  if (CONVERSATIONAL_PATTERNS.some((p) => p.test(q))) return true
-  // Very short messages with no business keywords are conversational
   const businessKeywords = /\b(pipeline|revenue|churn|cash|sales|customer|product|team|hire|burn|runway|margin|cac|ltv|mrr|arr|metric|goal|problem|issue|broken|stuck|failing|struggling|growth|conversion)\b/i
+  // Business questions must be investigated even when phrased conversationally,
+  // e.g. "Can you show me churn?".
+  if (businessKeywords.test(q)) return false
+  if (CONVERSATIONAL_PATTERNS.some((p) => p.test(q))) return true
+  // Very short messages with no business keywords are conversational.
   if (q.length < 30 && !businessKeywords.test(q)) return true
   return false
 }

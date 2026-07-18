@@ -12,6 +12,8 @@ import { buildAreaMetricSnapshots } from '../api/lib/governance/metric-snapshots
 import { runGovernanceMonitoring } from '../api/lib/governance/monitoring.js'
 import { buildGovernanceAdvice } from '../api/lib/governance/advice.js'
 import { enrichGovernanceWithAI } from '../api/lib/governance/ai-advisor.js'
+import { isConversational } from '../api/lib/agent/planner.js'
+import { buildCounselSources, canOfferCounselReport, normalizeCounselResult } from '../api/lib/agent/counsel.js'
 
 test('checkout only accepts current plan names', () => {
   const env = {
@@ -68,6 +70,59 @@ test('save-report validation guards required payload', () => {
   assert.equal(validateSaveReportPayload({ userId: 'u1' }), 'Missing userId or report')
   assert.equal(validateSaveReportPayload({ userId: 'u1', report: 'bad' }), 'Missing userId or report')
   assert.equal(validateSaveReportPayload({ userId: 'u1', report: {} }), null)
+})
+
+test('Counsel investigates business questions even when they sound conversational', () => {
+  assert.equal(isConversational('Hey'), true)
+  assert.equal(isConversational('Thanks, that makes sense'), true)
+  assert.equal(isConversational('Can you show me our churn?'), false)
+  assert.equal(isConversational('How can you help with pipeline conversion?'), false)
+})
+
+test('Counsel normalizes model output before it reaches the interface', () => {
+  const result = normalizeCounselResult({
+    answer: '  Revenue is slowing.  ',
+    severity_score: 99,
+    fix_priority: 'whenever',
+    execution_plan: ['Call the five stalled deals', null, 'Review qualification'],
+    confidence: 'certain',
+  })
+
+  assert.equal(result.answer, 'Revenue is slowing.')
+  assert.equal(result.severity_score, 10)
+  assert.equal(result.fix_priority, 'monitor')
+  assert.deepEqual(result.execution_plan, ['Call the five stalled deals', 'Review qualification'])
+  assert.equal(result.confidence, 'low')
+})
+
+test('Counsel exposes traceable Sentinel source details and only offers grounded reports', () => {
+  const sources = buildCounselSources({
+    sources_used: ['company_brain', 'risk_alerts'],
+    structured_context: {
+      risk_alerts: [{
+        id: 'alert-1',
+        title: 'Runway is critical',
+        metric_key: 'runway_months',
+        metric_value: 5,
+        threshold_value: 6,
+        comparator: 'lt',
+        evidence_snapshot: { checked_at: '2026-07-17T12:00:00.000Z' },
+      }],
+    },
+  })
+
+  const sentinel = sources.find((source) => source.key === 'risk_alerts')
+  assert.equal(sentinel.label, 'Sentinel alerts')
+  assert.equal(sentinel.freshness, '2026-07-17T12:00:00.000Z')
+  assert.equal(sentinel.records[0].metric_value, 5)
+
+  const grounded = normalizeCounselResult({
+    answer: 'Runway needs attention.',
+    evidence: ['Runway is 5 months', 'Threshold is 6 months'],
+    confidence: 'high',
+  })
+  assert.equal(canOfferCounselReport(grounded, sources, 2), true)
+  assert.equal(canOfferCounselReport({ ...grounded, confidence: 'low' }, sources, 2), false)
 })
 
 test('data export sanitizes connector secrets and builds stable filenames', () => {

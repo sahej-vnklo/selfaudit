@@ -1,0 +1,181 @@
+.counsel-shell {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  height: 100%;
+  min-height: 0;
+  border: 1px solid var(--d-border);
+  background: color-mix(in srgb, var(--d-surface) 86%, transparent);
+  overflow: hidden;
+}
+
+.counsel-history {
+  min-width: 0;
+  border-right: 1px solid var(--d-border);
+  background: color-mix(in srgb, var(--d-surface) 72%, transparent);
+  display: flex;
+  flex-direction: column;
+  backdrop-filter: blur(18px) saturate(120%);
+}
+
+.counsel-history-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 18px 16px;
+  border-bottom: 1px solid var(--d-border);
+}
+
+.counsel-history-head > div { display: grid; gap: 2px; }
+.counsel-history-head span { font-weight: 700; color: var(--fg); font-size: 0.9375rem; }
+.counsel-history-head small { color: var(--fg-mute); font-size: 0.8125rem; }
+.counsel-history-head button {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--d-border);
+  border-radius: 8px;
+  background: var(--d-surface);
+  color: var(--fg);
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+
+.counsel-thread-list { padding: 10px; overflow-y: auto; }
+.counsel-thread-list > button {
+  width: 100%;
+  display: grid;
+  gap: 5px;
+  text-align: left;
+  padding: 12px 11px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--fg-dim);
+  cursor: pointer;
+  font-family: inherit;
+}
+.counsel-thread-list > button:hover { background: color-mix(in srgb, var(--d-surface) 78%, transparent); }
+.counsel-thread-list > button.active { border-color: var(--d-border); background: var(--d-surface); color: var(--fg); }
+.counsel-thread-list span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.875rem; }
+.counsel-thread-list small, .counsel-thread-list p { color: var(--fg-mute); font-size: 0.8125rem; }
+.counsel-thread-list p { padding: 10px; line-height: 1.55; }
+
+.counsel-main { min-width: 0; min-height: 0; display: grid; grid-template-rows: auto minmax(0, 1fr) auto auto; }
+.counsel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 26px 34px 20px;
+  border-bottom: 1px solid var(--d-border);
+}
+.counsel-kicker { color: var(--ember); font-size: 0.8125rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+.counsel-header h1 { margin: 5px 0 2px; font-size: clamp(1.75rem, 2.2vw, 2.25rem); line-height: 1.05; color: var(--fg); }
+.counsel-header p { margin: 0; color: var(--fg-dim); font-size: 0.9375rem; }
+.counsel-live { display: flex; align-items: center; gap: 7px; color: var(--fg-dim); font-size: 0.8125rem; white-space: nowrap; margin-top: 5px; }
+.counsel-live i { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 9px color-mix(in srgb, var(--ok) 65%, transparent); }
+
+.counsel-conversation { min-height: 0; overflow-y: auto; padding: 28px max(28px, 8vw) 36px; scroll-behavior: smooth; }
+.counsel-empty { height: 100%; display: grid; place-items: center; color: var(--fg-mute); font-size: 0.875rem; }
+.counsel-welcome { max-width: 720px; margin: 8vh auto 0; text-align: center; }
+.counsel-welcome-mark, .counsel-avatar {
+  display: grid;
+  place-items: center;
+  background: var(--ember);
+  color: white;
+  font-weight: 800;
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--ember) 20%, transparent);
+}
+.counsel-welcome-mark { width: 52px; height: 52px; border-radius: 15px; margin: 0 auto 18px; font-size: 1.25rem; }
+.counsel-welcome h2 { color: var(--fg); font-size: 1.75rem; margin: 0 0 8px; }
+.counsel-welcome > p { color: var(--fg-dim); max-width: 580px; margin: 0 auto; line-height: 1.55; }
+.counsel-starters { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 28px; text-align: left; }
+.counsel-starters button {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid var(--d-border);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--d-surface) 82%, transparent);
+  color: var(--fg);
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+.counsel-starters button:hover { border-color: var(--ember); transform: translateY(-1px); }
+.counsel-starters span { color: var(--ember); }
+
+.counsel-message { max-width: 860px; margin: 0 auto 26px; }
+.counsel-message-user { display: flex; justify-content: flex-end; }
+.counsel-message-user > div {
+  max-width: min(680px, 86%);
+  padding: 12px 16px;
+  border: 1px solid var(--d-border);
+  border-radius: 14px 14px 4px 14px;
+  background: var(--d-surface);
+  color: var(--fg);
+  line-height: 1.5;
+}
+.counsel-message-assistant { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 13px; }
+.counsel-avatar { width: 34px; height: 34px; border-radius: 10px; font-size: 0.8125rem; }
+.counsel-response { min-width: 0; }
+.counsel-answer { color: var(--fg); font-size: 1rem; line-height: 1.7; white-space: pre-wrap; }
+.counsel-analysis { margin-top: 18px; border: 1px solid var(--d-border); border-radius: 12px; overflow: hidden; background: color-mix(in srgb, var(--d-surface) 74%, transparent); }
+.counsel-analysis section, .counsel-analysis details { padding: 16px 18px; border-bottom: 1px solid var(--d-border); }
+.counsel-analysis > :last-child { border-bottom: 0; }
+.counsel-analysis h3 { color: var(--fg); margin: 0 0 7px; font-size: 0.9375rem; }
+.counsel-analysis p, .counsel-analysis li { color: var(--fg-dim); font-size: 0.875rem; line-height: 1.6; }
+.counsel-analysis p { margin: 0; }
+.counsel-analysis ol, .counsel-analysis ul { margin: 8px 0 0; padding-left: 20px; }
+.counsel-analysis summary { color: var(--fg); font-size: 0.875rem; font-weight: 650; cursor: pointer; }
+.counsel-sources { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-top: 14px; }
+.counsel-sources-label { color: var(--fg-mute); font-size: 0.8125rem; }
+.counsel-source { display: inline-flex; align-items: center; gap: 6px; padding: 5px 8px; border: 1px solid var(--d-border); border-radius: 6px; color: var(--fg-dim); font-size: 0.8125rem; }
+.counsel-source i { width: 5px; height: 5px; border-radius: 50%; background: var(--ok); }
+.counsel-source small { color: var(--fg-mute); font-size: 0.8125rem; }
+.counsel-confidence { display: flex; gap: 5px; align-items: center; margin-top: 10px; color: var(--fg-mute); font-size: 0.8125rem; }
+.counsel-confidence.is-high span:first-child { color: var(--ok); }
+.counsel-confidence.is-medium span:first-child { color: var(--warn); }
+.counsel-confidence.is-low span:first-child { color: var(--red-text); }
+.counsel-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.counsel-actions button {
+  padding: 8px 11px;
+  border: 1px solid var(--d-border);
+  border-radius: 7px;
+  background: transparent;
+  color: var(--fg-dim);
+  font: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+.counsel-actions button:hover { border-color: var(--ember); color: var(--fg); }
+.counsel-actions button.is-primary { background: var(--ember); border-color: var(--ember); color: white; }
+.counsel-actions button:disabled { opacity: .55; cursor: wait; }
+.counsel-followup { margin-top: 14px; padding-left: 12px; border-left: 2px solid var(--ember); color: var(--fg-dim); font-size: 0.875rem; line-height: 1.5; }
+.counsel-investigating { max-width: 860px; margin: 0 auto 26px; padding-left: 47px; display: flex; gap: 10px; align-items: center; color: var(--fg-dim); font-size: 0.875rem; }
+.counsel-investigating > span { display: inline-flex; gap: 3px; }
+.counsel-investigating i { width: 5px; height: 5px; border-radius: 50%; background: var(--ember); animation: counsel-pulse 1.1s infinite ease-in-out; }
+.counsel-investigating i:nth-child(2) { animation-delay: .12s; }
+.counsel-investigating i:nth-child(3) { animation-delay: .24s; }
+@keyframes counsel-pulse { 0%, 70%, 100% { opacity: .25; transform: translateY(0); } 35% { opacity: 1; transform: translateY(-3px); } }
+
+.counsel-error { margin: 0 max(28px, 8vw) 8px; padding: 10px 13px; border: 1px solid color-mix(in srgb, var(--red-text) 40%, transparent); border-radius: 8px; color: var(--red-text); font-size: 0.875rem; }
+.counsel-composer-wrap { padding: 12px max(28px, 8vw) 18px; background: linear-gradient(to top, var(--bg) 70%, transparent); }
+.counsel-composer { display: flex; align-items: flex-end; gap: 10px; max-width: 860px; margin: 0 auto; padding: 9px 9px 9px 16px; border: 1px solid var(--d-border); border-radius: 13px; background: var(--d-surface); box-shadow: var(--d-shadow); }
+.counsel-composer:focus-within { border-color: color-mix(in srgb, var(--ember) 55%, var(--d-border)); }
+.counsel-composer textarea { flex: 1; min-height: 34px; max-height: 120px; resize: none; border: 0; outline: 0; background: transparent; color: var(--fg); font: inherit; font-size: 0.9375rem; line-height: 1.5; padding: 6px 0; }
+.counsel-composer textarea::placeholder { color: var(--fg-mute); }
+.counsel-composer button { width: 36px; height: 36px; border: 0; border-radius: 9px; background: var(--ember); color: white; cursor: pointer; display: grid; place-items: center; }
+.counsel-composer button:disabled { opacity: .35; cursor: default; }
+.counsel-composer svg { width: 17px; height: 17px; }
+.counsel-composer-wrap > p { max-width: 860px; margin: 7px auto 0; color: var(--fg-mute); font-size: 0.8125rem; text-align: center; }
+
+@media (max-width: 850px) {
+  .counsel-shell { grid-template-columns: 1fr; }
+  .counsel-history { display: none; }
+  .counsel-header { padding: 20px; }
+  .counsel-live { display: none; }
+  .counsel-conversation { padding: 24px 18px 28px; }
+  .counsel-starters { grid-template-columns: 1fr; }
+  .counsel-composer-wrap { padding: 10px 16px 14px; }
+}

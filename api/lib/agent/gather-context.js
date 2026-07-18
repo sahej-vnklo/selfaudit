@@ -86,7 +86,7 @@ async function loadRiskAlerts(sb, userId) {
   try {
     const { data } = await sb
       .from('risk_alerts')
-      .select('severity, category, title, description, recommended_action')
+      .select('id, severity, category, title, description, recommended_action, metric_key, metric_value, threshold_value, comparator, evidence_snapshot, created_at')
       .eq('user_id', userId)
       .eq('status', 'open')
       .order('created_at', { ascending: false })

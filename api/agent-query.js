@@ -5,6 +5,7 @@ import { isConversational, getAvailableDataSources, planWithClaude } from './lib
 import { gatherAgentContext } from './lib/agent/gather-context.js'
 import { generateAgentAnswer } from './lib/agent/generate-agent-answer.js'
 import { requireIntelligencePlan } from './lib/plans.js'
+import { getComposioConnectionMap } from './lib/connectors/composio.js'
 
 // Table ownership: supabase/migrations/20260710000002_cleanup_ad_hoc_tables.sql
 
@@ -14,13 +15,6 @@ function getSupabase() {
     process.env.SUPABASE_SERVICE_ROLE_KEY,
     { auth: { persistSession: false } }
   )
-}
-
-async function getIntegrations(sb, userId) {
-  try {
-    const { data } = await sb.from('profiles').select('integrations').eq('id', userId).single()
-    return data?.integrations ?? null
-  } catch { return null }
 }
 
 export default async function handler(req, res) {
@@ -41,9 +35,9 @@ export default async function handler(req, res) {
   if (!await requireIntelligencePlan({ userId, res, supabase: sb, feature: 'Ask SelfAudit' })) return
 
   // ── Step 1: Load brain + integrations in parallel ────────────────────────────
-  const [brain, integrations] = await Promise.all([
+  const [brain, connectionMap] = await Promise.all([
     getCompanyBrain(userId).catch(() => null),
-    getIntegrations(sb, userId),
+    getComposioConnectionMap(userId).catch(() => ({})),
   ])
 
   // ── Step 2: Short-circuit conversational messages ─────────────────────────────
@@ -69,7 +63,7 @@ export default async function handler(req, res) {
   }
 
   // ── Step 3: Claude (Haiku) decides what to investigate ───────────────────────
-  const availableSources = getAvailableDataSources(brain, integrations)
+  const availableSources = getAvailableDataSources(brain, connectionMap)
 
   let plan
   try {
