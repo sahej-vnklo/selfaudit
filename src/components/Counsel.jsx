@@ -167,7 +167,11 @@ export default function Counsel({ user, onOpenSentinel, onOpenForesight, onCreat
     setTimeout(() => inputRef.current?.focus(), 80)
   }, [])
 
-  useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }) }, [messages, loading])
+  useEffect(() => {
+    if (messages.length > 0 || loading) {
+      endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+    }
+  }, [messages.length, loading])
 
   const conversationForReport = useMemo(() => messages.map((message) => ({
     role: message.role,

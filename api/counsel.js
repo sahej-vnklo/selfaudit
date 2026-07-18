@@ -21,6 +21,21 @@ function titleFromQuery(query) {
   return clean.length > 72 ? `${clean.slice(0, 69)}…` : clean
 }
 
+function sendCounselError(res, error, fallback) {
+  const message = String(error?.message || '')
+  const schemaPending = /counsel_(threads|messages)/i.test(message)
+    && /(schema cache|does not exist|could not find)/i.test(message)
+
+  console.error('[counsel] request failed:', message || error)
+  if (schemaPending) {
+    return res.status(503).json({
+      error: 'Counsel’s conversation memory is being prepared. Please try again shortly.',
+      code: 'COUNSEL_SCHEMA_PENDING',
+    })
+  }
+  return res.status(500).json({ error: fallback })
+}
+
 async function loadThread(sb, userId, requestedThreadId = null) {
   let query = sb.from('counsel_threads').select('id, title, created_at, updated_at').eq('user_id', userId)
   if (requestedThreadId) query = query.eq('id', requestedThreadId)
@@ -68,7 +83,7 @@ export default async function handler(req, res) {
       if (threadsError) throw threadsError
       return res.status(200).json({ thread, threads: threads || [], messages })
     } catch (error) {
-      return res.status(500).json({ error: error.message || 'Could not load Counsel history' })
+      return sendCounselError(res, error, 'Could not load Counsel history')
     }
   }
 
@@ -172,6 +187,6 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ thread, message: savedMessage })
   } catch (error) {
-    return res.status(500).json({ error: error.message || 'Counsel could not complete the investigation' })
+    return sendCounselError(res, error, 'Counsel could not complete the investigation')
   }
 }
