@@ -1,3 +1,4 @@
+-- Production migration version: 20260718040506
 create table if not exists public.counsel_threads (
   id         uuid primary key default gen_random_uuid(),
   user_id    uuid not null references auth.users(id) on delete cascade,
