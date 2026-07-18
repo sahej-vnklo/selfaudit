@@ -154,8 +154,7 @@
 .foresight-empty-copy h2 { margin-top: 6px; font-size: 28px; line-height: 1.12; }
 .foresight-empty-copy p { margin-top: 10px; color: var(--muted); font-size: 14px; line-height: 1.55; }
 .foresight-methods { display: grid; align-self: center; gap: 8px; }
-.foresight-methods > div { display: grid; grid-template-columns: 92px 100px 1fr; align-items: center; gap: 10px; padding: 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); }
-.foresight-methods strong { font-size: 15px; }
+.foresight-methods > div { display: grid; grid-template-columns: 112px 1fr; align-items: center; gap: 14px; padding: 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); }
 .foresight-methods span:last-child { color: var(--muted); font-size: 13px; }
 .foresight-status { padding: 24px 2px; color: var(--muted); }
 .spin { animation: foresight-spin 1s linear infinite; }
@@ -176,6 +175,6 @@
   .foresight-legend { justify-content: flex-start; }
   .foresight-table { min-width: 650px; }
   .foresight-empty { padding: 24px; }
-  .foresight-methods > div { grid-template-columns: 92px 1fr; }
+  .foresight-methods > div { grid-template-columns: 112px 1fr; }
   .foresight-methods span:last-child { grid-column: 1 / -1; }
 }

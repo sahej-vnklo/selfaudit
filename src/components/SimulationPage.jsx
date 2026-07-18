@@ -106,9 +106,9 @@ function EmptyResults() {
         <p>Choose a live metric and Foresight will separate what can be calculated from what can only be estimated or projected directionally.</p>
       </div>
       <div className="foresight-methods">
-        <div><EvidenceBadge tier="calculated" /><strong>Calculated</strong><span>Direct mathematics from measured values.</span></div>
-        <div><EvidenceBadge tier="estimated" /><strong>Estimated</strong><span>Modeled range with explicit assumptions.</span></div>
-        <div><EvidenceBadge tier="directional" /><strong>Directional</strong><span>Likely pressure without fake precision.</span></div>
+        <div><EvidenceBadge tier="calculated" /><span>Direct mathematics from measured values.</span></div>
+        <div><EvidenceBadge tier="estimated" /><span>Modeled range with explicit assumptions.</span></div>
+        <div><EvidenceBadge tier="directional" /><span>Likely pressure without fake precision.</span></div>
       </div>
     </div>
   )
