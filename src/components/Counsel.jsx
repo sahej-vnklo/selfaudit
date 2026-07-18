@@ -28,6 +28,14 @@ function confidenceLabel(value) {
   return 'Low confidence'
 }
 
+function resizeComposer(element) {
+  if (!element) return
+  element.style.height = '34px'
+  const nextHeight = Math.min(Math.max(element.scrollHeight, 34), 120)
+  element.style.height = `${nextHeight}px`
+  element.style.overflowY = element.scrollHeight > 120 ? 'auto' : 'hidden'
+}
+
 function SourceList({ sources = [] }) {
   if (!sources.length) return null
   return (
@@ -173,6 +181,8 @@ export default function Counsel({ user, onOpenSentinel, onOpenForesight, onCreat
     }
   }, [messages.length, loading])
 
+  useEffect(() => { resizeComposer(inputRef.current) }, [input])
+
   const conversationForReport = useMemo(() => messages.map((message) => ({
     role: message.role,
     content: message.role === 'assistant'
@@ -277,9 +287,7 @@ export default function Counsel({ user, onOpenSentinel, onOpenForesight, onCreat
             <div className="counsel-empty">Loading business memory…</div>
           ) : messages.length === 0 ? (
             <div className="counsel-welcome">
-              <div className="counsel-welcome-mark">C</div>
-              <h2>What do you want to understand?</h2>
-              <p>Counsel chooses the relevant sources automatically and separates verified facts from judgment.</p>
+              <p>Choose a starting point, or ask anything below.</p>
               <div className="counsel-starters">
                 {STARTERS.map((starter) => <button type="button" key={starter} onClick={() => submit(starter)}>{starter}<span>→</span></button>)}
               </div>
@@ -321,6 +329,7 @@ export default function Counsel({ user, onOpenSentinel, onOpenForesight, onCreat
               disabled={loading}
               placeholder="Ask anything about your business…"
               onChange={(event) => setInput(event.target.value)}
+              onInput={(event) => resizeComposer(event.currentTarget)}
               onKeyDown={(event) => {
                 if (event.key === 'Enter' && !event.shiftKey) {
                   event.preventDefault()
