@@ -11,11 +11,10 @@
 
 .counsel-history {
   min-width: 0;
-  border-right: 1px solid var(--d-border);
-  background: color-mix(in srgb, var(--d-surface) 72%, transparent);
+  border-right: 0;
+  background: transparent;
   display: flex;
   flex-direction: column;
-  backdrop-filter: blur(18px) saturate(120%);
 }
 
 .counsel-history-head {
