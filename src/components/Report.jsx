@@ -253,6 +253,7 @@ export default function Report({ userInfo, conversationHistory, sessionId }) {
                 goalBaseline: userInfo.goalBaseline ?? '',
                 userEmail:    userInfo.email        || '',
                 userName:     userInfo.name         || '',
+                sourceType:   'audit',
               }),
             }).catch(e => console.warn('[save-report] failed:', e?.message))
           }).catch(e => console.warn('[save-report] auth failed:', e?.message))

@@ -218,7 +218,7 @@ function BriefSection({ icon, title, items, empty }) {
   )
 }
 
-function DecisionBrief({ result, saving, saved, onSave }) {
+function DecisionBrief({ result, saving, saved, onSave, dispatching, dispatched, onDispatch }) {
   const brief = result?.decisionBrief
   if (!brief) return <aside className="foresight-panel foresight-brief empty"><span>Select a scenario to generate its decision brief.</span></aside>
   return (
@@ -233,15 +233,15 @@ function DecisionBrief({ result, saving, saved, onSave }) {
         <button type="button" className="foresight-btn secondary" onClick={onSave} disabled={saving || saved}>
           <i className={`ti ti-${saved ? 'check' : 'bookmark'}`} aria-hidden="true" />{saved ? 'Saved' : saving ? 'Saving…' : 'Save scenario'}
         </button>
-        <button type="button" className="foresight-btn primary" disabled title="Dispatch handoff will be enabled after action planning is connected.">
-          <i className="ti ti-send" aria-hidden="true" />Send to Dispatch
+        <button type="button" className="foresight-btn primary" disabled={dispatching || dispatched} onClick={onDispatch}>
+          <i className={`ti ti-${dispatched ? 'check' : 'send'}`} aria-hidden="true" />{dispatched ? 'Sent to Dispatch' : dispatching ? 'Preparing…' : 'Send to Dispatch'}
         </button>
       </div>
     </aside>
   )
 }
 
-export default function SimulationPage({ userId }) {
+export default function SimulationPage({ userId, onOpenDispatch }) {
   const [metrics, setMetrics] = useState([])
   const [input, setInput] = useState('')
   const [results, setResults] = useState([])
@@ -254,6 +254,8 @@ export default function SimulationPage({ userId }) {
   const [savedOpen, setSavedOpen] = useState(false)
   const [saving, setSaving] = useState(false)
   const [savedResultIds, setSavedResultIds] = useState(new Set())
+  const [dispatching, setDispatching] = useState(false)
+  const [dispatchedResultIds, setDispatchedResultIds] = useState(new Set())
   const composerRef = useRef(null)
 
   const selectedResult = results.find((result) => result.id === selectedId) || results[0] || null
@@ -374,6 +376,28 @@ export default function SimulationPage({ userId }) {
     }
   }
 
+  const sendToDispatch = async () => {
+    if (!selectedResult || dispatching) return
+    setDispatching(true)
+    setError('')
+    try {
+      const headers = await getAuthHeaders()
+      const response = await fetch('/api/dispatch/from-foresight', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...headers },
+        body: JSON.stringify({ userId, sourceId: selectedResult.id, result: selectedResult }),
+      })
+      const payload = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(payload.error || 'The scenario could not be prepared for Dispatch.')
+      setDispatchedResultIds((current) => new Set([...current, selectedResult.id]))
+      onOpenDispatch?.()
+    } catch (requestError) {
+      setError(requestError?.message || 'The scenario could not be prepared for Dispatch.')
+    } finally {
+      setDispatching(false)
+    }
+  }
+
   const openSaved = (savedScenario) => {
     const restored = savedScenario.result
     if (!restored?.id) return
@@ -454,6 +478,9 @@ export default function SimulationPage({ userId }) {
             saving={saving}
             saved={savedResultIds.has(selectedResult.id)}
             onSave={saveScenario}
+            dispatching={dispatching}
+            dispatched={dispatchedResultIds.has(selectedResult.id)}
+            onDispatch={sendToDispatch}
           />
         </div>
       )}

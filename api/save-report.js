@@ -5,6 +5,7 @@ import { upsertCompanyBrain } from './lib/intelligence/company-brain.js'
 import { syncFlatGoalFields, upsertGoalNode } from './lib/goals/service.js'
 import { sendUserReportEmail } from './lib/notifications/user-report-email.js'
 import { validateSaveReportPayload } from './lib/save-report-validation.js'
+import { stageReportDispatchPackage } from './lib/dispatch/packages.js'
 
 const supabase = createClient(
   process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
@@ -84,7 +85,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const { userId, sessionId, report: r, industry, domain, goalTimeline, goalBaseline, goalMode, userEmail, userName } = req.body
+  const { userId, sessionId, report: r, industry, domain, goalTimeline, goalBaseline, goalMode, userEmail, userName, sourceType = 'audit' } = req.body
   const validationError = validateSaveReportPayload(req.body)
   if (validationError) {
     return res.status(400).json({ error: validationError })
@@ -234,6 +235,15 @@ export default async function handler(req, res) {
       }
     } catch (patternErr) {
       console.warn('[save-report] pattern insert failed:', patternErr.message)
+    }
+
+    // Every actionable report prepares one governed Dispatch package. This is
+    // deterministic and grounded in the saved report; external execution still
+    // requires explicit approval in Dispatch.
+    try {
+      await stageReportDispatchPackage(supabase, userId, savedReport?.id, r, sourceType)
+    } catch (dispatchErr) {
+      console.warn('[save-report] Dispatch preparation failed:', dispatchErr.message)
     }
 
     try {

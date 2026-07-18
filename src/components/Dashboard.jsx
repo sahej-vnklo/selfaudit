@@ -4,6 +4,7 @@ import { generateReport } from '../lib/audit.js'
 import { PRIVACY_POLICY_URL, TERMS_HASH } from '../lib/legal.js'
 import IntelligenceBrief from './IntelligenceBrief.jsx'
 import ExecutionPanel from './ExecutionPanel.jsx'
+import DispatchPage from './DispatchPage.jsx'
 import DashboardWelcomeTour from './DashboardWelcomeTour.jsx'
 import CockpitSection from './Cockpit.jsx'
 import DepartmentPage from './DepartmentPage.jsx'
@@ -846,7 +847,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
   const [updatingAlertIds, setUpdatingAlertIds] = useState({})
   const [completingOnboarding, setCompletingOnboarding] = useState(false)
   const [hasSchema, setHasSchema] = useState(null)
-  const [actionFeed, setActionFeed] = useState({ pending: [], history: [] })
+  const [actionFeed, setActionFeed] = useState({ pending: [], packages: [], history: [] })
   const [voiceCalls, setVoiceCalls] = useState([])
   const [voiceCallsLoading, setVoiceCallsLoading] = useState(false)
   const [actionFeedLoaded, setActionFeedLoaded] = useState(false)
@@ -854,8 +855,6 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
   const pendingAuditParamsRef  = useRef(null)
   const [decisionLogOpen, setDecisionLogOpen]         = useState(false)
   const [decisionLogFeedback, setDecisionLogFeedback] = useState([])
-
-  const [showResultsPanel, setShowResultsPanel] = useState(false)
 
   const name = profile?.name?.trim() || user?.user_metadata?.name?.trim() || ''
   const email = user?.email || ''
@@ -921,6 +920,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
 
       setActionFeed({
         pending: Array.isArray(data?.pending) ? data.pending : [],
+        packages: Array.isArray(data?.packages) ? data.packages : [],
         history: Array.isArray(data?.history) ? data.history : [],
       })
     } catch (error) {
@@ -1089,6 +1089,10 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
     setActionFeedLoaded(false)
     fetchActionFeed()
   }, [fetchActionFeed, user?.id])
+
+  useEffect(() => {
+    if (section === 'dispatch') fetchActionFeed()
+  }, [fetchActionFeed, section])
 
   // Refresh reports from DB — called when Execution Panel opens so it always shows the latest session
   const refreshReports = useCallback(async () => {
@@ -1356,7 +1360,6 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
       return
     }
     history.pushState({ section: sectionName }, '', `#${nextSection}`)
-    setShowResultsPanel(false)
     setSection(sectionName)
     setDeptView(view)
     if (tab) setAccountTab(tab)
@@ -1476,6 +1479,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
           goalBaseline: '',
           userEmail:    user.email || '',
           userName:     profile?.name || user?.user_metadata?.name || '',
+          sourceType:   'counsel',
         }),
       })
 
@@ -1494,7 +1498,8 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
           status:            'unknown',
           created_at:        new Date().toISOString(),
         }, ...prev].slice(0, 24))
-        setShowResultsPanel(true)
+        await fetchActionFeed()
+        navigateSection('dispatch')
         return saved.reportId
       }
       const saveError = await saveRes.json().catch(() => ({}))
@@ -1695,40 +1700,6 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
         </div>
       </header>
 
-      {/* ── Execution Panel (fixed overlay — doesn't push content, doesn't cover sidebar) ── */}
-      {showResultsPanel && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: sidebarExpanded ? 144 : 53,
-          right: 0,
-          height: '100vh',
-          background: 'var(--bg)',
-          borderLeft: '1px solid var(--d-border)',
-          overflow: 'auto',
-          boxShadow: '-4px 0 24px rgba(0,0,0,0.08)',
-          zIndex: 200,
-        }}>
-          {reports.length > 0 ? (
-            <div style={{ padding: '100px 28px 28px' }}>
-              <ExecutionPanel
-                key={reports[0]?.id ?? 'empty'}
-                reports={reports}
-                userInfo={shareUserInfo}
-                variant="dashboard"
-                healthIntel={healthIntel}
-                theme={theme}
-                onActionStaged={fetchActionFeed}
-              />
-            </div>
-          ) : (
-            <div style={{ color: 'var(--fg-mute)', fontSize: '0.85rem', textAlign: 'center', padding: '120px 0 48px' }}>
-              Create a report from Counsel to prepare work for Dispatch.
-            </div>
-          )}
-        </div>
-      )}
-
       {/* ── Body ──────────────────────────────────────────────────────────── */}
       <div className="dash-body">
 
@@ -1769,7 +1740,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
 
             <div className="dash-nav-divider" aria-hidden="true" />
 
-            <button className={`dash-navbtn${showResultsPanel ? ' active' : ''}`} data-label="Dispatch" aria-label="Dispatch" type="button" onClick={() => setShowResultsPanel(p => !p)}>
+            <button className={`dash-navbtn${section === 'dispatch' ? ' active' : ''}`} data-label="Dispatch" aria-label="Dispatch" type="button" onClick={() => navigateSection('dispatch')}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
                 <path d="m21 3-8.2 18-2.1-7.7L3 11.2 21 3Z"/><path d="m10.7 13.3 4.8-4.8"/>
               </svg>
@@ -1845,7 +1816,10 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
               )}
               {section === 'connectors' && <ConnectorsSection user={user} />}
               {section === 'simulate'  && (
-                <SimulationPage userId={user?.id} />
+                <SimulationPage userId={user?.id} onOpenDispatch={() => navigateSection('dispatch')} />
+              )}
+              {section === 'dispatch' && (
+                <DispatchPage userId={user?.id} actionFeed={actionFeed} loading={!actionFeedLoaded} onRefresh={fetchActionFeed} />
               )}
               {section === 'cockpit'    && <CockpitSection user={user} navigateSection={navigateSection} />}
               {section === 'dept-customer-service'    && <DepartmentPage areaId="customer-service"    user={user} navigateSection={navigateSection} view={deptView} />}

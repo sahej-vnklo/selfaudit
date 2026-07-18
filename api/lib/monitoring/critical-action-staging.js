@@ -97,7 +97,7 @@ function buildFallbackArtifact(artifactType, alert) {
         {
           label: 'Body',
           content: [
-            `Hi [First Name],`,
+            `Hello,`,
             ``,
             `I wanted to reach out regarding ${alert?.description || 'a critical business issue we have identified'}.`,
             ``,
@@ -212,7 +212,29 @@ export async function stageCriticalAction(supabase, userId, alert) {
     if (!action) return null
 
     const artifact = await generateHealthCheckArtifact(supabase, userId, alert, artifactType)
-    const stagedArgs = action.buildArgs(artifact, {})
+    const stagedArgs = {
+      ...action.buildArgs(artifact, {}),
+      __dispatch: {
+        sourceType: 'sentinel',
+        sourceId: alert.id,
+        sourceLabel: 'Sentinel',
+        objective: alert.recommendation || artifact.summary || artifact.title,
+        evidence: [
+          ...(alert.metric_key ? [{ label: alert.metric_key, value: alert.metric_value }] : []),
+          ...(alert.threshold_value != null ? [{ label: 'Threshold', value: `${alert.comparator || ''} ${alert.threshold_value}`.trim() }] : []),
+        ],
+        priority: String(alert.escalation_tier || alert.severity || 'high').toLowerCase(),
+        owner: alert.category || 'Business owner',
+        destination: action.connector === 'slack' ? 'Slack team channel' : action.connector === 'gmail' ? 'Gmail draft' : 'Notion workspace',
+        approvalBoundary: action.connector === 'slack'
+          ? 'Posts the approved brief to the selected Slack channel. No other operational change is made.'
+          : action.connector === 'gmail'
+            ? 'Creates an approved Gmail draft. It does not send the email automatically.'
+            : 'Creates the approved action plan in Notion. No operational or financial changes are made automatically.',
+        artifacts: [{ type: artifactType, title: artifact.title || alert.title }],
+        sourceCreatedAt: alert.created_at || new Date().toISOString(),
+      },
+    }
 
     const { data, error } = await supabase
       .from('pending_actions')
@@ -232,6 +254,7 @@ export async function stageCriticalAction(supabase, userId, alert) {
           metricKey:   alert.metric_key,
           metricValue: alert.metric_value,
         },
+        finding_fingerprint: `dispatch:sentinel:${alert.id}`,
         source_health_check_id: alert.health_check_id ?? null,
         status:                 'pending',
         updated_at:             new Date().toISOString(),

@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { validateUserToken } from '../lib/auth.js'
+import { normalizeDispatchPackage } from '../lib/dispatch/packages.js'
 
 const supabase = createClient(
   process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
@@ -18,14 +19,13 @@ export default async function handler(req, res) {
   }
   if (!await validateUserToken(req, res, userId)) return
 
-  const [pendingRes, historyRes] = await Promise.all([
+  const [packagesRes, historyRes] = await Promise.all([
     supabase
       .from('pending_actions')
       .select('*')
       .eq('user_id', userId)
-      .eq('status', 'pending')
-      .order('created_at', { ascending: false })
-      .limit(20),
+      .order('updated_at', { ascending: false })
+      .limit(100),
     supabase
       .from('execution_log')
       .select('*')
@@ -34,15 +34,30 @@ export default async function handler(req, res) {
       .limit(20),
   ])
 
-  if (pendingRes.error) {
-    return res.status(500).json({ error: pendingRes.error.message })
+  if (packagesRes.error) {
+    return res.status(500).json({ error: packagesRes.error.message })
   }
   if (historyRes.error) {
     return res.status(500).json({ error: historyRes.error.message })
   }
 
+  const actions = packagesRes.data || []
+  const artifactIds = [...new Set(actions.map((action) => action.artifact_id).filter(Boolean))]
+  let artifactMap = new Map()
+  if (artifactIds.length > 0) {
+    const { data: artifacts, error: artifactError } = await supabase
+      .from('artifacts')
+      .select('id, artifact_type, title, summary, artifact_data, created_at')
+      .in('id', artifactIds)
+    if (artifactError) return res.status(500).json({ error: artifactError.message })
+    artifactMap = new Map((artifacts || []).map((artifact) => [artifact.id, artifact]))
+  }
+
+  const packages = actions.map((action) => normalizeDispatchPackage(action, artifactMap.get(action.artifact_id)))
+
   return res.status(200).json({
-    pending: pendingRes.data || [],
+    pending: packages.filter((action) => action.status === 'pending'),
+    packages,
     history: historyRes.data || [],
   })
 }

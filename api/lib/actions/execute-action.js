@@ -1,10 +1,16 @@
 import { getComposioConnectionMap, executeTool } from '../connectors/composio.js'
 import { getMissingRequiredInputs } from './validate.js'
 
+export function withoutInternalActionMetadata(args = {}) {
+  if (!args || typeof args !== 'object' || Array.isArray(args)) return {}
+  const { __dispatch: _dispatchMetadata, ...toolArgs } = args
+  return toolArgs
+}
+
 export async function executePendingAction({ userId, pendingAction, action, finalArgs = {} }) {
   const mergedArgs = {
-    ...(pendingAction?.staged_args && typeof pendingAction.staged_args === 'object' ? pendingAction.staged_args : {}),
-    ...(finalArgs && typeof finalArgs === 'object' ? finalArgs : {}),
+    ...withoutInternalActionMetadata(pendingAction?.staged_args),
+    ...withoutInternalActionMetadata(finalArgs),
   }
 
   const missingInputs = getMissingRequiredInputs(action, mergedArgs)

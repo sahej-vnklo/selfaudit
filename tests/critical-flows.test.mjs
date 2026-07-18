@@ -15,6 +15,8 @@ import { buildGovernanceAdvice } from '../api/lib/governance/advice.js'
 import { enrichGovernanceWithAI } from '../api/lib/governance/ai-advisor.js'
 import { isConversational } from '../api/lib/agent/planner.js'
 import { buildCounselSources, canOfferCounselReport, normalizeCounselResult } from '../api/lib/agent/counsel.js'
+import { normalizeDispatchPackage, selectReportArtifactType } from '../api/lib/dispatch/packages.js'
+import { withoutInternalActionMetadata } from '../api/lib/actions/execute-action.js'
 
 test('every explicitly configured Vercel function exists', () => {
   const config = JSON.parse(readFileSync(new URL('../vercel.json', import.meta.url), 'utf8'))
@@ -131,6 +133,62 @@ test('Counsel exposes traceable Sentinel source details and only offers grounded
   })
   assert.equal(canOfferCounselReport(grounded, sources, 2), true)
   assert.equal(canOfferCounselReport({ ...grounded, confidence: 'low' }, sources, 2), false)
+})
+
+test('Dispatch selects a governed artifact from report intent', () => {
+  assert.equal(selectReportArtifactType({
+    conversation_mode: 'EXECUTION',
+    headline: 'Roll out the new customer handoff',
+    delivery_plan: [{ action: 'Brief the customer success team' }],
+  }), 'TEAM_BRIEF')
+
+  assert.equal(selectReportArtifactType({
+    conversation_mode: 'DIAGNOSTIC',
+    headline: 'Renewal follow-up is inconsistent',
+    priority_actions: ['Create a renewal email sequence'],
+  }), 'EMAIL')
+
+  assert.equal(selectReportArtifactType({
+    conversation_mode: 'GOAL_GAP',
+    headline: 'Runway is below the operating threshold',
+    priority_actions: ['Reduce non-essential spend'],
+  }), 'ACTION_PLAN')
+})
+
+test('Dispatch normalizes legacy staged actions without losing approval context', () => {
+  const normalized = normalizeDispatchPackage({
+    id: 'action-1',
+    action_type: 'TEAM_BRIEF',
+    connector: 'slack',
+    title: 'Prepare customer response',
+    status: 'pending',
+    staged_args: {
+      channel: '',
+      __dispatch: {
+        sourceType: 'sentinel',
+        sourceId: 'alert-1',
+        objective: 'Coordinate the support response.',
+        evidence: [{ label: 'CSAT', value: 72 }],
+        approvalBoundary: 'Posts only the approved brief.',
+      },
+    },
+  })
+
+  assert.equal(normalized.source_type, 'sentinel')
+  assert.equal(normalized.objective, 'Coordinate the support response.')
+  assert.equal(normalized.evidence_snapshot[0].value, 72)
+  assert.equal(normalized.approval_boundary, 'Posts only the approved brief.')
+})
+
+test('Dispatch never forwards internal provenance metadata to connector tools', () => {
+  assert.deepEqual(withoutInternalActionMetadata({
+    recipient_email: 'owner@example.com',
+    subject: 'Operating update',
+    __dispatch: { sourceType: 'counsel', evidence: [{ label: 'Churn', value: '7%' }] },
+  }), {
+    recipient_email: 'owner@example.com',
+    subject: 'Operating update',
+  })
 })
 
 test('data export sanitizes connector secrets and builds stable filenames', () => {
