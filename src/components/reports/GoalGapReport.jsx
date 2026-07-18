@@ -35,7 +35,7 @@ export default function GoalGapReport({ report, Section, styles }) {
       borderRadius: 'var(--radius)', padding: '1rem 1.125rem',
     },
     label: {
-      fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.8px',
+      fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.8px',
       color: 'var(--gray-400)', marginBottom: 6, fontWeight: 500,
     },
     text: { fontSize: 14, color: 'var(--gray-800)', lineHeight: 1.7, margin: 0 },

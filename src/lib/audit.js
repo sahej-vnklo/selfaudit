@@ -66,7 +66,7 @@ function buildEmailHTML(userInfo, report) {
   .headline { font-size: 18px; font-weight: 600; color: #0D0D0D; margin-bottom: 12px; }
   .domain { padding: 12px; border-left: 3px solid #E8E6E0; margin-bottom: 8px; }
   .domain-name { font-weight: 500; font-size: 14px; display: flex; align-items: center; gap: 8px; }
-  .badge { font-size: 11px; padding: 2px 8px; border-radius: 100px; font-weight: 500; }
+  .badge { font-size: 13px; padding: 2px 8px; border-radius: 100px; font-weight: 500; }
   .domain-text { font-size: 13px; color: #6B6860; margin-top: 4px; }
   .domain-action { font-size: 13px; color: #2C2B28; margin-top: 4px; font-style: italic; }
   .fix { padding: 10px 12px; background: #FFF8F0; border-radius: 6px; margin-bottom: 8px; }
@@ -76,9 +76,9 @@ function buildEmailHTML(userInfo, report) {
   .ai-area { font-size: 13px; font-weight: 500; color: #0F6E56; }
   .ai-why { font-size: 13px; color: #2C2B28; margin-top: 2px; }
   .priority { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 8px; }
-  .priority-num { background: #0D0D0D; color: white; font-size: 11px; font-weight: 500; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+  .priority-num { background: #0D0D0D; color: white; font-size: 13px; font-weight: 500; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
   .truth { background: #0D0D0D; color: white; padding: 16px; border-radius: 8px; font-size: 15px; line-height: 1.7; }
-  .footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid #E8E6E0; font-size: 12px; color: #B0ADA4; }
+  .footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid #E8E6E0; font-size: 13px; color: #B0ADA4; }
 </style></head>
 <body>
   <div class="header">

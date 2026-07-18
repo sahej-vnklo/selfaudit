@@ -98,8 +98,8 @@ function Sparkline({ values, color = 'var(--text-secondary)', width = 80, height
 function SectionHeader({ title, sub }) {
   return (
     <div style={{ marginBottom: 14 }}>
-      <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textFaint }}>{title}</div>
-      {sub && <div style={{ fontSize: 12, color: C.textMuted, marginTop: 2 }}>{sub}</div>}
+      <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.textFaint }}>{title}</div>
+      {sub && <div style={{ fontSize: 13, color: C.textMuted, marginTop: 2 }}>{sub}</div>}
     </div>
   )
 }
@@ -110,23 +110,23 @@ function IssueRow({ issue, isLast }) {
     <div style={{ padding: '13px 16px', borderBottom: isLast ? 'none' : `1px solid ${C.border}` }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, marginBottom: issue.description ? 6 : 0 }}>
         <div style={{ fontSize: 13.5, fontWeight: 600, color: C.text, lineHeight: 1.3, flex: 1 }}>{issue.title}</div>
-        <div style={{ padding: '2px 8px', borderRadius: 100, fontSize: 10, fontWeight: 700, letterSpacing: '0.04em', color: sev.color, background: sev.bg, border: `1px solid ${sev.border}`, flexShrink: 0 }}>
+        <div style={{ padding: '2px 8px', borderRadius: 100, fontSize: 13, fontWeight: 700, letterSpacing: '0.04em', color: sev.color, background: sev.bg, border: `1px solid ${sev.border}`, flexShrink: 0 }}>
           {sev.label}
         </div>
       </div>
       {issue.description && (
-        <div style={{ fontSize: 12, color: C.textMuted, lineHeight: 1.55, marginBottom: issue.recommended ? 8 : 4 }}>{issue.description}</div>
+        <div style={{ fontSize: 13, color: C.textMuted, lineHeight: 1.55, marginBottom: issue.recommended ? 8 : 4 }}>{issue.description}</div>
       )}
       {issue.recommended && (
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 7, padding: '7px 10px', background: C.surface2, borderRadius: 6 }}>
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" style={{ color: C.accentText, flexShrink: 0, marginTop: 2 }}>
             <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
           </svg>
-          <div style={{ fontSize: 11.5, color: C.textSecondary, lineHeight: 1.5 }}>{issue.recommended}</div>
+          <div style={{ fontSize: 13, color: C.textSecondary, lineHeight: 1.5 }}>{issue.recommended}</div>
         </div>
       )}
       {issue.created_at && (
-        <div style={{ fontSize: 10.5, color: C.textFaint, marginTop: 6 }}>Flagged {timeAgo(issue.created_at)}</div>
+        <div style={{ fontSize: 13, color: C.textFaint, marginTop: 6 }}>Flagged {timeAgo(issue.created_at)}</div>
       )}
     </div>
   )
@@ -194,15 +194,15 @@ function RuleRow({ rule, userId, onSaved }) {
 
       {/* Label + live value */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 12.5, fontWeight: 500, color: C.text, marginBottom: 3 }}>{rule.label}</div>
+        <div style={{ fontSize: 13, fontWeight: 500, color: C.text, marginBottom: 3 }}>{rule.label}</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {rule.currentValue != null ? (
             <>
-              <span style={{ fontSize: 12, color: C.textMuted }}>
+              <span style={{ fontSize: 13, color: C.textMuted }}>
                 Now: <strong style={{ color: C.text }}>{rule.currentValue}{rule.unit}</strong>
               </span>
               {rule.currentDelta != null && (
-                <span style={{ fontSize: 11, color: rule.currentDelta > 0 ? C.redText : C.greenText }}>
+                <span style={{ fontSize: 13, color: rule.currentDelta > 0 ? C.redText : C.greenText }}>
                   {rule.currentDelta > 0 ? '↑' : '↓'} {Math.abs(rule.currentDelta).toFixed(1)}
                 </span>
               )}
@@ -211,7 +211,7 @@ function RuleRow({ rule, userId, onSaved }) {
               )}
             </>
           ) : (
-            <span style={{ fontSize: 11, color: C.textFaint }}>No data yet</span>
+            <span style={{ fontSize: 13, color: C.textFaint }}>No data yet</span>
           )}
         </div>
       </div>
@@ -242,14 +242,14 @@ function RuleRow({ rule, userId, onSaved }) {
               outline: 'none',
             }}
           />
-          <span style={{ fontSize: 11.5, color: C.textMuted, minWidth: 32 }}>{rule.unit}</span>
+          <span style={{ fontSize: 13, color: C.textMuted, minWidth: 32 }}>{rule.unit}</span>
         </div>
-        <div style={{ fontSize: 10.5, textAlign: 'right', minHeight: 14 }}>
+        <div style={{ fontSize: 13, textAlign: 'right', minHeight: 14 }}>
           {saving && <span style={{ color: C.textFaint }}>Saving…</span>}
           {savedFlash && !saving && <span style={{ color: C.greenText }}>Saved ✓</span>}
           {isSet && !saving && !savedFlash && (
             <button type="button" onClick={deleteOverride}
-              style={{ color: C.textFaint, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0, fontSize: 10.5 }}>
+              style={{ color: C.textFaint, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0, fontSize: 13 }}>
               Clear
             </button>
           )}
@@ -284,19 +284,19 @@ function CustomMetricRow({ metric, userId, onDeleted }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 14px', background: C.surface, border: `1px solid ${C.border}`, borderRadius: 9 }}>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 12.5, fontWeight: 500, color: C.text }}>{metric.name}</div>
-        <div style={{ fontSize: 11, color: C.textFaint, marginTop: 2 }}>Your metric</div>
+        <div style={{ fontSize: 13, fontWeight: 500, color: C.text }}>{metric.name}</div>
+        <div style={{ fontSize: 13, color: C.textFaint, marginTop: 2 }}>Your metric</div>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ fontSize: 15, fontWeight: 700, color: C.text }}>{metric.value}</span>
-          {metric.unit && <span style={{ fontSize: 11.5, color: C.textMuted }}>{metric.unit}</span>}
+          {metric.unit && <span style={{ fontSize: 13, color: C.textMuted }}>{metric.unit}</span>}
         </div>
         <button
           type="button"
           onClick={handleDelete}
           disabled={deleting}
-          style={{ fontSize: 10.5, color: C.textFaint, background: 'none', border: 'none', cursor: deleting ? 'not-allowed' : 'pointer', textDecoration: 'underline', padding: 0, opacity: deleting ? 0.5 : 1 }}
+          style={{ fontSize: 13, color: C.textFaint, background: 'none', border: 'none', cursor: deleting ? 'not-allowed' : 'pointer', textDecoration: 'underline', padding: 0, opacity: deleting ? 0.5 : 1 }}
         >
           {deleting ? 'Removing…' : 'Remove'}
         </button>
@@ -341,7 +341,7 @@ function AddCustomMetricForm({ userId, areaId, onAdded }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: 'transparent', border: `1px dashed ${C.border}`, borderRadius: 9, cursor: 'pointer', color: C.textMuted, fontSize: 12.5, fontWeight: 500, width: '100%', transition: 'border-color 0.15s' }}
+        style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: 'transparent', border: `1px dashed ${C.border}`, borderRadius: 9, cursor: 'pointer', color: C.textMuted, fontSize: 13, fontWeight: 500, width: '100%', transition: 'border-color 0.15s' }}
       >
         <span style={{ fontSize: 16, lineHeight: 1, color: C.textFaint }}>+</span>
         Add your own metric
@@ -351,12 +351,12 @@ function AddCustomMetricForm({ userId, areaId, onAdded }) {
 
   return (
     <div style={{ padding: '14px 16px', background: C.surface, border: `1px solid ${C.accent}`, borderRadius: 9, display: 'flex', flexDirection: 'column', gap: 12 }}>
-      <div style={{ fontSize: 12, fontWeight: 600, color: C.text }}>New custom metric</div>
+      <div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>New custom metric</div>
 
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
         {/* Name */}
         <div style={{ flex: '2 1 160px', display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <label style={{ fontSize: 10.5, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.textFaint }}>Metric name</label>
+          <label style={{ fontSize: 13, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.textFaint }}>Metric name</label>
           <input
             type="text"
             value={name}
@@ -369,7 +369,7 @@ function AddCustomMetricForm({ userId, areaId, onAdded }) {
 
         {/* Value */}
         <div style={{ flex: '1 1 90px', display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <label style={{ fontSize: 10.5, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.textFaint }}>Value</label>
+          <label style={{ fontSize: 13, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.textFaint }}>Value</label>
           <input
             type="number"
             value={value}
@@ -381,7 +381,7 @@ function AddCustomMetricForm({ userId, areaId, onAdded }) {
 
         {/* Unit */}
         <div style={{ flex: '1 1 80px', display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <label style={{ fontSize: 10.5, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.textFaint }}>Unit</label>
+          <label style={{ fontSize: 13, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.textFaint }}>Unit</label>
           <input
             type="text"
             value={unit}
@@ -393,21 +393,21 @@ function AddCustomMetricForm({ userId, areaId, onAdded }) {
         </div>
       </div>
 
-      {error && <div style={{ fontSize: 12, color: C.redText }}>{error}</div>}
+      {error && <div style={{ fontSize: 13, color: C.redText }}>{error}</div>}
 
       <div style={{ display: 'flex', gap: 8 }}>
         <button
           type="button"
           onClick={handleSave}
           disabled={saving}
-          style={{ padding: '7px 18px', borderRadius: 7, background: C.accentLight, border: `1px solid ${C.accent}`, color: C.accentText, fontSize: 12.5, fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.6 : 1, fontFamily: 'inherit' }}
+          style={{ padding: '7px 18px', borderRadius: 7, background: C.accentLight, border: `1px solid ${C.accent}`, color: C.accentText, fontSize: 13, fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.6 : 1, fontFamily: 'inherit' }}
         >
           {saving ? 'Saving…' : 'Save metric'}
         </button>
         <button
           type="button"
           onClick={reset}
-          style={{ padding: '7px 14px', borderRadius: 7, background: 'none', border: `1px solid ${C.border}`, color: C.textMuted, fontSize: 12.5, cursor: 'pointer', fontFamily: 'inherit' }}
+          style={{ padding: '7px 14px', borderRadius: 7, background: 'none', border: `1px solid ${C.border}`, color: C.textMuted, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}
         >
           Cancel
         </button>
@@ -483,7 +483,7 @@ export default function DepartmentPage({ areaId, user, navigateSection, view = '
           <div style={{ fontSize: 13, color: C.textMuted }}>{meta.role} — {meta.description}</div>
         </div>
         {data && (
-          <div style={{ padding: '4px 12px', borderRadius: 100, fontSize: 12, fontWeight: 700, color: st.color, background: st.bg, border: `1px solid ${st.border}`, flexShrink: 0, letterSpacing: '0.04em' }}>
+          <div style={{ padding: '4px 12px', borderRadius: 100, fontSize: 13, fontWeight: 700, color: st.color, background: st.bg, border: `1px solid ${st.border}`, flexShrink: 0, letterSpacing: '0.04em' }}>
             {st.label}
           </div>
         )}
@@ -537,7 +537,7 @@ export default function DepartmentPage({ areaId, user, navigateSection, view = '
                   ))}
                 </div>
                 {!data.has_connector_data && (
-                  <div style={{ marginTop: 12, padding: '10px 14px', background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 12, color: C.textMuted, lineHeight: 1.6 }}>
+                  <div style={{ marginTop: 12, padding: '10px 14px', background: C.surface, border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 13, color: C.textMuted, lineHeight: 1.6 }}>
                     <strong style={{ color: C.text }}>No live data connected.</strong> Metric values will appear once you connect a tool (e.g. HubSpot, Stripe) or run a health check with manual context filled in.
                   </div>
                 )}
@@ -559,7 +559,7 @@ export default function DepartmentPage({ areaId, user, navigateSection, view = '
           )}
 
           {data.last_checked && (
-            <div style={{ fontSize: 11.5, color: C.textFaint }}>
+            <div style={{ fontSize: 13, color: C.textFaint }}>
               Data from health check run {timeAgo(data.last_checked)}. Run a new analysis from the Cockpit to refresh.
             </div>
           )}

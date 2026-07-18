@@ -58,7 +58,7 @@
 .sentinel-toolbar p {
   margin: 0;
   color: var(--sentinel-ink-2);
-  font-size: 11.5px;
+  font-size: 13px;
 }
 
 .sentinel-update {
@@ -66,7 +66,7 @@
   align-items: center;
   gap: 7px;
   color: var(--sentinel-ink-2);
-  font-size: 10px;
+  font-size: 13px;
   white-space: nowrap;
 }
 
@@ -84,7 +84,7 @@
   border-radius: 3px;
   color: var(--sentinel-ink-2);
   background: transparent;
-  font: 500 10px var(--sentinel-body-font);
+  font: 500 13px var(--sentinel-body-font);
 }
 
 .sentinel-refresh:hover:not(:disabled) {
@@ -155,7 +155,7 @@
 
 .sentinel-signal-rank {
   color: var(--sentinel-ink-2);
-  font-size: 10.5px;
+  font-size: 13px;
 }
 
 .sentinel-signal.selected .sentinel-signal-rank,
@@ -180,7 +180,7 @@
 .sentinel-signal-description {
   overflow: hidden;
   color: var(--sentinel-ink-2);
-  font-size: 10.5px;
+  font-size: 13px;
   line-height: 1.45;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -188,14 +188,14 @@
 
 .sentinel-signal-impact {
   color: var(--sentinel-ink);
-  font-size: 10.5px;
+  font-size: 13px;
   white-space: nowrap;
 }
 
 .sentinel-signal-impact.unquantified {
   color: var(--sentinel-ink-3);
   font-family: var(--sentinel-body-font);
-  font-size: 9px;
+  font-size: 13px;
 }
 
 .sentinel-summary {
@@ -218,7 +218,7 @@
 
 .sentinel-summary.empty p {
   color: var(--sentinel-ink-2);
-  font-size: 10.5px;
+  font-size: 13px;
   line-height: 1.6;
 }
 
@@ -244,7 +244,7 @@
   border-radius: 3px;
   color: var(--sentinel-breach);
   background: var(--sentinel-breach-soft);
-  font-size: 9px;
+  font-size: 13px;
   white-space: nowrap;
 }
 
@@ -256,14 +256,14 @@
 .sentinel-summary-label {
   margin-bottom: 5px;
   color: var(--sentinel-ink);
-  font-size: 9px;
+  font-size: var(--font-size-label);
   font-weight: 600;
 }
 
 .sentinel-summary-value {
   color: var(--sentinel-ink-2);
-  font-size: 10.5px;
-  line-height: 1.55;
+  font-size: var(--font-size-body);
+  line-height: 1.5;
 }
 
 .sentinel-summary-row.primary .sentinel-summary-label {
@@ -275,7 +275,7 @@
 
 .sentinel-summary-row.primary .sentinel-summary-value {
   color: var(--sentinel-ink);
-  font-size: 13.5px;
+  font-size: 16px;
 }
 
 .sentinel-summary-icon {
@@ -298,7 +298,7 @@
   display: block;
   margin-top: 4px;
   color: var(--sentinel-ink-3);
-  font-size: 8px;
+  font-size: 13px;
 }
 
 .sentinel-summary-actions {
@@ -311,7 +311,7 @@
 .sentinel-summary-actions button {
   padding: 6px 9px;
   border-radius: 3px;
-  font: 500 10px var(--sentinel-body-font);
+  font: 500 13px var(--sentinel-body-font);
 }
 
 .sentinel-analysis-btn {
@@ -337,7 +337,7 @@
 .sentinel-summary-error {
   margin-top: 8px;
   color: var(--sentinel-breach);
-  font-size: 9px;
+  font-size: 13px;
 }
 
 .sentinel-empty-signals {
@@ -346,7 +346,7 @@
   border-radius: 4px;
   color: var(--green-text);
   background: var(--green-bg);
-  font-size: 10.5px;
+  font-size: 13px;
 }
 
 .sentinel-lower {

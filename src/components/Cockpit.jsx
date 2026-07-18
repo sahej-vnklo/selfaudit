@@ -76,7 +76,7 @@ function EmptyState({ onNavigate }) {
         <button
           type="button"
           onClick={() => onNavigate('account?tab=metrics')}
-          style={{ padding: '6px 16px', borderRadius: 8, background: 'transparent', border: 'none', color: C.textMuted, fontSize: 12, cursor: 'pointer', textDecoration: 'underline' }}
+          style={{ padding: '6px 16px', borderRadius: 8, background: 'transparent', border: 'none', color: C.textMuted, fontSize: 13, cursor: 'pointer', textDecoration: 'underline' }}
         >
           or set metrics manually
         </button>
@@ -127,7 +127,7 @@ function ReadyState({ onStart, running }) {
           const isLast = i === visibleSteps[visibleSteps.length - 1]
           return (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, color: done ? C.textMuted : C.text }}>
-              <span style={{ fontSize: 11, minWidth: 14, color: done ? C.green : C.accent }}>
+              <span style={{ fontSize: 13, minWidth: 14, color: done ? C.green : C.accent }}>
                 {done ? '✓' : '›'}
               </span>
               <span>
@@ -267,7 +267,7 @@ function ApprovePopup({ lead, userId, userEmail, commChannels, savedCommPref, on
       <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.45)' }} onClick={onClose} />
       <div style={{ position: 'relative', background: C.surface, border: `1px solid ${C.border2}`, borderRadius: 12, padding: '22px 24px', width: '100%', maxWidth: 340, boxShadow: '0 16px 48px rgba(0,0,0,0.28)' }}>
         <div style={{ fontSize: 14, fontWeight: 700, color: C.text, marginBottom: 4 }}>Send this action</div>
-        <div style={{ fontSize: 12, color: C.textMuted, marginBottom: 18, lineHeight: 1.5 }}>
+        <div style={{ fontSize: 13, color: C.textMuted, marginBottom: 18, lineHeight: 1.5 }}>
           {isFirstTime ? 'Pick where you want this sent. We\'ll remember your choice.' : 'Send to your saved channel, or pick a different one.'}
         </div>
 
@@ -292,7 +292,7 @@ function ApprovePopup({ lead, userId, userEmail, commChannels, savedCommPref, on
                 </span>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 13, fontWeight: 600, color: isSelected ? C.accentText : C.text }}>{ch.label}</div>
-                  <div style={{ fontSize: 11, color: C.textFaint, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{getChannelSubtitle(ch)}</div>
+                  <div style={{ fontSize: 13, color: C.textFaint, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{getChannelSubtitle(ch)}</div>
                 </div>
                 {isSelected && (
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: C.accentText, flexShrink: 0 }}><path d="M20 6L9 17l-5-5"/></svg>
@@ -302,7 +302,7 @@ function ApprovePopup({ lead, userId, userEmail, commChannels, savedCommPref, on
           })}
         </div>
 
-        {err && <div style={{ fontSize: 11, color: C.redText, marginBottom: 10 }}>{err}</div>}
+        {err && <div style={{ fontSize: 13, color: C.redText, marginBottom: 10 }}>{err}</div>}
 
         <div style={{ display: 'flex', gap: 8 }}>
           <button
@@ -340,7 +340,7 @@ function WatchBrief({ alert, areaLabel }) {
       <div style={{ width: 7, height: 7, borderRadius: '50%', background: C.amber, flexShrink: 0, marginTop: 4 }} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 13, fontFamily: DISPLAY_FONT, fontWeight: 500, color: C.text, lineHeight: 1.3, marginBottom: 2 }}>{alert.title}</div>
-        <div style={{ fontSize: 11, color: C.textFaint }}>{subtitle}</div>
+        <div style={{ fontSize: 13, color: C.textFaint }}>{subtitle}</div>
       </div>
     </div>
   )
@@ -577,7 +577,7 @@ export default function CockpitSection({ user, navigateSection }) {
   if (error) return (
     <div style={{ padding: '40px 24px', textAlign: 'center', color: C.textMuted }}>
       <div style={{ fontSize: 13, marginBottom: 12 }}>{error}</div>
-      <button type="button" onClick={fetchData} style={{ fontSize: 12, color: C.accentText, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>Retry</button>
+      <button type="button" onClick={fetchData} style={{ fontSize: 13, color: C.accentText, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>Retry</button>
     </div>
   )
 
@@ -637,7 +637,7 @@ export default function CockpitSection({ user, navigateSection }) {
           <button
             type="button"
             onClick={() => navigateSection?.('connectors')}
-            style={{ flexShrink: 0, fontSize: 12, fontWeight: 600, color: C.amberText, background: 'transparent', border: `1px solid ${C.amber}`, borderRadius: 6, padding: '5px 12px', cursor: 'pointer', whiteSpace: 'nowrap' }}
+            style={{ flexShrink: 0, fontSize: 13, fontWeight: 600, color: C.amberText, background: 'transparent', border: `1px solid ${C.amber}`, borderRadius: 6, padding: '5px 12px', cursor: 'pointer', whiteSpace: 'nowrap' }}
           >
             Connect tools →
           </button>
@@ -646,7 +646,7 @@ export default function CockpitSection({ user, navigateSection }) {
 
       {(data.probing_queue || []).length > 0 && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: C.amberBg, border: `1px solid ${C.amber}55`, borderRadius: 4, padding: '10px 14px', marginBottom: 14 }}>
-          <span style={{ fontSize: 12, color: C.amberText, flex: 1 }}>
+          <span style={{ fontSize: 13, color: C.amberText, flex: 1 }}>
             {data.probing_queue.length} blind area{data.probing_queue.length !== 1 ? 's need' : ' needs'} more evidence.
           </span>
           <button
@@ -655,7 +655,7 @@ export default function CockpitSection({ user, navigateSection }) {
               sessionStorage.setItem('sa_probe_question', data.probing_queue[0].question)
               navigateSection?.('home')
             }}
-            style={{ color: C.amberText, background: 'transparent', border: `1px solid ${C.amber}`, borderRadius: 3, padding: '5px 10px', fontSize: 11 }}
+            style={{ color: C.amberText, background: 'transparent', border: `1px solid ${C.amber}`, borderRadius: 3, padding: '5px 10px', fontSize: 13 }}
           >
             Review blind spots →
           </button>
@@ -696,7 +696,7 @@ export default function CockpitSection({ user, navigateSection }) {
           <>
             <div style={{ borderTop: `2px solid ${C.green}`, paddingTop: 8, marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
               <span style={{ fontSize: 13, fontWeight: 500, color: C.greenText }}>Opportunities</span>
-              <span style={{ fontSize: 11, color: C.textFaint }}>{data.opportunities.length} signal{data.opportunities.length !== 1 ? 's' : ''}</span>
+              <span style={{ fontSize: 13, color: C.textFaint }}>{data.opportunities.length} signal{data.opportunities.length !== 1 ? 's' : ''}</span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 20px' }}>
               {data.opportunities.map((text, i) => <OpportunityBrief key={i} text={text} />)}
@@ -708,7 +708,7 @@ export default function CockpitSection({ user, navigateSection }) {
           <>
             <div style={{ borderTop: `2px solid ${C.text}`, paddingTop: 8, marginTop: (data.opportunities || []).length > 0 ? 24 : 4, marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
               <span style={{ fontSize: 13, fontWeight: 500, color: C.text }}>Watching</span>
-              <span style={{ fontSize: 11, color: C.textFaint }}>{watching.length} signal{watching.length !== 1 ? 's' : ''}</span>
+              <span style={{ fontSize: 13, color: C.textFaint }}>{watching.length} signal{watching.length !== 1 ? 's' : ''}</span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 20px' }}>
               {watching.map(alert => <WatchBrief key={alert.id} alert={alert} areaLabel={getAreaLabel(alert.category)} />)}

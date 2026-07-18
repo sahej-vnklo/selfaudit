@@ -82,7 +82,7 @@ const styles = {
     border: '0.5px solid var(--gray-200)', borderRadius: 'var(--radius-sm)',
     fontSize: 14, color: 'var(--black)', background: 'var(--white)'
   },
-  hint: { fontSize: 11, color: 'var(--gray-400)', marginTop: 4 },
+  hint: { fontSize: 13, color: 'var(--gray-400)', marginTop: 4 },
   error: { fontSize: 13, color: '#A32D2D', marginBottom: '1rem' },
   btn: {
     width: '100%', padding: 13, background: 'var(--green)', color: 'white',
@@ -90,7 +90,7 @@ const styles = {
     border: 'none', cursor: 'pointer', marginBottom: '1rem'
   },
   note: {
-    fontSize: 11, color: 'var(--gray-400)', lineHeight: 1.6,
+    fontSize: 13, color: 'var(--gray-400)', lineHeight: 1.6,
     background: 'var(--gray-100)', padding: '10px 12px',
     borderRadius: 'var(--radius-sm)', borderLeft: '2px solid var(--green)'
   }

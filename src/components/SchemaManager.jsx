@@ -114,11 +114,11 @@ function EditUnitModal({ unit, onSave, onClose }) {
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
           <div>
-            <div style={{ fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--ember)', marginBottom: 6 }}>
+            <div style={{ fontSize: 13, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--ember)', marginBottom: 6 }}>
               Edit unit
             </div>
             <div style={{ fontSize: 13, color: 'var(--muted)' }}>
-              ID: <code style={{ fontSize: 12, opacity: 0.7 }}>{unit.id}</code> — locked, used internally
+              ID: <code style={{ fontSize: 13, opacity: 0.7 }}>{unit.id}</code> — locked, used internally
             </div>
           </div>
           <button onClick={onClose} style={{
@@ -153,7 +153,7 @@ function EditUnitModal({ unit, onSave, onClose }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {properties.map(p => (
               <div key={p.key} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ width: 140, fontSize: 12, color: 'var(--muted)', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <div style={{ width: 140, fontSize: 13, color: 'var(--muted)', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
                   {p._core && <LockIcon />}
                   <span style={{ opacity: 0.7 }}>{p.key}</span>
                 </div>
@@ -178,17 +178,17 @@ function EditUnitModal({ unit, onSave, onClose }) {
               value={newPropKey}
               onChange={e => setNewPropKey(e.target.value)}
               placeholder="field_key"
-              style={{ ...inputStyle, flex: 1, fontSize: 12 }}
+              style={{ ...inputStyle, flex: 1, fontSize: 13 }}
             />
             <input
               value={newPropLabel}
               onChange={e => setNewPropLabel(e.target.value)}
               placeholder="Display label"
-              style={{ ...inputStyle, flex: 1, fontSize: 12 }}
+              style={{ ...inputStyle, flex: 1, fontSize: 13 }}
             />
             <button onClick={addCustomProp} style={{
               background: 'var(--ember)', border: 'none', color: 'var(--bg)',
-              borderRadius: 8, padding: '8px 14px', cursor: 'pointer', fontSize: 12, fontWeight: 600, flexShrink: 0,
+              borderRadius: 8, padding: '8px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 600, flexShrink: 0,
             }}>+ Add</button>
           </div>
         </div>
@@ -200,7 +200,7 @@ function EditUnitModal({ unit, onSave, onClose }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {links.map(l => (
                 <div key={l.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 140, fontSize: 12, color: 'var(--muted)', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <div style={{ width: 140, fontSize: 13, color: 'var(--muted)', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
                     <LockIcon />
                     <span style={{ opacity: 0.7 }}>{l.toUnitTypeId}</span>
                   </div>
@@ -244,12 +244,12 @@ function UnitCard({ unit, onEdit }) {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
         <div>
           <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 3 }}>{unit.label}</div>
-          <div style={{ fontSize: 11, color: 'var(--muted)', opacity: 0.6 }}>{unit.id}</div>
+          <div style={{ fontSize: 13, color: 'var(--muted)', opacity: 0.6 }}>{unit.id}</div>
         </div>
         <button onClick={() => onEdit(unit)} style={{
           background: 'transparent', border: '1px solid var(--border)',
           color: 'var(--muted)', borderRadius: 8, padding: '5px 12px',
-          cursor: 'pointer', fontSize: 12, flexShrink: 0,
+          cursor: 'pointer', fontSize: 13, flexShrink: 0,
         }}>Edit</button>
       </div>
 
@@ -261,7 +261,7 @@ function UnitCard({ unit, onEdit }) {
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 2 }}>
           {unit.properties.map(p => (
             <span key={p.key} style={{
-              fontSize: 11, padding: '3px 8px', borderRadius: 6,
+              fontSize: 13, padding: '3px 8px', borderRadius: 6,
               background: p._core ? 'rgba(255,255,255,0.05)' : 'oklch(0.62 0.18 35 / 0.1)',
               border: `1px solid ${p._core ? 'var(--border)' : 'oklch(0.62 0.18 35 / 0.3)'}`,
               color: 'var(--muted)',
@@ -345,7 +345,7 @@ export default function SchemaManager({ user }) {
     <div style={{ padding: '32px 32px 64px', maxWidth: 900, margin: '0 auto' }}>
       {/* Header */}
       <div style={{ marginBottom: 32 }}>
-        <div style={{ fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--ember)', marginBottom: 10 }}>
+        <div style={{ fontSize: 13, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--ember)', marginBottom: 10 }}>
           Schema
         </div>
         <h2 style={{ margin: 0, fontSize: 26, fontWeight: 600, lineHeight: 1.1 }}>
@@ -416,7 +416,7 @@ export default function SchemaManager({ user }) {
 function Section({ title, children }) {
   return (
     <div style={{ marginBottom: 36 }}>
-      <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 14 }}>
+      <div style={{ fontSize: 13, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 14 }}>
         {title}
       </div>
       {children}
@@ -426,7 +426,7 @@ function Section({ title, children }) {
 
 function SectionLabel({ children }) {
   return (
-    <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.09em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 10 }}>
+    <div style={{ fontSize: 13, fontWeight: 600, letterSpacing: '0.09em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 10 }}>
       {children}
     </div>
   )

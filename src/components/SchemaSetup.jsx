@@ -135,12 +135,12 @@ function UnitDrawer({ unit, areaLabel, pendingOverride, onSave, onClose, allUnit
   const [newPropLabel, setNewPropLabel] = useState('')
 
   const SectionLabel = ({ text }) => (
-    <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.09em', color: CARD.label, marginBottom: 6, marginTop: 16 }}>{text}</div>
+    <div style={{ fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.09em', color: CARD.label, marginBottom: 6, marginTop: 16 }}>{text}</div>
   )
 
   const inputStyle = {
     width: '100%', background: CARD.inputBg, border: `1px solid ${CARD.border}`,
-    color: CARD.heading, fontSize: 12, padding: '6px 9px', boxSizing: 'border-box',
+    color: CARD.heading, fontSize: 13, padding: '6px 9px', boxSizing: 'border-box',
   }
 
   const updatePropLabel = (key, val) =>
@@ -181,12 +181,12 @@ function UnitDrawer({ unit, areaLabel, pendingOverride, onSave, onClose, allUnit
     }}>
       <style>{`@keyframes slideInRight { from { transform: translateX(20px); opacity: 0 } to { transform: none; opacity: 1 } }`}</style>
 
-      <button onClick={onClose} style={{ background: 'none', border: 'none', color: CARD.label, fontSize: 12, cursor: 'pointer', marginBottom: 12, padding: 0 }}>
+      <button onClick={onClose} style={{ background: 'none', border: 'none', color: CARD.label, fontSize: 13, cursor: 'pointer', marginBottom: 12, padding: 0 }}>
         ← back
       </button>
 
-      <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.09em', color: C.accentText, marginBottom: 2 }}>{areaLabel}</div>
-      <div style={{ fontSize: 11, color: CARD.label, fontFamily: 'monospace', marginBottom: 14 }}>{unit.id}</div>
+      <div style={{ fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.09em', color: C.accentText, marginBottom: 2 }}>{areaLabel}</div>
+      <div style={{ fontSize: 13, color: CARD.label, fontFamily: 'monospace', marginBottom: 14 }}>{unit.id}</div>
 
       <SectionLabel text="Name" />
       <input value={name} onChange={e => setName(e.target.value)} style={inputStyle} />
@@ -203,7 +203,7 @@ function UnitDrawer({ unit, areaLabel, pendingOverride, onSave, onClose, allUnit
       <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
         {properties.map(p => (
           <div key={p.key} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-            <div style={{ fontSize: 10, color: CARD.label, width: 72, flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.key}</div>
+            <div style={{ fontSize: 13, color: CARD.label, width: 72, flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.key}</div>
             <input value={p.label} onChange={e => updatePropLabel(p.key, e.target.value)} style={{ ...inputStyle, flex: 1 }} />
             {!p._core && (
               <button onClick={() => removeCustomProp(p.key)} style={{ background: 'none', border: 'none', color: CARD.label, cursor: 'pointer', fontSize: 15, padding: '0 2px', lineHeight: 1, flexShrink: 0 }}>×</button>
@@ -212,9 +212,9 @@ function UnitDrawer({ unit, areaLabel, pendingOverride, onSave, onClose, allUnit
         ))}
       </div>
       <div style={{ display: 'flex', gap: 5, marginTop: 7 }}>
-        <input value={newPropKey} onChange={e => setNewPropKey(e.target.value)} placeholder="key" style={{ ...inputStyle, flex: 1, fontSize: 11 }} />
-        <input value={newPropLabel} onChange={e => setNewPropLabel(e.target.value)} placeholder="label" style={{ ...inputStyle, flex: 1, fontSize: 11 }} />
-        <button onClick={addCustomProp} style={{ background: C.accent, border: 'none', color: '#fff', padding: '6px 10px', fontSize: 11, cursor: 'pointer', flexShrink: 0 }}>+</button>
+        <input value={newPropKey} onChange={e => setNewPropKey(e.target.value)} placeholder="key" style={{ ...inputStyle, flex: 1, fontSize: 13 }} />
+        <input value={newPropLabel} onChange={e => setNewPropLabel(e.target.value)} placeholder="label" style={{ ...inputStyle, flex: 1, fontSize: 13 }} />
+        <button onClick={addCustomProp} style={{ background: C.accent, border: 'none', color: '#fff', padding: '6px 10px', fontSize: 13, cursor: 'pointer', flexShrink: 0 }}>+</button>
       </div>
 
       {links.length > 0 && (
@@ -225,7 +225,7 @@ function UnitDrawer({ unit, areaLabel, pendingOverride, onSave, onClose, allUnit
               const targetLabel = allUnits?.[l.to]?.label || l.to
               return (
                 <div key={l.id}>
-                  <div style={{ fontSize: 10, color: CARD.label, marginBottom: 3 }}>→ {targetLabel} <span style={{ opacity: 0.6 }}>({l.cardinality})</span></div>
+                  <div style={{ fontSize: 13, color: CARD.label, marginBottom: 3 }}>→ {targetLabel} <span style={{ opacity: 0.6 }}>({l.cardinality})</span></div>
                   <input value={l.label} onChange={e => updateLinkLabel(l.id, e.target.value)} style={inputStyle} />
                 </div>
               )
@@ -440,7 +440,7 @@ export default function SchemaSetup({ user, onComplete }) {
               </h1>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <label style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.45)', fontWeight: 600 }}>
+                <label style={{ fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.45)', fontWeight: 600 }}>
                   Company name
                 </label>
                 <input
@@ -512,7 +512,7 @@ export default function SchemaSetup({ user, onComplete }) {
                       }}
                     >
                       <div className="sa-ind-label" style={{ fontSize: 13, fontWeight: 700, color: selectedIndustry === ind.id ? '#E8E4DC' : CARD.heading, lineHeight: 1.3, transition: 'color 0.15s' }}>{ind.label}</div>
-                      <div className="sa-ind-desc" style={{ fontSize: 11, color: selectedIndustry === ind.id ? '#888888' : CARD.body, marginTop: 5, lineHeight: 1.4, transition: 'color 0.15s' }}>{ind.description}</div>
+                      <div className="sa-ind-desc" style={{ fontSize: 13, color: selectedIndustry === ind.id ? '#888888' : CARD.body, marginTop: 5, lineHeight: 1.4, transition: 'color 0.15s' }}>{ind.description}</div>
                     </button>
                   ))}
                 </div>
@@ -526,17 +526,17 @@ export default function SchemaSetup({ user, onComplete }) {
                   padding: 24, display: 'flex', flexDirection: 'column', gap: 20,
                   animation: 'slideInRight 0.2s ease', zIndex: 10,
                 }}>
-                  <button onClick={() => setShowCustomPanel(false)} style={{ background: 'none', border: 'none', color: CARD.label, fontSize: 12, cursor: 'pointer', padding: 0, alignSelf: 'flex-start' }}>
+                  <button onClick={() => setShowCustomPanel(false)} style={{ background: 'none', border: 'none', color: CARD.label, fontSize: 13, cursor: 'pointer', padding: 0, alignSelf: 'flex-start' }}>
                     ← back
                   </button>
 
                   <div>
                     <div style={{ fontSize: 16, fontWeight: 700, color: CARD.heading, marginBottom: 6 }}>Tell us more</div>
-                    <div style={{ fontSize: 12, color: CARD.body, lineHeight: 1.5 }}>What does your business do?</div>
+                    <div style={{ fontSize: 13, color: CARD.body, lineHeight: 1.5 }}>What does your business do?</div>
                   </div>
 
                   <div>
-                    <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.09em', color: CARD.label, marginBottom: 6 }}>
+                    <div style={{ fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.09em', color: CARD.label, marginBottom: 6 }}>
                       Description <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span>
                     </div>
                     <textarea
@@ -636,7 +636,7 @@ export default function SchemaSetup({ user, onComplete }) {
                               transition: 'background 0.15s, border-color 0.15s',
                             }} />
                           </div>
-                          <div className="sa-area-desc" style={{ fontSize: 11, color: on ? '#888888' : CARD.body, lineHeight: 1.5, transition: 'color 0.15s' }}>{area.objective}</div>
+                          <div className="sa-area-desc" style={{ fontSize: 13, color: on ? '#888888' : CARD.body, lineHeight: 1.5, transition: 'color 0.15s' }}>{area.objective}</div>
 
                           {on && AREA_CALIBRATION[area.id] && (
                             <div
@@ -645,7 +645,7 @@ export default function SchemaSetup({ user, onComplete }) {
                             >
                               {AREA_CALIBRATION[area.id].map(q => (
                                 <div key={q.ruleId} style={{ marginBottom: 10 }}>
-                                  <div style={{ fontSize: 10, color: '#777', marginBottom: 5, lineHeight: 1.4 }}>{q.question}</div>
+                                  <div style={{ fontSize: 13, color: '#777', marginBottom: 5, lineHeight: 1.4 }}>{q.question}</div>
                                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                     <input
                                       type="number"
@@ -660,15 +660,15 @@ export default function SchemaSetup({ user, onComplete }) {
                                       onMouseDown={e => e.stopPropagation()}
                                       style={{
                                         width: 70, background: '#1A1A1A', border: '1px solid #333',
-                                        color: '#E8E4DC', padding: '5px 8px', fontSize: 12,
+                                        color: '#E8E4DC', padding: '5px 8px', fontSize: 13,
                                         fontFamily: 'inherit', outline: 'none',
                                       }}
                                     />
-                                    <span style={{ fontSize: 11, color: '#555' }}>{q.unit}</span>
+                                    <span style={{ fontSize: 13, color: '#555' }}>{q.unit}</span>
                                   </div>
                                 </div>
                               ))}
-                              <div style={{ fontSize: 10, color: '#444', marginTop: 2 }}>optional — skip if unsure</div>
+                              <div style={{ fontSize: 13, color: '#444', marginTop: 2 }}>optional — skip if unsure</div>
                             </div>
                           )}
                         </button>
@@ -683,7 +683,7 @@ export default function SchemaSetup({ user, onComplete }) {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px', borderTop: `1px solid ${CARD.border}` }}>
               <button
                 onClick={() => transitionTo('industry', () => { setSelectedIndustry(null) })}
-                style={{ background: 'none', border: `1px solid #444`, color: '#AAAAAA', padding: '9px 16px', fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}
+                style={{ background: 'none', border: `1px solid #444`, color: '#AAAAAA', padding: '9px 16px', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}
               >
                 Back
               </button>
@@ -732,7 +732,7 @@ export default function SchemaSetup({ user, onComplete }) {
                     }
                   }}
                   style={{
-                    fontSize: 12, padding: '4px 12px', cursor: 'pointer',
+                    fontSize: 13, padding: '4px 12px', cursor: 'pointer',
                     background: 'transparent', border: `1px solid ${C.accent}`,
                     color: C.accentText, fontFamily: C.sans,
                   }}
@@ -763,7 +763,7 @@ export default function SchemaSetup({ user, onComplete }) {
                         animation: `fadeUp 0.3s ease ${i * 0.06}s both`,
                       }}
                     >
-                      <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.09em', color: C.accentText, marginBottom: 10 }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.09em', color: C.accentText, marginBottom: 10 }}>
                         {area.label}
                       </div>
                       {units.map(unit => {
@@ -790,13 +790,13 @@ export default function SchemaSetup({ user, onComplete }) {
                               transition: 'background 0.12s',
                             }} />
                             <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ fontSize: 12, fontWeight: 600, color: CARD.heading }}>{displayLabel}</div>
-                              <div style={{ fontSize: 11, color: CARD.body, marginTop: 1, lineHeight: 1.4 }}>{unit.description}</div>
+                              <div style={{ fontSize: 13, fontWeight: 600, color: CARD.heading }}>{displayLabel}</div>
+                              <div style={{ fontSize: 13, color: CARD.body, marginTop: 1, lineHeight: 1.4 }}>{unit.description}</div>
                             </div>
                             <div
                               onClick={e => { e.stopPropagation(); setEditingUnit({ areaId, unitId: unit.id }) }}
                               style={{
-                                fontSize: 10, color: C.accentText, cursor: 'pointer',
+                                fontSize: 13, color: C.accentText, cursor: 'pointer',
                                 padding: '2px 6px', border: `1px solid rgba(107,92,231,0.3)`,
                                 flexShrink: 0, opacity: 0, transition: 'opacity 0.1s',
                               }}
@@ -836,20 +836,20 @@ export default function SchemaSetup({ user, onComplete }) {
               background: CARD.bg,
             }}>
               <div>
-                <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.09em', color: CARD.label, marginBottom: 12 }}>Summary</div>
+                <div style={{ fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.09em', color: CARD.label, marginBottom: 12 }}>Summary</div>
                 {[
                   { key: 'Industry', val: industryLabel.split(' / ')[0] },
                   { key: 'Areas', val: selectedAreas.length },
                   { key: 'Units', val: totalUnits },
                 ].map(row => (
                   <div key={row.key} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: `1px solid ${CARD.border}` }}>
-                    <span style={{ fontSize: 12, color: CARD.body }}>{row.key}</span>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: CARD.heading }}>{row.val}</span>
+                    <span style={{ fontSize: 13, color: CARD.body }}>{row.key}</span>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: CARD.heading }}>{row.val}</span>
                   </div>
                 ))}
               </div>
 
-              <div style={{ fontSize: 11, color: CARD.body, lineHeight: 1.6, marginTop: 'auto' }}>
+              <div style={{ fontSize: 13, color: CARD.body, lineHeight: 1.6, marginTop: 'auto' }}>
                 {!totalUnits
                   ? 'Select units inside each area card.'
                   : `${totalUnits} unit${totalUnits !== 1 ? 's' : ''} selected. Ready to confirm.`
@@ -857,7 +857,7 @@ export default function SchemaSetup({ user, onComplete }) {
               </div>
 
               {error && (
-                <div style={{ fontSize: 11, color: '#C05050', background: '#FDF0F0', border: '1px solid #E8C0C0', padding: '8px 10px', lineHeight: 1.5 }}>
+                <div style={{ fontSize: 13, color: '#C05050', background: '#FDF0F0', border: '1px solid #E8C0C0', padding: '8px 10px', lineHeight: 1.5 }}>
                   {error}
                 </div>
               )}
@@ -868,7 +868,7 @@ export default function SchemaSetup({ user, onComplete }) {
                 style={{
                   background: totalUnits && !saving ? C.accent : CARD.inputBg,
                   border: 'none', color: totalUnits && !saving ? '#fff' : CARD.label,
-                  padding: '10px', fontSize: 12, fontWeight: 600,
+                  padding: '10px', fontSize: 13, fontWeight: 600,
                   cursor: totalUnits && !saving ? 'pointer' : 'not-allowed',
                   transition: 'background 0.15s',
                 }}
@@ -878,7 +878,7 @@ export default function SchemaSetup({ user, onComplete }) {
 
               <button
                 onClick={() => transitionTo('areas', () => {})}
-                style={{ background: 'none', border: 'none', color: CARD.label, fontSize: 11, cursor: 'pointer', padding: 0 }}
+                style={{ background: 'none', border: 'none', color: CARD.label, fontSize: 13, cursor: 'pointer', padding: 0 }}
               >
                 ← Change areas
               </button>
@@ -899,7 +899,7 @@ export default function SchemaSetup({ user, onComplete }) {
           <span style={{ fontSize: 20, fontWeight: 700, color: CARD.heading }}>{industryLabel}</span>
           <button
             onClick={() => transitionTo('industry', () => { setSelectedIndustry(null); setSelectedAreas([]); setSelectedUnits({}) })}
-            style={{ background: 'none', border: `1px solid ${CARD.pillBorder}`, color: CARD.label, fontSize: 11, padding: '3px 10px', cursor: 'pointer' }}
+            style={{ background: 'none', border: `1px solid ${CARD.pillBorder}`, color: CARD.label, fontSize: 13, padding: '3px 10px', cursor: 'pointer' }}
           >
             change
           </button>

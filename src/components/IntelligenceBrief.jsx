@@ -286,7 +286,7 @@ function SynthCard({ synthProfile, openSections, setOpenSections }) {
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                   <span style={fieldLabel}>Goal score</span>
-                  <span style={{ fontSize: 12, color: COLORS.accentText }}>{Math.round(synthProfile.goal_score || 0)} / 100</span>
+                  <span style={{ fontSize: 13, color: COLORS.accentText }}>{Math.round(synthProfile.goal_score || 0)} / 100</span>
                 </div>
                 <ProgressBar value={synthProfile.goal_score || 0} />
               </div>
@@ -579,7 +579,7 @@ export default function IntelligenceBrief({ user, profile, theme: themeProp, onP
                       <div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                           <span style={fieldLabel}>Goal score</span>
-                          <span style={{ fontSize: 12, color: COLORS.accentText }}>{Math.round(synthProfile.goal_score || 0)} / 100</span>
+                          <span style={{ fontSize: 13, color: COLORS.accentText }}>{Math.round(synthProfile.goal_score || 0)} / 100</span>
                         </div>
                         <ProgressBar value={synthProfile.goal_score || 0} />
                       </div>
@@ -708,7 +708,7 @@ function SectionCard({ title, isOpen, onToggle, children, onSave, saving, showSa
     <div style={card}>
       <button type="button" onClick={onToggle} style={cardHeader}>
         <div>
-          <div style={{ fontSize: 10, color: COLORS.textFaint, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>
+          <div style={{ fontSize: 13, color: COLORS.textFaint, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>
             {label}
           </div>
           <div style={{ fontSize: 16, color: COLORS.text }}>{title}</div>
@@ -745,7 +745,7 @@ function SummaryBadge({ children }) {
 }
 
 function EmptyInline({ children }) {
-  return <span style={{ color: COLORS.textFaint, fontSize: 12 }}>{children}</span>
+  return <span style={{ color: COLORS.textFaint, fontSize: 13 }}>{children}</span>
 }
 
 function SummaryList({ title, items, empty }) {
@@ -773,7 +773,7 @@ function fieldAffixStyle(side) {
     top: '50%',
     [side]: 12,
     transform: 'translateY(-50%)',
-    fontSize: 12,
+    fontSize: 13,
     color: COLORS.textFaint,
     pointerEvents: 'none',
     zIndex: 1,
@@ -848,14 +848,14 @@ const fieldShell = {
 }
 
 const fieldLabel = {
-  fontSize: 11,
+  fontSize: 13,
   color: COLORS.textFaint,
   textTransform: 'uppercase',
   letterSpacing: '0.06em',
 }
 
 const panelLabel = {
-  fontSize: 10,
+  fontSize: 13,
   color: COLORS.textFaint,
   textTransform: 'uppercase',
   letterSpacing: '0.08em',
@@ -868,7 +868,7 @@ const summaryBadge = {
   border: `0.5px solid ${COLORS.border}`,
   borderRadius: 999,
   padding: '7px 12px',
-  fontSize: 11,
+  fontSize: 13,
   whiteSpace: 'nowrap',
 }
 
@@ -880,7 +880,7 @@ const miniBadge = {
   background: COLORS.surface,
   border: `0.5px solid ${COLORS.border}`,
   color: COLORS.textSecondary,
-  fontSize: 11,
+  fontSize: 13,
 }
 
 const badgeWrap = {
@@ -895,7 +895,7 @@ const saveBtn = {
   border: 'none',
   borderRadius: 8,
   padding: '9px 14px',
-  fontSize: 12,
+  fontSize: 13,
   cursor: 'pointer',
 }
 
@@ -956,5 +956,5 @@ const toastStyle = {
   color: COLORS.accentText,
   padding: '8px 12px',
   borderRadius: 999,
-  fontSize: 12,
+  fontSize: 13,
 }

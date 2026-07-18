@@ -255,7 +255,7 @@ const s = {
       'inset 0 1px 0 rgba(255,255,255,0.75)',
     ].join(', '),
   },
-  eyebrow:     { fontFamily: C.mono, fontSize: 11, letterSpacing: '0.24em', textTransform: 'uppercase', color: C.ember, marginBottom: 18 },
+  eyebrow:     { fontFamily: C.mono, fontSize: 13, letterSpacing: '0.24em', textTransform: 'uppercase', color: C.ember, marginBottom: 18 },
   cardTitle:   { fontFamily: C.serif, fontWeight: 500, fontSize: 'clamp(28px, 3vw, 36px)', lineHeight: 1.05, letterSpacing: '-0.02em', marginBottom: 12, color: C.fg },
   cardSub:     { color: C.fgDim, fontSize: 14, lineHeight: 1.6, marginBottom: 24, maxWidth: '38ch' },
   input: {
@@ -281,7 +281,7 @@ const s = {
     background: 'transparent', color: C.fgDim,
     fontSize: 14, fontWeight: 500, cursor: 'pointer', fontFamily: C.sans,
   },
-  fine:     { fontSize: 11.5, color: C.fgMute, textAlign: 'center', lineHeight: 1.6, marginTop: 0, marginBottom: 0 },
+  fine:     { fontSize: 13, color: C.fgMute, textAlign: 'center', lineHeight: 1.6, marginTop: 0, marginBottom: 0 },
   fineLink: { color: C.ember, textDecoration: 'none', fontWeight: 500 },
   switchBtn: {
     marginTop: 20, background: 'none', border: 'none',

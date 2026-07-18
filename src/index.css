@@ -43,6 +43,11 @@
   --gray-800: #2C2B28;
   --font-heading: 'Titillium Web', -apple-system, 'Helvetica Neue', 'Inter', Arial, sans-serif;
   --font-body: -apple-system, 'Helvetica Neue', 'Inter', Arial, sans-serif;
+  --font-size-floor: 13px;
+  --font-size-body: 14px;
+  --font-size-label: 14px;
+  --font-size-section-heading: 18px;
+  --font-size-panel-heading: 24px;
   /* Backward-compatible aliases used by older page-level styles. */
   --serif: var(--font-heading);
   --sans: var(--font-body);
@@ -67,6 +72,7 @@ html { scroll-behavior: smooth; }
 
 body {
   font-family: var(--sans);
+  font-size: var(--font-size-body);
   background: var(--black);
   color: var(--text-primary);
   line-height: 1.6;

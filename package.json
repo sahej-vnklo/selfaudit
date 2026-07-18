@@ -4,7 +4,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "npm run check:typography",
     "build": "vite build",
+    "check:typography": "node scripts/check-font-floor.mjs",
     "preview": "vite preview",
     "test:critical": "node --test tests/critical-flows.test.mjs",
     "seed:demo": "node scripts/seed-demo.mjs"

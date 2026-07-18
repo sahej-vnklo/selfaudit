@@ -428,7 +428,7 @@ async function downloadArtifactPdf(artifact, artifactLabel) {
 
     const label = document.createElement('div')
     label.textContent = section.label || 'Section'
-    label.style.fontSize = '11px'
+    label.style.fontSize = '13px'
     label.style.letterSpacing = '0.08em'
     label.style.textTransform = 'uppercase'
     label.style.color = '#67765D'
@@ -813,7 +813,7 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
             <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)' }} onClick={() => { if (!sendingArtifact) setShowSendPopup(false) }} />
             <div style={{ position: 'relative', background: 'var(--rich-panel-surface, var(--surface, #1a1a1a))', border: '1px solid var(--border, #333)', borderRadius: 12, padding: '22px 24px', width: '100%', maxWidth: 340, boxShadow: '0 16px 48px rgba(0,0,0,0.4)' }}>
               <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>Send this artifact</div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 18, lineHeight: 1.5 }}>
+              <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 18, lineHeight: 1.5 }}>
                 {isFirstTime ? 'Pick where you want this sent. We\'ll remember your choice.' : 'Send to your saved channel, or pick a different one.'}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 18 }}>
@@ -829,14 +829,14 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
                       <span style={{ color: isSel ? accent : 'var(--text-muted)', flexShrink: 0 }}>{CHANNEL_ICON[ch.type] ?? CHANNEL_ICON.email}</span>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 13, fontWeight: 600, color: isSel ? accent : 'var(--text)' }}>{ch.label}</div>
-                        <div style={{ fontSize: 11, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{channelSubtitle(ch)}</div>
+                        <div style={{ fontSize: 13, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{channelSubtitle(ch)}</div>
                       </div>
                       {isSel && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: accent, flexShrink: 0 }}><path d="M20 6L9 17l-5-5"/></svg>}
                     </button>
                   )
                 })}
               </div>
-              {sendArtifactErr && <div style={{ fontSize: 11, color: 'var(--error, #f87171)', marginBottom: 10 }}>{sendArtifactErr}</div>}
+              {sendArtifactErr && <div style={{ fontSize: 13, color: 'var(--error, #f87171)', marginBottom: 10 }}>{sendArtifactErr}</div>}
               <div style={{ display: 'flex', gap: 8 }}>
                 <button type="button" onClick={doSendArtifact} disabled={sendingArtifact} style={{ flex: 1, padding: '8px 0', borderRadius: 7, border: 'none', background: accent, color: '#fff', fontSize: 13, fontWeight: 600, cursor: sendingArtifact ? 'not-allowed' : 'pointer', opacity: sendingArtifact ? 0.6 : 1 }}>
                   {sendingArtifact ? 'Sending…' : 'Send →'}
@@ -967,7 +967,7 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
           {/* Other formats — quiet secondary section */}
           {ARTIFACT_TYPES.filter((type) => !recommendations.includes(type)).length > 0 && (
             <div style={{ marginTop: 16 }}>
-              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--fg-mute)', marginBottom: 10 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--fg-mute)', marginBottom: 10 }}>
                 Other formats
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
@@ -984,7 +984,7 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
                         border: `0.5px solid ${isSelected ? 'var(--accent, #C8622A)' : 'var(--d-border, rgba(255,255,255,0.08))'}`,
                         borderRadius: 8,
                         padding: '7px 12px',
-                        fontSize: 12,
+                        fontSize: 13,
                         color: isSelected ? 'var(--accent, #C8622A)' : 'var(--fg-mute)',
                         cursor: generating ? 'not-allowed' : 'pointer',
                         opacity: generating ? 0.5 : 1,
@@ -1065,7 +1065,7 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
 
       {pastArtifacts.length > 0 && (
         <div style={ep.pastList}>
-          <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--text-muted)', marginBottom: 4 }}>
+          <div style={{ fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--text-muted)', marginBottom: 4 }}>
             Previous artifacts
           </div>
           {pastArtifacts.map((past) => {
@@ -1083,7 +1083,7 @@ export default function ExecutionPanel({ report, reports = [], userInfo, variant
                     <span style={ep.pastTitle}>{past.title || label}</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{date}</span>
+                    <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{date}</span>
                     <span style={ep.expandIcon}>{isExpanded ? '▲' : '▼'}</span>
                   </div>
                 </div>
@@ -1126,7 +1126,7 @@ const ep = {
   },
   header: { marginBottom: '0.9rem' },
   sectionTitle: {
-    fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.8px',
+    fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.8px',
     color: 'var(--text-muted)', marginBottom: '0.375rem', fontWeight: 500,
   },
   subtitle: {
@@ -1149,7 +1149,7 @@ const ep = {
     flexWrap: 'wrap',
   },
   recommendedEyebrow: {
-    fontSize: 11,
+    fontSize: 13,
     textTransform: 'uppercase',
     letterSpacing: '0.14em',
     color: 'var(--accent)',
@@ -1179,7 +1179,7 @@ const ep = {
     color: 'var(--text)',
     borderRadius: 999,
     padding: '8px 14px',
-    fontSize: 12,
+    fontSize: 13,
     fontFamily: 'inherit',
   },
   auditSelectorStatic: {
@@ -1188,7 +1188,7 @@ const ep = {
     color: 'var(--text-soft)',
     borderRadius: 999,
     padding: '8px 14px',
-    fontSize: 12,
+    fontSize: 13,
   },
   recommendedTitle: {
     fontSize: 32,
@@ -1231,14 +1231,14 @@ const ep = {
     flexShrink: 0,
   },
   recommendedStatLabel: {
-    fontSize: 11,
+    fontSize: 13,
     color: 'var(--text-muted)',
     textTransform: 'uppercase',
     letterSpacing: '0.08em',
     marginBottom: 4,
   },
   recommendedStatValue: {
-    fontSize: 12.5,
+    fontSize: 13,
     color: 'var(--text-soft)',
     lineHeight: 1.45,
   },
@@ -1249,7 +1249,7 @@ const ep = {
     flexWrap: 'wrap',
   },
   recommendedMeta: {
-    fontSize: 12,
+    fontSize: 13,
     color: 'var(--text-muted)',
     letterSpacing: '0.02em',
   },
@@ -1269,7 +1269,7 @@ const ep = {
     marginBottom: 14,
   },
   formatsEyebrow: {
-    fontSize: 11,
+    fontSize: 13,
     color: 'var(--text-muted)',
     textTransform: 'uppercase',
     letterSpacing: '0.12em',
@@ -1359,12 +1359,12 @@ const ep = {
     fontWeight: 500,
   },
   outputCardText: {
-    fontSize: 12,
+    fontSize: 13,
     color: 'var(--text-muted)',
     lineHeight: 1.5,
   },
   recBadge: {
-    fontSize: 10, fontWeight: 600,
+    fontSize: 13, fontWeight: 600,
     color: 'var(--accent)',
     letterSpacing: '0.2px',
   },
@@ -1391,16 +1391,16 @@ const ep = {
     display: 'inline-block',
   },
   errorMsg: {
-    fontSize: 12, color: 'var(--error)', marginTop: 8,
+    fontSize: 13, color: 'var(--error)', marginTop: 8,
   },
   stageError: {
-    fontSize: 12, color: 'var(--error)', marginTop: 8,
+    fontSize: 13, color: 'var(--error)', marginTop: 8,
   },
   stageNotice: {
-    fontSize: 12, color: 'var(--text-muted)', marginTop: 8,
+    fontSize: 13, color: 'var(--text-muted)', marginTop: 8,
   },
   helperText: {
-    fontSize: 12,
+    fontSize: 13,
     color: 'var(--text-muted)',
     marginTop: 8,
   },
@@ -1426,12 +1426,12 @@ const ep = {
     lineHeight: 1.4, marginBottom: 4,
   },
   artifactSummary: {
-    fontSize: 12, color: 'var(--button-text-soft)',
+    fontSize: 13, color: 'var(--button-text-soft)',
     fontStyle: 'italic', lineHeight: 1.5,
   },
   copyAllBtn: {
     flexShrink: 0,
-    fontSize: 11, fontWeight: 500, color: 'var(--button-text)',
+    fontSize: 13, fontWeight: 500, color: 'var(--button-text)',
     background: 'var(--accent-soft)',
     border: '1px solid var(--button-border)',
     borderRadius: 'var(--radius-sm)', padding: '5px 10px',
@@ -1451,11 +1451,11 @@ const ep = {
     justifyContent: 'space-between', marginBottom: 8,
   },
   sectionLabel: {
-    fontSize: 11, fontWeight: 500, color: 'var(--text-muted)',
+    fontSize: 13, fontWeight: 500, color: 'var(--text-muted)',
     textTransform: 'uppercase', letterSpacing: '0.5px',
   },
   copySectionBtn: {
-    fontSize: 11, color: 'var(--text-muted)',
+    fontSize: 13, color: 'var(--text-muted)',
     background: 'none',
     border: '0.5px solid var(--border)',
     borderRadius: 4, padding: '3px 8px', cursor: 'pointer',
@@ -1484,7 +1484,7 @@ const ep = {
     display: 'flex', alignItems: 'center', gap: 10, minWidth: 0,
   },
   pastTypeBadge: {
-    fontSize: 10, fontWeight: 600, color: 'var(--accent)',
+    fontSize: 13, fontWeight: 600, color: 'var(--accent)',
     background: 'var(--accent-soft)',
     borderRadius: 4, padding: '2px 7px',
     letterSpacing: '0.2px', flexShrink: 0,
@@ -1494,7 +1494,7 @@ const ep = {
     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
   },
   expandIcon: {
-    fontSize: 9, color: 'var(--text-muted)', flexShrink: 0, marginLeft: 8,
+    fontSize: 13, color: 'var(--text-muted)', flexShrink: 0, marginLeft: 8,
   },
   pastExpanded: {
     borderTop: '0.5px solid var(--border)',

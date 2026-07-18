@@ -406,7 +406,7 @@ const s = {
 
   eyebrow: {
     fontFamily: C.mono,
-    fontSize: 11,
+    fontSize: 13,
     letterSpacing: '0.24em',
     textTransform: 'uppercase',
     color: C.ember,
@@ -433,7 +433,7 @@ const s = {
   fieldLabel: {
     display: 'block',
     fontFamily: C.mono,
-    fontSize: 10,
+    fontSize: 13,
     letterSpacing: '0.2em',
     textTransform: 'uppercase',
     color: C.fgMute,
@@ -524,7 +524,7 @@ const s = {
   fine: {
     textAlign: 'center',
     marginTop: 22,
-    fontSize: 12,
+    fontSize: 13,
     lineHeight: 1.6,
     color: C.fg,
     maxWidth: '40ch',

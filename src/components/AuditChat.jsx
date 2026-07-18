@@ -567,9 +567,9 @@ function getStyles(theme) {
     },
     logo: { fontSize: 16, fontWeight: 500, letterSpacing: '-0.4px', color: T.text },
     navMeta: { display: 'flex', alignItems: 'center', gap: 6, maxWidth: '60%' },
-    auditingLabel: { fontSize: 12, color: T.textMuted },
+    auditingLabel: { fontSize: 13, color: T.textMuted },
     auditingContext: {
-      fontSize: 12, color: T.textSoft, fontWeight: 500,
+      fontSize: 13, color: T.textSoft, fontWeight: 500,
       overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
     },
     messages: {
@@ -583,7 +583,7 @@ function getStyles(theme) {
       width: 28, height: 28, borderRadius: '50%',
       background: T.accentSoft, color: T.accentText,
       border: `1px solid ${T.borderSoft}`,
-      fontSize: 10, fontWeight: 600,
+      fontSize: 13, fontWeight: 600,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       flexShrink: 0
     },
@@ -643,6 +643,6 @@ function getStyles(theme) {
       transition: 'background 0.15s'
     },
     sendDisabled: { background: T.borderSoft, color: T.textMuted, cursor: 'not-allowed' },
-    hint: { fontSize: 11, color: T.textMuted, textAlign: 'center', maxWidth: 680, margin: '8px auto 0' }
+    hint: { fontSize: 13, color: T.textMuted, textAlign: 'center', maxWidth: 680, margin: '8px auto 0' }
   }
 }

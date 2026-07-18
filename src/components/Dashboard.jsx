@@ -1982,15 +1982,15 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                 <svg style={{ animation: 'spin 1s linear infinite', flexShrink: 0, color: 'var(--fg-mute)' }} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                   <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
                 </svg>
-                <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--fg-mute)' }}>
+                <span style={{ fontSize: 13, fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--fg-mute)' }}>
                   Structuring execution plan — updates automatically
                 </span>
               </div>
               <div style={{ background: 'var(--d-surface)', border: '1px solid var(--d-border)', borderRadius: 12, padding: '22px 24px' }}>
-                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--fg-mute)', marginBottom: 14 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--fg-mute)', marginBottom: 14 }}>
                   Agent Y · Session output
                 </div>
-                <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '0.72rem', lineHeight: 1.85, color: 'var(--text)', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                <div style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '0.8125rem', lineHeight: 1.85, color: 'var(--text)', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
                   {agentYStream}
                 </div>
               </div>
@@ -2098,11 +2098,11 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                     <section className="dash-card" aria-label="Agent Y — Solution engine">
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: '6px', color: 'var(--muted)' }}>
                         <div style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text)' }}>Audit complete.</div>
-                        <div style={{ fontSize: '0.78rem' }}>Check Results in the nav bar.</div>
+                        <div style={{ fontSize: '0.8125rem' }}>Check Results in the nav bar.</div>
                         <button
                           type="button"
                           onClick={onAuditCompletedAck}
-                          style={{ marginTop: '12px', padding: '4px 14px', borderRadius: '20px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', fontSize: '0.72rem', cursor: 'pointer' }}
+                          style={{ marginTop: '12px', padding: '4px 14px', borderRadius: '20px', border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', fontSize: '0.8125rem', cursor: 'pointer' }}
                         >
                           Dismiss
                         </button>
@@ -2117,7 +2117,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                       let color = 'var(--text)'
                       let fontWeight = 'normal'
                       let opacity = 1
-                      let fontSize = '0.73rem'
+                      let fontSize = '0.8125rem'
                       let marginTop = 0
 
                       if (/^CRITICAL/.test(line))  { color = 'var(--red-text)'; fontWeight = '700' }
@@ -2125,11 +2125,11 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                       else if (/^MEDIUM/.test(line)){ color = 'var(--amber-text)'; fontWeight = '600' }
                       else if (/^LOW/.test(line))  { color = 'var(--text-muted)' }
                       else if (/^(DIAGNOSIS|ROOT CAUSE|WHAT TO STOP|DATA GAPS)/.test(line)) {
-                        color = 'var(--text)'; fontWeight = '700'; fontSize = '0.7rem'
+                        color = 'var(--text)'; fontWeight = '700'; fontSize = '0.8125rem'
                         marginTop = 12
                       }
                       else if (/^(SOLUTIONS|STOP DOING|EXECUTION ORDER|CONTINGENT ON)/.test(line)) {
-                        color = 'var(--text)'; fontWeight = '700'; fontSize = '0.7rem'
+                        color = 'var(--text)'; fontWeight = '700'; fontSize = '0.8125rem'
                         marginTop = 12
                       }
                       else if (/^(IMMEDIATE|BUILD NEXT)/.test(line)) {
@@ -2139,7 +2139,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                         return <div key={i} style={{ height: 1, background: 'var(--border)', margin: '4px 0 8px' }} />
                       }
                       else if (/^(Evidence:|Addresses:|Effort:|Owner:|Confidence:)/.test(line)) {
-                        color = 'var(--text-muted)'; fontSize = '0.68rem'
+                        color = 'var(--text-muted)'; fontSize = '0.8125rem'
                       }
 
                       return (
@@ -2166,7 +2166,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                               <div className="card-eyebrow" style={{ color: '#4ade80' }}>Agent X</div>
                               <h2 className="card-title">Diagnostic engine</h2>
                             </div>
-                            <div className="card-status" style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, gap: 6 }}>
+                            <div className="card-status" style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 13, gap: 6 }}>
                               <span style={{
                                 width: 7, height: 7, borderRadius: '50%', display: 'inline-block', flexShrink: 0,
                                 background: xActive ? '#4ade80' : xComplete ? '#4ade80' : 'var(--d-border2)',
@@ -2188,12 +2188,12 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                           <div style={{ flex: 1, padding: '10px 12px 12px', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
                             <div
                               ref={agentXScrollRef}
-                              style={{ flex: 1, overflow: 'auto', minHeight: 0, border: '1px solid var(--d-border)', borderRadius: 8, padding: '14px 16px', fontFamily: '"JetBrains Mono", ui-monospace, monospace', fontSize: '0.72rem', lineHeight: 1.85, wordBreak: 'break-word' }}
+                              style={{ flex: 1, overflow: 'auto', minHeight: 0, border: '1px solid var(--d-border)', borderRadius: 8, padding: '14px 16px', fontFamily: '"JetBrains Mono", ui-monospace, monospace', fontSize: '0.8125rem', lineHeight: 1.85, wordBreak: 'break-word' }}
                             >
                               {/* Past turns — compact history */}
                               {sessionLog.map((turn, i) => (
                                 <div key={i} style={{ marginBottom: 10, paddingBottom: 10, borderBottom: '1px solid rgba(74,222,128,0.08)', opacity: 0.5 }}>
-                                  <div style={{ color: 'rgba(74,222,128,0.5)', fontSize: '0.6rem', marginBottom: 4, letterSpacing: '0.08em' }}>[{turn.label}] {String(turn.query || '').slice(0, 60)}</div>
+                                  <div style={{ color: 'rgba(74,222,128,0.5)', fontSize: '0.8125rem', marginBottom: 4, letterSpacing: '0.08em' }}>[{turn.label}] {String(turn.query || '').slice(0, 60)}</div>
                                   {renderTerminalLines(String(turn.xOutput || '').split('\n').slice(0, 4).join('\n'), '#4ade80')}
                                   {(turn.xOutput || '').split('\n').length > 4 && <div style={{ color: 'rgba(74,222,128,0.3)' }}>…</div>}
                                 </div>
@@ -2222,7 +2222,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                               <div className="card-eyebrow" style={{ color: '#fb923c' }}>Agent Y</div>
                               <h2 className="card-title">Solution engine</h2>
                             </div>
-                            <div className="card-status" style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, gap: 6 }}>
+                            <div className="card-status" style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 13, gap: 6 }}>
                               <span style={{
                                 width: 7, height: 7, borderRadius: '50%', display: 'inline-block', flexShrink: 0,
                                 background: yActive ? '#fb923c' : yComplete ? '#fb923c' : 'var(--d-border2)',
@@ -2244,12 +2244,12 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                           <div style={{ flex: 1, padding: '10px 12px 12px', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
                             <div
                               ref={agentYScrollRef}
-                              style={{ flex: 1, overflow: 'auto', minHeight: 0, border: '1px solid var(--d-border)', borderRadius: 8, padding: '14px 16px', fontFamily: '"JetBrains Mono", ui-monospace, monospace', fontSize: '0.72rem', lineHeight: 1.85, wordBreak: 'break-word' }}
+                              style={{ flex: 1, overflow: 'auto', minHeight: 0, border: '1px solid var(--d-border)', borderRadius: 8, padding: '14px 16px', fontFamily: '"JetBrains Mono", ui-monospace, monospace', fontSize: '0.8125rem', lineHeight: 1.85, wordBreak: 'break-word' }}
                             >
                               {/* Past turns — compact history */}
                               {sessionLog.map((turn, i) => (
                                 <div key={i} style={{ marginBottom: 10, paddingBottom: 10, borderBottom: '1px solid rgba(251,146,60,0.08)', opacity: 0.5 }}>
-                                  <div style={{ color: 'rgba(251,146,60,0.5)', fontSize: '0.6rem', marginBottom: 4, letterSpacing: '0.08em' }}>[{turn.yLabel}] {String(turn.query || '').slice(0, 60)}</div>
+                                  <div style={{ color: 'rgba(251,146,60,0.5)', fontSize: '0.8125rem', marginBottom: 4, letterSpacing: '0.08em' }}>[{turn.yLabel}] {String(turn.query || '').slice(0, 60)}</div>
                                   {turn.yOutput && turn.yOutput !== '__gathering__'
                                     ? renderTerminalLines(String(turn.yOutput).split('\n').slice(0, 4).join('\n'), '#fb923c')
                                     : <div style={{ color: 'rgba(251,146,60,0.3)' }}>{'> gathering context...'}</div>}
@@ -2277,7 +2277,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                                           border: '0.5px solid rgba(251,146,60,0.25)',
                                           borderRadius: 6,
                                           color: 'rgba(251,146,60,0.7)',
-                                          fontSize: '0.65rem',
+                                          fontSize: '0.8125rem',
                                           letterSpacing: '0.08em',
                                           padding: '5px 10px',
                                           cursor: 'pointer',
@@ -2332,12 +2332,12 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                           <div style={{ paddingBottom: 14, borderBottom: '1px solid var(--d-border)' }}>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                               <div>
-                                <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '0.68rem', color: 'var(--ember)', letterSpacing: '0.04em', marginRight: 8 }}>/diagnose</span>
-                                <span style={{ fontSize: '0.75rem', color: 'var(--fg-dim)' }}>finds root causes, not symptoms</span>
+                                <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '0.8125rem', color: 'var(--ember)', letterSpacing: '0.04em', marginRight: 8 }}>/diagnose</span>
+                                <span style={{ fontSize: '0.8125rem', color: 'var(--fg-dim)' }}>finds root causes, not symptoms</span>
                               </div>
                               <div>
-                                <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '0.68rem', color: 'rgba(74,222,128,0.6)', letterSpacing: '0.04em', marginRight: 8 }}>/scan</span>
-                                <span style={{ fontSize: '0.75rem', color: 'var(--fg-dim)' }}>investigates a specific question with evidence</span>
+                                <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '0.8125rem', color: 'rgba(74,222,128,0.6)', letterSpacing: '0.04em', marginRight: 8 }}>/scan</span>
+                                <span style={{ fontSize: '0.8125rem', color: 'var(--fg-dim)' }}>investigates a specific question with evidence</span>
                               </div>
                             </div>
                           </div>
@@ -2360,12 +2360,12 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                           <div style={{ paddingBottom: 14, borderBottom: '1px solid var(--d-border)' }}>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                               <div>
-                                <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '0.68rem', color: 'var(--ember)', letterSpacing: '0.04em', marginRight: 8 }}>/goal</span>
-                                <span style={{ fontSize: '0.75rem', color: 'var(--fg-dim)' }}>maps the gap and sequences the fastest path</span>
+                                <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '0.8125rem', color: 'var(--ember)', letterSpacing: '0.04em', marginRight: 8 }}>/goal</span>
+                                <span style={{ fontSize: '0.8125rem', color: 'var(--fg-dim)' }}>maps the gap and sequences the fastest path</span>
                               </div>
                               <div>
-                                <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '0.68rem', color: 'rgba(251,146,60,0.6)', letterSpacing: '0.04em', marginRight: 8 }}>/scan</span>
-                                <span style={{ fontSize: '0.75rem', color: 'var(--fg-dim)' }}>gives 3 quick actions from the investigation</span>
+                                <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: '0.8125rem', color: 'rgba(251,146,60,0.6)', letterSpacing: '0.04em', marginRight: 8 }}>/scan</span>
+                                <span style={{ fontSize: '0.8125rem', color: 'var(--fg-dim)' }}>gives 3 quick actions from the investigation</span>
                               </div>
                             </div>
                           </div>
@@ -2416,7 +2416,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                               background: 'transparent',
                               color: 'var(--fg)',
                               fontFamily: '"JetBrains Mono", monospace',
-                              fontSize: '0.72rem',
+                              fontSize: '0.8125rem',
                               letterSpacing: '0.05em',
                               cursor: 'pointer',
                               transition: 'color .15s, background .15s',
@@ -2456,7 +2456,7 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                         <i style={{ width: 6, height: 6, borderRadius: '50%', display: 'block', background: agentState === 'agent_y' || agentState === 'complete' ? '#4CAF50' : 'rgba(255,255,255,0.15)' }} />
                       </span>
                       {isEnginesRunning && (
-                        <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 11, color: 'var(--fg-mute)', letterSpacing: '0.03em' }}>
+                        <span style={{ fontFamily: '"JetBrains Mono", monospace', fontSize: 13, color: 'var(--fg-mute)', letterSpacing: '0.03em' }}>
                           {agentState === 'planning' ? 'thinking…'
                             : agentState === 'agent_x' ? `${currentMode?.xLabel || 'x'}…`
                             : `${currentMode?.yLabel || 'y'}…`}
@@ -2697,18 +2697,18 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                                     <p style={{ fontSize: 14, fontWeight: 600, color: G.text, margin: '0 0 4px', lineHeight: 1.4 }}>
                                       {call.headline || 'Voice call'}
                                     </p>
-                                    <p style={{ fontSize: 12, color: G.textMuted, margin: 0 }}>
+                                    <p style={{ fontSize: 13, color: G.textMuted, margin: 0 }}>
                                       {date ? date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'} · {duration}
                                     </p>
                                   </div>
                                   <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
                                     {approvedCount > 0 && (
-                                      <span style={{ fontSize: 11, fontWeight: 600, background: G.accentLight, color: G.accentText, borderRadius: 20, padding: '2px 10px' }}>
+                                      <span style={{ fontSize: 13, fontWeight: 600, background: G.accentLight, color: G.accentText, borderRadius: 20, padding: '2px 10px' }}>
                                         {approvedCount} approved
                                       </span>
                                     )}
                                     {dismissedCount > 0 && (
-                                      <span style={{ fontSize: 11, fontWeight: 600, background: G.surface3, color: G.textMuted, borderRadius: 20, padding: '2px 10px' }}>
+                                      <span style={{ fontSize: 13, fontWeight: 600, background: G.surface3, color: G.textMuted, borderRadius: 20, padding: '2px 10px' }}>
                                         {dismissedCount} dismissed
                                       </span>
                                     )}
@@ -2720,14 +2720,14 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
                                 {topics.length > 0 && (
                                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: decisions.length ? 8 : 0 }}>
                                     {topics.map((t, i) => (
-                                      <span key={i} style={{ fontSize: 11, background: G.surface3, color: G.textMuted, borderRadius: 20, padding: '2px 10px' }}>{t}</span>
+                                      <span key={i} style={{ fontSize: 13, background: G.surface3, color: G.textMuted, borderRadius: 20, padding: '2px 10px' }}>{t}</span>
                                     ))}
                                   </div>
                                 )}
                                 {decisions.length > 0 && (
                                   <div>
                                     {decisions.map((d, i) => (
-                                      <p key={i} style={{ fontSize: 12, color: G.text, margin: i === 0 ? 0 : '4px 0 0', paddingLeft: 10, borderLeft: `2px solid ${G.accent}` }}>{d}</p>
+                                      <p key={i} style={{ fontSize: 13, color: G.text, margin: i === 0 ? 0 : '4px 0 0', paddingLeft: 10, borderLeft: `2px solid ${G.accent}` }}>{d}</p>
                                     ))}
                                   </div>
                                 )}
@@ -3701,10 +3701,10 @@ function ThresholdEditorPanel({ userId }) {
           <button
             type="button"
             onClick={() => setOpen((prev) => ({ ...prev, [area.id]: !prev[area.id] }))}
-            style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'none', border: 'none', padding: '8px 0', cursor: 'pointer', color: 'var(--text)', fontSize: '0.8rem', fontWeight: 500 }}
+            style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'none', border: 'none', padding: '8px 0', cursor: 'pointer', color: 'var(--text)', fontSize: '0.8125rem', fontWeight: 500 }}
           >
             {area.label}
-            <span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>{open[area.id] ? '▲' : '▼'}</span>
+            <span style={{ fontSize: '0.8125rem', color: 'var(--muted)' }}>{open[area.id] ? '▲' : '▼'}</span>
           </button>
           {open[area.id] && (
             <div style={{ borderTop: '0.5px solid var(--border)', paddingTop: 8 }}>
@@ -3713,7 +3713,7 @@ function ThresholdEditorPanel({ userId }) {
                 const isOverridden = overrides[rule.ruleId] !== undefined
                 return (
                   <div key={rule.ruleId} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
-                    <span style={{ flex: 1, fontSize: '0.77rem', color: 'var(--text-soft)', minWidth: 160 }}>{rule.label}</span>
+                    <span style={{ flex: 1, fontSize: '0.8125rem', color: 'var(--text-soft)', minWidth: 160 }}>{rule.label}</span>
                     <input
                       type="number"
                       min={rule.min}
@@ -3722,17 +3722,17 @@ function ThresholdEditorPanel({ userId }) {
                       defaultValue={currentValue}
                       key={`${rule.ruleId}-${currentValue}`}
                       onBlur={(e) => handleBlur(rule.ruleId, area.id, rule.ruleId.split(':')[1] ?? '', e.target.value, rule.defaultValue)}
-                      style={{ width: 72, padding: '4px 6px', borderRadius: 6, border: `1px solid ${isOverridden ? 'var(--accent)' : 'var(--border)'}`, background: 'var(--input-bg, var(--surface))', color: 'var(--text)', fontSize: '0.78rem' }}
+                      style={{ width: 72, padding: '4px 6px', borderRadius: 6, border: `1px solid ${isOverridden ? 'var(--accent)' : 'var(--border)'}`, background: 'var(--input-bg, var(--surface))', color: 'var(--text)', fontSize: '0.8125rem' }}
                     />
-                    <span style={{ fontSize: '0.72rem', color: 'var(--muted)', width: 36 }}>{rule.unit}</span>
-                    {saving[rule.ruleId] && <span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>…</span>}
-                    {saved[rule.ruleId]  && <span style={{ fontSize: '0.7rem', color: 'var(--accent)' }}>Saved</span>}
+                    <span style={{ fontSize: '0.8125rem', color: 'var(--muted)', width: 36 }}>{rule.unit}</span>
+                    {saving[rule.ruleId] && <span style={{ fontSize: '0.8125rem', color: 'var(--muted)' }}>…</span>}
+                    {saved[rule.ruleId]  && <span style={{ fontSize: '0.8125rem', color: 'var(--accent)' }}>Saved</span>}
                     {isOverridden && !saving[rule.ruleId] && !saved[rule.ruleId] && (
-                      <button type="button" onClick={() => handleReset(rule.ruleId, rule.defaultValue)} style={{ fontSize: '0.7rem', color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}>
+                      <button type="button" onClick={() => handleReset(rule.ruleId, rule.defaultValue)} style={{ fontSize: '0.8125rem', color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}>
                         reset
                       </button>
                     )}
-                    {!isOverridden && <span style={{ fontSize: '0.7rem', color: 'var(--muted)', opacity: 0.5 }}>default</span>}
+                    {!isOverridden && <span style={{ fontSize: '0.8125rem', color: 'var(--muted)', opacity: 0.5 }}>default</span>}
                   </div>
                 )
               })}
@@ -3768,7 +3768,7 @@ function OversightSummary({ healthIntel, goalState, intelligenceUnlocked }) {
   const noData = !summary && actions.length === 0 && risks.length === 0 && !hasGoal
 
   const rowStyle = { display: 'flex', gap: 8, alignItems: 'flex-start', fontSize: 13, color: G.textSecondary, lineHeight: 1.5 }
-  const sectionTitle = { fontSize: 11, fontWeight: 700, color: G.textFaint, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 10 }
+  const sectionTitle = { fontSize: 13, fontWeight: 700, color: G.textFaint, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 10 }
   const section = { marginTop: 24 }
 
   return (
@@ -3781,7 +3781,7 @@ function OversightSummary({ healthIntel, goalState, intelligenceUnlocked }) {
           {summary && (
             <div>
               <p style={{ fontSize: 14, color: G.text, lineHeight: 1.6, margin: '0 0 12px' }}>{summary}</p>
-              <div style={{ display: 'flex', gap: 20, fontSize: 12, color: G.textMuted }}>
+              <div style={{ display: 'flex', gap: 20, fontSize: 13, color: G.textMuted }}>
                 <span><strong style={{ color: G.text }}>{areasCount}</strong> areas with signals</span>
                 <span><strong style={{ color: G.text }}>{alertCount}</strong> alert candidates</span>
                 <span><strong style={{ color: G.text }}>{diagnosesCount}</strong> diagnoses</span>
@@ -3796,7 +3796,7 @@ function OversightSummary({ healthIntel, goalState, intelligenceUnlocked }) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {actions.map((action, i) => (
                   <div key={i} style={rowStyle}>
-                    <span style={{ color: G.accent, fontWeight: 700, flexShrink: 0, fontSize: 12, minWidth: 16 }}>{i + 1}</span>
+                    <span style={{ color: G.accent, fontWeight: 700, flexShrink: 0, fontSize: 13, minWidth: 16 }}>{i + 1}</span>
                     <span>{action}</span>
                   </div>
                 ))}
@@ -3842,7 +3842,7 @@ function OversightSummary({ healthIntel, goalState, intelligenceUnlocked }) {
               <div style={{ height: 4, borderRadius: 2, background: G.border, overflow: 'hidden', marginBottom: 8 }}>
                 <div style={{ height: '100%', width: `${progress}%`, background: G.accent, borderRadius: 2, transition: 'width 0.4s ease' }} />
               </div>
-              <div style={{ display: 'flex', gap: 20, fontSize: 12, color: G.textMuted }}>
+              <div style={{ display: 'flex', gap: 20, fontSize: 13, color: G.textMuted }}>
                 <span>{typeof goalState.progress === 'number' ? `${progress}% complete` : 'Progress not quantified yet'}</span>
                 {deadline && <span>Due {deadline}</span>}
                 {goalState.goal_area_id && <span style={{ color: G.accent }}>{goalState.goal_area_id}</span>}
@@ -3919,7 +3919,7 @@ function OperationalOversightSection({ intelligenceUnlocked, healthIntel, userId
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       {trend && trend.direction !== 'stable' && (
-                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: trendColor }}>
+                        <span style={{ fontSize: '0.8125rem', fontWeight: 600, color: trendColor }}>
                           {trend.label}
                         </span>
                       )}
@@ -4207,7 +4207,7 @@ function BusinessHealthPanel({ latestDomains, healthIntel, goalState, right = nu
               <div style={styles.donutScore}>{score}</div>
             </div>
             <div>
-              <div style={{ fontSize: 12, color: G.textFaint, textTransform: 'uppercase', letterSpacing: '0.06em' }}>overall score</div>
+              <div style={{ fontSize: 13, color: G.textFaint, textTransform: 'uppercase', letterSpacing: '0.06em' }}>overall score</div>
               <div style={{ fontSize: 15, color: G.text, marginTop: 6 }}>
                 {score >= 70 ? 'Healthy foundation' : score >= 45 ? 'Mixed signals' : 'Structural risk'}
               </div>
@@ -4281,7 +4281,7 @@ function BusinessHealthPanel({ latestDomains, healthIntel, goalState, right = nu
               <div style={styles.businessHealthSectionTitle}>active risks</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {activeRisks.map((risk, i) => (
-                  <div key={i} style={{ fontSize: 12, color: G.textSecondary, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                  <div key={i} style={{ fontSize: 13, color: G.textSecondary, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
                     <span style={{ color: G.red, flexShrink: 0 }}>↑</span>
                     <span>{risk}</span>
                   </div>
@@ -4295,7 +4295,7 @@ function BusinessHealthPanel({ latestDomains, healthIntel, goalState, right = nu
               <div style={styles.businessHealthSectionTitle}>unresolved actions</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {unresolvedActions.map((action, i) => (
-                  <div key={i} style={{ fontSize: 12, color: G.textSecondary, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                  <div key={i} style={{ fontSize: 13, color: G.textSecondary, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
                     <span style={{ color: G.amber, flexShrink: 0 }}>→</span>
                     <span>{action}</span>
                   </div>
@@ -4528,13 +4528,13 @@ function DecisionLogModal({ feedback, setFeedback, onProceed, onSkip }) {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, padding: '28px 28px 24px', maxWidth: 520, width: '100%', boxShadow: '0 24px 60px rgba(0,0,0,0.4)' }}>
-        <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--accent)', fontWeight: 600, marginBottom: 8 }}>
+        <div style={{ fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--accent)', fontWeight: 600, marginBottom: 8 }}>
           Before we start
         </div>
         <h2 style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--text)', margin: '0 0 6px' }}>
           What happened with last session?
         </h2>
-        <p style={{ fontSize: '0.8rem', color: 'var(--text-soft)', margin: '0 0 20px', lineHeight: 1.6 }}>
+        <p style={{ fontSize: '0.8125rem', color: 'var(--text-soft)', margin: '0 0 20px', lineHeight: 1.6 }}>
           Quick check-in — mark what moved. This sharpens the next diagnosis.
         </p>
 
@@ -4551,7 +4551,7 @@ function DecisionLogModal({ feedback, setFeedback, onProceed, onSkip }) {
                     type="button"
                     onClick={() => updateFeedback(idx, 'status', item.status === opt.value ? '' : opt.value)}
                     style={{
-                      padding: '4px 10px', borderRadius: 20, fontSize: '0.72rem', fontWeight: 500,
+                      padding: '4px 10px', borderRadius: 20, fontSize: '0.8125rem', fontWeight: 500,
                       border: `1px solid ${item.status === opt.value ? 'var(--accent)' : 'var(--border)'}`,
                       background: item.status === opt.value ? 'var(--accent-soft)' : 'transparent',
                       color: item.status === opt.value ? 'var(--accent)' : 'var(--text-muted)',
@@ -4568,7 +4568,7 @@ function DecisionLogModal({ feedback, setFeedback, onProceed, onSkip }) {
                   placeholder="What happened? (optional)"
                   value={item.outcome}
                   onChange={(e) => updateFeedback(idx, 'outcome', e.target.value)}
-                  style={{ width: '100%', boxSizing: 'border-box', padding: '6px 10px', borderRadius: 7, border: '1px solid var(--border)', background: 'var(--input-bg, var(--surface))', color: 'var(--text)', fontSize: '0.78rem', marginTop: 4 }}
+                  style={{ width: '100%', boxSizing: 'border-box', padding: '6px 10px', borderRadius: 7, border: '1px solid var(--border)', background: 'var(--input-bg, var(--surface))', color: 'var(--text)', fontSize: '0.8125rem', marginTop: 4 }}
                 />
               )}
             </div>
@@ -4579,7 +4579,7 @@ function DecisionLogModal({ feedback, setFeedback, onProceed, onSkip }) {
           <button
             type="button"
             onClick={onSkip}
-            style={{ padding: '7px 14px', borderRadius: 8, border: 'none', background: 'transparent', color: 'var(--text-muted)', fontSize: '0.8rem', cursor: 'pointer' }}
+            style={{ padding: '7px 14px', borderRadius: 8, border: 'none', background: 'transparent', color: 'var(--text-muted)', fontSize: '0.8125rem', cursor: 'pointer' }}
           >
             Skip
           </button>
@@ -4625,7 +4625,7 @@ function FounderCheckInPanel({ draft, setDraft, saving, error, reportDate, onTog
             const fb = getFeedback(action)
             return (
               <div key={action} style={{ marginBottom: '10px' }}>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text)', marginBottom: '4px', lineHeight: 1.4 }}>{action}</div>
+                <div style={{ fontSize: '0.8125rem', color: 'var(--text)', marginBottom: '4px', lineHeight: 1.4 }}>{action}</div>
                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                   {ACTION_FEEDBACK_STATUSES.map(({ value, label }) => (
                     <button
@@ -4638,7 +4638,7 @@ function FounderCheckInPanel({ draft, setDraft, saving, error, reportDate, onTog
                         border: `1px solid ${fb.status === value ? 'var(--accent)' : 'var(--border)'}`,
                         background: fb.status === value ? 'var(--accent)' : 'transparent',
                         color: fb.status === value ? 'var(--button-text)' : 'var(--muted)',
-                        fontSize: '0.72rem',
+                        fontSize: '0.8125rem',
                         cursor: 'pointer',
                       }}
                     >
@@ -4652,7 +4652,7 @@ function FounderCheckInPanel({ draft, setDraft, saving, error, reportDate, onTog
                     value={fb.outcome}
                     onChange={(e) => setFeedback(action, { outcome: e.target.value })}
                     placeholder={fb.status === 'failed' ? 'What blocked it?' : 'Where does it stand?'}
-                    style={{ ...styles.checkInTextarea, marginTop: '4px', padding: '5px 8px', minHeight: 'unset', height: '32px', fontSize: '0.78rem' }}
+                    style={{ ...styles.checkInTextarea, marginTop: '4px', padding: '5px 8px', minHeight: 'unset', height: '32px', fontSize: '0.8125rem' }}
                   />
                 )}
               </div>
@@ -6223,7 +6223,7 @@ function ConnectorsSection({ user }) {
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
           style={{
-            fontSize: 12,
+            fontSize: 13,
             padding: '5px 10px',
             border: '0.5px solid var(--d-border, rgba(0,0,0,0.15))',
             borderRadius: 8,
@@ -6253,7 +6253,7 @@ function ConnectorsSection({ user }) {
             border: '0.5px solid var(--d-border, rgba(0,0,0,0.15))',
             borderRadius: 8,
             padding: '6px 12px',
-            fontSize: 12,
+            fontSize: 13,
             color: 'var(--text)',
             fontFamily: 'inherit',
             outline: 'none',
@@ -6296,25 +6296,25 @@ function ConnectorsSection({ user }) {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div style={{ width: 38, height: 38, borderRadius: 10, overflow: 'hidden', flexShrink: 0, boxShadow: '0 1px 4px rgba(0,0,0,0.1)' }}>
                       {CONNECTOR_LOGOS[connector.id] ?? (
-                        <div style={{ width: 38, height: 38, background: 'var(--d-surface, #eee)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: 'var(--fg-mute)' }}>
+                        <div style={{ width: 38, height: 38, background: 'var(--d-surface, #eee)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: 'var(--fg-mute)' }}>
                           {connector.name.slice(0, 2).toUpperCase()}
                         </div>
                       )}
                     </div>
                     <div>
                       <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', lineHeight: 1.2 }}>{connector.name}</div>
-                      <div style={{ fontSize: 10, color: 'var(--fg-mute)', textTransform: 'uppercase', letterSpacing: '0.07em', marginTop: 1 }}>{connector.category}</div>
+                      <div style={{ fontSize: 13, color: 'var(--fg-mute)', textTransform: 'uppercase', letterSpacing: '0.07em', marginTop: 1 }}>{connector.category}</div>
                     </div>
                   </div>
 
                   {/* Action button */}
                   {connected ? (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, color: '#4CAF50', fontWeight: 500 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: '#4CAF50', fontWeight: 500 }}>
                       <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#4CAF50' }} />
                       Connected
                     </div>
                   ) : connector.status === 'coming_soon' ? (
-                    <div style={{ fontSize: 10, color: 'var(--fg-mute)', background: 'var(--d-border, rgba(255,255,255,0.07))', borderRadius: 6, padding: '3px 8px', whiteSpace: 'nowrap', fontWeight: 500, letterSpacing: '0.03em' }}>
+                    <div style={{ fontSize: 13, color: 'var(--fg-mute)', background: 'var(--d-border, rgba(255,255,255,0.07))', borderRadius: 6, padding: '3px 8px', whiteSpace: 'nowrap', fontWeight: 500, letterSpacing: '0.03em' }}>
                       Soon
                     </div>
                   ) : (
@@ -6354,7 +6354,7 @@ function ConnectorsSection({ user }) {
                 </div>
 
                 {/* Description */}
-                <div style={{ fontSize: 12, color: 'var(--fg-mute)', lineHeight: 1.5 }}>{connector.description}</div>
+                <div style={{ fontSize: 13, color: 'var(--fg-mute)', lineHeight: 1.5 }}>{connector.description}</div>
 
                 {/* Remove button for connected */}
                 {connected && (
@@ -6363,7 +6363,7 @@ function ConnectorsSection({ user }) {
                     disabled={busy}
                     onClick={() => disconnect(connector.id)}
                     style={{
-                      fontSize: 11,
+                      fontSize: 13,
                       color: 'var(--fg-mute)',
                       background: 'transparent',
                       border: '0.5px solid var(--d-border, rgba(0,0,0,0.12))',
@@ -6705,23 +6705,23 @@ const agent = {
   },
   resultHeader: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16, alignItems: 'center' },
   intentTag: {
-    background: G.surface2, color: G.textSecondary, fontSize: 11,
+    background: G.surface2, color: G.textSecondary, fontSize: 13,
     padding: '3px 10px', borderRadius: 20, textTransform: 'uppercase', letterSpacing: '0.06em',
   },
   priorityTag: {
-    fontSize: 11, padding: '3px 10px', borderRadius: 20,
+    fontSize: 13, padding: '3px 10px', borderRadius: 20,
     border: '1px solid', textTransform: 'uppercase', letterSpacing: '0.06em',
   },
-  confidenceTag: { fontSize: 12, fontWeight: 500 },
-  severityTag: { fontSize: 12, color: G.textMuted },
+  confidenceTag: { fontSize: 13, fontWeight: 500 },
+  severityTag: { fontSize: 13, color: G.textMuted },
   answerText: { fontSize: 15, color: G.text, lineHeight: 1.7, margin: '0 0 20px' },
   hypothesisBlock: { background: G.surface2, borderRadius: 8, padding: '12px 16px', marginBottom: 20 },
-  hypothesisLabel: { fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', color: G.textMuted, fontWeight: 600, marginBottom: 6 },
+  hypothesisLabel: { fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.08em', color: G.textMuted, fontWeight: 600, marginBottom: 6 },
   hypothesisText: { fontSize: 13, color: G.textSecondary, lineHeight: 1.6, margin: '0 0 8px', fontStyle: 'italic' },
   focusAreaRow: { display: 'flex', flexWrap: 'wrap', gap: 6 },
-  focusChip: { fontSize: 11, color: G.textMuted, background: G.surface, border: `1px solid ${G.border}`, borderRadius: 12, padding: '2px 10px' },
+  focusChip: { fontSize: 13, color: G.textMuted, background: G.surface, border: `1px solid ${G.border}`, borderRadius: 12, padding: '2px 10px' },
   subSection: { marginBottom: 16 },
-  subLabel: { fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.07em', color: G.textMuted, marginBottom: 6, fontWeight: 600 },
+  subLabel: { fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.07em', color: G.textMuted, marginBottom: 6, fontWeight: 600 },
   subText: { fontSize: 14, color: G.textSecondary, lineHeight: 1.6, margin: 0 },
   planList: { paddingLeft: 20, margin: 0 },
   planItem: { fontSize: 14, color: G.textSecondary, lineHeight: 1.7, marginBottom: 4 },
@@ -6735,10 +6735,10 @@ const agent = {
     fontSize: 13, color: G.textSecondary, cursor: 'pointer', marginBottom: 16,
   },
   detailsBlock: { marginBottom: 12 },
-  detailsSummary: { fontSize: 12, color: G.textMuted, cursor: 'pointer', marginBottom: 6 },
+  detailsSummary: { fontSize: 13, color: G.textMuted, cursor: 'pointer', marginBottom: 6 },
   sourcesRow: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 12 },
   sourceChip: {
-    background: G.surface2, color: G.textFaint, fontSize: 11,
+    background: G.surface2, color: G.textFaint, fontSize: 13,
     padding: '2px 8px', borderRadius: 10,
   },
   resetBtn: {
@@ -6776,13 +6776,13 @@ function VoicePhoneSetup({ user, currentPhone, onSaved }) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 0', borderBottom: `1px solid ${G.border}`, marginBottom: 24 }}>
         <div>
-          <div style={{ fontSize: 12, fontWeight: 600, color: G.textFaint, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Registered number</div>
+          <div style={{ fontSize: 13, fontWeight: 600, color: G.textFaint, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Registered number</div>
           <div style={{ fontSize: 14, fontWeight: 600, color: G.text }}>{currentPhone}</div>
         </div>
         <button
           type="button"
           onClick={() => { setChanging(true); setDone(false); setVal('') }}
-          style={{ fontSize: 12, fontWeight: 600, color: G.accentText, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit' }}
+          style={{ fontSize: 13, fontWeight: 600, color: G.accentText, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit' }}
         >
           Change
         </button>
@@ -6838,16 +6838,16 @@ function VoicePhoneSetup({ user, currentPhone, onSaved }) {
             <button
               type="button"
               onClick={() => setChanging(false)}
-              style={{ marginTop: 10, fontSize: 12, color: G.textMuted, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+              style={{ marginTop: 10, fontSize: 13, color: G.textMuted, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
             >
               Cancel
             </button>
           )}
         </>
       )}
-      {err && <p style={{ fontSize: 12, color: G.red, marginTop: 10 }}>{err}</p>}
+      {err && <p style={{ fontSize: 13, color: G.red, marginTop: 10 }}>{err}</p>}
       {!currentPhone && (
-        <p style={{ fontSize: 11, color: G.textFaint, marginTop: 20 }}>
+        <p style={{ fontSize: 13, color: G.textFaint, marginTop: 20 }}>
           Must call from this exact number. Only used to identify you — never shared.
         </p>
       )}
@@ -7058,18 +7058,18 @@ function AccountSection({ user, profile, onProfileChange, onSignOut, dataOnly = 
           onEnter={savePhone}
         />
         {profile?.phone ? (
-          <div style={{ fontSize: 12, color: G.textFaint, marginTop: 6, paddingLeft: 2 }}>
+          <div style={{ fontSize: 13, color: G.textFaint, marginTop: 6, paddingLeft: 2 }}>
             Voice access enabled — call your SelfAudit number from this phone to get live business updates.
           </div>
         ) : (
-          <div style={{ fontSize: 12, color: G.textFaint, marginTop: 6, paddingLeft: 2 }}>
+          <div style={{ fontSize: 13, color: G.textFaint, marginTop: 6, paddingLeft: 2 }}>
             Add your number to reach Nico — call anytime for a live business update.
           </div>
         )}
       </div>
 
       <div style={{ marginTop: 24 }}>
-        <span style={{ fontSize: 12, color: G.textFaint }}>Need to leave? </span>
+        <span style={{ fontSize: 13, color: G.textFaint }}>Need to leave? </span>
         <button
           type="button"
           style={account.deleteLink}
@@ -7134,7 +7134,7 @@ function AccountSection({ user, profile, onProfileChange, onSignOut, dataOnly = 
               style={account.input}
               autoFocus
             />
-            {deleteError && <p style={{ fontSize: 12, color: G.redText, marginTop: 10 }}>{deleteError}</p>}
+            {deleteError && <p style={{ fontSize: 13, color: G.redText, marginTop: 10 }}>{deleteError}</p>}
             <div style={account.modalActions}>
               <button type="button" style={account.modalCancel} onClick={() => setShowDelete(false)} disabled={deleting}>
                 Cancel
@@ -7169,7 +7169,7 @@ function AccountRow({ label, editing, saving, value, onEdit, placeholder, inputR
             placeholder={placeholder}
             style={account.input}
           />
-          {saving && <span style={{ fontSize: 12, color: G.textFaint }}>Saving…</span>}
+          {saving && <span style={{ fontSize: 13, color: G.textFaint }}>Saving…</span>}
         </div>
       ) : (
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1 }}>
@@ -8037,7 +8037,7 @@ const styles = {
     background: 'transparent',
     border: 'none',
     color: G.textSecondary,
-    fontSize: 10,
+    fontSize: 13,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -8117,7 +8117,7 @@ const styles = {
     whiteSpace: 'nowrap',
   },
   breadcrumb: {
-    fontSize: 12,
+    fontSize: 13,
     color: G.textMuted,
     whiteSpace: 'nowrap',
   },
@@ -8176,7 +8176,7 @@ const styles = {
     justifyContent: 'center',
     background: G.accentLight,
     color: G.accentText,
-    fontSize: 11,
+    fontSize: 13,
     marginLeft: 8,
   },
   primaryButton: {
@@ -8243,7 +8243,7 @@ const styles = {
     padding: '18px 20px',
   },
   actionQueueEyebrow: {
-    fontSize: 11,
+    fontSize: 13,
     textTransform: 'uppercase',
     letterSpacing: '0.12em',
     color: 'var(--ember)',
@@ -8278,14 +8278,14 @@ const styles = {
     fontWeight: 600,
   },
   pendingActionMeta: {
-    fontSize: 11,
+    fontSize: 13,
     color: 'var(--fg-mute)',
     marginTop: 3,
     textTransform: 'uppercase',
     letterSpacing: '0.05em',
   },
   pendingActionLabel: {
-    fontSize: 11,
+    fontSize: 13,
     color: 'var(--fg-mute)',
     marginBottom: 6,
   },
@@ -8297,7 +8297,7 @@ const styles = {
     border: '1px solid var(--d-border)',
     background: 'var(--d-bg)',
     color: 'var(--fg)',
-    fontSize: 12,
+    fontSize: 13,
     marginBottom: 10,
   },
   pendingActionButtons: {
@@ -8306,7 +8306,7 @@ const styles = {
   },
   pendingActionApprove: {
     padding: '7px 14px',
-    fontSize: 12,
+    fontSize: 13,
     background: 'var(--ember)',
     color: '#fff',
     border: 'none',
@@ -8319,7 +8319,7 @@ const styles = {
   },
   pendingActionDismiss: {
     padding: '7px 14px',
-    fontSize: 12,
+    fontSize: 13,
     background: 'transparent',
     color: 'var(--fg-dim)',
     border: '1px solid var(--d-border)',
@@ -8327,7 +8327,7 @@ const styles = {
     cursor: 'pointer',
   },
   pendingActionError: {
-    fontSize: 12,
+    fontSize: 13,
     color: 'var(--red-text)',
     marginTop: 8,
   },
@@ -8345,18 +8345,18 @@ const styles = {
     fontWeight: 600,
   },
   executionHistoryMeta: {
-    fontSize: 11,
+    fontSize: 13,
     color: 'var(--fg-mute)',
     marginTop: 3,
     textTransform: 'uppercase',
     letterSpacing: '0.05em',
   },
   executionHistoryOutcome: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: 600,
   },
   executionHistoryDate: {
-    fontSize: 11,
+    fontSize: 13,
     color: 'var(--fg-mute)',
     marginTop: 3,
   },
@@ -8386,7 +8386,7 @@ const styles = {
   },
   alertText: {
     color: G.amberText,
-    fontSize: 12,
+    fontSize: 13,
   },
   alertButton: {
     background: 'transparent',
@@ -8394,7 +8394,7 @@ const styles = {
     border: `0.5px solid ${G.amber}`,
     borderRadius: 6,
     padding: '6px 10px',
-    fontSize: 11,
+    fontSize: 13,
     cursor: 'pointer',
     whiteSpace: 'nowrap',
   },
@@ -8450,7 +8450,7 @@ const styles = {
     boxShadow: `0 0 0 1px ${G.accentLight}`,
   },
   kpiLabel: {
-    fontSize: 10,
+    fontSize: 13,
     color: G.textFaint,
     textTransform: 'uppercase',
     letterSpacing: '0.1em',
@@ -8463,13 +8463,13 @@ const styles = {
   },
   kpiDelta: {
     marginTop: 6,
-    fontSize: 10.5,
+    fontSize: 13,
     lineHeight: 1.5,
   },
   kpiHint: {
     marginTop: 'auto',
     paddingTop: 10,
-    fontSize: 9.5,
+    fontSize: 13,
     color: G.textFaint,
     textTransform: 'uppercase',
     letterSpacing: '0.09em',
@@ -8506,7 +8506,7 @@ const styles = {
     color: G.white,
     borderRadius: 8,
     padding: '10px 14px',
-    fontSize: 12,
+    fontSize: 13,
     cursor: 'pointer',
     flexShrink: 0,
   },
@@ -8515,7 +8515,7 @@ const styles = {
     gap: 14,
     flexWrap: 'wrap',
     marginTop: 12,
-    fontSize: 11.5,
+    fontSize: 13,
     color: G.textFaint,
   },
   oversightSnapshotDiagnosis: {
@@ -8526,7 +8526,7 @@ const styles = {
     flexWrap: 'wrap',
   },
   oversightSnapshotDiagnosisText: {
-    fontSize: 12.5,
+    fontSize: 13,
     color: G.textSecondary,
   },
   checkInCard: {
@@ -8565,7 +8565,7 @@ const styles = {
     color: G.textSecondary,
     borderRadius: 8,
     padding: '10px 14px',
-    fontSize: 12,
+    fontSize: 13,
     cursor: 'pointer',
   },
   checkInPrimaryBtn: {
@@ -8574,7 +8574,7 @@ const styles = {
     border: 'none',
     borderRadius: 8,
     padding: '10px 14px',
-    fontSize: 12,
+    fontSize: 13,
     cursor: 'pointer',
   },
   homeColumns: {
@@ -8633,7 +8633,7 @@ const styles = {
     display: 'flex',
     gap: 12,
     flexWrap: 'wrap',
-    fontSize: 11.5,
+    fontSize: 13,
     color: G.textFaint,
   },
   oversightActionList: {
@@ -8658,7 +8658,7 @@ const styles = {
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontSize: 11,
+    fontSize: 13,
     flexShrink: 0,
     marginTop: 1,
   },
@@ -8685,12 +8685,12 @@ const styles = {
   },
   oversightAreaCoverage: {
     marginTop: 4,
-    fontSize: 11.5,
+    fontSize: 13,
     color: G.textFaint,
   },
   oversightAreaDiagnosis: {
     marginTop: 10,
-    fontSize: 12.5,
+    fontSize: 13,
     color: G.textSecondary,
     lineHeight: 1.6,
   },
@@ -8726,7 +8726,7 @@ const styles = {
     borderBottom: `0.5px solid ${G.border}`,
   },
   weeklyDigestRailLabel: {
-    fontSize: 10,
+    fontSize: 13,
     color: G.textFaint,
     textTransform: 'uppercase',
     letterSpacing: '0.09em',
@@ -8737,7 +8737,7 @@ const styles = {
     lineHeight: 1.55,
   },
   weeklyDigestRailValueMuted: {
-    fontSize: 12,
+    fontSize: 13,
     color: G.textMuted,
     lineHeight: 1.5,
   },
@@ -8749,13 +8749,13 @@ const styles = {
     marginBottom: 12,
   },
   panelTitle: {
-    fontSize: 11,
+    fontSize: 13,
     color: G.textFaint,
     textTransform: 'uppercase',
     letterSpacing: '0.08em',
   },
   panelMeta: {
-    fontSize: 11,
+    fontSize: 13,
     color: G.textFaint,
   },
   businessHealthOverlay: {
@@ -8780,7 +8780,7 @@ const styles = {
     color: G.textSecondary,
     borderRadius: 999,
     padding: '6px 12px',
-    fontSize: 11,
+    fontSize: 13,
     cursor: 'pointer',
   },
   panelToggle: {
@@ -8810,17 +8810,17 @@ const styles = {
     placeItems: 'center',
     background: G.surface,
     color: G.textSecondary,
-    fontSize: 11,
+    fontSize: 13,
   },
   inlineLink: {
     border: 'none',
     background: 'transparent',
     color: G.textSecondary,
-    fontSize: 12,
+    fontSize: 13,
     cursor: 'pointer',
   },
   emptyPanel: {
-    fontSize: 12,
+    fontSize: 13,
     color: G.textSecondary,
     padding: '8px 0',
   },
@@ -8843,18 +8843,18 @@ const styles = {
     marginBottom: 8,
   },
   alertsSummaryMeta: {
-    fontSize: 12,
+    fontSize: 13,
     color: G.textSecondary,
     lineHeight: 1.65,
   },
   alertsError: {
-    fontSize: 12,
+    fontSize: 13,
     color: G.redText,
     marginBottom: 12,
   },
   alertTierSummary: {
     marginBottom: 12,
-    fontSize: 12,
+    fontSize: 13,
     color: G.textSecondary,
     lineHeight: 1.6,
     textTransform: 'uppercase',
@@ -8891,7 +8891,7 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: 6,
-    fontSize: 11,
+    fontSize: 13,
     color: G.textFaint,
     textTransform: 'uppercase',
     letterSpacing: '0.05em',
@@ -8910,7 +8910,7 @@ const styles = {
     border: '1px solid transparent',
     borderRadius: 999,
     padding: '4px 9px',
-    fontSize: 11,
+    fontSize: 13,
     textTransform: 'uppercase',
     letterSpacing: '0.05em',
     whiteSpace: 'nowrap',
@@ -8923,7 +8923,7 @@ const styles = {
   },
   alertRootCause: {
     marginTop: 8,
-    fontSize: 12,
+    fontSize: 13,
     color: G.textSecondary,
     lineHeight: 1.6,
   },
@@ -8933,7 +8933,7 @@ const styles = {
   },
   alertImpact: {
     marginTop: 5,
-    fontSize: 12,
+    fontSize: 13,
     color: G.textFaint,
     lineHeight: 1.6,
   },
@@ -8943,18 +8943,18 @@ const styles = {
   },
   alertActionCopy: {
     marginTop: 10,
-    fontSize: 12,
+    fontSize: 13,
     color: G.textSecondary,
     lineHeight: 1.6,
   },
   alertActionError: {
     marginTop: 8,
-    fontSize: 12,
+    fontSize: 13,
     color: G.redText,
     lineHeight: 1.5,
   },
   alertActionDone: {
-    fontSize: 12,
+    fontSize: 13,
     color: G.greenText,
     padding: '9px 0',
   },
@@ -8970,7 +8970,7 @@ const styles = {
     color: G.textSecondary,
     borderRadius: 8,
     padding: '9px 12px',
-    fontSize: 12,
+    fontSize: 13,
     cursor: 'pointer',
   },
   alertInboxPrimaryBtn: {
@@ -8979,7 +8979,7 @@ const styles = {
     border: 'none',
     borderRadius: 8,
     padding: '9px 12px',
-    fontSize: 12,
+    fontSize: 13,
     cursor: 'pointer',
   },
   weeklyDigestScoreRow: {
@@ -8995,11 +8995,11 @@ const styles = {
     lineHeight: 1,
   },
   weeklyDigestScoreLabel: {
-    fontSize: 12,
+    fontSize: 13,
     color: G.textFaint,
   },
   weeklyDigestConnectorTag: {
-    fontSize: 11,
+    fontSize: 13,
     color: G.textFaint,
     background: G.surface,
     borderRadius: 4,
@@ -9017,7 +9017,7 @@ const styles = {
     alignItems: 'flex-start',
     gap: 6,
     marginBottom: 4,
-    fontSize: 12,
+    fontSize: 13,
     color: G.textSecondary,
   },
   weeklyDigestMetaRow: {
@@ -9027,7 +9027,7 @@ const styles = {
     marginTop: 8,
   },
   weeklyDigestMetaText: {
-    fontSize: 11,
+    fontSize: 13,
     color: G.textFaint,
   },
   weeklyDigestPrefsIntro: {
@@ -9093,7 +9093,7 @@ const styles = {
     padding: '10px 14px',
   },
   weeklyDigestAreaLabel: {
-    fontSize: 12,
+    fontSize: 13,
     color: G.text,
   },
   weeklyDigestSaveRow: {
@@ -9104,11 +9104,11 @@ const styles = {
     marginTop: 18,
   },
   weeklyDigestToast: {
-    fontSize: 12,
+    fontSize: 13,
     color: G.accentText,
   },
   checkInError: {
-    fontSize: 12,
+    fontSize: 13,
     color: G.redText,
   },
   weeklyDigestSaveBtn: {
@@ -9117,7 +9117,7 @@ const styles = {
     border: 'none',
     borderRadius: 8,
     padding: '10px 16px',
-    fontSize: 12,
+    fontSize: 13,
     cursor: 'pointer',
   },
   issueRow: {
@@ -9142,14 +9142,14 @@ const styles = {
     color: G.textSecondary,
   },
   issueSub: {
-    fontSize: 11,
+    fontSize: 13,
     color: G.textFaint,
     marginTop: 3,
   },
   statusBadge: {
     borderRadius: 999,
     padding: '4px 10px',
-    fontSize: 11,
+    fontSize: 13,
     whiteSpace: 'nowrap',
     flexShrink: 0,
   },
@@ -9184,7 +9184,7 @@ const styles = {
     textOverflow: 'ellipsis',
   },
   historySub: {
-    fontSize: 11,
+    fontSize: 13,
     color: G.textFaint,
     marginTop: 4,
   },
@@ -9219,7 +9219,7 @@ const styles = {
   },
   domainBarLabel: {
     width: 80,
-    fontSize: 11,
+    fontSize: 13,
     color: G.textMuted,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -9239,7 +9239,7 @@ const styles = {
   domainBarValue: {
     width: 24,
     textAlign: 'right',
-    fontSize: 11,
+    fontSize: 13,
     color: G.textFaint,
   },
   openIssuesSummaryRow: {
@@ -9262,7 +9262,7 @@ const styles = {
     marginTop: 18,
   },
   businessHealthSectionTitle: {
-    fontSize: 11,
+    fontSize: 13,
     color: G.textFaint,
     textTransform: 'uppercase',
     letterSpacing: '0.06em',
@@ -9292,7 +9292,7 @@ const styles = {
     flexShrink: 0,
     padding: '6px 10px',
     borderRadius: 999,
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: 700,
     letterSpacing: '0.04em',
     textTransform: 'uppercase',
@@ -9314,14 +9314,14 @@ const styles = {
     justifyContent: 'space-between',
     gap: 12,
     marginTop: 10,
-    fontSize: 11,
+    fontSize: 13,
     color: G.textFaint,
   },
   goalMetaGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
     gap: 12,
-    fontSize: 12,
+    fontSize: 13,
     color: G.textSecondary,
   },
   goalMetaBlock: {
@@ -9330,7 +9330,7 @@ const styles = {
     gap: 4,
   },
   goalMetaLabel: {
-    fontSize: 10,
+    fontSize: 13,
     color: G.textFaint,
     textTransform: 'uppercase',
     letterSpacing: '0.06em',
@@ -9343,7 +9343,7 @@ const styles = {
     borderRadius: 999,
     background: G.accentLight,
     color: G.accentText,
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: 600,
   },
   aiCard: {
@@ -9354,7 +9354,7 @@ const styles = {
   },
   aiCardSub: {
     marginTop: 5,
-    fontSize: 12,
+    fontSize: 13,
     color: G.textSecondary,
   },
   aiList: {
@@ -9391,7 +9391,7 @@ const styles = {
     fontWeight: 500,
   },
   aiOpportunityMeta: {
-    fontSize: 12,
+    fontSize: 13,
     color: G.textSecondary,
     lineHeight: 1.5,
     marginTop: 4,
@@ -9401,13 +9401,13 @@ const styles = {
     justifyContent: 'space-between',
     gap: 10,
     marginTop: 8,
-    fontSize: 11,
+    fontSize: 13,
     color: G.textFaint,
   },
   aiSignalPill: {
     borderRadius: 999,
     padding: '4px 10px',
-    fontSize: 11,
+    fontSize: 13,
     whiteSpace: 'nowrap',
     flexShrink: 0,
   },
@@ -9433,17 +9433,17 @@ const styles = {
     border: `0.5px solid ${G.accent}`,
     borderRadius: 8,
     padding: '10px 12px',
-    fontSize: 12,
+    fontSize: 13,
     cursor: 'pointer',
   },
   aiSuccessText: {
-    fontSize: 12,
+    fontSize: 13,
     color: G.accentText,
     lineHeight: 1.5,
   },
   aiErrorText: {
     marginTop: 8,
-    fontSize: 12,
+    fontSize: 13,
     color: G.redText,
   },
   businessStateCard: {
@@ -9454,7 +9454,7 @@ const styles = {
   },
   businessStateSub: {
     marginTop: 5,
-    fontSize: 12,
+    fontSize: 13,
     color: G.textSecondary,
   },
   businessStateTitle: {
@@ -9468,7 +9468,7 @@ const styles = {
     gap: 12,
   },
   businessStateLabel: {
-    fontSize: 10,
+    fontSize: 13,
     color: G.textFaint,
     textTransform: 'uppercase',
     letterSpacing: '0.08em',
@@ -9512,7 +9512,7 @@ const styles = {
     color: G.textSecondary,
     borderRadius: 6,
     padding: '6px 10px',
-    fontSize: 12,
+    fontSize: 13,
     cursor: 'pointer',
   },
   businessStateSaveBtn: {
@@ -9521,7 +9521,7 @@ const styles = {
     color: G.white,
     borderRadius: 6,
     padding: '6px 10px',
-    fontSize: 12,
+    fontSize: 13,
     cursor: 'pointer',
   },
   businessStateEditorShell: {
@@ -9548,7 +9548,7 @@ const styles = {
     gap: 8,
   },
   scopeSetupPill: {
-    fontSize: 12,
+    fontSize: 13,
     padding: '9px 12px',
     borderRadius: 8,
     border: `0.5px solid ${G.border2}`,
@@ -9574,7 +9574,7 @@ const styles = {
     color: G.textSecondary,
     borderRadius: 999,
     padding: '4px 10px',
-    fontSize: 11,
+    fontSize: 13,
   },
   emptyReports: {
     border: `1px dashed ${G.border2}`,
@@ -9594,7 +9594,7 @@ const styles = {
     border: 'none',
     borderRadius: 8,
     padding: '9px 16px',
-    fontSize: 12,
+    fontSize: 13,
     cursor: 'pointer',
   },
   connectorsToast: {
@@ -9633,7 +9633,7 @@ const styles = {
   },
   connectorCategory: {
     marginTop: 4,
-    fontSize: 12,
+    fontSize: 13,
     color: G.textFaint,
     textTransform: 'uppercase',
     letterSpacing: '0.06em',
@@ -9641,7 +9641,7 @@ const styles = {
   connectorBadge: {
     borderRadius: 999,
     padding: '5px 10px',
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: 600,
     whiteSpace: 'nowrap',
   },
@@ -9683,7 +9683,7 @@ const styles = {
     cursor: 'pointer',
   },
   connectorSoonText: {
-    fontSize: 12,
+    fontSize: 13,
     color: G.textFaint,
   },
   connectorPreview: {
@@ -9694,7 +9694,7 @@ const styles = {
     gap: 8,
   },
   connectorPreviewMeta: {
-    fontSize: 12,
+    fontSize: 13,
     color: G.textFaint,
   },
   connectorPreviewStat: {
@@ -9707,7 +9707,7 @@ const styles = {
     gap: 6,
   },
   connectorSignalLine: {
-    fontSize: 12,
+    fontSize: 13,
     color: G.textSecondary,
     lineHeight: 1.45,
   },
@@ -9718,17 +9718,17 @@ const styles = {
     background: G.surface2,
     color: G.text,
     padding: '8px 12px',
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: 600,
     cursor: 'pointer',
   },
   connectorsLoading: {
     marginTop: 14,
-    fontSize: 12,
+    fontSize: 13,
     color: G.textFaint,
   },
   connectorTierLabel: {
-    fontSize: 11,
+    fontSize: 13,
     color: G.textFaint,
     letterSpacing: '0.04em',
     textTransform: 'uppercase',
@@ -9764,7 +9764,7 @@ const styles = {
     flexShrink: 0,
   },
   reportActionDone: {
-    fontSize: 11,
+    fontSize: 13,
     color: G.accentText,
     background: G.accentLight,
     border: 'none',
@@ -9773,7 +9773,7 @@ const styles = {
     cursor: 'pointer',
   },
   reportActionWarn: {
-    fontSize: 11,
+    fontSize: 13,
     color: G.amberText,
     background: G.amberBg,
     border: 'none',
@@ -9782,7 +9782,7 @@ const styles = {
     cursor: 'pointer',
   },
   reportActionGhost: {
-    fontSize: 11,
+    fontSize: 13,
     color: G.textSecondary,
     background: 'transparent',
     border: `0.5px solid ${G.border2}`,
@@ -9791,7 +9791,7 @@ const styles = {
     cursor: 'pointer',
   },
   reportDate: {
-    fontSize: 11,
+    fontSize: 13,
     color: G.textFaint,
   },
   reportCardBody: {
@@ -9833,7 +9833,7 @@ const styles = {
     justifyContent: 'center',
   },
   billingLabel: {
-    fontSize: 10,
+    fontSize: 13,
     textTransform: 'uppercase',
     letterSpacing: '0.08em',
     color: G.textFaint,
@@ -9849,10 +9849,10 @@ const styles = {
     color: G.greenText,
     padding: '3px 10px',
     borderRadius: 999,
-    fontSize: 12,
+    fontSize: 13,
   },
   billingSub: {
-    fontSize: 11,
+    fontSize: 13,
     color: G.textFaint,
     marginTop: 4,
   },
@@ -9862,7 +9862,7 @@ const styles = {
     border: `0.5px solid ${G.accent}`,
     borderRadius: 8,
     padding: '8px 12px',
-    fontSize: 12,
+    fontSize: 13,
     cursor: 'pointer',
   },
   tierGrid: {
@@ -9887,7 +9887,7 @@ const styles = {
     color: G.white,
     borderRadius: 999,
     padding: '3px 10px',
-    fontSize: 10,
+    fontSize: 13,
     textTransform: 'uppercase',
     letterSpacing: '0.08em',
   },
@@ -9899,13 +9899,13 @@ const styles = {
     color: G.textSecondary,
     borderRadius: 999,
     padding: '3px 10px',
-    fontSize: 10,
+    fontSize: 13,
     textTransform: 'uppercase',
     letterSpacing: '0.08em',
   },
   tierName: {
     marginTop: 8,
-    fontSize: 11,
+    fontSize: 13,
     letterSpacing: '0.12em',
     textTransform: 'uppercase',
     color: G.textFaint,
@@ -9922,7 +9922,7 @@ const styles = {
   },
   tierDesc: {
     marginTop: 10,
-    fontSize: 12,
+    fontSize: 13,
     color: G.textSecondary,
     lineHeight: 1.6,
   },
@@ -9936,7 +9936,7 @@ const styles = {
     flex: 1,
   },
   tierFeatureItem: {
-    fontSize: 12,
+    fontSize: 13,
     color: G.textSecondary,
     display: 'flex',
     alignItems: 'flex-start',
@@ -9950,7 +9950,7 @@ const styles = {
     color: G.accentText,
     borderRadius: 8,
     padding: '9px 12px',
-    fontSize: 12,
+    fontSize: 13,
     textAlign: 'center',
   },
   tierUpgradeBtn: {
@@ -9993,7 +9993,7 @@ const account = {
     margin: '0 22px',
   },
   label: {
-    fontSize: 11,
+    fontSize: 13,
     color: G.textFaint,
     textTransform: 'uppercase',
     letterSpacing: '0.06em',
@@ -10009,7 +10009,7 @@ const account = {
     background: 'transparent',
     border: 'none',
     color: G.accentText,
-    fontSize: 12,
+    fontSize: 13,
     cursor: 'pointer',
   },
   input: {
@@ -10029,7 +10029,7 @@ const account = {
     border: 'none',
     color: G.redText,
     textDecoration: 'underline',
-    fontSize: 12,
+    fontSize: 13,
     cursor: 'pointer',
   },
   signOutBtn: {
@@ -10038,7 +10038,7 @@ const account = {
     borderRadius: 8,
     color: G.textSecondary,
     padding: '8px 12px',
-    fontSize: 12,
+    fontSize: 13,
     cursor: 'pointer',
   },
   dataCard: {
@@ -10057,18 +10057,18 @@ const account = {
     color: G.text,
   },
   dataCardText: {
-    fontSize: 12,
+    fontSize: 13,
     color: G.textSecondary,
     lineHeight: 1.65,
     maxWidth: 760,
   },
   dataCardMeta: {
-    fontSize: 11,
+    fontSize: 13,
     color: G.textFaint,
     lineHeight: 1.6,
   },
   dataCardError: {
-    fontSize: 12,
+    fontSize: 13,
     color: G.redText,
   },
   dataExportBtn: {
@@ -10078,7 +10078,7 @@ const account = {
     borderRadius: 8,
     color: G.white,
     padding: '9px 13px',
-    fontSize: 12,
+    fontSize: 13,
     cursor: 'pointer',
   },
   legalRow: {
@@ -10089,7 +10089,7 @@ const account = {
     flexWrap: 'wrap',
   },
   legalLabel: {
-    fontSize: 12,
+    fontSize: 13,
     color: G.textFaint,
   },
   legalLinks: {
@@ -10101,7 +10101,7 @@ const account = {
   legalLink: {
     color: G.accentText,
     textDecoration: 'none',
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: 500,
   },
   overlay: {
@@ -10145,7 +10145,7 @@ const account = {
     color: G.textSecondary,
     borderRadius: 8,
     padding: '8px 14px',
-    fontSize: 12,
+    fontSize: 13,
     cursor: 'pointer',
   },
   modalDelete: {
@@ -10154,7 +10154,7 @@ const account = {
     color: G.white,
     borderRadius: 8,
     padding: '8px 14px',
-    fontSize: 12,
+    fontSize: 13,
     cursor: 'pointer',
   },
 }
@@ -10193,7 +10193,7 @@ const gm = {
     cursor: 'pointer',
   },
   eyebrow: {
-    fontSize: 11,
+    fontSize: 13,
     letterSpacing: '0.08em',
     textTransform: 'uppercase',
     color: G.accentText,
@@ -10231,7 +10231,7 @@ const gm = {
     boxSizing: 'border-box',
   },
   hint: {
-    fontSize: 11,
+    fontSize: 13,
     color: G.textFaint,
     marginTop: 5,
   },
@@ -10241,7 +10241,7 @@ const gm = {
     gap: 6,
   },
   categoryPill: {
-    fontSize: 12,
+    fontSize: 13,
     padding: '5px 12px',
     borderRadius: 999,
     border: `0.5px solid ${G.border2}`,
@@ -10266,7 +10266,7 @@ const gm = {
     marginTop: 8,
   },
   error: {
-    fontSize: 12,
+    fontSize: 13,
     color: G.redText,
     marginBottom: 8,
   },
@@ -10284,7 +10284,7 @@ const reportStyles = {
     lineHeight: 1.45,
   },
   sectionLabel: {
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: 700,
     color: G.textFaint,
     textTransform: 'uppercase',
@@ -10333,7 +10333,7 @@ const reportStyles = {
   pill: {
     borderRadius: 999,
     padding: '2px 9px',
-    fontSize: 11,
+    fontSize: 13,
     whiteSpace: 'nowrap',
   },
   priorityList: {
@@ -10360,7 +10360,7 @@ const reportStyles = {
     wordBreak: 'break-word',
   },
   fallbackBlock: {
-    fontSize: 12,
+    fontSize: 13,
     color: G.textSecondary,
     whiteSpace: 'pre-wrap',
     wordBreak: 'break-word',

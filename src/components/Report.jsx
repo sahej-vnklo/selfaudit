@@ -676,19 +676,19 @@ function buildReportHtml(report, userInfo, theme) {
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,'Helvetica Neue','Inter',Arial,sans-serif;background:${C.bg};color:${C.text};font-size:14px;line-height:1.6}
 .wrap{max-width:680px;margin:0 auto;padding:48px 32px 80px}
-.label{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:${C.accent};margin-bottom:12px;display:block}
+.label{font-size:13px;text-transform:uppercase;letter-spacing:.8px;color:${C.accent};margin-bottom:12px;display:block}
 h1{font-family:'Titillium Web',-apple-system,'Helvetica Neue','Inter',Arial,sans-serif;font-size:28px;font-weight:400;line-height:1.2;margin-bottom:14px;color:${C.text}}
 .verdict{font-size:15px;color:${C.textSoft};line-height:1.7;margin-bottom:14px}
-.meta{font-size:12px;color:${C.textMuted}}
+.meta{font-size:13px;color:${C.textMuted}}
 .section{margin-bottom:36px}
-.section-title{font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:${C.textMuted};margin-bottom:14px;font-weight:500}
+.section-title{font-size:13px;text-transform:uppercase;letter-spacing:.8px;color:${C.textMuted};margin-bottom:14px;font-weight:500}
 .domain-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
 .domain-card{border:.5px solid ${C.border};border-radius:8px;padding:14px 16px;background:${C.surface}}
 .domain-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
 .domain-name{font-size:13px;font-weight:500}
-.badge{font-size:11px;padding:2px 9px;border-radius:100px;font-weight:500}
+.badge{font-size:13px;padding:2px 9px;border-radius:100px;font-weight:500}
 .finding{font-size:13px;color:${C.textSoft};line-height:1.6;margin-bottom:6px}
-.act{font-size:12px;color:${C.text};font-style:italic}
+.act{font-size:13px;color:${C.text};font-style:italic}
 .fix-item{background:${C.warningBg};border-radius:8px;padding:14px 16px;border:.5px solid ${C.warning};margin-bottom:10px}
 .fix-issue{font-size:13px;font-weight:500;color:${C.warningText};margin-bottom:4px}
 .fix-sol{font-size:13px;color:${C.text};line-height:1.6}
@@ -697,13 +697,13 @@ h1{font-family:'Titillium Web',-apple-system,'Helvetica Neue','Inter',Arial,sans
 .ai-why{font-size:13px;color:${C.text};line-height:1.6}
 .actions-list{display:flex;flex-direction:column;gap:10px}
 .action-row{display:flex;gap:12px;align-items:flex-start}
-.action-num{width:22px;height:22px;border-radius:50%;background:${C.surface2};color:${C.text};font-size:11px;font-weight:500;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.action-num{width:22px;height:22px;border-radius:50%;background:${C.surface2};color:${C.text};font-size:13px;font-weight:500;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:1px}
 .action-text{font-size:14px;color:${C.text};line-height:1.6}
 .truth{background:${C.surface2};border-radius:8px;padding:24px}
 .truth p{font-size:15px;color:${C.text};line-height:1.7}
 .plan-list{display:flex;flex-direction:column;gap:12px}
 .plan-item{display:flex;gap:14px;align-items:flex-start}
-.plan-step{width:26px;height:26px;border-radius:50%;background:${C.surface2};color:${C.text};font-size:12px;font-weight:500;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.plan-step{width:26px;height:26px;border-radius:50%;background:${C.surface2};color:${C.text};font-size:13px;font-weight:500;flex-shrink:0;display:flex;align-items:center;justify-content:center}
 .plan-action{font-size:14px;font-weight:500;color:${C.text};margin-bottom:3px}
 .plan-why{font-size:13px;color:${C.textSoft};line-height:1.6}
 .prose{font-size:14px;color:${C.textSoft};line-height:1.75}
@@ -713,35 +713,35 @@ h1{font-family:'Titillium Web',-apple-system,'Helvetica Neue','Inter',Arial,sans
 .script p{font-size:14px;color:${C.text};line-height:1.8;white-space:pre-wrap}
 .traj-wrap{background:${C.surface};border:.5px solid ${C.border};border-radius:8px;padding:18px}
 .traj-header{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-.traj-badge{font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;background:${C.accentSoft};color:${C.accentText};padding:4px 8px;border-radius:999px}
-.traj-horizon{font-size:11px;color:${C.textMuted};text-transform:uppercase;letter-spacing:.5px}
+.traj-badge{font-size:13px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;background:${C.accentSoft};color:${C.accentText};padding:4px 8px;border-radius:999px}
+.traj-horizon{font-size:13px;color:${C.textMuted};text-transform:uppercase;letter-spacing:.5px}
 .traj-summary{font-size:14px;color:${C.text};line-height:1.7;margin-bottom:16px}
 .traj-columns{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
 .traj-column{background:${C.surface2};border-radius:8px;padding:14px}
-.traj-column-label{font-size:11px;font-weight:500;color:${C.textMuted};text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.traj-column-label{font-size:13px;font-weight:500;color:${C.textMuted};text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
 .traj-column-text{font-size:13px;color:${C.text};line-height:1.7}
 .traj-table{display:flex;flex-direction:column;border:.5px solid ${C.border};border-radius:8px;overflow:hidden}
 .traj-row{display:grid;grid-template-columns:1fr 1.2fr 1.2fr}
 .traj-head{background:${C.surface2}}
 .traj-row + .traj-row{border-top:.5px solid ${C.border}}
-.traj-metric,.traj-value{padding:12px 14px;font-size:12px;line-height:1.6}
+.traj-metric,.traj-value{padding:12px 14px;font-size:13px;line-height:1.6}
 .traj-metric{font-weight:500;color:${C.text};border-right:.5px solid ${C.border}}
 .traj-value{color:${C.textSoft};border-right:.5px solid ${C.border}}
 .traj-row .traj-value:last-child{border-right:none}
-.traj-confidence{margin-top:12px;font-size:12px;color:${C.textMuted};line-height:1.6}
+.traj-confidence{margin-top:12px;font-size:13px;color:${C.textMuted};line-height:1.6}
 .gg-panel{border:1.5px solid ${C.accent};border-radius:8px;overflow:hidden;margin-bottom:36px}
-.gg-eyebrow{background:${C.accent};color:${C.buttonText};font-size:11px;font-weight:500;letter-spacing:.7px;text-transform:uppercase;padding:8px 18px}
+.gg-eyebrow{background:${C.accent};color:${C.buttonText};font-size:13px;font-weight:500;letter-spacing:.7px;text-transform:uppercase;padding:8px 18px}
 .gg-goal{background:${C.accentSoft};padding:14px 18px;display:flex;gap:10px;align-items:baseline;border-bottom:.5px solid ${C.border}}
-.gg-goal-label{font-size:11px;font-weight:500;color:${C.accentText};text-transform:uppercase;flex-shrink:0}
+.gg-goal-label{font-size:13px;font-weight:500;color:${C.accentText};text-transform:uppercase;flex-shrink:0}
 .gg-goal-text{font-size:15px;font-weight:500;color:${C.accentText}}
 .gg-row{display:grid;grid-template-columns:1fr 1fr;border-bottom:.5px solid ${C.border}}
 .gg-half{padding:14px 18px;border-right:.5px solid ${C.border}}
 .gg-block{padding:14px 18px;border-bottom:.5px solid ${C.border}}
-.gg-label{font-size:11px;font-weight:500;color:${C.textMuted};text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.gg-label{font-size:13px;font-weight:500;color:${C.textMuted};text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
 .gg-text{font-size:13px;color:${C.textSoft};line-height:1.65}
 .move-list{display:flex;flex-direction:column;gap:8px}
 .move{display:flex;gap:10px;align-items:flex-start}
-.move-num{width:20px;height:20px;border-radius:50%;background:${C.surface2};color:${C.text};font-size:10px;font-weight:500;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.move-num{width:20px;height:20px;border-radius:50%;background:${C.surface2};color:${C.text};font-size:13px;font-weight:500;flex-shrink:0;display:flex;align-items:center;justify-content:center}
 .move-text{font-size:13px;color:${C.text};line-height:1.6}
 .cap-list{display:flex;flex-direction:column;gap:8px}
 .cap-item{display:flex;gap:10px;align-items:flex-start}
@@ -749,13 +749,13 @@ h1{font-family:'Titillium Web',-apple-system,'Helvetica Neue','Inter',Arial,sans
 .cap-text{font-size:13px;color:${C.text};line-height:1.6}
 .rank-row{display:flex;gap:6px;flex-wrap:wrap}
 .rank-cell{flex:1 1 90px;padding:8px 12px;background:${C.surface2};border-radius:6px}
-.rank-label{font-size:10px;font-weight:500;color:${C.textMuted};text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
-.rank-val{font-size:12px;font-weight:500;color:${C.text}}
+.rank-label{font-size:13px;font-weight:500;color:${C.textMuted};text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.rank-val{font-size:13px;font-weight:500;color:${C.text}}
 .tl-block{padding:14px 18px}
 .tl-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}
-.tl-badge{font-size:10px;font-weight:700;color:${C.buttonText};padding:2px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.6px}
-.tl-lbl{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.5px;color:${C.textMuted}}
-footer{font-size:11px;color:${C.textMuted};text-align:center;margin-top:48px}
+.tl-badge{font-size:13px;font-weight:700;color:${C.buttonText};padding:2px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.6px}
+.tl-lbl{font-size:13px;font-weight:500;text-transform:uppercase;letter-spacing:.5px;color:${C.textMuted}}
+footer{font-size:13px;color:${C.textMuted};text-align:center;margin-top:48px}
 @media (max-width: 640px){.traj-columns,.traj-row{grid-template-columns:1fr}.traj-metric,.traj-value{border-right:none}.traj-row .traj-value{border-top:.5px solid ${C.border}}}
 @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 </style>
@@ -1066,9 +1066,9 @@ const styles = {
     background: 'var(--surface)', position: 'sticky', top: 0, zIndex: 10
   },
   logo: { fontSize: 16, fontWeight: 500, letterSpacing: '-0.4px' },
-  navRight: { fontSize: 12, color: 'var(--gray-400)' },
+  navRight: { fontSize: 13, color: 'var(--gray-400)' },
   downloadBtn: {
-    fontSize: 12, fontWeight: 600, color: 'var(--accent-text)',
+    fontSize: 13, fontWeight: 600, color: 'var(--accent-text)',
     background: 'var(--accent-soft)', border: '0.5px solid var(--accent-soft)',
     borderRadius: 6, padding: '6px 12px', cursor: 'pointer',
     transition: 'border-color 0.15s',
@@ -1079,7 +1079,7 @@ const styles = {
     borderBottom: '0.5px solid var(--gray-200)'
   },
   reportLabel: {
-    fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.8px',
+    fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.8px',
     color: 'var(--accent)', display: 'block', marginBottom: 12
   },
   headline: {
@@ -1088,11 +1088,11 @@ const styles = {
   },
   verdict: { fontSize: 15, color: 'var(--gray-600)', lineHeight: 1.7, marginBottom: 16 },
   metaRow: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
-  metaItem: { fontSize: 12, color: 'var(--gray-400)' },
-  metaDot: { fontSize: 12, color: 'var(--gray-200)' },
+  metaItem: { fontSize: 13, color: 'var(--gray-400)' },
+  metaDot: { fontSize: 13, color: 'var(--gray-200)' },
   section: { marginBottom: '2.5rem' },
   sectionTitle: {
-    fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.8px',
+    fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.8px',
     color: 'var(--gray-400)', marginBottom: '1rem', fontWeight: 500
   },
   domainsGrid: {
@@ -1106,9 +1106,9 @@ const styles = {
   },
   domainTop: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
   domainName: { fontSize: 13, fontWeight: 500, color: 'var(--text)' },
-  badge: { fontSize: 11, padding: '2px 9px', borderRadius: 'var(--radius-pill)', fontWeight: 500 },
+  badge: { fontSize: 13, padding: '2px 9px', borderRadius: 'var(--radius-pill)', fontWeight: 500 },
   domainFinding: { fontSize: 13, color: 'var(--gray-600)', lineHeight: 1.6, marginBottom: 8 },
-  domainAction: { fontSize: 12, color: 'var(--gray-800)', fontStyle: 'italic', lineHeight: 1.5 },
+  domainAction: { fontSize: 13, color: 'var(--gray-800)', fontStyle: 'italic', lineHeight: 1.5 },
   fixList: { display: 'flex', flexDirection: 'column', gap: 10 },
   fixItem: {
     background: 'var(--warning-bg)', borderRadius: 'var(--radius)',
@@ -1128,7 +1128,7 @@ const styles = {
   planStep: {
     width: 26, height: 26, borderRadius: '50%',
     background: 'var(--surface2)', color: 'var(--text)',
-    fontSize: 12, fontWeight: 500, flexShrink: 0,
+    fontSize: 13, fontWeight: 500, flexShrink: 0,
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     marginTop: 1
   },
@@ -1145,15 +1145,15 @@ const styles = {
   },
   trajectoryHeader: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 12 },
   trajectoryBadge: {
-    fontSize: 10, fontWeight: 700, letterSpacing: '0.6px', textTransform: 'uppercase',
+    fontSize: 13, fontWeight: 700, letterSpacing: '0.6px', textTransform: 'uppercase',
     background: 'var(--green-light)', color: 'var(--green-dark)', padding: '4px 8px', borderRadius: '999px'
   },
-  trajectoryHorizon: { fontSize: 11, color: 'var(--gray-400)', textTransform: 'uppercase', letterSpacing: '0.5px' },
+  trajectoryHorizon: { fontSize: 13, color: 'var(--gray-400)', textTransform: 'uppercase', letterSpacing: '0.5px' },
   trajectorySummary: { fontSize: 14, color: 'var(--text)', lineHeight: 1.7, margin: '0 0 1rem' },
   trajectoryColumns: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, marginBottom: 16 },
   trajectoryColumn: { background: 'var(--surface2)', borderRadius: 'var(--radius)', padding: '0.875rem' },
   trajectoryColumnLabel: {
-    fontSize: 11, fontWeight: 500, color: 'var(--gray-400)', textTransform: 'uppercase',
+    fontSize: 13, fontWeight: 500, color: 'var(--gray-400)', textTransform: 'uppercase',
     letterSpacing: '0.5px', marginBottom: 6
   },
   trajectoryColumnText: { fontSize: 13, color: 'var(--text)', lineHeight: 1.7, margin: 0 },
@@ -1164,14 +1164,14 @@ const styles = {
   trajectoryTableHead: { background: 'var(--surface2)' },
   trajectoryRow: { display: 'grid', gridTemplateColumns: '1fr 1.2fr 1.2fr' },
   trajectoryMetricCell: {
-    padding: '0.75rem 0.875rem', fontSize: 12, lineHeight: 1.6, fontWeight: 500,
+    padding: '0.75rem 0.875rem', fontSize: 13, lineHeight: 1.6, fontWeight: 500,
     color: 'var(--text)', borderRight: '0.5px solid var(--gray-200)'
   },
   trajectoryValueCell: {
-    padding: '0.75rem 0.875rem', fontSize: 12, lineHeight: 1.6, color: 'var(--gray-700)',
+    padding: '0.75rem 0.875rem', fontSize: 13, lineHeight: 1.6, color: 'var(--gray-700)',
     borderRight: '0.5px solid var(--gray-200)'
   },
-  trajectoryConfidence: { marginTop: 12, fontSize: 12, color: 'var(--gray-500)', lineHeight: 1.6 },
+  trajectoryConfidence: { marginTop: 12, fontSize: 13, color: 'var(--gray-500)', lineHeight: 1.6 },
   trajectoryConfidenceLabel: { fontWeight: 600, color: 'var(--gray-600)' },
   scriptBlock: {
     background: 'var(--gray-50)', borderLeft: '3px solid var(--green)',
@@ -1183,7 +1183,7 @@ const styles = {
   actionNum: {
     width: 22, height: 22, borderRadius: '50%',
     background: 'var(--surface2)', color: 'var(--text)',
-    fontSize: 11, fontWeight: 500, flexShrink: 0,
+    fontSize: 13, fontWeight: 500, flexShrink: 0,
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     marginTop: 1
   },
@@ -1214,7 +1214,7 @@ const styles = {
     whiteSpace: 'nowrap',
   },
   anonSignIn: {
-    fontSize: 12, color: 'var(--gray-400)', textDecoration: 'none',
+    fontSize: 13, color: 'var(--gray-400)', textDecoration: 'none',
     cursor: 'pointer',
   },
   spinner: {
@@ -1223,7 +1223,7 @@ const styles = {
     borderTopColor: 'var(--green)',
     animation: 'spin 0.8s linear infinite'
   },
-  disclaimer:  { fontSize: 11, color: 'var(--gray-400)', textAlign: 'center', lineHeight: 1.6 },
+  disclaimer:  { fontSize: 13, color: 'var(--gray-400)', textAlign: 'center', lineHeight: 1.6 },
   loadingPage: { minHeight: '100vh', background: 'var(--bg)' },
   loadingBody: {
     display: 'flex', flexDirection: 'column', alignItems: 'center',
@@ -1240,7 +1240,7 @@ const gg = {
   },
   eyebrow: {
     background: 'var(--green)', color: 'var(--button-text)',
-    fontSize: 11, fontWeight: 500, letterSpacing: '0.7px', textTransform: 'uppercase',
+    fontSize: 13, fontWeight: 500, letterSpacing: '0.7px', textTransform: 'uppercase',
     padding: '8px 18px',
   },
   goalRow: {
@@ -1249,7 +1249,7 @@ const gg = {
     borderBottom: '0.5px solid var(--green-mid)',
   },
   goalLabel: {
-    fontSize: 11, fontWeight: 500, color: 'var(--green-dark)',
+    fontSize: 13, fontWeight: 500, color: 'var(--green-dark)',
     textTransform: 'uppercase', letterSpacing: '0.5px', flexShrink: 0,
   },
   goalText: {
@@ -1268,7 +1268,7 @@ const gg = {
     borderBottom: '0.5px solid var(--gray-200)',
   },
   blockLabel: {
-    fontSize: 11, fontWeight: 500, color: 'var(--gray-400)',
+    fontSize: 13, fontWeight: 500, color: 'var(--gray-400)',
     textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 8,
   },
   blockText: {
@@ -1279,7 +1279,7 @@ const gg = {
   moveNum: {
     width: 20, height: 20, borderRadius: '50%',
     background: 'var(--surface2)', color: 'var(--text)',
-    fontSize: 10, fontWeight: 500, flexShrink: 0,
+    fontSize: 13, fontWeight: 500, flexShrink: 0,
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     marginTop: 1,
   },
@@ -1292,12 +1292,12 @@ const gg = {
     display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6,
   },
   feasBadge: {
-    fontSize: 10, fontWeight: 700, color: 'var(--button-text)',
+    fontSize: 13, fontWeight: 700, color: 'var(--button-text)',
     padding: '2px 8px', borderRadius: 4,
     textTransform: 'uppercase', letterSpacing: '0.6px', flexShrink: 0,
   },
   timelineLabel: {
-    fontSize: 11, fontWeight: 500,
+    fontSize: 13, fontWeight: 500,
     textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 6,
   },
   capsBlock: {
@@ -1321,12 +1321,12 @@ const gg = {
     background: 'var(--gray-100)', borderRadius: 6,
   },
   rankLabel: {
-    fontSize: 10, fontWeight: 500, color: 'var(--gray-400)',
+    fontSize: 13, fontWeight: 500, color: 'var(--gray-400)',
     textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 3,
   },
-  rankValue: { fontSize: 12, fontWeight: 500, color: 'var(--text)' },
+  rankValue: { fontSize: 13, fontWeight: 500, color: 'var(--text)' },
   confRow: { display: 'flex', alignItems: 'center', gap: 6, marginTop: 10, flexWrap: 'wrap' },
   confDot: { width: 7, height: 7, borderRadius: '50%', flexShrink: 0 },
-  confLabel: { fontSize: 12, fontWeight: 500 },
-  confDetail: { fontSize: 12, color: 'var(--gray-500)' },
+  confLabel: { fontSize: 13, fontWeight: 500 },
+  confDetail: { fontSize: 13, color: 'var(--gray-500)' },
 }

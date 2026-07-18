@@ -541,7 +541,7 @@ function Badge({ children, tone = 'default', mono = false }) {
       border: `0.5px solid ${style.border}`,
       background: style.bg,
       color: style.color,
-      fontSize: 11,
+      fontSize: 13,
       lineHeight: 1,
       fontWeight: 500,
       ...(mono ? monoStyle() : null),
@@ -567,7 +567,7 @@ function StatusDot({ color }) {
 function SectionLabel({ children }) {
   return (
     <div style={{
-      fontSize: 11,
+      fontSize: 13,
       letterSpacing: '0.08em',
       textTransform: 'uppercase',
       color: G.textFaint,
@@ -619,7 +619,7 @@ function MessageThread({ rows }) {
               color: isUser ? G.text : G.textMuted,
               borderRadius: 6,
               padding: '10px 12px',
-              fontSize: 12,
+              fontSize: 13,
               lineHeight: 1.65,
               whiteSpace: 'pre-wrap',
               wordBreak: 'break-word',
@@ -668,7 +668,7 @@ function ReportSchemaB({ p }) {
               background: G.surface2,
               padding: '12px 14px',
               color: G.textMuted,
-              fontSize: 12,
+              fontSize: 13,
               lineHeight: 1.7,
               whiteSpace: 'pre-wrap',
               wordBreak: 'break-word',
@@ -745,9 +745,9 @@ function ReportSchemaA({ p }) {
                     <div style={{ color: G.text, fontSize: 13, fontWeight: 500 }}>{domain.name || 'Domain'}</div>
                     {domain.status && <Badge tone={tone}>{String(domain.status).replace(/_/g, ' ')}</Badge>}
                   </div>
-                  {domain.finding && <div style={{ color: G.textMuted, fontSize: 12, lineHeight: 1.65 }}>{domain.finding}</div>}
+                  {domain.finding && <div style={{ color: G.textMuted, fontSize: 13, lineHeight: 1.65 }}>{domain.finding}</div>}
                   {domain.action && (
-                    <div style={{ marginTop: 8, color: G.text, fontSize: 12, lineHeight: 1.65 }}>
+                    <div style={{ marginTop: 8, color: G.text, fontSize: 13, lineHeight: 1.65 }}>
                       <span style={{ color: G.accentText }}>→</span> {domain.action}
                     </div>
                   )}
@@ -769,8 +769,8 @@ function ReportSchemaA({ p }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {nonAiFixes.map((item, index) => (
               <div key={index} style={{ ...panelStyle({ background: G.surface2, padding: '10px 14px' }) }}>
-                {item.issue && <div style={{ color: G.text, fontSize: 12, fontWeight: 500, marginBottom: 4 }}>{item.issue}</div>}
-                {item.fix && <div style={{ color: G.textMuted, fontSize: 12, lineHeight: 1.65 }}>{item.fix}</div>}
+                {item.issue && <div style={{ color: G.text, fontSize: 13, fontWeight: 500, marginBottom: 4 }}>{item.issue}</div>}
+                {item.fix && <div style={{ color: G.textMuted, fontSize: 13, lineHeight: 1.65 }}>{item.fix}</div>}
               </div>
             ))}
           </div>
@@ -783,8 +783,8 @@ function ReportSchemaA({ p }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {aiOpportunities.map((item, index) => (
               <div key={index} style={{ ...panelStyle({ background: G.surface2, padding: '10px 14px' }) }}>
-                {item.area && <div style={{ color: G.text, fontSize: 12, fontWeight: 500, marginBottom: 4 }}>{item.area}</div>}
-                {item.why && <div style={{ color: G.textMuted, fontSize: 12, lineHeight: 1.65 }}>{item.why}</div>}
+                {item.area && <div style={{ color: G.text, fontSize: 13, fontWeight: 500, marginBottom: 4 }}>{item.area}</div>}
+                {item.why && <div style={{ color: G.textMuted, fontSize: 13, lineHeight: 1.65 }}>{item.why}</div>}
               </div>
             ))}
           </div>
@@ -796,7 +796,7 @@ function ReportSchemaA({ p }) {
           <SectionLabel>Priority Actions</SectionLabel>
           <ol style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 6 }}>
             {priorityActions.map((item, index) => (
-              <li key={index} style={{ color: G.textMuted, fontSize: 12, lineHeight: 1.65 }}>
+              <li key={index} style={{ color: G.textMuted, fontSize: 13, lineHeight: 1.65 }}>
                 {typeof item === 'string' ? item : item.action || item.text || JSON.stringify(item)}
               </li>
             ))}
@@ -867,7 +867,7 @@ function ReportContent({ content }) {
       <pre style={{
         margin: 0,
         color: G.textMuted,
-        fontSize: 12,
+        fontSize: 13,
         lineHeight: 1.7,
         whiteSpace: 'pre-wrap',
         wordBreak: 'break-word',
@@ -974,7 +974,7 @@ function AdminSidebar({ session, navSection, onNav, userCount }) {
         <div style={{ color: G.text, fontSize: 16, letterSpacing: '-0.03em', fontFamily: HEADING }}>
           self<span style={{ color: G.accentText }}>audit</span>
         </div>
-        <div style={{ color: G.textFaint, fontSize: 11, marginTop: 6, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+        <div style={{ color: G.textFaint, fontSize: 13, marginTop: 6, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
           admin console
         </div>
       </div>
@@ -1004,13 +1004,13 @@ function AdminSidebar({ session, navSection, onNav, userCount }) {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            ...monoStyle({ fontSize: 12 }),
+            ...monoStyle({ fontSize: 13 }),
           }}>
             {initials(session?.user?.user_metadata?.full_name, session?.user?.email)}
           </div>
           <div style={{ minWidth: 0 }}>
-            <div style={{ color: G.text, fontSize: 12 }}>{session?.user?.user_metadata?.full_name || 'Sahej'}</div>
-            <div style={{ color: G.textMuted, fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <div style={{ color: G.text, fontSize: 13 }}>{session?.user?.user_metadata?.full_name || 'Sahej'}</div>
+            <div style={{ color: G.textMuted, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {session?.user?.email}
             </div>
           </div>
@@ -1052,7 +1052,7 @@ function AdminTopbar({ section, onCycleTheme }) {
             color: G.textMuted,
             borderRadius: 6,
             padding: '4px 11px',
-            fontSize: 12,
+            fontSize: 13,
             cursor: 'pointer',
             display: 'inline-flex',
             alignItems: 'center',
@@ -1062,7 +1062,7 @@ function AdminTopbar({ section, onCycleTheme }) {
         >
           ◐ Theme
         </button>
-        <div style={{ color: G.textMuted, fontSize: 12, ...monoStyle() }}>{today}</div>
+        <div style={{ color: G.textMuted, fontSize: 13, ...monoStyle() }}>{today}</div>
       </div>
     </div>
   )
@@ -1071,7 +1071,7 @@ function AdminTopbar({ section, onCycleTheme }) {
 function MetricCard({ label, value, delta }) {
   return (
     <div style={{ ...panelStyle({ padding: '14px 16px' }) }}>
-      <div style={{ color: G.textFaint, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
+      <div style={{ color: G.textFaint, fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
         {label}
       </div>
       <div style={{ color: G.text, fontSize: 28, lineHeight: 1, marginBottom: 10, ...monoStyle() }}>
@@ -1105,9 +1105,9 @@ function UserActivityPanel({ users, stats }) {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 12 }}>
         {tiles.map(tile => (
           <div key={tile.label} style={{ ...panelStyle({ background: G.surface2, padding: '14px 12px' }) }}>
-            <div style={{ color: G.textMuted, fontSize: 11, lineHeight: 1.4, marginBottom: 12 }}>{tile.label}</div>
+            <div style={{ color: G.textMuted, fontSize: 13, lineHeight: 1.4, marginBottom: 12 }}>{tile.label}</div>
             <div style={{ color: toneColor[tile.tone], fontSize: 28, lineHeight: 1, marginBottom: 6, ...monoStyle() }}>{tile.value}</div>
-            <div style={{ color: G.textFaint, fontSize: 11 }}>{tile.note}</div>
+            <div style={{ color: G.textFaint, fontSize: 13 }}>{tile.note}</div>
           </div>
         ))}
       </div>
@@ -1136,7 +1136,7 @@ function UsersTable({ users, detailCache, onSelectUser, title = 'Users' }) {
     <div style={{ ...panelStyle({ padding: '16px 18px' }) }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
         <div style={{ color: G.text, fontSize: 13, fontFamily: HEADING }}>{title}</div>
-        <div style={{ color: G.textFaint, fontSize: 11, ...monoStyle() }}>{filtered.length} rows</div>
+        <div style={{ color: G.textFaint, fontSize: 13, ...monoStyle() }}>{filtered.length} rows</div>
       </div>
 
       <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginBottom: 14 }}>
@@ -1154,7 +1154,7 @@ function UsersTable({ users, detailCache, onSelectUser, title = 'Users' }) {
             color: G.text,
             padding: '0 12px',
             outline: 'none',
-            fontSize: 12,
+            fontSize: 13,
             fontFamily: SANS,
           }}
         />
@@ -1172,7 +1172,7 @@ function UsersTable({ users, detailCache, onSelectUser, title = 'Users' }) {
                 border: `0.5px solid ${tierFilter === f.key ? G.accent : G.border2}`,
                 background: tierFilter === f.key ? G.accentLight : G.surface2,
                 color: tierFilter === f.key ? G.accentText : G.textMuted,
-                cursor: 'pointer', fontSize: 11, textTransform: 'uppercase',
+                cursor: 'pointer', fontSize: 13, textTransform: 'uppercase',
                 letterSpacing: '0.06em', fontFamily: SANS,
               }}
             >
@@ -1193,7 +1193,7 @@ function UsersTable({ users, detailCache, onSelectUser, title = 'Users' }) {
                     padding: '10px 12px',
                     borderBottom: `0.5px solid ${G.border}`,
                     color: G.textFaint,
-                    fontSize: 10,
+                    fontSize: 13,
                     fontWeight: 400,
                     textTransform: 'uppercase',
                     letterSpacing: '0.08em',
@@ -1227,8 +1227,8 @@ function UsersTable({ users, detailCache, onSelectUser, title = 'Users' }) {
                   style={{ cursor: 'pointer', borderBottom: `0.5px solid ${G.border}` }}
                 >
                   <td style={{ padding: '12px 10px', textAlign: 'center' }}><StatusDot color={dotColor} /></td>
-                  <td style={{ padding: '12px', color: G.text, fontSize: 12 }}>{user.name || '—'}</td>
-                  <td style={{ padding: '12px', color: G.textMuted, fontSize: 12 }}>{user.email}</td>
+                  <td style={{ padding: '12px', color: G.text, fontSize: 13 }}>{user.name || '—'}</td>
+                  <td style={{ padding: '12px', color: G.textMuted, fontSize: 13 }}>{user.email}</td>
                   <td style={{ padding: '12px' }}>
                     <span style={{
                       display: 'inline-flex',
@@ -1237,25 +1237,25 @@ function UsersTable({ users, detailCache, onSelectUser, title = 'Users' }) {
                       border: `0.5px solid ${tierStyle.border}`,
                       background: tierStyle.bg,
                       color: tierStyle.color,
-                      fontSize: 11,
+                      fontSize: 13,
                       textTransform: 'uppercase',
                     }}>
                       {userPlanLabel(user)}
                     </span>
                   </td>
-                  <td style={{ padding: '12px', color: G.textMuted, fontSize: 12 }}>{user.industry || '—'}</td>
-                  <td style={{ padding: '12px', color: G.textMuted, fontSize: 12 }}>{user.domain || '—'}</td>
-                  <td style={{ padding: '12px', color: G.text, fontSize: 12, ...monoStyle() }}>{user.report_count ?? 0}</td>
-                  <td style={{ padding: '12px', color: G.textMuted, fontSize: 12, ...monoStyle() }}>{fmtDate(user.created_at)}</td>
-                  <td style={{ padding: '12px', color: G.textMuted, fontSize: 12, ...monoStyle() }}>{fmtDate(lastAudit)}</td>
-                  <td style={{ padding: '12px', fontSize: 12, ...monoStyle() }}>
+                  <td style={{ padding: '12px', color: G.textMuted, fontSize: 13 }}>{user.industry || '—'}</td>
+                  <td style={{ padding: '12px', color: G.textMuted, fontSize: 13 }}>{user.domain || '—'}</td>
+                  <td style={{ padding: '12px', color: G.text, fontSize: 13, ...monoStyle() }}>{user.report_count ?? 0}</td>
+                  <td style={{ padding: '12px', color: G.textMuted, fontSize: 13, ...monoStyle() }}>{fmtDate(user.created_at)}</td>
+                  <td style={{ padding: '12px', color: G.textMuted, fontSize: 13, ...monoStyle() }}>{fmtDate(lastAudit)}</td>
+                  <td style={{ padding: '12px', fontSize: 13, ...monoStyle() }}>
                     {user.last_health_check_at ? (
                       <span style={{ color: user.last_health_score >= 70 ? G.greenText : user.last_health_score >= 45 ? G.amberText : G.redText }}>
                         {user.last_health_score ?? '—'} · {fmtDate(user.last_health_check_at)}
                       </span>
                     ) : <span style={{ color: G.textFaint }}>—</span>}
                   </td>
-                  <td style={{ padding: '12px', color: user.connector_count > 0 ? G.greenText : G.textFaint, fontSize: 12, ...monoStyle() }}>
+                  <td style={{ padding: '12px', color: user.connector_count > 0 ? G.greenText : G.textFaint, fontSize: 13, ...monoStyle() }}>
                     {user.connector_count > 0 ? `${user.connector_count} connected` : '—'}
                   </td>
                 </tr>
@@ -1305,8 +1305,8 @@ function RightRail({ stats, users, detailCache, reliability }) {
             padding: '8px 0',
             borderBottom: index === list.length - 1 ? 'none' : `0.5px solid ${G.border}`,
           }}>
-            <div style={{ color: G.textMuted, fontSize: 12 }}>{label}</div>
-            <div style={{ color: G.text, fontSize: 12, ...monoStyle() }}>{value}</div>
+            <div style={{ color: G.textMuted, fontSize: 13 }}>{label}</div>
+            <div style={{ color: G.text, fontSize: 13, ...monoStyle() }}>{value}</div>
           </div>
         ))}
       </div>
@@ -1325,8 +1325,8 @@ function RightRail({ stats, users, detailCache, reliability }) {
           return (
             <div key={row.key} style={{ marginBottom: 12 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                <div style={{ color: G.textMuted, fontSize: 11 }}>{row.label}</div>
-                <div style={{ color: G.text, fontSize: 11, ...monoStyle() }}>
+                <div style={{ color: G.textMuted, fontSize: 13 }}>{row.label}</div>
+                <div style={{ color: G.text, fontSize: 13, ...monoStyle() }}>
                   {count}{row.price > 0 ? ` · $${count * row.price}` : ' · free'}
                 </div>
               </div>
@@ -1354,13 +1354,13 @@ function RightRail({ stats, users, detailCache, reliability }) {
             padding: '8px 0',
             borderBottom: index === list.length - 1 ? 'none' : `0.5px solid ${G.border}`,
           }}>
-            <div style={{ color: G.textMuted, fontSize: 12 }}>{label}</div>
-            <div style={{ color: G.text, fontSize: 12, ...monoStyle() }}>{value ?? '—'}</div>
+            <div style={{ color: G.textMuted, fontSize: 13 }}>{label}</div>
+            <div style={{ color: G.text, fontSize: 13, ...monoStyle() }}>{value ?? '—'}</div>
           </div>
         ))}
 
         <div style={{ marginTop: 14, paddingTop: 12, borderTop: `0.5px solid ${G.border}` }}>
-          <div style={{ color: G.textFaint, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+          <div style={{ color: G.textFaint, fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
             Latest runs
           </div>
           {[
@@ -1369,26 +1369,26 @@ function RightRail({ stats, users, detailCache, reliability }) {
             ['synthesis', reliability?.latest_synthesis_at ? fmtRelative(reliability.latest_synthesis_at) : '—'],
           ].map(([label, value]) => (
             <div key={label} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 8 }}>
-              <div style={{ color: G.textMuted, fontSize: 11 }}>{label}</div>
-              <div style={{ color: G.text, fontSize: 11, textAlign: 'right' }}>{value}</div>
+              <div style={{ color: G.textMuted, fontSize: 13 }}>{label}</div>
+              <div style={{ color: G.text, fontSize: 13, textAlign: 'right' }}>{value}</div>
             </div>
           ))}
         </div>
 
         {(reliability?.failing_syncs?.length ?? 0) > 0 && (
           <div style={{ marginTop: 14, paddingTop: 12, borderTop: `0.5px solid ${G.border}` }}>
-            <div style={{ color: G.textFaint, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+            <div style={{ color: G.textFaint, fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
               Recent sync failures
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {reliability.failing_syncs.slice(0, 3).map((item, index) => (
                 <div key={`${item.provider}-${item.synced_at}-${index}`} style={{ background: G.surface2, borderRadius: 6, padding: '8px 10px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 4 }}>
-                    <div style={{ color: G.text, fontSize: 11 }}>{item.provider || 'unknown'}</div>
-                    <div style={{ color: item.status === 'error' ? G.redText : G.amberText, fontSize: 11, textTransform: 'uppercase' }}>{item.status || 'issue'}</div>
+                    <div style={{ color: G.text, fontSize: 13 }}>{item.provider || 'unknown'}</div>
+                    <div style={{ color: item.status === 'error' ? G.redText : G.amberText, fontSize: 13, textTransform: 'uppercase' }}>{item.status || 'issue'}</div>
                   </div>
-                  <div style={{ color: G.textMuted, fontSize: 11, lineHeight: 1.5 }}>{textClamp(item.error_message || 'No error message captured.', 70)}</div>
-                  <div style={{ color: G.textFaint, fontSize: 10, marginTop: 4 }}>{fmtRelative(item.synced_at)}</div>
+                  <div style={{ color: G.textMuted, fontSize: 13, lineHeight: 1.5 }}>{textClamp(item.error_message || 'No error message captured.', 70)}</div>
+                  <div style={{ color: G.textFaint, fontSize: 13, marginTop: 4 }}>{fmtRelative(item.synced_at)}</div>
                 </div>
               ))}
             </div>
@@ -1414,7 +1414,7 @@ function TierEditor({ email, tier, onChange, saving }) {
           borderRadius: 4,
           padding: '6px 10px',
           cursor: 'pointer',
-          fontSize: 11,
+          fontSize: 13,
           textTransform: 'uppercase',
           display: 'inline-flex',
           alignItems: 'center',
@@ -1451,7 +1451,7 @@ function TierEditor({ email, tier, onChange, saving }) {
                 color: G.text,
                 cursor: 'pointer',
                 borderRadius: 4,
-                fontSize: 12,
+                fontSize: 13,
                 fontFamily: SANS,
               }}
             >
@@ -1583,7 +1583,7 @@ function UserDetailView({ user, detail, onBack, onTierChange, tierSaving, sessio
           background: G.surface2,
           color: G.textMuted,
           cursor: 'pointer',
-          fontSize: 12,
+          fontSize: 13,
           fontFamily: SANS,
         }}
       >
@@ -1607,7 +1607,7 @@ function UserDetailView({ user, detail, onBack, onTierChange, tierSaving, sessio
             ['last audit', fmtDate(reports[0]?.created_at)],
           ].map(([label, value]) => (
             <div key={label} style={{ ...panelStyle({ background: G.surface2, padding: '10px 12px' }) }}>
-              <div style={{ color: G.textFaint, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>{label}</div>
+              <div style={{ color: G.textFaint, fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>{label}</div>
               <div style={{ color: G.text, fontSize: 13, ...(typeof value === 'number' ? monoStyle() : null) }}>{value || '—'}</div>
             </div>
           ))}
@@ -1669,7 +1669,7 @@ function UserDetailView({ user, detail, onBack, onTierChange, tierSaving, sessio
                 {activeGoal ? stripAssumption(activeGoal) : <EmptyText />}
               </div>
               <ProgressBar value={goalScore || 0} />
-              <div style={{ marginTop: 6, color: G.accentText, fontSize: 11, ...monoStyle() }}>{Math.round(goalScore || 0)} / 100</div>
+              <div style={{ marginTop: 6, color: G.accentText, fontSize: 13, ...monoStyle() }}>{Math.round(goalScore || 0)} / 100</div>
             </div>
             <div>
               <SectionLabel>last audit headline</SectionLabel>
@@ -1727,7 +1727,7 @@ function UserDetailView({ user, detail, onBack, onTierChange, tierSaving, sessio
                 borderRadius: 4,
                 padding: '6px 10px',
                 cursor: 'pointer',
-                fontSize: 11,
+                fontSize: 13,
                 fontFamily: SANS,
               }}
             >
@@ -1771,7 +1771,7 @@ function UserDetailView({ user, detail, onBack, onTierChange, tierSaving, sessio
                       </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
-                      <div style={{ color: G.textMuted, fontSize: 11, ...monoStyle() }}>{fmtDate(report.created_at)}</div>
+                      <div style={{ color: G.textMuted, fontSize: 13, ...monoStyle() }}>{fmtDate(report.created_at)}</div>
                       <div style={{ color: G.textMuted }}><IconChevron open={open} /></div>
                     </div>
                   </button>
@@ -1817,13 +1817,13 @@ function UserDetailView({ user, detail, onBack, onTierChange, tierSaving, sessio
                     }}
                   >
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ color: G.textMuted, fontSize: 12, marginBottom: 6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <div style={{ color: G.textMuted, fontSize: 13, marginBottom: 6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {session.preview || 'No preview stored for this session.'}
                       </div>
                       <Badge mono>{session.message_count} msgs</Badge>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
-                      <div style={{ color: G.textMuted, fontSize: 11, ...monoStyle() }}>{fmtDate(session.started_at)}</div>
+                      <div style={{ color: G.textMuted, fontSize: 13, ...monoStyle() }}>{fmtDate(session.started_at)}</div>
                       <div style={{ color: G.textMuted }}><IconChevron open={open} /></div>
                     </div>
                   </button>
@@ -1854,7 +1854,7 @@ function UserDetailView({ user, detail, onBack, onTierChange, tierSaving, sessio
                 background: normTier(profile?.tier || user.tier) === tier ? G.accentLight : G.surface2,
                 color: normTier(profile?.tier || user.tier) === tier ? G.accentText : G.textMuted,
                 cursor: 'pointer',
-                fontSize: 11,
+                fontSize: 13,
                 textTransform: 'uppercase',
                 letterSpacing: '0.06em',
                 fontFamily: SANS,
@@ -1868,28 +1868,28 @@ function UserDetailView({ user, detail, onBack, onTierChange, tierSaving, sessio
         <SectionLabel>Billing identifiers</SectionLabel>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 10 }}>
           <div style={{ ...panelStyle({ background: G.surface2, padding: '10px 12px' }) }}>
-            <div style={{ color: G.textFaint, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>plan</div>
+            <div style={{ color: G.textFaint, fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>plan</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ color: G.text, fontSize: 12, fontWeight: 500 }}>
+              <div style={{ color: G.text, fontSize: 13, fontWeight: 500 }}>
                 {user.is_pilot ? 'Pilot' : detail?.plan_name ? detail.plan_name.charAt(0).toUpperCase() + detail.plan_name.slice(1) : '—'}
               </div>
               {user.is_pilot && user.access_expires_at && (
-                <span style={{ fontSize: 11, color: G.greenText }}>
+                <span style={{ fontSize: 13, color: G.greenText }}>
                   free until {new Date(user.access_expires_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
                 </span>
               )}
             </div>
           </div>
           <div style={{ ...panelStyle({ background: G.surface2, padding: '10px 12px' }) }}>
-            <div style={{ color: G.textFaint, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>stripe customer id</div>
-            <div style={{ color: G.textMuted, fontSize: 12, ...monoStyle() }}>{stripeCustomerId}</div>
+            <div style={{ color: G.textFaint, fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>stripe customer id</div>
+            <div style={{ color: G.textMuted, fontSize: 13, ...monoStyle() }}>{stripeCustomerId}</div>
           </div>
           <div style={{ ...panelStyle({ background: G.surface2, padding: '10px 12px' }) }}>
-            <div style={{ color: G.textFaint, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>stripe subscription id</div>
-            <div style={{ color: G.textMuted, fontSize: 12, ...monoStyle() }}>{stripeSubscriptionId}</div>
+            <div style={{ color: G.textFaint, fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>stripe subscription id</div>
+            <div style={{ color: G.textMuted, fontSize: 13, ...monoStyle() }}>{stripeSubscriptionId}</div>
           </div>
         </div>
-        <div style={{ marginTop: 12, padding: '10px 12px', background: G.amberBg, border: `0.5px solid ${G.amber}`, borderRadius: 6, fontSize: 11, color: G.amberText, lineHeight: 1.5 }}>
+        <div style={{ marginTop: 12, padding: '10px 12px', background: G.amberBg, border: `0.5px solid ${G.amber}`, borderRadius: 6, fontSize: 13, color: G.amberText, lineHeight: 1.5 }}>
           ⚠ Changing plan here updates the database only. Cancel the Stripe subscription separately if needed.
         </div>
       </div>
@@ -1905,14 +1905,14 @@ function UserDetailView({ user, detail, onBack, onTierChange, tierSaving, sessio
               return (
                 <div key={alert.id} style={{ ...panelStyle({ background: G.surface2, padding: '10px 14px' }) }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, marginBottom: 4 }}>
-                    <div style={{ color: G.text, fontSize: 12, fontWeight: 500, flex: 1 }}>{alert.title}</div>
+                    <div style={{ color: G.text, fontSize: 13, fontWeight: 500, flex: 1 }}>{alert.title}</div>
                     <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
                       <Badge tone={sevTone}>{alert.severity}</Badge>
                       <Badge tone={statusTone}>{alert.status}</Badge>
                     </div>
                   </div>
-                  {alert.description && <div style={{ color: G.textMuted, fontSize: 11, lineHeight: 1.5, marginBottom: 4 }}>{alert.description}</div>}
-                  <div style={{ color: G.textFaint, fontSize: 10, ...monoStyle() }}>{fmtDate(alert.created_at)}</div>
+                  {alert.description && <div style={{ color: G.textMuted, fontSize: 13, lineHeight: 1.5, marginBottom: 4 }}>{alert.description}</div>}
+                  <div style={{ color: G.textFaint, fontSize: 13, ...monoStyle() }}>{fmtDate(alert.created_at)}</div>
                 </div>
               )
             })}
@@ -1931,10 +1931,10 @@ function UserDetailView({ user, detail, onBack, onTierChange, tierSaving, sessio
               return (
                 <div key={hc.id} style={{ ...panelStyle({ background: G.surface2, padding: '10px 14px' }) }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-                    <div style={{ color: G.textMuted, fontSize: 11, ...monoStyle() }}>{fmtDate(hc.checked_at)}</div>
+                    <div style={{ color: G.textMuted, fontSize: 13, ...monoStyle() }}>{fmtDate(hc.checked_at)}</div>
                     <Badge tone={tone}>{score}/100</Badge>
                   </div>
-                  {hc.summary && <div style={{ color: G.textMuted, fontSize: 12, lineHeight: 1.5 }}>{hc.summary}</div>}
+                  {hc.summary && <div style={{ color: G.textMuted, fontSize: 13, lineHeight: 1.5 }}>{hc.summary}</div>}
                 </div>
               )
             })}
@@ -1953,13 +1953,13 @@ function UserDetailView({ user, detail, onBack, onTierChange, tierSaving, sessio
                 <div key={i} style={{ ...panelStyle({ background: G.surface2, padding: '10px 14px' }) }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, marginBottom: c.error_message ? 6 : 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <div style={{ color: G.text, fontSize: 12, fontWeight: 500 }}>{c.provider}</div>
+                      <div style={{ color: G.text, fontSize: 13, fontWeight: 500 }}>{c.provider}</div>
                       <Badge tone={tone}>{c.status}</Badge>
-                      {c.records_fetched > 0 && <span style={{ color: G.textFaint, fontSize: 11, ...monoStyle() }}>{c.records_fetched} records</span>}
+                      {c.records_fetched > 0 && <span style={{ color: G.textFaint, fontSize: 13, ...monoStyle() }}>{c.records_fetched} records</span>}
                     </div>
-                    <div style={{ color: G.textFaint, fontSize: 11, ...monoStyle() }}>{fmtDate(c.synced_at)}</div>
+                    <div style={{ color: G.textFaint, fontSize: 13, ...monoStyle() }}>{fmtDate(c.synced_at)}</div>
                   </div>
-                  {c.error_message && <div style={{ color: G.redText, fontSize: 11, lineHeight: 1.5 }}>{c.error_message}</div>}
+                  {c.error_message && <div style={{ color: G.redText, fontSize: 13, lineHeight: 1.5 }}>{c.error_message}</div>}
                 </div>
               )
             })}
@@ -1975,14 +1975,14 @@ function UserDetailView({ user, detail, onBack, onTierChange, tierSaving, sessio
             <button
               onClick={loadStripeStatus}
               disabled={stripeLoading}
-              style={{ padding: '5px 10px', borderRadius: 4, border: `0.5px solid ${G.border2}`, background: G.surface2, color: G.textMuted, fontSize: 11, cursor: 'pointer', fontFamily: SANS }}
+              style={{ padding: '5px 10px', borderRadius: 4, border: `0.5px solid ${G.border2}`, background: G.surface2, color: G.textMuted, fontSize: 13, cursor: 'pointer', fontFamily: SANS }}
             >
               {stripeLoading ? 'Loading…' : 'Load status'}
             </button>
           )}
         </div>
         {!stripeStatus && !stripeLoading && (
-          <div style={{ color: G.textFaint, fontSize: 12, fontStyle: 'italic' }}>Click "Load status" to fetch live data from Stripe.</div>
+          <div style={{ color: G.textFaint, fontSize: 13, fontStyle: 'italic' }}>Click "Load status" to fetch live data from Stripe.</div>
         )}
         {stripeStatus && stripeStatus.status !== 'error' && stripeStatus.status !== 'no_subscription' && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10 }}>
@@ -1995,17 +1995,17 @@ function UserDetailView({ user, detail, onBack, onTierChange, tierSaving, sessio
               ['Cancel at period end', stripeStatus.cancel_at_period_end ? 'Yes' : 'No'],
             ].map(([label, value]) => (
               <div key={label} style={{ ...panelStyle({ background: G.surface2, padding: '10px 12px' }) }}>
-                <div style={{ color: G.textFaint, fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>{label}</div>
-                <div style={{ color: G.text, fontSize: 12, ...monoStyle() }}>{value}</div>
+                <div style={{ color: G.textFaint, fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 }}>{label}</div>
+                <div style={{ color: G.text, fontSize: 13, ...monoStyle() }}>{value}</div>
               </div>
             ))}
           </div>
         )}
         {stripeStatus?.status === 'no_subscription' && (
-          <div style={{ color: G.textMuted, fontSize: 12 }}>No active subscription found.</div>
+          <div style={{ color: G.textMuted, fontSize: 13 }}>No active subscription found.</div>
         )}
         {stripeStatus?.status === 'error' && (
-          <div style={{ color: G.redText, fontSize: 12 }}>{stripeStatus.error}</div>
+          <div style={{ color: G.redText, fontSize: 13 }}>{stripeStatus.error}</div>
         )}
       </div>
 
@@ -2016,11 +2016,11 @@ function UserDetailView({ user, detail, onBack, onTierChange, tierSaving, sessio
           <button
             onClick={triggerHealthCheck}
             disabled={hcTriggering}
-            style={{ padding: '8px 14px', borderRadius: 6, border: `0.5px solid ${G.accent}`, background: G.accentLight, color: G.accentText, fontSize: 12, fontWeight: 500, cursor: hcTriggering ? 'not-allowed' : 'pointer', opacity: hcTriggering ? 0.6 : 1, fontFamily: SANS }}
+            style={{ padding: '8px 14px', borderRadius: 6, border: `0.5px solid ${G.accent}`, background: G.accentLight, color: G.accentText, fontSize: 13, fontWeight: 500, cursor: hcTriggering ? 'not-allowed' : 'pointer', opacity: hcTriggering ? 0.6 : 1, fontFamily: SANS }}
           >
             {hcTriggering ? 'Running…' : 'Run health check'}
           </button>
-          {hcMessage && <span style={{ fontSize: 12, color: hcMessage.startsWith('✓') ? G.greenText : G.redText }}>{hcMessage}</span>}
+          {hcMessage && <span style={{ fontSize: 13, color: hcMessage.startsWith('✓') ? G.greenText : G.redText }}>{hcMessage}</span>}
         </div>
       </div>
     </div>
@@ -2089,28 +2089,28 @@ function InvitePanel({ session }) {
       </div>
 
       {loading ? (
-        <div style={{ color: G.textFaint, fontSize: 12 }}>Loading…</div>
+        <div style={{ color: G.textFaint, fontSize: 13 }}>Loading…</div>
       ) : invite ? (
         <>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-            <div style={{ flex: 1, padding: '8px 12px', background: G.surface2, border: `0.5px solid ${G.border2}`, borderRadius: 6, fontSize: 11, color: G.textMuted, ...monoStyle(), overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <div style={{ flex: 1, padding: '8px 12px', background: G.surface2, border: `0.5px solid ${G.border2}`, borderRadius: 6, fontSize: 13, color: G.textMuted, ...monoStyle(), overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {inviteUrl}
             </div>
             <button
               onClick={handleCopy}
-              style={{ padding: '8px 14px', borderRadius: 6, border: `0.5px solid ${G.accent}`, background: G.accentLight, color: G.accentText, fontSize: 11, fontWeight: 600, cursor: 'pointer', flexShrink: 0, fontFamily: SANS }}
+              style={{ padding: '8px 14px', borderRadius: 6, border: `0.5px solid ${G.accent}`, background: G.accentLight, color: G.accentText, fontSize: 13, fontWeight: 600, cursor: 'pointer', flexShrink: 0, fontFamily: SANS }}
             >
               {copied ? 'Copied ✓' : 'Copy'}
             </button>
           </div>
           <div style={{ marginBottom: 8 }}>
             <ProgressBar value={invite.cap > 0 ? (invite.used_count / invite.cap) * 100 : 0} tone={invite.used_count >= invite.cap ? 'red' : 'green'} />
-            <div style={{ marginTop: 4, fontSize: 11, color: G.textFaint }}>{invite.cap - invite.used_count} spots remaining</div>
+            <div style={{ marginTop: 4, fontSize: 13, color: G.textFaint }}>{invite.cap - invite.used_count} spots remaining</div>
           </div>
           <button
             onClick={handleExpire}
             disabled={working}
-            style={{ padding: '7px 14px', borderRadius: 6, border: `0.5px solid ${G.red}`, background: G.redBg, color: G.redText, fontSize: 11, fontWeight: 500, cursor: working ? 'not-allowed' : 'pointer', opacity: working ? 0.6 : 1, fontFamily: SANS }}
+            style={{ padding: '7px 14px', borderRadius: 6, border: `0.5px solid ${G.red}`, background: G.redBg, color: G.redText, fontSize: 13, fontWeight: 500, cursor: working ? 'not-allowed' : 'pointer', opacity: working ? 0.6 : 1, fontFamily: SANS }}
           >
             {working ? 'Working…' : 'Expire link now'}
           </button>
@@ -2118,29 +2118,29 @@ function InvitePanel({ session }) {
       ) : (
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 12, color: G.textMuted }}>Max signups:</span>
+            <span style={{ fontSize: 13, color: G.textMuted }}>Max signups:</span>
             <input
               type="number"
               min={1}
               max={1000}
               value={cap}
               onChange={e => setCap(Math.max(1, parseInt(e.target.value) || 10))}
-              style={{ width: 64, padding: '5px 8px', borderRadius: 6, border: `0.5px solid ${G.border2}`, background: G.surface2, color: G.text, fontSize: 12, fontFamily: SANS }}
+              style={{ width: 64, padding: '5px 8px', borderRadius: 6, border: `0.5px solid ${G.border2}`, background: G.surface2, color: G.text, fontSize: 13, fontFamily: SANS }}
             />
           </div>
           <button
             onClick={handleGenerate}
             disabled={working}
-            style={{ padding: '7px 14px', borderRadius: 6, border: `0.5px solid ${G.accent}`, background: G.accentLight, color: G.accentText, fontSize: 12, fontWeight: 500, cursor: working ? 'not-allowed' : 'pointer', opacity: working ? 0.6 : 1, fontFamily: SANS }}
+            style={{ padding: '7px 14px', borderRadius: 6, border: `0.5px solid ${G.accent}`, background: G.accentLight, color: G.accentText, fontSize: 13, fontWeight: 500, cursor: working ? 'not-allowed' : 'pointer', opacity: working ? 0.6 : 1, fontFamily: SANS }}
           >
             {working ? 'Generating…' : 'Generate invite link'}
           </button>
-          <div style={{ fontSize: 12, color: G.textFaint }}>No active invite link.</div>
+          <div style={{ fontSize: 13, color: G.textFaint }}>No active invite link.</div>
         </div>
       )}
 
       {message && (
-        <div style={{ marginTop: 10, fontSize: 11, color: G.textMuted }}>{message}</div>
+        <div style={{ marginTop: 10, fontSize: 13, color: G.textMuted }}>{message}</div>
       )}
     </div>
   )
@@ -2196,7 +2196,7 @@ function VoiceWaitlistPanel({ session }) {
     <div style={p}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <div style={{ fontSize: 14, fontWeight: 600, color: G.text }}>Voice Waitlist</div>
-        <div style={{ fontSize: 12, color: G.textMuted, fontFamily: MONO }}>{entries.length} {entries.length === 1 ? 'entry' : 'entries'}</div>
+        <div style={{ fontSize: 13, color: G.textMuted, fontFamily: MONO }}>{entries.length} {entries.length === 1 ? 'entry' : 'entries'}</div>
       </div>
       {entries.length === 0 ? (
         <div style={{ fontSize: 13, color: G.textMuted }}>No entries yet.</div>
@@ -2205,21 +2205,21 @@ function VoiceWaitlistPanel({ session }) {
           <thead>
             <tr style={{ borderBottom: `1px solid ${G.border}` }}>
               {['Email', 'Source', 'Joined', ''].map(h => (
-                <th key={h} style={{ textAlign: 'left', padding: '6px 10px', color: G.textMuted, fontWeight: 500, fontFamily: MONO, fontSize: 11, letterSpacing: '0.05em', textTransform: 'uppercase' }}>{h}</th>
+                <th key={h} style={{ textAlign: 'left', padding: '6px 10px', color: G.textMuted, fontWeight: 500, fontFamily: MONO, fontSize: 13, letterSpacing: '0.05em', textTransform: 'uppercase' }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {entries.map(e => (
               <tr key={e.id} style={{ borderBottom: `1px solid ${G.border}` }}>
-                <td style={{ padding: '10px 10px', color: G.text, fontFamily: MONO, fontSize: 12 }}>{e.email}</td>
-                <td style={{ padding: '10px 10px', color: G.textMuted, fontSize: 12 }}>{e.source}</td>
-                <td style={{ padding: '10px 10px', color: G.textMuted, fontFamily: MONO, fontSize: 11 }}>{new Date(e.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
+                <td style={{ padding: '10px 10px', color: G.text, fontFamily: MONO, fontSize: 13 }}>{e.email}</td>
+                <td style={{ padding: '10px 10px', color: G.textMuted, fontSize: 13 }}>{e.source}</td>
+                <td style={{ padding: '10px 10px', color: G.textMuted, fontFamily: MONO, fontSize: 13 }}>{new Date(e.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
                 <td style={{ padding: '10px 10px', textAlign: 'right' }}>
                   <button
                     onClick={() => handleDelete(e.id)}
                     disabled={deletingId === e.id}
-                    style={{ background: 'none', border: `1px solid ${G.border}`, borderRadius: 6, color: G.red, fontFamily: MONO, fontSize: 11, padding: '4px 10px', cursor: 'pointer', opacity: deletingId === e.id ? 0.5 : 1, transition: 'opacity .2s, border-color .2s' }}
+                    style={{ background: 'none', border: `1px solid ${G.border}`, borderRadius: 6, color: G.red, fontFamily: MONO, fontSize: 13, padding: '4px 10px', cursor: 'pointer', opacity: deletingId === e.id ? 0.5 : 1, transition: 'opacity .2s, border-color .2s' }}
                   >
                     {deletingId === e.id ? '…' : 'Delete'}
                   </button>
@@ -2457,7 +2457,7 @@ export default function AdminDashboard({ session, onUnauthorized }) {
             ) : (
               <div style={{ ...panelStyle({ padding: '18px 20px' }) }}>
                 <div style={{ color: G.text, fontSize: 13, marginBottom: 6 }}>Settings</div>
-                <div style={{ color: G.textMuted, fontSize: 12 }}>coming soon</div>
+                <div style={{ color: G.textMuted, fontSize: 13 }}>coming soon</div>
               </div>
             )}
           </div>

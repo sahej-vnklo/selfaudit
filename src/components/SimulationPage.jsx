@@ -736,7 +736,7 @@ export default function SimulationPage({ userId }) {
 // ── Styles ─────────────────────────────────────────────────────────────────────
 const st = {
   page: {},
-  eyebrow: { fontSize: 12, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--accent-text)' },
+  eyebrow: { fontSize: 13, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--accent-text)' },
 
   status: { padding: '14px 0', color: 'var(--text-secondary)', fontSize: 14 },
   statusCard: {
@@ -770,7 +770,7 @@ const st = {
   },
 
   aname: {
-    fontSize: 9,
+    fontSize: 13,
     letterSpacing: '0.1em',
     textTransform: 'uppercase',
     color: 'var(--text-muted)',
@@ -792,8 +792,8 @@ const st = {
     borderRadius: 8,
     marginTop: 6,
   },
-  nlText: { fontSize: 12, color: 'var(--text-secondary)', textAlign: 'center' },
-  nlSub:  { fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', maxWidth: 130, lineHeight: 1.4 },
+  nlText: { fontSize: 13, color: 'var(--text-secondary)', textAlign: 'center' },
+  nlSub:  { fontSize: 13, color: 'var(--text-muted)', textAlign: 'center', maxWidth: 130, lineHeight: 1.4 },
 
   // Chat
   chat: {
@@ -809,16 +809,16 @@ const st = {
     flexShrink: 0,
   },
   chatTitle: { fontSize: 13, fontWeight: 500, color: 'var(--text)' },
-  chatSub:   { fontSize: 11, color: 'var(--text-secondary)', marginTop: 1 },
+  chatSub:   { fontSize: 13, color: 'var(--text-secondary)', marginTop: 1 },
 
   pills: { padding: '8px 10px 4px', flexShrink: 0 },
   pillsLabel: {
-    fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.08em',
+    fontSize: 13, textTransform: 'uppercase', letterSpacing: '0.08em',
     color: 'var(--text-muted)', marginBottom: 4,
   },
   pill: {
     display: 'block', width: '100%', textAlign: 'left',
-    fontSize: 11, padding: '5px 8px', marginBottom: 3,
+    fontSize: 13, padding: '5px 8px', marginBottom: 3,
     borderRadius: 6, border: '1px solid var(--border)',
     background: 'var(--surface)', cursor: 'pointer',
     color: 'var(--text-secondary)', fontFamily: 'inherit',
@@ -830,18 +830,18 @@ const st = {
     display: 'flex', flexDirection: 'column', gap: 6,
   },
   msgUser: {
-    fontSize: 11, lineHeight: 1.5, padding: '7px 9px',
+    fontSize: 13, lineHeight: 1.5, padding: '7px 9px',
     borderRadius: 7, background: 'var(--surface)',
     color: 'var(--text)', alignSelf: 'flex-end', maxWidth: '90%',
   },
   msgAi: {
-    fontSize: 11, lineHeight: 1.5, padding: '7px 9px',
+    fontSize: 13, lineHeight: 1.5, padding: '7px 9px',
     borderRadius: 7, border: '1px solid var(--border)', color: 'var(--text)',
   },
 
   resetBtn: {
     margin: '0 10px 4px',
-    fontSize: 10, padding: '4px 8px', borderRadius: 5,
+    fontSize: 13, padding: '4px 8px', borderRadius: 5,
     border: '1px solid var(--border)', background: 'transparent',
     cursor: 'pointer', color: 'var(--text-muted)', fontFamily: 'inherit',
     textAlign: 'left',
@@ -852,7 +852,7 @@ const st = {
     display: 'flex', gap: 5, flexShrink: 0,
   },
   input: {
-    flex: 1, fontSize: 11, border: '1px solid var(--border)',
+    flex: 1, fontSize: 13, border: '1px solid var(--border)',
     borderRadius: 6, padding: '6px 8px',
     background: 'var(--surface)', color: 'var(--text)',
     fontFamily: 'inherit', outline: 'none',

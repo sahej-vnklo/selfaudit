@@ -153,7 +153,7 @@ const styles = {
     marginBottom: 24,
   },
   eyebrow: {
-    fontSize: 12,
+    fontSize: 13,
     letterSpacing: '0.12em',
     textTransform: 'uppercase',
     color: '#8A5A1F',

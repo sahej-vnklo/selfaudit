@@ -41,7 +41,7 @@ function thresholdHint(thresholds, unit) {
 
 function SavedBadge() {
   return (
-    <span style={{ fontSize: 10, color: C.greenText, background: C.greenBg, border: `1px solid ${C.green}`, borderRadius: 4, padding: '1px 6px', fontWeight: 600, letterSpacing: '0.04em' }}>
+    <span style={{ fontSize: 13, color: C.greenText, background: C.greenBg, border: `1px solid ${C.green}`, borderRadius: 4, padding: '1px 6px', fontWeight: 600, letterSpacing: '0.04em' }}>
       Saved
     </span>
   )
@@ -91,16 +91,16 @@ function MetricRow({ areaId, metric, userId }) {
       <div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
           <span style={{ fontSize: 14, fontWeight: 500, color: C.text }}>{metric.label}</span>
-          <span style={{ fontSize: 10, color: C.textFaint, background: C.surface2, borderRadius: 3, padding: '1px 5px' }}>
+          <span style={{ fontSize: 13, color: C.textFaint, background: C.surface2, borderRadius: 3, padding: '1px 5px' }}>
             {metric.unit}
           </span>
-          <span style={{ fontSize: 10, color: C.textFaint }}>{DIR_LABEL[metric.preferredDirection] ?? ''}</span>
+          <span style={{ fontSize: 13, color: C.textFaint }}>{DIR_LABEL[metric.preferredDirection] ?? ''}</span>
         </div>
         {metric.defaultInterpretation && (
-          <p style={{ fontSize: 12, color: C.textFaint, margin: '0 0 4px', lineHeight: 1.5 }}>{metric.defaultInterpretation}</p>
+          <p style={{ fontSize: 13, color: C.textFaint, margin: '0 0 4px', lineHeight: 1.5 }}>{metric.defaultInterpretation}</p>
         )}
         {hint && (
-          <p style={{ fontSize: 11, color: C.amberText, margin: 0 }}>System flags: {hint}</p>
+          <p style={{ fontSize: 13, color: C.amberText, margin: 0 }}>System flags: {hint}</p>
         )}
       </div>
 
@@ -124,7 +124,7 @@ function MetricRow({ areaId, metric, userId }) {
             boxSizing: 'border-box',
           }}
         />
-        <div style={{ fontSize: 11, color: C.textFaint, height: 14 }}>
+        <div style={{ fontSize: 13, color: C.textFaint, height: 14 }}>
           {saving && 'Saving…'}
           {!saving && saved && <SavedBadge />}
           {!saving && err && <span style={{ color: C.red }}>{err}</span>}
@@ -141,7 +141,7 @@ function AreaSection({ area, userId }) {
     <div style={{ marginBottom: 32 }}>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, paddingBottom: 10, borderBottom: `2px solid ${C.text}`, marginBottom: 4 }}>
         <h2 style={{ fontSize: 16, fontWeight: 600, color: C.text, margin: 0 }}>{area.label}</h2>
-        <span style={{ fontSize: 12, color: C.textFaint }}>
+        <span style={{ fontSize: 13, color: C.textFaint }}>
           {filledCount}/{area.metrics.length} set
         </span>
       </div>
@@ -211,7 +211,7 @@ export default function LogicPage({ user }) {
         <p style={{ fontSize: 13, color: C.textFaint, margin: '0 0 6px', lineHeight: 1.6 }}>
           Set your current numbers. The system uses these as the baseline — so it knows what good and bad looks like for your business, not just in general.
         </p>
-        <p style={{ fontSize: 12, color: C.textFaint, margin: 0 }}>
+        <p style={{ fontSize: 13, color: C.textFaint, margin: 0 }}>
           {totalSet} of {totalTotal} metrics set · changes save automatically
         </p>
       </div>

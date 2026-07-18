@@ -91,7 +91,7 @@
 .uc-area-tag {
   display: inline-block;
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 13px;
   letter-spacing: 0.28em;
   text-transform: uppercase;
   color: var(--ember);
@@ -182,7 +182,7 @@
 }
 .uc-chain-num {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 13px;
   letter-spacing: 0.22em;
   color: var(--ember);
   margin-bottom: 12px;
@@ -209,7 +209,7 @@
 }
 .uc-signals-eyebrow {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 13px;
   letter-spacing: 0.28em;
   text-transform: uppercase;
   color: var(--ember);
@@ -252,14 +252,14 @@
 .uc-verdict-inner { max-width: 1400px; margin: 0 auto; }
 .uc-verdict-label {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 13px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   margin-bottom: 20px;
 }
 .uc-verdict-section-label {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 13px;
   letter-spacing: 0.28em;
   text-transform: uppercase;
   color: var(--ember);
@@ -273,7 +273,7 @@
 }
 .uc-verdict-meta {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 13px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: rgba(244,235,227,0.4);
