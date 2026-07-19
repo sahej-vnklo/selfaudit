@@ -237,8 +237,11 @@ export default function Landing({ onStart, onSignUp, session, openMenu, onMenuOp
   const [demoOpen, setDemoOpen] = useState(false)
   const [gettingStartedOpen, setGettingStartedOpen] = useState(false)
   const [demoName, setDemoName] = useState('')
+  const [demoJobTitle, setDemoJobTitle] = useState('')
   const [demoCompany, setDemoCompany] = useState('')
+  const [demoCountry, setDemoCountry] = useState('')
   const [demoEmail, setDemoEmail] = useState('')
+  const [demoPhone, setDemoPhone] = useState('')
   const [demoNeed, setDemoNeed] = useState('')
   const [demoLoading, setDemoLoading] = useState(false)
   const [demoDone, setDemoDone] = useState(false)
@@ -280,9 +283,12 @@ export default function Landing({ onStart, onSignUp, session, openMenu, onMenuOp
     event.preventDefault()
     setDemoError(null)
     if (!demoName.trim()) { setDemoError('Enter your name.'); return }
+    if (!demoJobTitle.trim()) { setDemoError('Enter your job title.'); return }
     if (!demoCompany.trim()) { setDemoError('Enter your company name.'); return }
+    if (!demoCountry.trim()) { setDemoError('Enter your country.'); return }
     if (!demoEmail.trim()) { setDemoError('Enter your work email.'); return }
-    if (!demoNeed.trim()) { setDemoError('Tell us what you want to understand.'); return }
+    if (!demoPhone.trim()) { setDemoError('Enter your phone number.'); return }
+    if (!demoNeed.trim()) { setDemoError('Give us some context.'); return }
 
     setDemoLoading(true)
     try {
@@ -291,7 +297,7 @@ export default function Landing({ onStart, onSignUp, session, openMenu, onMenuOp
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: demoEmail.trim(),
-          message: `Demo request\n\nName: ${demoName.trim()}\nCompany: ${demoCompany.trim()}\n\nWhat they want to understand:\n${demoNeed.trim()}`,
+          message: `Demo request\n\nName: ${demoName.trim()}\nJob title: ${demoJobTitle.trim()}\nCompany: ${demoCompany.trim()}\nCountry: ${demoCountry.trim()}\nWork email: ${demoEmail.trim()}\nPhone number: ${demoPhone.trim()}\n\nContext:\n${demoNeed.trim()}`,
         }),
       })
       const data = await response.json()
@@ -306,7 +312,7 @@ export default function Landing({ onStart, onSignUp, session, openMenu, onMenuOp
     } finally {
       setDemoLoading(false)
     }
-  }, [demoCompany, demoEmail, demoName, demoNeed, posthog])
+  }, [demoCompany, demoCountry, demoEmail, demoJobTitle, demoName, demoNeed, demoPhone, posthog])
 
   const openGettingStarted = useCallback(() => {
     posthog?.capture('get_started_opened', { source: 'landing' })
@@ -556,19 +562,31 @@ export default function Landing({ onStart, onSignUp, session, openMenu, onMenuOp
                 <div className="landing-form-grid">
                   <label>
                     <span>Name</span>
-                    <input value={demoName} onChange={(event) => setDemoName(event.target.value)} disabled={demoLoading} autoFocus />
+                    <input value={demoName} onChange={(event) => setDemoName(event.target.value)} disabled={demoLoading} autoComplete="name" autoFocus />
+                  </label>
+                  <label>
+                    <span>Job title</span>
+                    <input value={demoJobTitle} onChange={(event) => setDemoJobTitle(event.target.value)} disabled={demoLoading} autoComplete="organization-title" />
                   </label>
                   <label>
                     <span>Company</span>
-                    <input value={demoCompany} onChange={(event) => setDemoCompany(event.target.value)} disabled={demoLoading} />
+                    <input value={demoCompany} onChange={(event) => setDemoCompany(event.target.value)} disabled={demoLoading} autoComplete="organization" />
+                  </label>
+                  <label>
+                    <span>Country</span>
+                    <input value={demoCountry} onChange={(event) => setDemoCountry(event.target.value)} disabled={demoLoading} autoComplete="country-name" />
+                  </label>
+                  <label>
+                    <span>Work email</span>
+                    <input type="email" value={demoEmail} onChange={(event) => setDemoEmail(event.target.value)} disabled={demoLoading} autoComplete="email" placeholder="you@company.com" />
+                  </label>
+                  <label>
+                    <span>Phone number</span>
+                    <input type="tel" value={demoPhone} onChange={(event) => setDemoPhone(event.target.value)} disabled={demoLoading} autoComplete="tel" placeholder="+1 555 000 0000" />
                   </label>
                 </div>
                 <label>
-                  <span>Work email</span>
-                  <input type="email" value={demoEmail} onChange={(event) => setDemoEmail(event.target.value)} disabled={demoLoading} placeholder="you@company.com" />
-                </label>
-                <label>
-                  <span>What do you want SelfAudit to help you understand?</span>
+                  <span>Give us some context</span>
                   <textarea value={demoNeed} onChange={(event) => setDemoNeed(event.target.value)} disabled={demoLoading} rows={4} placeholder="The decisions, risks, or blind spots you want to improve…" />
                 </label>
                 {demoError && <p className="landing-form-error" role="alert">{demoError}</p>}
