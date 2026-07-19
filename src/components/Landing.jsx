@@ -545,7 +545,7 @@ export default function Landing({ onStart, onSignUp, session, openMenu, onMenuOp
 
       {demoOpen && (
         <div className="landing-modal-overlay" role="presentation" onMouseDown={closeDemoRequest}>
-          <section className="landing-modal" role="dialog" aria-modal="true" aria-labelledby="demo-request-title" onMouseDown={(event) => event.stopPropagation()}>
+          <section className="landing-modal landing-demo-modal" role="dialog" aria-modal="true" aria-labelledby="demo-request-title" onMouseDown={(event) => event.stopPropagation()}>
             <button className="landing-modal-close" type="button" aria-label="Close demo request" onClick={closeDemoRequest}>×</button>
             {demoDone ? (
               <div className="landing-modal-success">
@@ -557,7 +557,7 @@ export default function Landing({ onStart, onSignUp, session, openMenu, onMenuOp
             ) : (
               <form onSubmit={submitDemoRequest}>
                 <span className="landing-modal-kicker">Request a demo</span>
-                <h2 id="demo-request-title">Show us what you need to see.</h2>
+                <h2 id="demo-request-title">Tell us about your business.</h2>
                 <p className="landing-modal-intro">Give us enough context to make the conversation useful from the first minute.</p>
                 <div className="landing-form-grid">
                   <label>
@@ -587,7 +587,7 @@ export default function Landing({ onStart, onSignUp, session, openMenu, onMenuOp
                 </div>
                 <label>
                   <span>Give us some context</span>
-                  <textarea value={demoNeed} onChange={(event) => setDemoNeed(event.target.value)} disabled={demoLoading} rows={4} placeholder="The decisions, risks, or blind spots you want to improve…" />
+                  <textarea value={demoNeed} onChange={(event) => setDemoNeed(event.target.value)} disabled={demoLoading} rows={3} placeholder="The decisions, risks, or blind spots you want to improve…" />
                 </label>
                 {demoError && <p className="landing-form-error" role="alert">{demoError}</p>}
                 <button className="landing-modal-primary" type="submit" disabled={demoLoading}>{demoLoading ? 'Sending…' : 'Request the demo'}</button>
