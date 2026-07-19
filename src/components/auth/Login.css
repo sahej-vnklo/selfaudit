@@ -1,3 +1,54 @@
 /* Reset global index.css button hover bleed */
 .sa-login-btn-reset         { background: none !important; border: none !important; box-shadow: none !important; border-radius: 0 !important; padding: 0 !important; }
 .sa-login-btn-reset:hover   { transform: none !important; box-shadow: none !important; filter: none !important; background: none !important; border: none !important; opacity: 0.8; }
+
+.sa-login-nav {
+  position: fixed;
+  top: 14px;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  padding: 0 36px;
+  background: transparent;
+}
+
+.sa-login-nav-inner {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  min-height: 52px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 7px 18px;
+  overflow: hidden;
+  background: rgba(127, 127, 127, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(22px) saturate(140%);
+  -webkit-backdrop-filter: blur(22px) saturate(140%);
+}
+
+.sa-login-logo {
+  color: #14161a;
+  font-family: 'Titillium Web', -apple-system, 'Helvetica Neue', 'Inter', Arial, sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  text-decoration: none;
+}
+
+@media (max-width: 940px) {
+  .sa-login-nav {
+    top: 10px;
+    padding: 0 20px;
+  }
+}
+
+.sa-login-primary:hover:not(:disabled) {
+  background: rgba(38, 38, 41, 0.94) !important;
+  border-color: rgba(255, 255, 255, 0.28) !important;
+  box-shadow: 0 12px 28px -16px rgba(0, 0, 0, 0.82), inset 0 1px 0 rgba(255, 255, 255, 0.16) !important;
+  transform: translateY(-1px);
+}

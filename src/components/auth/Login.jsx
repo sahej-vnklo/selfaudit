@@ -9,7 +9,6 @@ const C = {
   fg:          '#1a1110',
   fgDim:       '#6b5d54',
   fgMute:      '#9a8a7f',
-  line:        'rgba(26, 17, 16, 0.1)',
   line2:       'rgba(26, 17, 16, 0.16)',
   ember:       'oklch(0.52 0.18 32)',
   emberGlow:   'oklch(0.5 0.19 33)',
@@ -18,52 +17,14 @@ const C = {
   mono:        '"JetBrains Mono", ui-monospace, monospace',
 }
 
-// ── Toggle: flip to true to re-enable public signup ───────────────────────────
-const SHOW_SIGNUP = false
-
 // ── Main component ────────────────────────────────────────────────────────────
-export default function Login({ onSuccess, onSignup, initialMessage = '' }) {
+export default function Login({ onSuccess, initialMessage = '' }) {
   const [email,        setEmail]        = useState('')
   const [code,         setCode]         = useState('')
   const [error,        setError]        = useState(null)
   const [loading,      setLoading]      = useState(false)
   const [codeSent,     setCodeSent]     = useState(false)
   const [otpType,      setOtpType]      = useState('magiclink')
-
-  // ── Early access modal ────────────────────────────────────────────────────
-  const [showModal,      setShowModal]      = useState(false)
-  const [modalEmail,     setModalEmail]     = useState('')
-  const [modalLoading,   setModalLoading]   = useState(false)
-  const [modalSubmitted, setModalSubmitted] = useState(false)
-  const [modalError,     setModalError]     = useState(null)
-
-  const handleEarlyAccess = async () => {
-    setModalError(null)
-    if (!modalEmail.trim()) { setModalError('Enter your email first.'); return }
-    setModalLoading(true)
-    try {
-      const res = await fetch('/api/voice-waitlist', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ email: modalEmail.trim(), source: 'login_page' }),
-      })
-      const data = await res.json()
-      if (!res.ok) { setModalError(data?.error || 'Something went wrong. Try again.'); return }
-      setModalSubmitted(true)
-    } catch {
-      setModalError('Something went wrong. Try again.')
-    } finally {
-      setModalLoading(false)
-    }
-  }
-
-  const closeModal = () => {
-    setShowModal(false)
-    setModalEmail('')
-    setModalError(null)
-    setModalSubmitted(false)
-    setModalLoading(false)
-  }
 
   useEffect(() => {
     if (initialMessage) setError(initialMessage)
@@ -128,6 +89,7 @@ export default function Login({ onSuccess, onSignup, initialMessage = '' }) {
               <CodeField value={code} onChange={setCode} onEnter={handleVerifyCode} />
               {error && <p style={s.error}>{error}</p>}
               <button
+                className="sa-login-primary"
                 style={{ ...s.btn, opacity: loading ? 0.7 : 1 }}
                 onClick={handleVerifyCode}
                 disabled={loading}
@@ -151,8 +113,6 @@ export default function Login({ onSuccess, onSignup, initialMessage = '' }) {
       <LoginNav />
       <section style={s.auth}>
         <div style={s.inner}>
-          <h1 style={s.headline}>See your business <span style={s.em}>clearly.</span></h1>
-
           <div style={s.card}>
             <p style={s.eyebrow}>Welcome Back</p>
             <h2 style={s.cardTitle}>Log in to your account</h2>
@@ -162,70 +122,18 @@ export default function Login({ onSuccess, onSignup, initialMessage = '' }) {
             {error && <p style={s.error}>{error}</p>}
 
             <button
+              className="sa-login-primary"
               style={{ ...s.btn, opacity: loading ? 0.7 : 1 }}
               onClick={handleSendCode}
               disabled={loading}
             >
               {loading ? 'Sending…' : 'Email me a code'}
             </button>
-
-            {SHOW_SIGNUP && (
-              <p style={s.switchLine}>
-                Don't have an account?{' '}
-                <button className="sa-login-btn-reset" style={s.switchLink} onClick={onSignup}>Sign up</button>
-              </p>
-            )}
-            <p style={s.switchLine}>
-              Not a pilot user?{' '}
-              <button className="sa-login-btn-reset" style={s.switchLink} onClick={() => setShowModal(true)}>Get early access.</button>
-            </p>
           </div>
 
           <Fine />
         </div>
       </section>
-
-      {/* ── Early access modal ─────────────────────────────────────────── */}
-      {showModal && (
-        <div style={s.modalOverlay} onClick={closeModal}>
-          <div style={s.modalBox} onClick={e => e.stopPropagation()}>
-            <button className="sa-login-btn-reset" style={s.modalClose} onClick={closeModal}>✕</button>
-
-            {modalSubmitted ? (
-              <>
-                <h2 style={s.modalTitle}>You're on the list.</h2>
-                <p style={s.modalSub}>We'll be in touch.</p>
-              </>
-            ) : (
-              <>
-                <h2 style={s.modalTitle}>Get early access.</h2>
-                <p style={s.modalSub}>Leave your email — we'll sign you up as our pilot user.</p>
-                <div style={{ marginTop: 24 }}>
-                  <label style={s.fieldLabel}>Email</label>
-                  <input
-                    style={{ ...s.input, ...(modalError ? { borderColor: C.ember } : {}) }}
-                    type="email"
-                    placeholder="your@email.com"
-                    value={modalEmail}
-                    onChange={e => setModalEmail(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && handleEarlyAccess()}
-                    disabled={modalLoading}
-                    autoFocus
-                  />
-                </div>
-                {modalError && <p style={s.error}>{modalError}</p>}
-                <button
-                  style={{ ...s.btn, marginTop: 16, opacity: modalLoading ? 0.7 : 1 }}
-                  onClick={handleEarlyAccess}
-                  disabled={modalLoading}
-                >
-                  {modalLoading ? 'Saving…' : 'Request Access'}
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   )
 }
@@ -233,21 +141,18 @@ export default function Login({ onSuccess, onSignup, initialMessage = '' }) {
 // ── Sub-components ────────────────────────────────────────────────────────────
 function LoginNav() {
   return (
-    <nav style={s.nav}>
-      <div style={s.logoWrap} onClick={() => { window.location.hash = '' }}>
-        <svg width="23" height="23" viewBox="0 0 32 32" fill="none">
-          <defs>
-            <filter id="lgGlow" x="-50%" y="-50%" width="200%" height="200%">
-              <feDropShadow dx="0" dy="0" stdDeviation="0.8" floodColor="#ff3d1f" floodOpacity="0.9" />
-            </filter>
-          </defs>
-          <g filter="url(#lgGlow)" stroke="#ff3d1f" strokeLinejoin="round" strokeLinecap="round" fill="none">
-            <path d="M16,2 L28.1,9 L28.1,23 L16,30 L3.9,23 L3.9,9 Z" strokeWidth="1.8" />
-            <path d="M16,9.5 L21.6,12.75 L21.6,19.25 L16,22.5 L10.4,19.25 L10.4,12.75 Z" strokeWidth="1.4" />
-            <path d="M16,2 L16,9.5 M28.1,9 L21.6,12.75 M28.1,23 L21.6,19.25 M16,30 L16,22.5 M3.9,23 L10.4,19.25 M3.9,9 L10.4,12.75" strokeWidth="1.2" />
-          </g>
-        </svg>
-        <span style={s.logoText}>SelfAudit</span>
+    <nav className="sa-login-nav">
+      <div className="sa-login-nav-inner">
+        <a
+          className="sa-login-logo"
+          href="#"
+          onClick={(event) => {
+            event.preventDefault()
+            window.location.hash = ''
+          }}
+        >
+          SelfAudit
+        </a>
       </div>
     </nav>
   )
@@ -324,35 +229,6 @@ const s = {
     display: 'flex',
     flexDirection: 'column',
     color: C.fg,
-  },
-
-  // Nav
-  nav: {
-    position: 'sticky',
-    top: 0,
-    zIndex: 100,
-    display: 'flex',
-    alignItems: 'center',
-    padding: '0 38px',
-    height: 64,
-    background: 'rgba(255,255,255,0.82)',
-    backdropFilter: 'blur(20px) saturate(130%)',
-    WebkitBackdropFilter: 'blur(20px) saturate(130%)',
-    borderBottom: `1px solid ${C.line}`,
-  },
-  logoWrap: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 10,
-    cursor: 'pointer',
-  },
-  logoText: {
-    fontFamily: C.serif,
-    fontSize: 22,
-    fontWeight: 600,
-    letterSpacing: '-0.01em',
-    color: C.fg,
-    lineHeight: 1,
   },
 
   // Auth layout
@@ -467,17 +343,19 @@ const s = {
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    background: C.ember,
+    background: 'rgba(25, 25, 27, 0.9)',
     color: '#ffffff',
-    border: `1px solid ${C.ember}`,
+    border: '1px solid rgba(255, 255, 255, 0.18)',
     borderRadius: 6,
+    backdropFilter: 'blur(14px) saturate(120%)',
+    WebkitBackdropFilter: 'blur(14px) saturate(120%)',
     fontFamily: C.sans,
     fontSize: 14,
     fontWeight: 600,
     letterSpacing: '0.01em',
     cursor: 'pointer',
-    boxShadow: '0 8px 20px -14px oklch(0.52 0.18 32 / 0.55)',
-    transition: 'transform .2s, box-shadow .2s',
+    boxShadow: '0 10px 24px -16px rgba(0, 0, 0, 0.72), inset 0 1px 0 rgba(255, 255, 255, 0.12)',
+    transition: 'background .2s, border-color .2s, box-shadow .2s, transform .2s',
   },
   ghostBtn: {
     width: '100%',
@@ -500,27 +378,6 @@ const s = {
     marginTop: 8,
     marginBottom: 4,
   },
-  switchLine: {
-    textAlign: 'center',
-    marginTop: 22,
-    fontSize: 14,
-    color: C.fgDim,
-  },
-  switchLink: {
-    background: 'none',
-    border: 'none',
-    boxShadow: 'none',
-    borderRadius: 0,
-    color: C.emberGlow,
-    fontWeight: 500,
-    cursor: 'pointer',
-    fontSize: 14,
-    padding: 0,
-    fontFamily: C.sans,
-    transition: 'color .2s',
-    transform: 'none',
-    filter: 'none',
-  },
   fine: {
     textAlign: 'center',
     marginTop: 18,
@@ -533,52 +390,5 @@ const s = {
     color: C.fgDim,
     textDecoration: 'underline',
     textUnderlineOffset: 2,
-  },
-
-  // Modal
-  modalOverlay: {
-    position: 'fixed',
-    inset: 0,
-    background: 'rgba(10,7,7,0.55)',
-    backdropFilter: 'blur(6px)',
-    zIndex: 200,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-  },
-  modalBox: {
-    position: 'relative',
-    width: '100%',
-    maxWidth: 352,
-    background: '#ffffff',
-    border: '1px solid rgba(26,17,16,0.14)',
-    borderRadius: 10,
-    padding: '35px 32px 32px',
-    boxShadow: '0 28px 64px -24px rgba(10,7,7,0.3)',
-  },
-  modalClose: {
-    position: 'absolute',
-    top: 16,
-    right: 16,
-    color: C.fgMute,
-    fontSize: 16,
-    lineHeight: 1,
-    transition: 'color .2s',
-    cursor: 'pointer',
-  },
-  modalTitle: {
-    fontFamily: C.serif,
-    fontSize: 26,
-    fontWeight: 500,
-    letterSpacing: '-0.02em',
-    lineHeight: 1.05,
-    color: C.fg,
-    marginBottom: 10,
-  },
-  modalSub: {
-    fontSize: 15,
-    color: C.fgDim,
-    lineHeight: 1.6,
   },
 }
