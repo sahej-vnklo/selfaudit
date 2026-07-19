@@ -300,45 +300,87 @@
 
 /* ---------- closing actions ---------- */
 .sa-home .closing-actions {
+  position: relative;
+  overflow: hidden;
   padding: 88px 0 78px;
-  background: var(--white);
+  background:
+    radial-gradient(circle at 18% 38%, rgba(156, 165, 176, 0.22), transparent 34%),
+    radial-gradient(circle at 82% 62%, rgba(212, 85, 58, 0.2), transparent 36%),
+    #F3F3F1;
+}
+.sa-home .closing-actions::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: rgba(255, 255, 255, 0.24);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+}
+.sa-home .closing-actions > .wrap {
+  position: relative;
+  z-index: 1;
 }
 .sa-home .closing-rule {
+  width: 64px;
   height: 1px;
-  background: var(--ink-3);
-  opacity: 0.72;
+  background: var(--breach);
+  opacity: 0.9;
+}
+.sa-home .closing-rule:last-child {
+  width: 100%;
+  background: rgba(20, 22, 26, 0.2);
+  opacity: 1;
 }
 .sa-home .closing-action-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 22px;
-  padding: 32px 0;
+  gap: 18px;
+  padding: 26px 0;
 }
 .sa-home .closing-action {
-  min-height: 286px;
-  padding: 30px 32px;
-  border: 1px solid transparent;
-  border-radius: 0;
+  position: relative;
+  overflow: hidden;
+  min-height: 268px;
+  padding: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.52);
+  border-radius: 18px;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 30px;
   text-align: left;
-  transition: transform 180ms ease, background 180ms ease, color 180ms ease;
+  backdrop-filter: blur(26px) saturate(135%);
+  -webkit-backdrop-filter: blur(26px) saturate(135%);
+  box-shadow: 0 22px 48px -30px rgba(14, 15, 17, 0.48), inset 0 1px 0 rgba(255, 255, 255, 0.46);
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
 }
-.sa-home .closing-action:hover { transform: translateY(-3px); }
+.sa-home .closing-action::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.16), transparent 46%);
+}
+.sa-home .closing-action > span { position: relative; z-index: 1; }
+.sa-home .closing-action:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 28px 58px -30px rgba(14, 15, 17, 0.58), inset 0 1px 0 rgba(255, 255, 255, 0.58);
+}
 .sa-home .closing-action-demo {
   color: var(--ink);
-  background: #E8E8E6;
-  border-color: #DEDEDB;
+  background: rgba(255, 255, 255, 0.58);
+  border-color: rgba(255, 255, 255, 0.72);
 }
-.sa-home .closing-action-demo:hover { background: #DEDEDB; }
+.sa-home .closing-action-demo:hover { border-color: rgba(255, 255, 255, 0.96); }
 .sa-home .closing-action-start {
   color: #FDFDFC;
-  background: var(--panel-3);
-  border-color: var(--panel-3);
+  background: rgba(42, 24, 22, 0.8);
+  border-color: rgba(212, 85, 58, 0.38);
+  box-shadow: 0 24px 56px -30px rgba(118, 38, 22, 0.72), inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
-.sa-home .closing-action-start:hover { background: var(--panel); }
+.sa-home .closing-action-start:hover { border-color: rgba(229, 106, 78, 0.66); }
 .sa-home .closing-action-title {
   display: block;
   font-family: var(--wordmark-font);
@@ -356,9 +398,20 @@
   opacity: 0.7;
 }
 .sa-home .closing-action-arrow {
-  font-size: 54px;
+  position: relative;
+  z-index: 1;
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font-size: 27px;
   font-weight: 300;
-  line-height: 0.8;
+  line-height: 1;
+  opacity: 0.74;
   transition: transform 180ms ease;
 }
 .sa-home .closing-action:hover .closing-action-arrow { transform: translateX(7px); }
@@ -546,7 +599,7 @@
   .sa-home .closing-actions { padding: 64px 0; }
   .sa-home .closing-action { min-height: 210px; padding: 24px; }
   .sa-home .closing-action-copy { margin-top: 16px; }
-  .sa-home .closing-action-arrow { font-size: 40px; }
+  .sa-home .closing-action-arrow { width: 42px; height: 42px; flex-basis: 42px; font-size: 24px; }
   .sa-home .landing-modal-overlay { padding: 12px; }
   .sa-home .landing-modal { padding: 36px 22px 24px; }
   .sa-home .landing-form-grid { grid-template-columns: 1fr; gap: 0; }
