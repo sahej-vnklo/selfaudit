@@ -298,13 +298,232 @@
 }
 .sa-home .security-line .k { font-family: var(--mono); font-size: 13px; letter-spacing: 0.16em; color: var(--ink); text-transform: uppercase; white-space: nowrap; }
 
-/* ---------- closing ---------- */
-.sa-home .closing { background: var(--panel); text-align: center; padding: 160px 0; position: relative; overflow: hidden; }
-.sa-home .closing h2 {
-  font-size: clamp(40px, 5.4vw, 72px); font-weight: 500; letter-spacing: -0.025em;
-  color: #FDFDFC; line-height: 1.05; margin-bottom: 44px;
+/* ---------- closing actions ---------- */
+.sa-home .closing-actions {
+  padding: 88px 0 78px;
+  background: var(--white);
 }
-.sa-home .closing .dim { color: #6E727A; }
+.sa-home .closing-rule {
+  height: 1px;
+  background: var(--ink-3);
+  opacity: 0.72;
+}
+.sa-home .closing-action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+  padding: 32px 0;
+}
+.sa-home .closing-action {
+  min-height: 286px;
+  padding: 30px 32px;
+  border: 1px solid transparent;
+  border-radius: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 30px;
+  text-align: left;
+  transition: transform 180ms ease, background 180ms ease, color 180ms ease;
+}
+.sa-home .closing-action:hover { transform: translateY(-3px); }
+.sa-home .closing-action-demo {
+  color: var(--ink);
+  background: #E8E8E6;
+  border-color: #DEDEDB;
+}
+.sa-home .closing-action-demo:hover { background: #DEDEDB; }
+.sa-home .closing-action-start {
+  color: #FDFDFC;
+  background: var(--panel-3);
+  border-color: var(--panel-3);
+}
+.sa-home .closing-action-start:hover { background: var(--panel); }
+.sa-home .closing-action-title {
+  display: block;
+  font-family: var(--wordmark-font);
+  font-size: clamp(38px, 4.2vw, 58px);
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  line-height: 1;
+}
+.sa-home .closing-action-copy {
+  display: block;
+  max-width: 390px;
+  margin-top: 22px;
+  font-size: 15px;
+  line-height: 1.55;
+  opacity: 0.7;
+}
+.sa-home .closing-action-arrow {
+  font-size: 54px;
+  font-weight: 300;
+  line-height: 0.8;
+  transition: transform 180ms ease;
+}
+.sa-home .closing-action:hover .closing-action-arrow { transform: translateX(7px); }
+
+/* ---------- landing CTA modals ---------- */
+.sa-home .landing-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 320;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(14, 15, 17, 0.58);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.sa-home .landing-modal {
+  position: relative;
+  width: min(100%, 640px);
+  max-height: min(88vh, 820px);
+  overflow-y: auto;
+  padding: 42px;
+  background: var(--white);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: 0 36px 90px rgba(14, 15, 17, 0.28);
+}
+.sa-home .landing-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: var(--ink-3);
+  font-size: 26px;
+  line-height: 1;
+}
+.sa-home .landing-modal-close:hover { color: var(--ink); }
+.sa-home .landing-modal-kicker {
+  display: block;
+  margin-bottom: 12px;
+  color: var(--breach);
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.sa-home .landing-modal h2 {
+  max-width: 520px;
+  font-family: var(--wordmark-font);
+  font-size: clamp(30px, 4vw, 42px);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+}
+.sa-home .landing-modal-intro,
+.sa-home .landing-modal-success > p {
+  max-width: 540px;
+  margin: 14px 0 26px;
+  color: var(--ink-2);
+  font-size: 15px;
+  line-height: 1.6;
+}
+.sa-home .landing-modal form > label,
+.sa-home .landing-form-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 14px;
+  color: var(--ink-2);
+  font-size: 13px;
+  font-weight: 600;
+}
+.sa-home .landing-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.sa-home .landing-modal input,
+.sa-home .landing-modal textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 13px 14px;
+  background: #F7F7F6;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  outline: none;
+  font-family: var(--sans);
+  font-size: 14px;
+  resize: vertical;
+}
+.sa-home .landing-modal input:focus,
+.sa-home .landing-modal textarea:focus { border-color: var(--breach); }
+.sa-home .landing-modal input::placeholder,
+.sa-home .landing-modal textarea::placeholder { color: var(--ink-3); }
+.sa-home .landing-form-error {
+  margin-top: 12px;
+  color: var(--breach);
+  font-size: 13px;
+}
+.sa-home .landing-modal-primary {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 22px;
+  padding: 12px 18px;
+  background: var(--breach);
+  color: #fff;
+  border-radius: 4px;
+  font-size: 15px;
+  font-weight: 600;
+  transition: background 160ms ease;
+}
+.sa-home .landing-modal-primary:hover:not(:disabled) { background: var(--breach-dim); }
+.sa-home .landing-modal-primary:disabled { cursor: wait; opacity: 0.58; }
+.sa-home .landing-guide { width: min(100%, 720px); }
+.sa-home .landing-readiness-list {
+  list-style: none;
+  margin: 28px 0 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+.sa-home .landing-readiness-list li {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 16px;
+  padding: 17px 0;
+  border-bottom: 1px solid var(--line);
+}
+.sa-home .landing-readiness-list li > span {
+  padding-top: 2px;
+  color: var(--ink-3);
+  font-family: var(--mono);
+  font-size: 13px;
+}
+.sa-home .landing-readiness-list strong {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+}
+.sa-home .landing-readiness-list p {
+  margin-top: 4px;
+  color: var(--ink-2);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.sa-home .landing-guide-note {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 18px;
+  margin-top: 20px;
+  padding: 15px 17px;
+  background: var(--off);
+  border: 1px solid var(--line);
+  font-size: 13px;
+  line-height: 1.55;
+}
+.sa-home .landing-guide-note span { color: var(--ink-2); }
 
 .sa-home footer { border-top: 1px solid var(--line); padding: 38px 0 50px; background: var(--white); }
 .sa-home .foot-inner { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--ink-3); }
@@ -319,6 +538,19 @@
   .sa-home .overview-panel { border-left: none; border-top: 1px solid var(--panel-line); }
   .sa-home .scen-grid, .sa-home .verdict-card { grid-template-columns: 1fr; }
   .sa-home .drivers { flex-direction: column; }
+  .sa-home .closing-action-grid { grid-template-columns: 1fr; }
+  .sa-home .closing-action { min-height: 230px; }
+}
+
+@media (max-width: 620px) {
+  .sa-home .closing-actions { padding: 64px 0; }
+  .sa-home .closing-action { min-height: 210px; padding: 24px; }
+  .sa-home .closing-action-copy { margin-top: 16px; }
+  .sa-home .closing-action-arrow { font-size: 40px; }
+  .sa-home .landing-modal-overlay { padding: 12px; }
+  .sa-home .landing-modal { padding: 36px 22px 24px; }
+  .sa-home .landing-form-grid { grid-template-columns: 1fr; gap: 0; }
+  .sa-home .landing-guide-note { grid-template-columns: 1fr; gap: 5px; }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

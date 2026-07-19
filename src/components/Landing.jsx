@@ -230,10 +230,19 @@ const FrameDots = () => (
 )
 
 // ── Component ─────────────────────────────────────────────────────────────────
-export default function Landing({ onStart, session, openMenu, onMenuOpened }) {
+export default function Landing({ onStart, onSignUp, session, openMenu, onMenuOpened }) {
   const posthog = usePostHog()
   const [menuOpen, setMenuOpen] = useState(false)
   const [navOverDark, setNavOverDark] = useState(true)
+  const [demoOpen, setDemoOpen] = useState(false)
+  const [gettingStartedOpen, setGettingStartedOpen] = useState(false)
+  const [demoName, setDemoName] = useState('')
+  const [demoCompany, setDemoCompany] = useState('')
+  const [demoEmail, setDemoEmail] = useState('')
+  const [demoNeed, setDemoNeed] = useState('')
+  const [demoLoading, setDemoLoading] = useState(false)
+  const [demoDone, setDemoDone] = useState(false)
+  const [demoError, setDemoError] = useState(null)
 
   useEffect(() => {
     if (openMenu) {
@@ -250,14 +259,69 @@ export default function Landing({ onStart, session, openMenu, onMenuOpened }) {
     }
   }, [session])
 
-  const handleStartAudit = useCallback(() => {
-    posthog?.capture('audit_started', { source: 'landing' })
-    if (session) {
-      onStart('')
-    } else {
-      window.location.hash = 'login'
+  const handleDashboard = useCallback(() => {
+    posthog?.capture('dashboard_opened', { source: 'landing' })
+    window.location.hash = session ? 'home' : 'login'
+  }, [posthog, session])
+
+  const openDemoRequest = useCallback(() => {
+    posthog?.capture('demo_request_opened', { source: 'landing' })
+    setDemoError(null)
+    setDemoOpen(true)
+  }, [posthog])
+
+  const closeDemoRequest = useCallback(() => {
+    if (demoLoading) return
+    setDemoOpen(false)
+    setDemoError(null)
+  }, [demoLoading])
+
+  const submitDemoRequest = useCallback(async (event) => {
+    event.preventDefault()
+    setDemoError(null)
+    if (!demoName.trim()) { setDemoError('Enter your name.'); return }
+    if (!demoCompany.trim()) { setDemoError('Enter your company name.'); return }
+    if (!demoEmail.trim()) { setDemoError('Enter your work email.'); return }
+    if (!demoNeed.trim()) { setDemoError('Tell us what you want to understand.'); return }
+
+    setDemoLoading(true)
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: demoEmail.trim(),
+          message: `Demo request\n\nName: ${demoName.trim()}\nCompany: ${demoCompany.trim()}\n\nWhat they want to understand:\n${demoNeed.trim()}`,
+        }),
+      })
+      const data = await response.json()
+      if (!response.ok) {
+        setDemoError(data?.error || 'Could not send your request. Please try again.')
+        return
+      }
+      posthog?.capture('demo_request_submitted', { source: 'landing' })
+      setDemoDone(true)
+    } catch {
+      setDemoError('Could not send your request. Please try again.')
+    } finally {
+      setDemoLoading(false)
     }
-  }, [posthog, onStart, session])
+  }, [demoCompany, demoEmail, demoName, demoNeed, posthog])
+
+  const openGettingStarted = useCallback(() => {
+    posthog?.capture('get_started_opened', { source: 'landing' })
+    setGettingStartedOpen(true)
+  }, [posthog])
+
+  const createAccount = useCallback(() => {
+    setGettingStartedOpen(false)
+    if (session) {
+      onStart?.('')
+      return
+    }
+    if (onSignUp) onSignUp()
+    else window.location.hash = 'signup'
+  }, [onSignUp, onStart, session])
 
   const handleNav = useCallback((hash) => {
     setMenuOpen(false)
@@ -287,8 +351,24 @@ export default function Landing({ onStart, session, openMenu, onMenuOpened }) {
   }, [])
 
   useEffect(() => {
+    if (!demoOpen && !gettingStartedOpen) return undefined
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const closeOnEscape = (event) => {
+      if (event.key !== 'Escape') return
+      if (demoOpen && !demoLoading) setDemoOpen(false)
+      if (gettingStartedOpen) setGettingStartedOpen(false)
+    }
+    window.addEventListener('keydown', closeOnEscape)
+    return () => {
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [demoLoading, demoOpen, gettingStartedOpen])
+
+  useEffect(() => {
     let animationFrame = null
-    const darkSections = document.querySelectorAll('.sa-home .hero-matrix, .sa-home .closing')
+    const darkSections = document.querySelectorAll('.sa-home .hero-matrix')
 
     const updateNavContrast = () => {
       animationFrame = null
@@ -331,7 +411,7 @@ export default function Landing({ onStart, session, openMenu, onMenuOpened }) {
         <div className="wrap nav-inner">
           <a className="logo" href="#" onClick={(e) => { e.preventDefault(); handleLogoClick() }}>SelfAudit</a>
           <div className="nav-actions">
-            <button className="nav-cta" onClick={handleStartAudit}>Book a Demo</button>
+            <button className="nav-cta" onClick={handleDashboard}>Dashboard</button>
             <div className="nav-icon-group" aria-hidden="true">
               <button className="nav-menu-btn" aria-label="Open menu" onClick={() => setMenuOpen(true)} />
             </div>
@@ -433,13 +513,90 @@ export default function Landing({ onStart, session, openMenu, onMenuOpened }) {
         </div>
       </section>
 
-      {/* CLOSING */}
-      <section className="closing" id="book">
+      {/* CLOSING ACTIONS */}
+      <section className="closing-actions" id="book">
         <div className="wrap">
-          <h2 className="reveal">Every business deserves<br /><span className="dim">to know why.</span></h2>
-          <button className="btn inverse" onClick={handleStartAudit}>Book a Demo</button>
+          <div className="closing-rule" />
+          <div className="closing-action-grid reveal">
+            <button className="closing-action closing-action-demo" type="button" onClick={openDemoRequest}>
+              <span>
+                <span className="closing-action-title">Request a Demo</span>
+                <span className="closing-action-copy">See SelfAudit applied to the operating questions that matter to you.</span>
+              </span>
+              <span className="closing-action-arrow" aria-hidden="true">→</span>
+            </button>
+            <button className="closing-action closing-action-start" type="button" onClick={openGettingStarted}>
+              <span>
+                <span className="closing-action-title">Get Started</span>
+                <span className="closing-action-copy">Review what you need, configure the business, and begin your evaluation.</span>
+              </span>
+              <span className="closing-action-arrow" aria-hidden="true">→</span>
+            </button>
+          </div>
+          <div className="closing-rule" />
         </div>
       </section>
+
+      {demoOpen && (
+        <div className="landing-modal-overlay" role="presentation" onMouseDown={closeDemoRequest}>
+          <section className="landing-modal" role="dialog" aria-modal="true" aria-labelledby="demo-request-title" onMouseDown={(event) => event.stopPropagation()}>
+            <button className="landing-modal-close" type="button" aria-label="Close demo request" onClick={closeDemoRequest}>×</button>
+            {demoDone ? (
+              <div className="landing-modal-success">
+                <span className="landing-modal-kicker">Request received</span>
+                <h2 id="demo-request-title">We’ll take it from here.</h2>
+                <p>We’ll review your business context and contact you to arrange a focused demonstration.</p>
+                <button className="landing-modal-primary" type="button" onClick={() => { setDemoOpen(false); setDemoDone(false) }}>Return to SelfAudit</button>
+              </div>
+            ) : (
+              <form onSubmit={submitDemoRequest}>
+                <span className="landing-modal-kicker">Request a demo</span>
+                <h2 id="demo-request-title">Show us what you need to see.</h2>
+                <p className="landing-modal-intro">Give us enough context to make the conversation useful from the first minute.</p>
+                <div className="landing-form-grid">
+                  <label>
+                    <span>Name</span>
+                    <input value={demoName} onChange={(event) => setDemoName(event.target.value)} disabled={demoLoading} autoFocus />
+                  </label>
+                  <label>
+                    <span>Company</span>
+                    <input value={demoCompany} onChange={(event) => setDemoCompany(event.target.value)} disabled={demoLoading} />
+                  </label>
+                </div>
+                <label>
+                  <span>Work email</span>
+                  <input type="email" value={demoEmail} onChange={(event) => setDemoEmail(event.target.value)} disabled={demoLoading} placeholder="you@company.com" />
+                </label>
+                <label>
+                  <span>What do you want SelfAudit to help you understand?</span>
+                  <textarea value={demoNeed} onChange={(event) => setDemoNeed(event.target.value)} disabled={demoLoading} rows={4} placeholder="The decisions, risks, or blind spots you want to improve…" />
+                </label>
+                {demoError && <p className="landing-form-error" role="alert">{demoError}</p>}
+                <button className="landing-modal-primary" type="submit" disabled={demoLoading}>{demoLoading ? 'Sending…' : 'Request the demo'}</button>
+              </form>
+            )}
+          </section>
+        </div>
+      )}
+
+      {gettingStartedOpen && (
+        <div className="landing-modal-overlay" role="presentation" onMouseDown={() => setGettingStartedOpen(false)}>
+          <section className="landing-modal landing-guide" role="dialog" aria-modal="true" aria-labelledby="getting-started-title" onMouseDown={(event) => event.stopPropagation()}>
+            <button className="landing-modal-close" type="button" aria-label="Close getting started guide" onClick={() => setGettingStartedOpen(false)}>×</button>
+            <span className="landing-modal-kicker">Before you begin</span>
+            <h2 id="getting-started-title">Prepare the business for a useful first run.</h2>
+            <p className="landing-modal-intro">SelfAudit becomes valuable when it can see real operating data and judge it against standards you actually use.</p>
+            <ol className="landing-readiness-list">
+              <li><span>01</span><div><strong>Choose the operating areas.</strong><p>Know which parts of the business you want to monitor first—such as finance, sales, customer service, or operations.</p></div></li>
+              <li><span>02</span><div><strong>Gather access to your tools.</strong><p>Have administrator or authorized access ready for the systems you plan to connect.</p></div></li>
+              <li><span>03</span><div><strong>Define the standards.</strong><p>Bring the targets or thresholds that describe healthy performance. You can refine them during setup.</p></div></li>
+              <li><span>04</span><div><strong>Assign an accountable operator.</strong><p>Someone should own configuration, review signals, and approve any action before it reaches the business.</p></div></li>
+            </ol>
+            <div className="landing-guide-note"><strong>Evaluation period</strong><span>Your evaluation begins after the initial configuration is usable—not merely when the account is created.</span></div>
+            <button className="landing-modal-primary" type="button" onClick={createAccount}>{session ? 'Open your dashboard' : 'Create your account'}</button>
+          </section>
+        </div>
+      )}
 
       <footer>
         <div className="wrap foot-inner">

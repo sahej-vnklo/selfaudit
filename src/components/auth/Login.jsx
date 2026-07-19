@@ -118,7 +118,7 @@ export default function Login({ onSuccess, onSignup, initialMessage = '' }) {
         <LoginNav />
         <section style={s.auth}>
           <div style={s.inner}>
-            <h1 style={s.headline}>Check your <em style={s.em}>inbox.</em></h1>
+            <h1 style={s.headline}>Check your <span style={s.em}>inbox.</span></h1>
             <div style={s.card}>
               <p style={s.eyebrow}>Sign-in code sent</p>
               <h2 style={s.cardTitle}>Enter your sign-in code</h2>
@@ -151,7 +151,7 @@ export default function Login({ onSuccess, onSignup, initialMessage = '' }) {
       <LoginNav />
       <section style={s.auth}>
         <div style={s.inner}>
-          <h1 style={s.headline}>See your business <em style={s.em}>clearly.</em></h1>
+          <h1 style={s.headline}>See your business <span style={s.em}>clearly.</span></h1>
 
           <div style={s.card}>
             <p style={s.eyebrow}>Welcome Back</p>
@@ -235,7 +235,7 @@ function LoginNav() {
   return (
     <nav style={s.nav}>
       <div style={s.logoWrap} onClick={() => { window.location.hash = '' }}>
-        <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+        <svg width="23" height="23" viewBox="0 0 32 32" fill="none">
           <defs>
             <filter id="lgGlow" x="-50%" y="-50%" width="200%" height="200%">
               <feDropShadow dx="0" dy="0" stdDeviation="0.8" floodColor="#ff3d1f" floodOpacity="0.9" />
@@ -333,22 +333,23 @@ const s = {
     zIndex: 100,
     display: 'flex',
     alignItems: 'center',
-    padding: '0 48px',
-    height: 80,
-    background: 'rgba(255,255,255,0.9)',
-    backdropFilter: 'blur(12px)',
+    padding: '0 38px',
+    height: 64,
+    background: 'rgba(255,255,255,0.82)',
+    backdropFilter: 'blur(20px) saturate(130%)',
+    WebkitBackdropFilter: 'blur(20px) saturate(130%)',
     borderBottom: `1px solid ${C.line}`,
   },
   logoWrap: {
     display: 'flex',
     alignItems: 'center',
-    gap: 12,
+    gap: 10,
     cursor: 'pointer',
   },
   logoText: {
     fontFamily: C.serif,
-    fontSize: 27,
-    fontWeight: 500,
+    fontSize: 22,
+    fontWeight: 600,
     letterSpacing: '-0.01em',
     color: C.fg,
     lineHeight: 1,
@@ -361,11 +362,11 @@ const s = {
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '80px 24px 100px',
+    padding: '48px 20px 64px',
   },
   inner: {
     width: '100%',
-    maxWidth: 540,
+    maxWidth: 432,
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
@@ -375,15 +376,16 @@ const s = {
   headline: {
     fontFamily: C.serif,
     fontWeight: 500,
-    fontSize: 'clamp(46px, 6.5vw, 84px)',
-    lineHeight: 0.98,
+    fontSize: 'clamp(37px, 5.2vw, 67px)',
+    lineHeight: 1,
     letterSpacing: '-0.025em',
     textAlign: 'center',
-    marginBottom: 56,
+    marginBottom: 36,
     color: C.fg,
   },
   em: {
-    fontStyle: 'italic',
+    fontStyle: 'normal',
+    fontWeight: 500,
     color: C.emberGlow,
   },
 
@@ -391,16 +393,14 @@ const s = {
   card: {
     position: 'relative',
     width: '100%',
-    padding: '44px 44px 40px',
-    background: 'linear-gradient(165deg, #ffffff, #fbf7f1)',
-    border: `1px solid rgba(26, 17, 16, 0.16)`,
-    borderRadius: 16,
+    padding: '34px 35px 32px',
+    background: '#ffffff',
+    border: `1px solid ${C.line2}`,
+    borderRadius: 10,
     boxShadow: [
-      '0 0 0 1px rgba(40, 22, 14, 0.06)',
-      '0 1px 1px rgba(40, 22, 14, 0.08)',
-      '0 8px 18px -10px rgba(50, 26, 14, 0.28)',
-      '0 40px 80px -40px rgba(50, 26, 14, 0.34)',
-      'inset 0 1px 0 rgba(255,255,255,0.75)',
+      '0 1px 2px rgba(26, 17, 16, 0.06)',
+      '0 18px 44px -28px rgba(26, 17, 16, 0.24)',
+      'inset 0 1px 0 rgba(255,255,255,0.9)',
     ].join(', '),
   },
 
@@ -410,22 +410,22 @@ const s = {
     letterSpacing: '0.24em',
     textTransform: 'uppercase',
     color: C.ember,
-    marginBottom: 18,
+    marginBottom: 14,
   },
   cardTitle: {
     fontFamily: C.serif,
     fontWeight: 500,
-    fontSize: 'clamp(30px, 3.4vw, 40px)',
+    fontSize: 'clamp(24px, 2.7vw, 32px)',
     lineHeight: 1.05,
     letterSpacing: '-0.02em',
-    marginBottom: 14,
+    marginBottom: 11,
     color: C.fg,
   },
   cardSub: {
     color: C.fgDim,
-    fontSize: 15,
-    lineHeight: 1.6,
-    marginBottom: 30,
+    fontSize: 14,
+    lineHeight: 1.5,
+    marginBottom: 24,
     maxWidth: '38ch',
   },
 
@@ -441,14 +441,14 @@ const s = {
   },
   input: {
     width: '100%',
-    height: 56,
-    padding: '0 18px',
-    background: '#ffffff',
+    height: 46,
+    padding: '0 15px',
+    background: '#f7f7f9',
     border: `1px solid ${C.line2}`,
     borderRadius: 8,
     color: C.fg,
     fontFamily: C.sans,
-    fontSize: 16,
+    fontSize: 14,
     outline: 'none',
     transition: 'border-color .2s, box-shadow .2s',
     boxSizing: 'border-box',
@@ -462,28 +462,28 @@ const s = {
   // Buttons
   btn: {
     width: '100%',
-    height: 56,
-    marginTop: 8,
+    height: 46,
+    marginTop: 6,
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    background: 'linear-gradient(180deg, oklch(0.66 0.145 42), oklch(0.59 0.15 37))',
-    color: '#fdf6ee',
-    border: '1px solid oklch(0.6 0.14 40)',
-    borderRadius: 8,
+    background: C.ember,
+    color: '#ffffff',
+    border: `1px solid ${C.ember}`,
+    borderRadius: 6,
     fontFamily: C.sans,
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 600,
     letterSpacing: '0.01em',
     cursor: 'pointer',
-    boxShadow: '0 1px 0 rgba(255,255,255,0.28) inset, 0 14px 32px -14px oklch(0.62 0.15 40 / 0.45)',
+    boxShadow: '0 8px 20px -14px oklch(0.52 0.18 32 / 0.55)',
     transition: 'transform .2s, box-shadow .2s',
   },
   ghostBtn: {
     width: '100%',
-    padding: '12px',
-    marginTop: 12,
-    borderRadius: 8,
+    padding: '10px',
+    marginTop: 10,
+    borderRadius: 6,
     border: `1px solid ${C.line2}`,
     background: 'transparent',
     color: C.fgDim,
@@ -502,8 +502,8 @@ const s = {
   },
   switchLine: {
     textAlign: 'center',
-    marginTop: 30,
-    fontSize: 15,
+    marginTop: 22,
+    fontSize: 14,
     color: C.fgDim,
   },
   switchLink: {
@@ -514,7 +514,7 @@ const s = {
     color: C.emberGlow,
     fontWeight: 500,
     cursor: 'pointer',
-    fontSize: 15,
+    fontSize: 14,
     padding: 0,
     fontFamily: C.sans,
     transition: 'color .2s',
@@ -523,7 +523,7 @@ const s = {
   },
   fine: {
     textAlign: 'center',
-    marginTop: 22,
+    marginTop: 18,
     fontSize: 13,
     lineHeight: 1.6,
     color: C.fg,
@@ -550,12 +550,12 @@ const s = {
   modalBox: {
     position: 'relative',
     width: '100%',
-    maxWidth: 440,
+    maxWidth: 352,
     background: '#ffffff',
     border: '1px solid rgba(26,17,16,0.14)',
-    borderRadius: 16,
-    padding: '44px 40px 40px',
-    boxShadow: '0 40px 80px -20px rgba(10,7,7,0.35)',
+    borderRadius: 10,
+    padding: '35px 32px 32px',
+    boxShadow: '0 28px 64px -24px rgba(10,7,7,0.3)',
   },
   modalClose: {
     position: 'absolute',
@@ -569,7 +569,7 @@ const s = {
   },
   modalTitle: {
     fontFamily: C.serif,
-    fontSize: 32,
+    fontSize: 26,
     fontWeight: 500,
     letterSpacing: '-0.02em',
     lineHeight: 1.05,
