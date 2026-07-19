@@ -319,16 +319,6 @@ export default function Landing({ onStart, onSignUp, session, openMenu, onMenuOp
     setGettingStartedOpen(true)
   }, [posthog])
 
-  const createAccount = useCallback(() => {
-    setGettingStartedOpen(false)
-    if (session) {
-      onStart?.('')
-      return
-    }
-    if (onSignUp) onSignUp()
-    else window.location.hash = 'signup'
-  }, [onSignUp, onStart, session])
-
   const handleNav = useCallback((hash) => {
     setMenuOpen(false)
     window.location.hash = hash
@@ -611,7 +601,6 @@ export default function Landing({ onStart, onSignUp, session, openMenu, onMenuOp
               <li><span>04</span><div><strong>Assign an accountable operator.</strong><p>Someone should own configuration, review signals, and approve any action before it reaches the business.</p></div></li>
             </ol>
             <div className="landing-guide-note"><strong>Evaluation period</strong><span>Your evaluation begins after the initial configuration is usable—not merely when the account is created.</span></div>
-            <button className="landing-modal-primary" type="button" onClick={createAccount}>{session ? 'Open your dashboard' : 'Create your account'}</button>
           </section>
         </div>
       )}

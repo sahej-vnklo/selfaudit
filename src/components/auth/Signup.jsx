@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { initSupabase } from '../../lib/supabase.js'
 import { PRIVACY_POLICY_URL, TERMS_HASH } from '../../lib/legal.js'
+import './Login.css'
 
 // ── Hardcoded light-mode tokens — matches Login.jsx exactly ──────────────────
 const C = {
@@ -128,7 +129,7 @@ function SignupForm({ onLogin }) {
                 onKeyDown={e => e.key === 'Enter' && handleVerifyCode()}
               />
               {error && <p style={s.errorMsg}>{error}</p>}
-              <button style={{ ...s.btn, marginTop: 16, opacity: loading ? 0.7 : 1 }} onClick={handleVerifyCode} disabled={loading}>
+              <button className="sa-login-primary" style={{ ...s.btn, marginTop: 16, opacity: loading ? 0.7 : 1 }} onClick={handleVerifyCode} disabled={loading}>
                 {loading ? 'Verifying…' : 'Create account'}
               </button>
               <button style={s.secondaryBtn} onClick={() => { setCodeSent(false); setCode(''); setError(null) }}>
@@ -159,7 +160,7 @@ function SignupForm({ onLogin }) {
               <input style={s.input} type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Full name" />
               <input style={s.input} type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@company.com" onKeyDown={e => e.key === 'Enter' && handleSendCode()} />
               {error && <p style={s.errorMsg}>{error}</p>}
-              <button style={{ ...s.btn, opacity: loading ? 0.7 : 1 }} onClick={handleSendCode} disabled={loading}>
+              <button className="sa-login-primary" style={{ ...s.btn, opacity: loading ? 0.7 : 1 }} onClick={handleSendCode} disabled={loading}>
                 {loading ? 'Sending…' : 'Email me a code'}
               </button>
             </div>
@@ -183,17 +184,20 @@ function SignupForm({ onLogin }) {
   )
 }
 
-function SignupNav({ onLogin }) {
+function SignupNav() {
   return (
-    <nav style={s.nav}>
-      <div style={s.logoWrap} onClick={() => { window.location.hash = '' }}>
-        <svg viewBox="0 0 32 32" fill="none" width="26" height="26" style={{ color: C.ember }}>
-          <g stroke="currentColor" strokeLinejoin="round" strokeLinecap="round" fill="none">
-            <path d="M16,2 L28.1,9 L28.1,23 L16,30 L3.9,23 L3.9,9 Z" strokeWidth="1.8"/>
-            <path d="M16,9.5 L21.6,12.75 L21.6,19.25 L16,22.5 L10.4,19.25 L10.4,12.75 Z" strokeWidth="1.4"/>
-          </g>
-        </svg>
-        <span style={s.logoText}>SelfAudit</span>
+    <nav className="sa-login-nav" aria-label="SelfAudit">
+      <div className="sa-login-nav-inner">
+        <a
+          className="sa-login-logo"
+          href="#"
+          onClick={(event) => {
+            event.preventDefault()
+            window.location.hash = ''
+          }}
+        >
+          SelfAudit
+        </a>
       </div>
     </nav>
   )
@@ -218,16 +222,6 @@ const s = {
     flexDirection: 'column',
     color: C.fg,
   },
-  nav: {
-    position: 'sticky', top: 0, zIndex: 100,
-    display: 'flex', alignItems: 'center',
-    padding: '0 48px', height: 80,
-    background: 'rgba(255,255,255,0.9)',
-    backdropFilter: 'blur(12px)',
-    borderBottom: `1px solid ${C.line}`,
-  },
-  logoWrap: { display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' },
-  logoText: { fontFamily: C.serif, fontSize: 27, fontWeight: 500, letterSpacing: '-0.01em', color: C.fg, lineHeight: 1 },
   auth: {
     flex: 1, display: 'flex', flexDirection: 'column',
     alignItems: 'center', justifyContent: 'center',
@@ -268,11 +262,14 @@ const s = {
   errorMsg: { fontSize: 13, color: C.ember, margin: '4px 0 0' },
   btn: {
     width: '100%', height: 52, marginTop: 4,
-    background: C.ember, color: '#ffffff',
+    background: 'rgba(25, 25, 27, 0.9)', color: '#ffffff',
     fontSize: 15, fontWeight: 600,
-    borderRadius: 8, border: 'none', cursor: 'pointer',
+    borderRadius: 6, border: '1px solid rgba(255, 255, 255, 0.18)', cursor: 'pointer',
     fontFamily: C.sans, letterSpacing: '-0.01em',
-    transition: 'opacity 0.15s',
+    boxShadow: '0 10px 24px -16px rgba(0, 0, 0, 0.78), inset 0 1px 0 rgba(255, 255, 255, 0.12)',
+    backdropFilter: 'blur(14px) saturate(120%)',
+    WebkitBackdropFilter: 'blur(14px) saturate(120%)',
+    transition: 'background .18s ease, border-color .18s ease, box-shadow .18s ease, transform .18s ease, opacity .15s',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
   },
   secondaryBtn: {
