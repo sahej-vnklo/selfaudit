@@ -496,18 +496,28 @@
   transform: translateY(-1px);
 }
 .sa-home .landing-modal-primary:disabled { cursor: wait; opacity: 0.58; }
-.sa-home .landing-guide { width: min(100%, 720px); }
+.sa-home .landing-guide {
+  width: min(100%, 860px);
+  max-height: min(92vh, 860px);
+  padding: 34px 38px 30px;
+}
+.sa-home .landing-guide .landing-modal-intro { margin-bottom: 20px; }
+.sa-home .landing-guide .landing-modal-primary { margin-top: 18px; }
 .sa-home .landing-readiness-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   list-style: none;
-  margin: 28px 0 0;
+  margin: 0;
   padding: 0;
   border-top: 1px solid var(--line);
+  border-left: 1px solid var(--line);
 }
 .sa-home .landing-readiness-list li {
   display: grid;
-  grid-template-columns: 42px 1fr;
-  gap: 16px;
-  padding: 17px 0;
+  grid-template-columns: 34px 1fr;
+  gap: 12px;
+  padding: 15px;
+  border-right: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
 }
 .sa-home .landing-readiness-list li > span {
@@ -531,7 +541,7 @@
   display: grid;
   grid-template-columns: 130px 1fr;
   gap: 18px;
-  margin-top: 20px;
+  margin-top: 16px;
   padding: 15px 17px;
   background: var(--off);
   border: 1px solid var(--line);
@@ -567,6 +577,8 @@
   .sa-home .landing-modal { padding: 36px 22px 24px; }
   .sa-home .landing-demo-modal { padding: 32px 22px 24px; }
   .sa-home .landing-form-grid { grid-template-columns: 1fr; gap: 0; }
+  .sa-home .landing-guide { padding: 32px 22px 24px; }
+  .sa-home .landing-readiness-list { grid-template-columns: 1fr; }
   .sa-home .landing-guide-note { grid-template-columns: 1fr; gap: 5px; }
 }
 
