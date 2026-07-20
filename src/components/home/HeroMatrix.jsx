@@ -146,7 +146,7 @@ export default function HeroMatrix() {
       </div>
       <div className="hero-copy" ref={heroCopyRef}>
         <h1>Enterprise Intelligence<br />for Every Business.</h1>
-        <p className="sub">The judgment of a Fortune 500 operations floor, delivered as software.</p>
+        <p className="sub">For the decisions that shape the business</p>
       </div>
     </section>
   )
