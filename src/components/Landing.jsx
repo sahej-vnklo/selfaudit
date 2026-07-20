@@ -61,7 +61,7 @@ function BurgerMenu({ onClose, onLogoClick, onNav, onAnchor }) {
         <div className="menu-col">
           <div className="menu-eyebrow">Explore</div>
           <div className="menu-group">
-            <button className="menu-cat" onClick={() => onAnchor('origin')}>Origin</button>
+            <button className="menu-cat" onClick={() => onNav('origin')}>Origin</button>
             <div className="menu-sublist">
               <button className="menu-sublink" onClick={() => onNav('origin/sentinel')}>Sentinel</button>
               <button className="menu-sublink" onClick={() => onNav('origin/foresight')}>Foresight</button>
