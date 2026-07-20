@@ -603,28 +603,38 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 56px;
-  height: 80px;
-  border-bottom: 1px solid var(--line);
+  width: min(1200px, calc(100% - 72px));
+  min-height: 52px;
+  margin: 14px auto 0;
+  padding: 7px 12px 7px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 10px;
   position: sticky;
-  top: 0;
-  background: var(--white);
+  top: 14px;
+  background: rgba(238, 239, 240, 0.72);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.13), inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(22px) saturate(135%);
+  -webkit-backdrop-filter: blur(22px) saturate(135%);
   z-index: 5;
   flex-shrink: 0;
+  box-sizing: border-box;
 }
 .sa-home .menu-logo-wrap { display: flex; align-items: center; gap: 12px; cursor: pointer; }
-.sa-home .menu-logo-text { font-family: var(--wordmark-font); font-size: 22px; font-weight: 500; letter-spacing: -0.02em; color: var(--ink); line-height: 1; }
+.sa-home .menu-logo-text { font-family: var(--wordmark-font); font-size: 18px; font-weight: 500; letter-spacing: -0.02em; color: var(--ink); line-height: 1; }
 .sa-home .menu-close-btn {
+  min-width: 120px;
+  height: 34px;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 11px;
-  padding: 10px 16px 10px 14px;
-  background: transparent;
-  border: 1px solid var(--line);
-  border-radius: 4px;
+  padding: 0 16px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(18, 19, 21, 0.24);
+  border-radius: 0;
   color: var(--ink);
-  font-size: 15px;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 600;
   transition: border-color .2s, background .2s, color .2s;
 }
 .sa-home .menu-close-btn:hover { border-color: var(--breach); color: var(--breach); background: rgba(212, 85, 58, 0.06); }
@@ -761,6 +771,15 @@
 .sa-home .menu-contact-submit:disabled { opacity: 0.6; cursor: not-allowed; }
 
 @media (max-width: 860px) {
-  .sa-home .menu-top { padding: 0 26px; }
+  .sa-home .menu-top { width: min(100% - 40px, 760px); }
   .sa-home .menu-body { padding: 48px 26px 72px; }
+}
+
+@media (max-width: 620px) {
+  .sa-home .menu-top {
+    width: calc(100% - 28px);
+    margin-top: 8px;
+    top: 8px;
+  }
+  .sa-home .menu-close-btn { min-width: 98px; padding: 0 12px; }
 }
