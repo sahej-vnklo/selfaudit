@@ -41,9 +41,11 @@ const BackArrow = () => (
 export default function About({ onBack }) {
   return (
     <div className="sa-uc about-page">
-      <nav className="uc-nav" aria-label="About navigation">
-        <button className="uc-back" type="button" onClick={onBack}><BackArrow /> SelfAudit</button>
-        <div className="uc-nav-center">About</div>
+      <nav className="about-nav" aria-label="About navigation">
+        <div className="about-nav-inner">
+          <button className="about-nav-logo" type="button" onClick={onBack}>SelfAudit</button>
+          <button className="about-nav-explore" type="button" onClick={onBack}><BackArrow /> Explore</button>
+        </div>
       </nav>
 
       <main>
