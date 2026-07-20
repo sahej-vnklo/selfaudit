@@ -13,6 +13,7 @@ import IntelligenceLayer  from './pages/IntelligenceLayer.jsx'
 import LiveOntology       from './pages/LiveOntology.jsx'
 import Capabilities       from './pages/Capabilities.jsx'
 import About              from './pages/About.jsx'
+import CapabilityDetail   from './pages/CapabilityDetail.jsx'
 
 const PENDING_AUTH_INTENT_KEY = 'sa-auth-intent'
 const PENDING_CHECKOUT_RETURN_KEY = 'sa-checkout-return'
@@ -32,6 +33,10 @@ const SCREENS = {
   LIVE_ONTOLOGY:       'live-ontology',
   CAPABILITIES:        'capabilities',
   ABOUT:               'about',
+  SENTINEL:            'sentinel',
+  FORESIGHT:           'foresight',
+  COUNSEL:             'counsel',
+  DISPATCH:            'dispatch',
 }
 
 const HASH_SCREENS = new Set([
@@ -140,6 +145,10 @@ function screenFromHash(isAuthenticated = false) {
   if (section === 'live-ontology')      return SCREENS.LIVE_ONTOLOGY
   if (section === 'capabilities')       return SCREENS.CAPABILITIES
   if (section === 'about')              return SCREENS.ABOUT
+  if (section === 'origin/sentinel')     return SCREENS.SENTINEL
+  if (section === 'origin/foresight')    return SCREENS.FORESIGHT
+  if (section === 'origin/counsel')      return SCREENS.COUNSEL
+  if (section === 'origin/dispatch')     return SCREENS.DISPATCH
   // Dashboard section hashes (#billing, #reports, etc.) must not exit the dashboard
   if (isAuthenticated && DASHBOARD_SECTION_HASHES.has(section)) return SCREENS.DASHBOARD
   return null
@@ -570,6 +579,15 @@ export default function App() {
   if (screen === SCREENS.LIVE_ONTOLOGY)     return <LiveOntology     onBack={goBackToMenu} />
   if (screen === SCREENS.CAPABILITIES)      return <Capabilities     onBack={goBackToMenu} />
   if (screen === SCREENS.ABOUT)             return <About            onBack={goBackToMenu} />
+  if ([SCREENS.SENTINEL, SCREENS.FORESIGHT, SCREENS.COUNSEL, SCREENS.DISPATCH].includes(screen)) {
+    return (
+      <CapabilityDetail
+        capability={screen}
+        onBack={goBackToMenu}
+        onNavigate={(nextCapability) => { window.location.hash = `origin/${nextCapability}` }}
+      />
+    )
+  }
 
   if (screen === SCREENS.DASHBOARD) {
     if (!session) { navigate(SCREENS.LOGIN); return null }
