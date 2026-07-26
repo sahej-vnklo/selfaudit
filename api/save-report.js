@@ -255,7 +255,13 @@ export default async function handler(req, res) {
     // Auto-email the report to the user — fire-and-forget, never blocks the response
     if (userEmail) {
       // Also persist notification_email so the weekly digest cron can use it
-      supabase.from('profiles').update({ notification_email: userEmail }).eq('id', userId).catch(() => {})
+      const { error: notificationEmailError } = await supabase
+        .from('profiles')
+        .update({ notification_email: userEmail })
+        .eq('id', userId)
+      if (notificationEmailError) {
+        console.warn('[save-report] notification email update failed:', notificationEmailError.message)
+      }
 
       sendUserReportEmail({
         userEmail,
