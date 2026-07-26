@@ -37,6 +37,14 @@ function flattenMetricValues(snapshots) {
   return Object.assign({}, ...(snapshots || []).map((snapshot) => snapshot.metricsByKey || {}))
 }
 
+export function buildUserMetricMap(rows = []) {
+  return Object.fromEntries(
+    rows
+      .filter((row) => row?.name && row.value != null && Number.isFinite(Number(row.value)))
+      .map((row) => [row.name, Number(row.value)]),
+  )
+}
+
 function buildMetricCatalog(schema) {
   const catalog = new Map()
   for (const area of schema?.areas || []) {
@@ -300,17 +308,21 @@ function buildTimeline(downstream, comparisonRows) {
 }
 
 async function loadSimulationContext(supabase, userId) {
-  const [brainRes, briefRes, schemaRes, dnaRes] = await Promise.allSettled([
+  const [brainRes, briefRes, schemaRes, dnaRes, userMetricsRes] = await Promise.allSettled([
     getCompanyBrain(userId, supabase),
     supabase.from('intelligence_brief').select('financial, operational, context').eq('user_id', userId).single(),
     loadSchema(userId),
     getCompanyDNASummary(supabase, userId),
+    supabase.from('user_custom_metrics').select('name, value').eq('user_id', userId),
   ])
 
   const brain = brainRes.status === 'fulfilled' ? brainRes.value : null
   const brief = briefRes.status === 'fulfilled' ? briefRes.value.data : null
   const schema = schemaRes.status === 'fulfilled' ? schemaRes.value : null
   const dna = dnaRes.status === 'fulfilled' ? dnaRes.value : { status: 'insufficient_data', patterns: [] }
+  const userMetrics = userMetricsRes.status === 'fulfilled'
+    ? buildUserMetricMap(userMetricsRes.value.data)
+    : {}
 
   let normalized = null
   try {
@@ -330,13 +342,13 @@ async function loadSimulationContext(supabase, userId) {
     normalized = null
   }
 
-  return { brain, brief, normalized, schema, dna }
+  return { brain, brief, normalized, schema, dna, userMetrics }
 }
 
 export async function runScenario(supabase, userId, scenario) {
   const sb = supabase || getSupabase()
-  const { brain, brief, normalized, schema, dna } = await loadSimulationContext(sb, userId)
-  const baseline = runGovernanceMonitoring({ brain, brief, normalized, schema })
+  const { brain, brief, normalized, schema, dna, userMetrics } = await loadSimulationContext(sb, userId)
+  const baseline = runGovernanceMonitoring({ brain, brief, normalized, schema, userMetrics })
   const beforeValue = scanMetricValue(baseline.snapshots, scenario.metricKey)
 
   if (beforeValue == null) {
@@ -349,6 +361,7 @@ export async function runScenario(supabase, userId, scenario) {
     brief,
     normalized,
     schema,
+    userMetrics,
     metricOverrides: { [scenario.metricKey]: afterValue },
   })
 

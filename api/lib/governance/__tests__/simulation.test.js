@@ -1,10 +1,22 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
+  buildUserMetricMap,
   buildDelta,
   computeAfterValue,
   projectKnownRelationship,
 } from '../simulation.js'
+
+test('saved user metrics become numeric Foresight baselines', () => {
+  assert.deepEqual(buildUserMetricMap([
+    { name: 'churn_rate', value: '6.6' },
+    { name: 'mrr', value: 79000 },
+    { name: 'invalid', value: 'not-a-number' },
+  ]), {
+    churn_rate: 6.6,
+    mrr: 79000,
+  })
+})
 
 test('scenario changes support set, absolute, and percent operations', () => {
   assert.equal(computeAfterValue(100, 'set', 75), 75)
