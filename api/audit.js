@@ -1025,10 +1025,11 @@ export default async function handler(req, res) {
     'anthropic-version': '2023-06-01',
   }
 
-  const [intelligenceBrief, userMemory, businessState, governanceContext, schemaContext] = await Promise.all([
+  const [intelligenceBrief, userMemory, businessState, patterns, governanceContext, schemaContext] = await Promise.all([
     fetchIntelligenceBrief(userId),
     fetchUserMemory(userId),
     fetchBusinessState(userId),
+    fetchPatterns(industry, domain),
     fetchGovernanceContext(userId),
     fetchSchemaContext(userId),
   ])
