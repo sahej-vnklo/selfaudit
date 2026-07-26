@@ -589,14 +589,14 @@ export default function Landing({ onStart, onSignUp, session, openMenu, onMenuOp
         <div className="landing-modal-overlay" role="presentation" onMouseDown={() => setGettingStartedOpen(false)}>
           <section className="landing-modal landing-guide" role="dialog" aria-modal="true" aria-labelledby="getting-started-title" onMouseDown={(event) => event.stopPropagation()}>
             <button className="landing-modal-close" type="button" aria-label="Close getting started guide" onClick={() => setGettingStartedOpen(false)}>×</button>
-            <span className="landing-modal-kicker">Before you begin</span>
-            <h2 id="getting-started-title">Prepare the business for a useful first run.</h2>
-            <p className="landing-modal-intro">SelfAudit becomes valuable when it can see real operating data and judge it against standards you actually use.</p>
+            <span className="landing-modal-kicker">How getting started works</span>
+            <h2 id="getting-started-title">See the whole business before deciding what comes next.</h2>
+            <p className="landing-modal-intro">A focused demonstration shows how SelfAudit connects the business, identifies what matters financially, and turns the diagnosis into controlled decisions.</p>
             <ol className="landing-readiness-list">
-              <li><span>01</span><div><strong>Choose the operating areas.</strong><p>Know which parts of the business you want to monitor first—such as finance, sales, customer service, or operations.</p></div></li>
-              <li><span>02</span><div><strong>Gather access to your tools.</strong><p>Have administrator or authorized access ready for the systems you plan to connect.</p></div></li>
-              <li><span>03</span><div><strong>Define the standards.</strong><p>Bring the targets or thresholds that describe healthy performance. You can refine them during setup.</p></div></li>
-              <li><span>04</span><div><strong>Assign an accountable operator.</strong><p>Someone should own configuration, review signals, and approve any action before it reaches the business.</p></div></li>
+              <li><span>01</span><div><strong>Describe the business.</strong><p>Give us the operating context—how the company works and which systems it uses.</p></div></li>
+              <li><span>02</span><div><strong>See the business as one system.</strong><p>Watch SelfAudit connect signals across sales, finance, support, and operations.</p></div></li>
+              <li><span>03</span><div><strong>Review the diagnosis.</strong><p>See which issues matter financially, what is driving them, the evidence behind the conclusion, and what can be done next.</p></div></li>
+              <li><span>04</span><div><strong>Plan the first deployment.</strong><p>If the analysis is useful, we configure the business model and connect the required tools.</p></div></li>
             </ol>
             <button className="landing-guide-demo" type="button" onClick={openDemoFromGuide}>
               <span>Request a Demo</span>
