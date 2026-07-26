@@ -715,6 +715,12 @@ SAFETY: Only use what the user told you. Flag assumptions. Do not invent data.` 
 
 FORMAT YOUR RESPONSE AS VALID JSON ONLY. No markdown, no backticks, no preamble. Just the JSON object.
 
+LENGTH BOUNDARY:
+- Keep the complete report under 3,000 words.
+- Keep every narrative field concise and evidence-led.
+- Use no more than 5 domains, 5 non-AI fixes, 3 AI opportunities, 5 priority actions, 6 ranked-path moves, and 5 comparison points.
+- Do not repeat the conversation, the same finding, or the same recommendation across multiple fields.
+
 REPORT GENERATION RULES:
 
 First, classify the conversation that just happened:
@@ -1038,6 +1044,7 @@ export default async function handler(req, res) {
     fetchBIHistory(userId, supabase),
   ])
   const sessionContinuity = buildSessionContinuity(messages)
+  const reportMaxTokens = goalMode ? 8000 : 6400
 
   try {
     const response = await fetch(CLAUDE_API, {
@@ -1045,7 +1052,7 @@ export default async function handler(req, res) {
       headers,
       body: JSON.stringify({
         model: CLAUDE_MODEL,
-        max_tokens: isReport ? (goalMode ? 4000 : 3200) : 1024,
+        max_tokens: isReport ? reportMaxTokens : 1024,
         system: buildSystemPrompt(industry, domain, intelligenceBrief, userMemory, goalMode, goal, goalTimeline, goalBaseline, businessState, patterns, connectorContext, sessionContinuity, governanceContext, schemaContext, biHistoryContext),
         messages: finalMessages,
       }),
@@ -1064,8 +1071,23 @@ export default async function handler(req, res) {
     const text = data.content[0].text
 
     if (isReport) {
+      if (data.stop_reason === 'max_tokens') {
+        console.warn(`[audit] report output reached ${reportMaxTokens} token limit`)
+        return res.status(502).json({
+          error: 'The report was longer than the safe output limit. Please try creating it again.',
+        })
+      }
+
       const clean = text.replace(/```json|```/g, '').trim()
-      let report = JSON.parse(clean)
+      let report
+      try {
+        report = JSON.parse(clean)
+      } catch (parseError) {
+        console.warn('[audit] report returned invalid JSON:', parseError.message)
+        return res.status(502).json({
+          error: 'The report could not be assembled safely. Please try creating it again.',
+        })
+      }
       if (goalMode) report = normalizeGoalReport(report)
 
       const requiredHumanMoment  = ['headline','acknowledgment','what_this_actually_is','delivery_script','what_to_expect','honest_truth']
@@ -1114,13 +1136,17 @@ export default async function handler(req, res) {
               headers,
               body: JSON.stringify({
                 model: CLAUDE_MODEL,
-                max_tokens: goalMode ? 4000 : 3200,
+                max_tokens: reportMaxTokens,
                 system: buildSystemPrompt(industry, domain, intelligenceBrief, userMemory, goalMode, goal, goalTimeline, goalBaseline, businessState, patterns, connectorContext, sessionContinuity, governanceContext, schemaContext, biHistoryContext),
                 messages: retryMessages,
               }),
             })
             if (retryResponse.ok) {
               const retryData  = await retryResponse.json()
+              if (retryData.stop_reason === 'max_tokens') {
+                console.warn(`[audit] report retry reached ${reportMaxTokens} token limit`)
+                throw new Error('Report retry exceeded the safe output limit')
+              }
               const retryClean = retryData.content[0].text.replace(/```json|```/g, '').trim()
               report = JSON.parse(retryClean)
               if (goalMode) report = normalizeGoalReport(report)
