@@ -77,6 +77,9 @@ function BurgerMenu({ onClose, onLogoClick, onNav, onAnchor }) {
             </a>
             <p className="menu-resource-copy">Manual, pattern analysis, and case-file investigations.</p>
           </div>
+        </div>
+        <div className="menu-col menu-col-company">
+          <div className="menu-eyebrow">Company</div>
           <div className="menu-group">
             <button className="menu-cat" onClick={() => onNav('about')}>About</button>
           </div>

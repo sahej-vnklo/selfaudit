@@ -661,6 +661,10 @@
   max-width: 1040px;
   margin: 0 auto;
   padding: clamp(48px, 7vh, 96px) 56px 88px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 0.48fr);
+  gap: clamp(80px, 10vw, 160px);
+  align-items: start;
 }
 
 .sa-home .menu-eyebrow { font-family: var(--mono); font-size: 13px; letter-spacing: 0.26em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 34px; }
@@ -811,7 +815,11 @@
 
 @media (max-width: 860px) {
   .sa-home .menu-top { width: min(100% - 40px, 760px); }
-  .sa-home .menu-body { padding: 48px 26px 72px; }
+  .sa-home .menu-body {
+    grid-template-columns: 1fr;
+    gap: 48px;
+    padding: 48px 26px 72px;
+  }
 }
 
 @media (max-width: 620px) {
