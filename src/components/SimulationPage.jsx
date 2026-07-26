@@ -2,27 +2,15 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { initSupabase } from '../lib/supabase.js'
 import './Foresight.css'
 
-const SYNONYMS = {
-  churn_rate: ['churn', 'churn rate', 'customer churn'],
-  mrr: ['mrr', 'monthly recurring revenue', 'monthly revenue'],
-  pipeline_value: ['pipeline', 'pipeline value'],
-  lead_volume: ['leads', 'lead volume'],
-  stage_conversion: ['conversion', 'conversion rate'],
-  burn_rate: ['burn', 'burn rate'],
-  runway_months: ['runway', 'cash runway'],
-  csat: ['csat', 'customer satisfaction', 'satisfaction'],
-  headcount: ['headcount', 'team size', 'employees'],
-}
-
 const SUGGESTION_CATALOG = [
-  { key: 'churn_rate', text: 'What if churn reaches 7%?', deltaType: 'set', deltaValue: 7 },
-  { key: 'pipeline_value', text: 'What if pipeline drops by 30%?', deltaType: 'percent', deltaValue: -30 },
-  { key: 'mrr', text: 'What if MRR grows by 20%?', deltaType: 'percent', deltaValue: 20 },
-  { key: 'burn_rate', text: 'What if monthly burn falls by 15%?', deltaType: 'percent', deltaValue: -15 },
-  { key: 'runway_months', text: 'What if runway falls to 8 months?', deltaType: 'set', deltaValue: 8 },
-  { key: 'csat', text: 'What if CSAT falls to 75?', deltaType: 'set', deltaValue: 75 },
-  { key: 'lead_volume', text: 'What if lead volume grows by 25%?', deltaType: 'percent', deltaValue: 25 },
-  { key: 'stage_conversion', text: 'What if conversion improves by 10%?', deltaType: 'percent', deltaValue: 10 },
+  { key: 'churn_rate', text: 'What if churn reaches 7%?' },
+  { key: 'pipeline_value', text: 'What if pipeline drops by 30%?' },
+  { key: 'mrr', text: 'What if MRR grows by 20%?' },
+  { key: 'burn_rate', text: 'What if monthly burn falls by 15%?' },
+  { key: 'runway_months', text: 'What if runway falls to 8 months?' },
+  { key: 'csat', text: 'What if CSAT falls to 75?' },
+  { key: 'lead_volume', text: 'What if lead volume grows by 25%?' },
+  { key: 'stage_conversion', text: 'What if conversion improves by 10%?' },
 ]
 
 function titleCase(value) {
@@ -52,41 +40,6 @@ function formatDelta(row) {
   return `${row.delta > 0 ? '+' : ''}${formatValue(row.delta, row.unit)}`
 }
 
-function parseScenario(text, metrics) {
-  const clean = text.trim()
-  const lower = clean.toLowerCase()
-  const ordered = [...metrics].sort((a, b) => String(b.label).length - String(a.label).length)
-  let metric = ordered.find((item) => {
-    const names = [item.label?.toLowerCase(), item.key?.replace(/_/g, ' '), ...(SYNONYMS[item.key] || [])]
-    return names.filter(Boolean).some((name) => lower.includes(name))
-  })
-  if (!metric) return { error: 'Name a metric in the decision, such as churn, MRR, pipeline, burn, runway, or CSAT.' }
-
-  const valueMatch = clean.match(/-?\d+(?:\.\d+)?/)
-  if (!valueMatch) return { error: 'Add the amount you want to test, such as 7%, 20%, or 8 months.' }
-  const rawValue = Math.abs(Number(valueMatch[0]))
-  if (!Number.isFinite(rawValue)) return { error: 'The scenario amount could not be read.' }
-
-  const isDecrease = /drop|decreas|declin|fall|reduce|cut|lower|lose/.test(lower)
-  const isIncrease = /increase|grow|rise|raise|improve|higher|add/.test(lower)
-  const explicitTarget = /\bto\b|hits?|reaches?|at\s+\d|falls?\s+to|drops?\s+to/.test(lower)
-  const saysBy = /\bby\b/.test(lower)
-  let deltaType = explicitTarget ? 'set' : (saysBy || lower.includes('%')) && (isDecrease || isIncrease) ? 'percent' : 'set'
-  let deltaValue = rawValue
-  if (deltaType === 'percent' && isDecrease) deltaValue = -rawValue
-  if (deltaType === 'absolute' && isDecrease) deltaValue = -rawValue
-
-  return {
-    scenario: {
-      title: clean,
-      label: metric.label,
-      metricKey: metric.key,
-      deltaType,
-      deltaValue,
-    },
-  }
-}
-
 async function getAuthHeaders() {
   const supabase = await initSupabase()
   const { data: { session } } = await supabase.auth.getSession()
@@ -97,18 +50,32 @@ function EvidenceBadge({ tier }) {
   return <span className={`foresight-evidence ${tier || 'directional'}`}>{titleCase(tier || 'directional')}</span>
 }
 
+function formatObservedAt(value) {
+  if (!value) return ''
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString()
+}
+
+function directionCopy(row) {
+  if (row?.direction === 'positive') return 'Improvement expected'
+  if (row?.direction === 'negative') return 'Adverse direction'
+  if (row?.direction === 'mixed') return 'Competing effects'
+  return 'Direction unknown'
+}
+
 function EmptyResults() {
   return (
     <div className="foresight-empty">
       <div className="foresight-empty-copy">
         <span className="foresight-kicker">Decision workspace</span>
         <h2>Test the decision before the business feels it.</h2>
-        <p>Choose a live metric and Foresight will separate what can be calculated from what can only be estimated or projected directionally.</p>
+        <p>State a decision or a metric change. Foresight will separate your assumption from measured facts, calculated effects, estimates, and relationships whose magnitude is still unknown.</p>
       </div>
       <div className="foresight-methods">
+        <div><EvidenceBadge tier="assumed" /><span>A change supplied by you, not observed business data.</span></div>
         <div><EvidenceBadge tier="calculated" /><span>Direct mathematics from measured values.</span></div>
         <div><EvidenceBadge tier="estimated" /><span>Modeled range with explicit assumptions.</span></div>
-        <div><EvidenceBadge tier="directional" /><span>Likely pressure without fake precision.</span></div>
+        <div><EvidenceBadge tier="directional" /><span>Defensible direction without invented magnitude.</span></div>
       </div>
     </div>
   )
@@ -123,7 +90,7 @@ function ScenarioComparison({ results, selectedResult, onSelect }) {
           <span className="foresight-kicker">Scenario comparison</span>
           <h2>Current position against each choice</h2>
         </div>
-        <div className="foresight-legend"><EvidenceBadge tier="calculated" /><EvidenceBadge tier="estimated" /><EvidenceBadge tier="directional" /></div>
+        <div className="foresight-legend"><EvidenceBadge tier="assumed" /><EvidenceBadge tier="calculated" /><EvidenceBadge tier="estimated" /><EvidenceBadge tier="directional" /></div>
       </div>
       <div className="foresight-table-wrap">
         <table className="foresight-table">
@@ -148,7 +115,14 @@ function ScenarioComparison({ results, selectedResult, onSelect }) {
                   <span>{row.label}</span>
                   <small>{row.areaLabel}</small>
                 </th>
-                <td>{formatValue(row.baseline, row.unit)}</td>
+                <td>
+                  <span>{formatValue(row.baseline, row.unit)}</span>
+                  {row.source && (
+                    <small className="foresight-source">
+                      {row.source.sourceLabel}{formatObservedAt(row.source.observedAt) ? ` · ${formatObservedAt(row.source.observedAt)}` : ''}
+                    </small>
+                  )}
+                </td>
                 {results.map((result) => {
                   const scenarioRow = result.comparisonRows?.find((item) => item.key === row.key)
                   const delta = formatDelta(scenarioRow)
@@ -156,7 +130,7 @@ function ScenarioComparison({ results, selectedResult, onSelect }) {
                     <td key={result.id} className={selectedResult?.id === result.id ? 'selected' : ''}>
                       <span>{scenarioRow?.scenario == null ? 'Directional' : formatValue(scenarioRow.scenario, scenarioRow.unit)}</span>
                       {delta && <small className={scenarioRow.direction}>{delta}</small>}
-                      {!delta && scenarioRow && <small className="pressure">Pressure expected</small>}
+                      {!delta && scenarioRow && <small className={scenarioRow.direction || 'unknown'}>{directionCopy(scenarioRow)}</small>}
                     </td>
                   )
                 })}
@@ -189,22 +163,50 @@ function ImpactTimeline({ events = [] }) {
 }
 
 function CausalMap({ result }) {
-  const source = result?.comparisonRows?.[0]
-  const effects = result?.causalChain || []
+  const graph = result?.causalGraph || { nodes: [], edges: [] }
+  const levels = [...new Set((graph.nodes || []).map((node) => node.depth))].sort((a, b) => a - b)
   return (
     <div className="foresight-panel foresight-causal">
       <div className="foresight-panel-head">
         <div><span className="foresight-kicker">Causal map</span><h2>How the decision travels through the business</h2></div>
       </div>
-      <div className="foresight-chain">
-        <div className="foresight-node origin"><small>Decision lever</small><strong>{source?.label || 'Scenario'}</strong></div>
-        {effects.length ? effects.map((effect, index) => (
-          <React.Fragment key={`${effect.key}-${index}`}>
-            <div className="foresight-arrow"><span>→</span><small>{effect.delay || `Hop ${index + 1}`}</small></div>
-            <div className="foresight-node"><small>{titleCase(effect.confidence)} confidence</small><strong>{titleCase(effect.key)}</strong><p>{effect.mechanism}</p></div>
-          </React.Fragment>
-        )) : <p className="foresight-chain-empty">No defensible downstream relationship is available for this metric yet.</p>}
-      </div>
+      {levels.length ? (
+        <div className="foresight-graph-levels">
+          {levels.map((depth) => (
+            <div className="foresight-graph-level" key={depth}>
+              <span className="foresight-level-label">{depth === 0 ? 'Assumed change' : `Effect level ${depth}`}</span>
+              {(graph.nodes || []).filter((node) => node.depth === depth).map((node) => {
+                const incoming = (graph.edges || []).filter((edge) => edge.to === node.key)
+                return (
+                  <div className={`foresight-node ${depth === 0 ? 'origin' : ''}`} key={node.key}>
+                    <div className="foresight-node-meta"><EvidenceBadge tier={node.evidenceTier || (depth === 0 ? 'assumed' : 'directional')} /><span>{directionCopy(node)}</span></div>
+                    <strong>{node.label || titleCase(node.key)}</strong>
+                    {incoming.map((edge) => (
+                      <div className="foresight-relation" key={`${edge.from}-${edge.to}`}>
+                        <small>From {edge.fromLabel}{edge.delay ? ` · ${edge.delay}` : ''}</small>
+                        <p>{edge.effectText}</p>
+                        {edge.conditions?.map((condition) => <p className="condition" key={condition}>Condition: {condition}</p>)}
+                      </div>
+                    ))}
+                  </div>
+                )
+              })}
+            </div>
+          ))}
+        </div>
+      ) : <p className="foresight-chain-empty">No defensible downstream relationship is available for this metric yet.</p>}
+    </div>
+  )
+}
+
+function EvidenceGap({ result }) {
+  const missing = result?.decisionBrief?.missingData || []
+  return (
+    <div className="foresight-panel foresight-gap">
+      <span className="foresight-kicker">Evidence boundary</span>
+      <h2>No outcome was manufactured.</h2>
+      <p>Foresight could not model this decision safely from the facts currently available.</p>
+      {missing.length > 0 && <ul>{missing.map((item) => <li key={item}>{item}</li>)}</ul>}
     </div>
   )
 }
@@ -221,19 +223,39 @@ function BriefSection({ icon, title, items, empty }) {
 function DecisionBrief({ result, saving, saved, onSave, dispatching, dispatched, onDispatch }) {
   const brief = result?.decisionBrief
   if (!brief) return <aside className="foresight-panel foresight-brief empty"><span>Select a scenario to generate its decision brief.</span></aside>
+  const saveDisabled = result?.status === 'insufficient_evidence'
+  const dispatchDisabled = saveDisabled || result?.scenario?.mode !== 'decision'
+  const confidence = brief.confidence && typeof brief.confidence === 'object'
+    ? brief.confidence
+    : { overall: brief.confidence || 'unknown' }
   return (
     <aside className="foresight-panel foresight-brief">
-      <div className="foresight-brief-head"><span className="foresight-kicker">Decision brief</span><h2>{brief.verdict}</h2><span className={`foresight-verdict ${brief.tone}`}>{brief.confidence}</span></div>
+      <div className="foresight-brief-head">
+        <span className="foresight-kicker">Decision brief</span>
+        <h2>{brief.verdict}</h2>
+        <div className="foresight-confidence" aria-label="Model confidence">
+          {Object.entries(confidence).map(([key, value]) => (
+            <span key={key}><small>{titleCase(key)}</small><strong>{titleCase(value)}</strong></span>
+          ))}
+        </div>
+        {brief.condition && <p className="foresight-condition">{brief.condition}</p>}
+      </div>
       <BriefSection icon="trending-up" title="Upside" items={brief.upside} empty="No measured upside crossed a threshold." />
-      <BriefSection icon="alert-triangle" title="Downside" items={brief.downside} empty="No new material downside crossed a threshold." />
+      <BriefSection icon="alert-triangle" title="Downside" items={brief.downside} empty="No downside is evidenced by the modeled variables. Unmodeled effects may still exist." />
       <BriefSection icon="building" title="Affected areas" items={brief.affectedAreas} empty="Only the selected metric is affected." />
       <BriefSection icon="clipboard-text" title="Assumptions" items={brief.assumptions} />
       <BriefSection icon="help-circle" title="Missing data" items={brief.missingData} empty="No material data gap was detected for this run." />
       <div className="foresight-brief-actions">
-        <button type="button" className="foresight-btn secondary" onClick={onSave} disabled={saving || saved}>
+        <button type="button" className="foresight-btn secondary" onClick={onSave} disabled={saveDisabled || saving || saved}>
           <i className={`ti ti-${saved ? 'check' : 'bookmark'}`} aria-hidden="true" />{saved ? 'Saved' : saving ? 'Saving…' : 'Save scenario'}
         </button>
-        <button type="button" className="foresight-btn primary" disabled={dispatching || dispatched} onClick={onDispatch}>
+        <button
+          type="button"
+          className="foresight-btn primary"
+          disabled={dispatchDisabled || dispatching || dispatched}
+          title={result?.scenario?.mode !== 'decision' ? 'Name the action behind the metric change before sending it to Dispatch.' : ''}
+          onClick={onDispatch}
+        >
           <i className={`ti ti-${dispatched ? 'check' : 'send'}`} aria-hidden="true" />{dispatched ? 'Sent to Dispatch' : dispatching ? 'Preparing…' : 'Send to Dispatch'}
         </button>
       </div>
@@ -301,8 +323,9 @@ export default function SimulationPage({ userId, onOpenDispatch }) {
     return () => controller.abort()
   }, [userId])
 
-  const executeScenario = async (scenario) => {
-    if (!scenario || running) return
+  const executeScenario = async (question) => {
+    const normalizedQuestion = String(question || '').trim()
+    if (!normalizedQuestion || running) return
     setRunning(true)
     setError('')
     try {
@@ -310,17 +333,19 @@ export default function SimulationPage({ userId, onOpenDispatch }) {
       const response = await fetch('/api/simulate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...headers },
-        body: JSON.stringify({ userId, scenario }),
+        body: JSON.stringify({ userId, question: normalizedQuestion }),
       })
       const payload = await response.json().catch(() => ({}))
       if (!response.ok) throw new Error(payload.error || 'The scenario could not be modeled.')
       setResults((current) => {
-        if (current.length < 2) return [...current, payload]
-        const replaceIndex = Math.max(0, current.findIndex((item) => item.id === selectedId))
-        return current.map((item, index) => index === replaceIndex ? payload : item)
+        if (payload.status === 'insufficient_evidence') return [payload]
+        const comparable = current.filter((item) => item.status !== 'insufficient_evidence')
+        if (comparable.length < 2) return [...comparable, payload]
+        const replaceIndex = Math.max(0, comparable.findIndex((item) => item.id === selectedId))
+        return comparable.map((item, index) => index === replaceIndex ? payload : item)
       })
       setSelectedId(payload.id)
-      setInput(scenario.title || '')
+      setInput(normalizedQuestion)
     } catch (requestError) {
       setError(requestError?.message || 'The scenario could not be modeled.')
     } finally {
@@ -329,24 +354,12 @@ export default function SimulationPage({ userId, onOpenDispatch }) {
   }
 
   const handleRun = () => {
-    const parsed = parseScenario(input, metrics)
-    if (parsed.error) {
-      setError(parsed.error)
-      composerRef.current?.focus()
-      return
-    }
-    executeScenario(parsed.scenario)
+    executeScenario(input)
   }
 
   const runSuggestion = (suggestion) => {
     setInput(suggestion.text)
-    executeScenario({
-      title: suggestion.text,
-      label: suggestion.metric.label,
-      metricKey: suggestion.key,
-      deltaType: suggestion.deltaType,
-      deltaValue: suggestion.deltaValue,
-    })
+    executeScenario(suggestion.text)
   }
 
   const saveScenario = async () => {
@@ -360,9 +373,7 @@ export default function SimulationPage({ userId, onOpenDispatch }) {
         headers: { 'Content-Type': 'application/json', ...headers },
         body: JSON.stringify({
           userId,
-          title: selectedResult.title,
-          scenario: selectedResult.scenario,
-          result: selectedResult,
+          runId: selectedResult.id,
         }),
       })
       const payload = await response.json().catch(() => ({}))
@@ -385,7 +396,7 @@ export default function SimulationPage({ userId, onOpenDispatch }) {
       const response = await fetch('/api/dispatch/from-foresight', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...headers },
-        body: JSON.stringify({ userId, sourceId: selectedResult.id, result: selectedResult }),
+        body: JSON.stringify({ userId, runId: selectedResult.id }),
       })
       const payload = await response.json().catch(() => ({}))
       if (!response.ok) throw new Error(payload.error || 'The scenario could not be prepared for Dispatch.')
@@ -467,10 +478,12 @@ export default function SimulationPage({ userId, onOpenDispatch }) {
               <button type="button" role="tab" aria-selected={view === 'comparison'} onClick={() => setView('comparison')}>Comparison</button>
               <button type="button" role="tab" aria-selected={view === 'causal'} onClick={() => setView('causal')}>Causal map</button>
             </div>
-            {view === 'comparison'
-              ? <ScenarioComparison results={results} selectedResult={selectedResult} onSelect={setSelectedId} />
-              : <CausalMap result={selectedResult} />}
-            <ImpactTimeline events={selectedResult.timeline} />
+            {selectedResult.status === 'insufficient_evidence'
+              ? <EvidenceGap result={selectedResult} />
+              : view === 'comparison'
+                ? <ScenarioComparison results={results} selectedResult={selectedResult} onSelect={setSelectedId} />
+                : <CausalMap result={selectedResult} />}
+            {selectedResult.status !== 'insufficient_evidence' && <ImpactTimeline events={selectedResult.timeline} />}
             <p className="foresight-disclaimer">{selectedResult.evidence?.disclaimer}</p>
           </div>
           <DecisionBrief

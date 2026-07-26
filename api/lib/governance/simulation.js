@@ -5,9 +5,9 @@ import { getCompanyDNASummary } from '../intelligence/company-dna.js'
 import { fetchAllConnectedData } from '../connectors/data-fetcher.js'
 import { normalizeConnectorData } from '../connectors/normalize.js'
 import { loadSchema } from '../blueprint/schema-registry.js'
-import { getEnrichedMetricEdge } from './graph/index.js'
-import { projectDownstream } from './causal-engine.js'
 import { runGovernanceMonitoring } from './monitoring.js'
+import { buildScenarioGraph } from './relation-models.js'
+import { interpretScenarioQuestion } from './scenario-parser.js'
 
 function getSupabase() {
   return createClient(
@@ -24,19 +24,6 @@ function findingKey(finding) {
   return finding?.id || `${finding?.areaId || ''}::${finding?.metricKey || ''}::${finding?.title || ''}`
 }
 
-function scanMetricValue(snapshots, metricKey) {
-  for (const snapshot of snapshots || []) {
-    if (snapshot?.metricsByKey && metricKey in snapshot.metricsByKey) {
-      return snapshot.metricsByKey[metricKey]
-    }
-  }
-  return null
-}
-
-function flattenMetricValues(snapshots) {
-  return Object.assign({}, ...(snapshots || []).map((snapshot) => snapshot.metricsByKey || {}))
-}
-
 export function buildUserMetricMap(rows = []) {
   return Object.fromEntries(
     rows
@@ -45,7 +32,62 @@ export function buildUserMetricMap(rows = []) {
   )
 }
 
-function buildMetricCatalog(schema) {
+const SOURCE_PRIORITY = {
+  connector: 5,
+  integration: 5,
+  normalized: 5,
+  intelligence_brief: 4,
+  company_brain: 3,
+  manual: 2,
+  derived: 1,
+  unknown: 0,
+}
+
+function normalizedSourceType(source) {
+  const value = String(source || '').toLowerCase()
+  if (/connector|integration|stripe|hubspot|salesforce|quickbooks|xero|shopify|zendesk/.test(value)) return 'connector'
+  if (/brief/.test(value)) return 'intelligence_brief'
+  if (/brain/.test(value)) return 'company_brain'
+  if (/manual/.test(value)) return 'manual'
+  if (/derived|computed|ratio|divide/.test(value)) return 'derived'
+  return value || 'unknown'
+}
+
+export function buildBaselineFacts(snapshots = [], userMetricRows = []) {
+  const manualRows = new Map((userMetricRows || []).map((row) => [row.name, row]))
+  const facts = new Map()
+
+  for (const snapshot of snapshots || []) {
+    const metricSources = new Map((snapshot.metrics || []).map((item) => [item.key, item]))
+    for (const [key, value] of Object.entries(snapshot.metricsByKey || {})) {
+      if (!Number.isFinite(Number(value))) continue
+      const sourceMetric = metricSources.get(key)
+      const manualRow = manualRows.get(key)
+      const sourceType = sourceMetric
+        ? normalizedSourceType(sourceMetric.source)
+        : manualRow
+          ? 'manual'
+          : 'unknown'
+      const fact = {
+        key,
+        value: Number(value),
+        sourceType,
+        sourceLabel: sourceMetric?.source || (manualRow ? 'User-entered metric' : 'Unknown source'),
+        observedAt: sourceType === 'manual'
+          ? manualRow?.updated_at || null
+          : snapshot.checkedAt || null,
+      }
+      const previous = facts.get(key)
+      if (!previous || (SOURCE_PRIORITY[fact.sourceType] || 0) > (SOURCE_PRIORITY[previous.sourceType] || 0)) {
+        facts.set(key, fact)
+      }
+    }
+  }
+
+  return facts
+}
+
+export function buildMetricCatalog(schema) {
   const catalog = new Map()
   for (const area of schema?.areas || []) {
     for (const metric of area.metricFamilies || []) {
@@ -178,9 +220,33 @@ function scenarioDirection(metric, before, after) {
   return 'neutral'
 }
 
-function buildComparisonRows({ scenario, schema, baseline, afterValue, downstream }) {
+function rawChangeDirection(before, after) {
+  if (!Number.isFinite(Number(before)) || !Number.isFinite(Number(after)) || Number(before) === Number(after)) return 'neutral'
+  return Number(after) > Number(before) ? 'up' : 'down'
+}
+
+function directionFromRawChange(metric, changeDirection) {
+  if (changeDirection === 'mixed') return 'mixed'
+  if (!['up', 'down'].includes(changeDirection)) return 'unknown'
+  if (metric?.preferredDirection === 'lower-is-better') return changeDirection === 'down' ? 'positive' : 'negative'
+  if (metric?.preferredDirection === 'higher-is-better') return changeDirection === 'up' ? 'positive' : 'negative'
+  return 'unknown'
+}
+
+function directionLabel(direction) {
+  if (direction === 'up') return 'increase'
+  if (direction === 'down') return 'decrease'
+  if (direction === 'mixed') return 'move in competing directions'
+  return 'change'
+}
+
+function evidenceRank(tier) {
+  return tier === 'calculated' ? 3 : tier === 'estimated' ? 2 : tier === 'directional' ? 1 : 0
+}
+
+function buildComparisonRows({ scenario, schema, baselineFacts, afterValue, scenarioGraph }) {
   const catalog = buildMetricCatalog(schema)
-  const values = flattenMetricValues(baseline.snapshots)
+  const values = Object.fromEntries([...baselineFacts.entries()].map(([key, fact]) => [key, fact.value]))
   const directMetric = catalog.get(scenario.metricKey) || {
     key: scenario.metricKey,
     label: scenario.label || scenario.metricKey.replace(/_/g, ' '),
@@ -193,117 +259,237 @@ function buildComparisonRows({ scenario, schema, baseline, afterValue, downstrea
   const directDelta = deltaFor(beforeValue, afterValue)
   const rows = [{
     ...directMetric,
+    source: baselineFacts.get(scenario.metricKey) || null,
     baseline: beforeValue,
     scenario: afterValue,
     delta: directDelta.absolute,
     deltaPercent: directDelta.percent,
-    evidenceTier: 'calculated',
+    evidenceTier: 'assumed',
     direction: scenarioDirection(directMetric, beforeValue, afterValue),
+    changeDirection: rawChangeDirection(beforeValue, afterValue),
     basis: scenario.deltaType === 'set' ? 'User-defined scenario value.' : 'Calculated from the requested change.',
   }]
 
-  for (const effect of downstream.slice(0, 5)) {
-    const metric = catalog.get(effect.key) || {
-      key: effect.key,
-      label: effect.key.replace(/_/g, ' '),
+  const scenarioValues = new Map([[scenario.metricKey, afterValue]])
+  const graphNodes = [...(scenarioGraph?.nodes || [])]
+    .filter((node) => node.key !== scenario.metricKey)
+    .sort((a, b) => a.depth - b.depth)
+
+  for (const node of graphNodes.slice(0, 8)) {
+    const metric = catalog.get(node.key) || {
+      key: node.key,
+      label: node.key.replace(/_/g, ' '),
       unit: 'number',
       areaId: null,
       areaLabel: 'Connected area',
       preferredDirection: null,
     }
-    const projected = projectKnownRelationship(scenario.metricKey, effect.key, beforeValue, afterValue, values)
-    const projectedDelta = projected ? deltaFor(values[effect.key], projected.value) : { absolute: null, percent: null }
+    const incoming = (scenarioGraph.edges || []).filter((edge) => edge.to === node.key)
+    const candidates = incoming
+      .map((edge) => {
+        const sourceScenarioValue = scenarioValues.get(edge.from)
+        const sourceBaselineValue = values[edge.from]
+        if (sourceScenarioValue == null || sourceBaselineValue == null) return null
+        const projected = projectKnownRelationship(
+          edge.from,
+          node.key,
+          sourceBaselineValue,
+          sourceScenarioValue,
+          values,
+        )
+        return projected ? { ...projected, edge } : null
+      })
+      .filter(Boolean)
+      .sort((a, b) => evidenceRank(b.evidenceTier) - evidenceRank(a.evidenceTier))
+
+    const projected = candidates[0] || null
+    if (projected) scenarioValues.set(node.key, projected.value)
+    const projectedDelta = projected ? deltaFor(values[node.key], projected.value) : { absolute: null, percent: null }
+    const nodeDirection = projected
+      ? rawChangeDirection(values[node.key], projected.value)
+      : node.changeDirection
+    const mechanisms = [...new Set(incoming.map((edge) => edge.mechanism).filter(Boolean))]
     rows.push({
       ...metric,
-      baseline: values[effect.key] ?? null,
+      source: baselineFacts.get(node.key) || null,
+      baseline: values[node.key] ?? null,
       scenario: projected?.value ?? null,
       delta: projectedDelta.absolute,
       deltaPercent: projectedDelta.percent,
       evidenceTier: projected?.evidenceTier || 'directional',
       direction: projected
-        ? scenarioDirection(metric, values[effect.key], projected.value)
-        : 'pressure',
-      basis: projected?.basis || effect.mechanism,
-      confidence: effect.confidence,
-      delay: effect.delay || null,
-      hops: effect.hops,
+        ? scenarioDirection(metric, values[node.key], projected.value)
+        : directionFromRawChange(metric, nodeDirection),
+      changeDirection: nodeDirection,
+      basis: projected?.basis || `${metric.label} is expected to ${directionLabel(nodeDirection)}; the magnitude is not calibrated.`,
+      mechanisms,
+      confidence: incoming.length && incoming.every((edge) => edge.confidence === 'high') ? 'high' : 'medium',
+      delay: incoming.map((edge) => edge.delay).find(Boolean) || null,
+      depth: node.depth,
     })
   }
 
-  return rows
+  const rowMap = new Map(rows.map((row) => [row.key, row]))
+  const causalGraph = {
+    root: scenarioGraph.root,
+    nodes: (scenarioGraph.nodes || []).map((node) => {
+      const row = rowMap.get(node.key)
+      const metric = catalog.get(node.key)
+      return {
+        ...node,
+        label: metric?.label || node.key.replace(/_/g, ' '),
+        direction: row?.direction || directionFromRawChange(metric, node.changeDirection),
+        evidenceTier: row?.evidenceTier || 'directional',
+        scenario: row?.scenario ?? null,
+        baseline: row?.baseline ?? null,
+      }
+    }),
+    edges: (scenarioGraph.edges || []).map((edge) => ({
+      ...edge,
+      fromLabel: catalog.get(edge.from)?.label || edge.from.replace(/_/g, ' '),
+      toLabel: catalog.get(edge.to)?.label || edge.to.replace(/_/g, ' '),
+      effectText: edge.changeDirection === 'unknown'
+        ? 'The direction of this relationship cannot be defended without additional conditions.'
+        : `${catalog.get(edge.to)?.label || edge.to.replace(/_/g, ' ')} is expected to ${directionLabel(edge.changeDirection)}. Magnitude is ${rowMap.get(edge.to)?.scenario == null ? 'not calibrated' : 'modeled separately'}.`,
+    })),
+  }
+
+  return { rows, causalGraph }
 }
 
 function uniqueText(items, limit = 3) {
   return [...new Set(items.filter(Boolean))].slice(0, limit)
 }
 
-function buildDecisionBrief({ directRow, delta, downstream, patterns, comparisonRows }) {
+export function buildDecisionBrief({ scenario, delta, comparisonRows, causalGraph, patterns = [] }) {
+  const directRow = comparisonRows[0]
+  const positiveRows = comparisonRows.filter((row) => row.direction === 'positive')
+  const negativeRows = comparisonRows.filter((row) => row.direction === 'negative')
+  const unknownRows = comparisonRows.filter((row) => ['unknown', 'mixed'].includes(row.direction))
+  const calculatedRows = comparisonRows.filter((row) => row.evidenceTier === 'calculated')
+  const estimatedRows = comparisonRows.filter((row) => row.evidenceTier === 'estimated')
+  const directionalRows = comparisonRows.filter((row) => row.evidenceTier === 'directional')
   const risks = [...delta.newFindings, ...delta.worsenedFindings]
-  const improvements = delta.improvedFindings
-  const directPositive = directRow.direction === 'positive'
-  const directNegative = directRow.direction === 'negative'
 
-  let verdict = 'No material threshold change'
+  let verdict = 'No defensible material direction'
   let tone = 'neutral'
-  if (risks.length > improvements.length || (directNegative && !improvements.length)) {
-    verdict = 'Risk increases under this scenario'
-    tone = 'negative'
-  } else if (improvements.length > risks.length || (directPositive && !risks.length)) {
-    verdict = 'Likely net positive'
+  if (positiveRows.length && !negativeRows.length) {
+    verdict = scenario.mode === 'decision'
+      ? 'Favorable operating direction — economics incomplete'
+      : 'Favorable metric direction — decision incomplete'
     tone = 'positive'
-  } else if (risks.length && improvements.length) {
-    verdict = 'Material trade-off'
+  } else if (negativeRows.length && !positiveRows.length) {
+    verdict = scenario.mode === 'decision'
+      ? 'Unfavorable direction under stated assumptions'
+      : 'Unfavorable metric direction — decision incomplete'
+    tone = 'negative'
+  } else if (positiveRows.length && negativeRows.length) {
+    verdict = 'Material trade-off — compare the conditions'
     tone = 'mixed'
+  } else if (unknownRows.length) {
+    verdict = 'Partial model — more evidence is required'
+    tone = 'neutral'
   }
 
-  const patternSupport = patterns?.filter((pattern) =>
-    downstream.some((effect) => effect.key === pattern.to_metric && pattern.from_metric === directRow.key)
-  ) || []
-  const calculatedCount = comparisonRows.filter((row) => row.evidenceTier === 'calculated').length
-  const estimatedCount = comparisonRows.filter((row) => row.evidenceTier === 'estimated').length
-  const confidence = patternSupport.length || calculatedCount > 1
-    ? 'High confidence'
-    : estimatedCount || downstream.some((effect) => effect.confidence === 'high')
-      ? 'Medium confidence'
-      : 'Directional confidence'
+  const allEdges = causalGraph?.edges || []
+  const directionConfidence = unknownRows.length
+    ? 'low'
+    : allEdges.length && allEdges.every((edge) => edge.confidence === 'high')
+      ? 'high'
+      : 'medium'
+  const magnitudeConfidence = directionalRows.length
+    ? calculatedRows.length || estimatedRows.length ? 'mixed' : 'low'
+    : calculatedRows.length && !estimatedRows.length ? 'high'
+      : estimatedRows.length ? 'medium'
+        : 'low'
+  const hasCompanyPattern = patterns.some((pattern) =>
+    allEdges.some((edge) => edge.from === pattern.from_metric && edge.to === pattern.to_metric)
+  )
+  const confidence = {
+    direction: hasCompanyPattern && directionConfidence !== 'low' ? 'high' : directionConfidence,
+    magnitude: magnitudeConfidence,
+    feasibility: scenario.mode === 'decision' && scenario.action ? 'not_assessed' : 'not_assessed',
+  }
 
-  const upside = uniqueText([
-    ...improvements.map((finding) => finding.summary || finding.title),
-    ...comparisonRows.filter((row) => row.direction === 'positive').map((row) => `${row.label} improves under the modeled assumptions.`),
-  ])
+  const upside = uniqueText(positiveRows.map((row) =>
+    row.scenario == null
+      ? `${row.label} is expected to improve; the magnitude is not calibrated.`
+      : `${row.label} improves from ${row.baseline} to ${row.scenario} under the stated assumptions.`
+  ), 5)
   const downside = uniqueText([
-    ...risks.map((finding) => finding.summary || finding.title),
-    ...comparisonRows.filter((row) => row.direction === 'negative').map((row) => `${row.label} moves in an unfavorable direction.`),
-  ])
-  const affectedAreas = uniqueText(comparisonRows.map((row) => row.areaLabel), 6)
+    ...negativeRows.map((row) =>
+      row.scenario == null
+        ? `${row.label} is expected to worsen; the magnitude is not calibrated.`
+        : `${row.label} worsens from ${row.baseline} to ${row.scenario} under the stated assumptions.`
+    ),
+    ...risks.map((finding) => `A modeled threshold is crossed: ${finding.title || finding.summary}.`),
+    ...(scenario.mode !== 'decision'
+      ? ['Operational and implementation effects are not modeled because the action has not been specified.']
+      : []),
+    ...(scenario.mode === 'decision' && (scenario.costs || []).length
+      ? ['Stated implementation costs are recorded but are not netted against the modeled operating effect.']
+      : []),
+  ], 5)
+  const affectedAreas = uniqueText(comparisonRows.map((row) => row.areaLabel), 8)
   const assumptions = uniqueText([
-    ...comparisonRows.filter((row) => row.evidenceTier !== 'directional').map((row) => row.basis),
-    'Connected data remains broadly consistent over the selected horizon.',
-    'No unmodeled intervention changes the outcome.',
-  ], 4)
+    ...(scenario.statedAssumptions || []),
+    ...comparisonRows.filter((row) => ['assumed', 'calculated', 'estimated'].includes(row.evidenceTier)).map((row) => row.basis),
+  ], 6)
   const missingData = uniqueText([
+    ...(scenario.missingInputs || []),
     ...comparisonRows.filter((row) => row.baseline == null).map((row) => `No measured baseline for ${row.label}.`),
-    ...comparisonRows.filter((row) => row.evidenceTier === 'directional').map((row) => `No calibrated magnitude for ${directRow.label} → ${row.label}.`),
-  ], 4)
+    ...directionalRows.map((row) => `No calibrated magnitude for ${directRow.label} → ${row.label}.`),
+    ...(scenario.mode !== 'decision'
+      ? ['How the metric change will be achieved.', 'Implementation cost and operational consequences.']
+      : []),
+    ...(scenario.mode === 'decision' && !(scenario.costs || []).length
+      ? ['The cost of implementing the decision.']
+      : []),
+    ...(scenario.mode === 'decision' && (scenario.costs || []).length
+      ? ['The net financial effect after the stated implementation cost.']
+      : []),
+  ], 8)
 
-  return { verdict, tone, confidence, upside, downside, affectedAreas, assumptions, missingData }
+  const condition = scenario.mode === 'decision'
+    ? 'This describes the operating direction if the stated metric change is achieved. It is not a net financial recommendation until cost and feasibility are modeled.'
+    : 'This is a metric stress test, not a complete decision recommendation. Feasibility and implementation effects are not assessed.'
+
+  return {
+    verdict,
+    tone,
+    confidence,
+    confidenceLabel: `Direction ${confidence.direction} · Magnitude ${confidence.magnitude} · Feasibility ${confidence.feasibility.replace(/_/g, ' ')}`,
+    upside,
+    downside,
+    affectedAreas,
+    assumptions,
+    missingData,
+    condition,
+  }
 }
 
-function buildTimeline(downstream, comparisonRows) {
+function buildTimeline(causalGraph, comparisonRows) {
   const directRow = comparisonRows[0]
   const events = [{
     horizon: 'Now',
     tone: directRow.direction,
-    text: `${directRow.label} changes from the current baseline.`,
+    text: `${directRow.label} is assumed to change from ${directRow.baseline} to ${directRow.scenario}.`,
   }]
-  downstream.slice(0, 3).forEach((effect, index) => {
-    const row = comparisonRows.find((item) => item.key === effect.key)
+  const seen = new Set()
+  for (const edge of causalGraph?.edges || []) {
+    if (seen.has(edge.to)) continue
+    seen.add(edge.to)
+    const row = comparisonRows.find((item) => item.key === edge.to)
+    if (!row) continue
     events.push({
-      horizon: effect.delay || (index === 0 ? '30 days' : index === 1 ? '60 days' : '90 days'),
-      tone: row?.direction || 'pressure',
-      text: `${row?.label || effect.key.replace(/_/g, ' ')}: ${effect.mechanism}`,
+      horizon: edge.delay || 'Timing unknown',
+      tone: row.direction,
+      text: row.scenario == null
+        ? row.basis
+        : `${row.label} is modeled from ${row.baseline} to ${row.scenario}. ${row.basis}`,
     })
-  })
+    if (events.length >= 5) break
+  }
   return events
 }
 
@@ -313,15 +499,18 @@ async function loadSimulationContext(supabase, userId) {
     supabase.from('intelligence_brief').select('financial, operational, context').eq('user_id', userId).single(),
     loadSchema(userId),
     getCompanyDNASummary(supabase, userId),
-    supabase.from('user_custom_metrics').select('name, value').eq('user_id', userId),
+    supabase.from('user_custom_metrics').select('name, value, updated_at').eq('user_id', userId),
   ])
 
   const brain = brainRes.status === 'fulfilled' ? brainRes.value : null
   const brief = briefRes.status === 'fulfilled' ? briefRes.value.data : null
   const schema = schemaRes.status === 'fulfilled' ? schemaRes.value : null
   const dna = dnaRes.status === 'fulfilled' ? dnaRes.value : { status: 'insufficient_data', patterns: [] }
+  const userMetricRows = userMetricsRes.status === 'fulfilled'
+    ? userMetricsRes.value.data || []
+    : []
   const userMetrics = userMetricsRes.status === 'fulfilled'
-    ? buildUserMetricMap(userMetricsRes.value.data)
+    ? buildUserMetricMap(userMetricRows)
     : {}
 
   let normalized = null
@@ -342,17 +531,129 @@ async function loadSimulationContext(supabase, userId) {
     normalized = null
   }
 
-  return { brain, brief, normalized, schema, dna, userMetrics }
+  return { brain, brief, normalized, schema, dna, userMetrics, userMetricRows }
 }
 
-export async function runScenario(supabase, userId, scenario) {
-  const sb = supabase || getSupabase()
-  const { brain, brief, normalized, schema, dna, userMetrics } = await loadSimulationContext(sb, userId)
-  const baseline = runGovernanceMonitoring({ brain, brief, normalized, schema, userMetrics })
-  const beforeValue = scanMetricValue(baseline.snapshots, scenario.metricKey)
+function legacyScenarioToV2(scenario) {
+  if (!scenario?.metricKey) return null
+  return {
+    version: 2,
+    title: scenario.title || scenario.label,
+    question: scenario.title || scenario.label,
+    mode: 'metric_stress_test',
+    action: null,
+    changes: [{
+      metricKey: scenario.metricKey,
+      label: scenario.label,
+      operation: scenario.deltaType,
+      value: Number(scenario.deltaValue),
+      evidenceType: 'user_assumption',
+    }],
+    costs: [],
+    horizonMonths: null,
+    statedAssumptions: [],
+    missingInputs: [],
+    parser: 'legacy_structured',
+  }
+}
 
+function insufficientResult({ interpreted, missingData, baselineFacts, createdAt }) {
+  return {
+    id: randomUUID(),
+    modelVersion: 'foresight-v2.0.0',
+    status: 'insufficient_evidence',
+    title: interpreted.title || interpreted.question || 'Scenario',
+    createdAt,
+    scenario: interpreted,
+    baseline: {
+      facts: [...baselineFacts.values()],
+      summary: null,
+      findings: [],
+    },
+    simulated: null,
+    delta: { newFindings: [], worsenedFindings: [], improvedFindings: [], areaStatusChanges: [] },
+    comparisonRows: [],
+    timeline: [],
+    causalGraph: { root: null, nodes: [], edges: [] },
+    causalChain: [],
+    decisionBrief: {
+      verdict: 'Not enough evidence to model this decision',
+      tone: 'neutral',
+      confidence: { direction: 'low', magnitude: 'low', feasibility: 'not_assessed' },
+      confidenceLabel: 'Direction low · Magnitude low · Feasibility not assessed',
+      upside: [],
+      downside: ['SelfAudit has not manufactured an outcome from missing evidence.'],
+      affectedAreas: [],
+      assumptions: interpreted.statedAssumptions || [],
+      missingData: uniqueText(missingData, 8),
+      condition: 'Add the missing company facts or state the assumptions explicitly to run a bounded scenario.',
+    },
+    evidence: {
+      companyPatternStatus: 'not_used',
+      companyPatternsUsed: [],
+      disclaimer: 'No projection was produced because the required evidence was not available.',
+    },
+    appliedPatch: null,
+  }
+}
+
+export async function runScenario(supabase, userId, input) {
+  const sb = supabase || getSupabase()
+  const { brain, brief, normalized, schema, dna, userMetrics, userMetricRows } = await loadSimulationContext(sb, userId)
+  const baseline = runGovernanceMonitoring({ brain, brief, normalized, schema, userMetrics })
+  const baselineFacts = buildBaselineFacts(baseline.snapshots, userMetricRows)
+  const catalog = [...buildMetricCatalog(schema).values()]
+  const interpreted = input?.question
+    ? await interpretScenarioQuestion(input.question, catalog)
+    : legacyScenarioToV2(input?.scenario || input)
+  const createdAt = new Date().toISOString()
+
+  if (!interpreted || !interpreted.changes?.length) {
+    return insufficientResult({
+      interpreted: interpreted || {
+        title: String(input?.question || 'Scenario'),
+        question: String(input?.question || ''),
+        statedAssumptions: [],
+      },
+      missingData: interpreted?.missingInputs?.length
+        ? interpreted.missingInputs
+        : ['Name the company metric to change and the amount of the change.'],
+      baselineFacts,
+      createdAt,
+    })
+  }
+
+  if (interpreted.changes.length > 1) {
+    return insufficientResult({
+      interpreted,
+      missingData: [
+        ...(interpreted.missingInputs || []),
+        'This scenario changes multiple business metrics. Model one lever at a time or provide a calibrated multi-variable response model.',
+      ],
+      baselineFacts,
+      createdAt,
+    })
+  }
+
+  const change = interpreted.changes[0]
+  const scenario = {
+    ...interpreted,
+    metricKey: change.metricKey,
+    label: change.label,
+    deltaType: change.operation,
+    deltaValue: change.value,
+  }
+  const beforeValue = baselineFacts.get(scenario.metricKey)?.value ?? null
   if (beforeValue == null) {
-    throw new Error(`No measured baseline is available for ${scenario.label || scenario.metricKey}.`)
+    return insufficientResult({
+      interpreted,
+      missingData: [
+        ...(interpreted.missingInputs || []),
+        `No current ${scenario.label || scenario.metricKey} baseline is available.`,
+      ],
+      baselineFacts,
+      createdAt,
+    })
   }
 
   const afterValue = computeAfterValue(beforeValue, scenario.deltaType, scenario.deltaValue)
@@ -365,38 +666,51 @@ export async function runScenario(supabase, userId, scenario) {
     metricOverrides: { [scenario.metricKey]: afterValue },
   })
 
-  const downstream = projectDownstream(scenario.metricKey, 2).map((effect) => {
-    const enriched = effect.hops === 1 ? getEnrichedMetricEdge(scenario.metricKey, effect.key) : null
-    return { ...effect, delay: enriched?.delay || null, conditions: enriched?.conditions || [], sources: enriched?.sources || [] }
-  })
+  const sourceDirection = rawChangeDirection(beforeValue, afterValue)
+  const rawGraph = buildScenarioGraph(scenario.metricKey, sourceDirection, 2)
   const delta = buildDelta(baseline, simulated)
-  const comparisonRows = buildComparisonRows({ scenario, schema, baseline, afterValue, downstream })
-  const decisionBrief = buildDecisionBrief({
-    directRow: comparisonRows[0],
-    delta,
-    downstream,
-    patterns: dna.patterns,
-    comparisonRows,
+  const { rows: comparisonRows, causalGraph } = buildComparisonRows({
+    scenario,
+    schema,
+    baselineFacts,
+    afterValue,
+    scenarioGraph: rawGraph,
   })
+  const decisionBrief = buildDecisionBrief({
+    scenario,
+    delta,
+    comparisonRows,
+    causalGraph,
+    patterns: dna.patterns || [],
+  })
+  const companyPatternsUsed = dna.patterns?.filter((pattern) =>
+    causalGraph.edges.some((edge) => edge.to === pattern.to_metric && edge.from === pattern.from_metric)
+  ) || []
+  const hasDirectionalRows = comparisonRows.some((row) => row.evidenceTier === 'directional')
 
   return {
     id: randomUUID(),
+    modelVersion: 'foresight-v2.0.0',
+    status: hasDirectionalRows ? 'bounded' : 'modeled',
     title: scenario.title || scenario.label,
-    createdAt: new Date().toISOString(),
+    createdAt,
     scenario: { ...scenario, beforeValue, afterValue },
-    baseline: { summary: baseline.summary, findings: baseline.findings },
+    baseline: {
+      summary: baseline.summary,
+      findings: baseline.findings,
+      facts: comparisonRows.map((row) => row.source).filter(Boolean),
+    },
     simulated: { summary: simulated.summary, findings: simulated.findings },
     delta,
     comparisonRows,
-    timeline: buildTimeline(downstream, comparisonRows),
-    causalChain: downstream,
+    timeline: buildTimeline(causalGraph, comparisonRows),
+    causalGraph,
+    causalChain: causalGraph.edges,
     decisionBrief,
     evidence: {
       companyPatternStatus: dna.status,
-      companyPatternsUsed: dna.patterns?.filter((pattern) =>
-        downstream.some((effect) => effect.key === pattern.to_metric && pattern.from_metric === scenario.metricKey)
-      ) || [],
-      disclaimer: 'Projections depend on the stated assumptions. Directional effects are not numerical forecasts.',
+      companyPatternsUsed,
+      disclaimer: 'Calculated results use measured values and explicit formulas. Estimated and directional effects depend on stated assumptions and are not promises about the future.',
     },
     appliedPatch: { metricKey: scenario.metricKey, before: beforeValue, after: afterValue },
   }

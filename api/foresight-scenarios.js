@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { validateUserToken } from './lib/auth.js'
+import { getOwnedForesightRun } from './lib/governance/foresight-runs.js'
 
 const supabase = createClient(
   process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
@@ -25,21 +26,18 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'POST') {
-      const { title, scenario, result } = req.body || {}
-      const normalizedTitle = typeof title === 'string' ? title.trim().slice(0, 160) : ''
-      const validScenario = scenario && typeof scenario === 'object' && !Array.isArray(scenario)
-      const validResult = result && typeof result === 'object' && !Array.isArray(result)
-      if (!normalizedTitle || !validScenario || !validResult) {
-        return res.status(400).json({ error: 'title, scenario, and result are required' })
-      }
-      if (JSON.stringify({ scenario, result }).length > 500_000) {
-        return res.status(413).json({ error: 'The saved scenario is too large' })
+      const { runId } = req.body || {}
+      if (typeof runId !== 'string' || !runId) return res.status(400).json({ error: 'runId is required' })
+      const run = await getOwnedForesightRun(supabase, userId, runId)
+      if (!run) return res.status(404).json({ error: 'Foresight run not found' })
+      if (run.status === 'insufficient_evidence') {
+        return res.status(422).json({ error: 'A scenario without sufficient evidence cannot be saved' })
       }
       const payload = {
         user_id: userId,
-        title: normalizedTitle,
-        scenario,
-        result,
+        title: String(run.result?.title || run.question).trim().slice(0, 160),
+        scenario: run.scenario,
+        result: run.result,
         updated_at: new Date().toISOString(),
       }
       const { data, error } = await supabase

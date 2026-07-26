@@ -2,6 +2,8 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
   buildUserMetricMap,
+  buildBaselineFacts,
+  buildDecisionBrief,
   buildDelta,
   computeAfterValue,
   projectKnownRelationship,
@@ -66,4 +68,88 @@ test('delta reports findings that disappear as improvements', () => {
   )
   assert.deepEqual(delta.improvedFindings, [finding])
   assert.deepEqual(delta.newFindings, [])
+})
+
+test('baseline facts preserve source and observation time', () => {
+  const facts = buildBaselineFacts([{
+    checkedAt: '2026-07-25T10:00:00.000Z',
+    metricsByKey: { churn_rate: 6.6 },
+    metrics: [{ key: 'churn_rate', source: 'Stripe connector' }],
+  }], [])
+  assert.deepEqual(facts.get('churn_rate'), {
+    key: 'churn_rate',
+    value: 6.6,
+    sourceType: 'connector',
+    sourceLabel: 'Stripe connector',
+    observedAt: '2026-07-25T10:00:00.000Z',
+  })
+})
+
+test('decision brief labels a metric stress test as incomplete, not a recommendation', () => {
+  const brief = buildDecisionBrief({
+    scenario: {
+      mode: 'metric_stress_test',
+      statedAssumptions: [],
+      missingInputs: [],
+      label: 'Churn rate',
+    },
+    delta: { newFindings: [], worsenedFindings: [], improvedFindings: [], areaStatusChanges: [] },
+    comparisonRows: [
+      {
+        key: 'churn_rate',
+        label: 'Churn rate',
+        areaLabel: 'Finance',
+        baseline: 6.6,
+        scenario: 3,
+        direction: 'positive',
+        evidenceTier: 'assumed',
+        basis: 'User-defined scenario value.',
+      },
+      {
+        key: 'mrr',
+        label: 'Monthly recurring revenue',
+        areaLabel: 'Finance',
+        baseline: 79000,
+        scenario: 88000,
+        direction: 'positive',
+        evidenceTier: 'estimated',
+        basis: 'Three-month retention effect with acquisition and pricing held constant.',
+      },
+    ],
+    causalGraph: { edges: [{ from: 'churn_rate', to: 'mrr', confidence: 'high' }] },
+    patterns: [],
+  })
+  assert.match(brief.verdict, /decision incomplete/i)
+  assert.doesNotMatch(JSON.stringify(brief), /net positive|no downside/i)
+  assert.ok(brief.missingData.includes('How the metric change will be achieved.'))
+  assert.equal(brief.confidence.feasibility, 'not_assessed')
+})
+
+test('decision brief does not claim net economics when implementation cost is unmodeled', () => {
+  const brief = buildDecisionBrief({
+    scenario: {
+      mode: 'decision',
+      action: { description: 'Hire two warehouse leads' },
+      costs: [{ label: 'Annual payroll', amount: 160000, cadence: 'annual' }],
+      statedAssumptions: [],
+      missingInputs: [],
+      label: 'Fulfilment time',
+    },
+    delta: { newFindings: [], worsenedFindings: [], improvedFindings: [], areaStatusChanges: [] },
+    comparisonRows: [{
+      key: 'fulfilment_time_hrs',
+      label: 'Fulfilment time',
+      areaLabel: 'Operations',
+      baseline: 48,
+      scenario: 36,
+      direction: 'positive',
+      evidenceTier: 'assumed',
+      basis: 'User-defined scenario value.',
+    }],
+    causalGraph: { edges: [] },
+    patterns: [],
+  })
+  assert.match(brief.verdict, /economics incomplete/i)
+  assert.ok(brief.downside.some((item) => /not netted/i.test(item)))
+  assert.ok(brief.missingData.some((item) => /net financial effect/i.test(item)))
 })

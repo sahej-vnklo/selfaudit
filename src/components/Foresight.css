@@ -90,6 +90,7 @@
 .foresight-panel-head h2 { margin-top: 2px; font-size: 19px; line-height: 1.25; }
 .foresight-legend { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 5px; }
 .foresight-evidence { display: inline-flex; align-items: center; padding: 2px 6px; border: 1px solid var(--border); border-radius: 4px; color: var(--muted); font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.foresight-evidence.assumed { border-color: color-mix(in srgb, var(--fs-accent) 38%, var(--border)); color: var(--fs-accent); }
 .foresight-evidence.calculated { border-color: color-mix(in srgb, var(--fs-positive) 38%, var(--border)); color: var(--fs-positive); }
 .foresight-evidence.estimated { border-color: color-mix(in srgb, var(--fs-amber) 38%, var(--border)); color: var(--fs-amber); }
 
@@ -112,10 +113,12 @@
 .foresight-table tbody th small { display: block; overflow: hidden; color: var(--muted); font-size: 13px; font-weight: 400; text-overflow: ellipsis; white-space: nowrap; }
 .foresight-table td > span { font-weight: 650; }
 .foresight-table td > small { display: block; margin-top: 2px; font-size: 13px; }
+.foresight-table td > small.foresight-source { max-width: 190px; overflow: hidden; color: var(--muted); font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
 .foresight-table .selected { background: color-mix(in srgb, var(--fs-accent) 4%, transparent); box-shadow: inset 1px 0 color-mix(in srgb, var(--fs-accent) 45%, transparent), inset -1px 0 color-mix(in srgb, var(--fs-accent) 45%, transparent); }
 .foresight-table .positive { color: var(--fs-positive); }
 .foresight-table .negative { color: var(--fs-negative); }
-.foresight-table .pressure { color: var(--fs-amber); }
+.foresight-table .mixed { color: var(--fs-amber); }
+.foresight-table .unknown { color: var(--muted); }
 
 .foresight-timeline { margin-top: 10px; }
 .foresight-timeline-track { display: grid; grid-template-columns: repeat(auto-fit, minmax(145px, 1fr)); padding: 20px 16px 16px; }
@@ -132,10 +135,11 @@
 .foresight-brief.empty { align-items: center; justify-content: center; padding: 24px; color: var(--muted); text-align: center; }
 .foresight-brief-head { padding: 16px; border-bottom: 1px solid var(--border); }
 .foresight-brief-head h2 { margin: 4px 0 8px; font-size: 21px; line-height: 1.15; }
-.foresight-verdict { display: inline-flex; padding: 3px 7px; border: 1px solid var(--border); border-radius: 4px; color: var(--muted); font-size: 13px; }
-.foresight-verdict.positive { border-color: color-mix(in srgb, var(--fs-positive) 40%, var(--border)); color: var(--fs-positive); }
-.foresight-verdict.negative { border-color: color-mix(in srgb, var(--fs-negative) 40%, var(--border)); color: var(--fs-negative); }
-.foresight-verdict.mixed { border-color: color-mix(in srgb, var(--fs-amber) 40%, var(--border)); color: var(--fs-amber); }
+.foresight-confidence { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+.foresight-confidence > span { padding: 6px 7px; border: 1px solid var(--border); border-radius: 4px; }
+.foresight-confidence small { display: block; color: var(--muted); font-size: 13px; letter-spacing: .04em; text-transform: uppercase; }
+.foresight-confidence strong { display: block; margin-top: 1px; font-size: 13px; }
+.foresight-condition { margin-top: 9px; color: var(--muted); font-size: 13px; line-height: 1.45; }
 .foresight-brief-section { display: grid; grid-template-columns: 20px 1fr; gap: 9px; padding: 12px 15px; border-bottom: 1px solid var(--border); }
 .foresight-brief-section > i { margin-top: 2px; color: var(--muted); font-size: 16px; }
 .foresight-brief-section h3 { margin-bottom: 3px; font-size: 15px; }
@@ -147,16 +151,26 @@
 .foresight-btn.primary { border-color: color-mix(in srgb, var(--fs-accent) 55%, var(--border)); color: var(--fs-accent); }
 
 .foresight-causal { min-height: 380px; }
-.foresight-chain { display: flex; align-items: stretch; gap: 8px; padding: 30px 16px; overflow-x: auto; }
-.foresight-node { flex: 1 0 170px; max-width: 230px; padding: 12px; border: 1px solid var(--border); border-radius: 7px; background: var(--fs-raised); }
+.foresight-graph-levels { display: grid; grid-template-columns: repeat(3, minmax(210px, 1fr)); gap: 18px; padding: 24px 16px; overflow-x: auto; }
+.foresight-graph-level { position: relative; display: flex; min-width: 210px; flex-direction: column; gap: 9px; }
+.foresight-graph-level + .foresight-graph-level::before { content: '→'; position: absolute; top: 45%; left: -16px; color: var(--fs-accent); font-size: 18px; }
+.foresight-level-label { color: var(--muted); font-size: 13px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.foresight-node { padding: 12px; border: 1px solid var(--border); border-radius: 7px; background: var(--fs-raised); }
 .foresight-node.origin { border-color: color-mix(in srgb, var(--fs-accent) 55%, var(--border)); }
-.foresight-node small { display: block; color: var(--muted); font-size: 13px; text-transform: uppercase; }
+.foresight-node-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.foresight-node-meta > span:last-child { color: var(--muted); font-size: 13px; }
 .foresight-node strong { display: block; margin-top: 3px; font-size: 16px; }
-.foresight-node p { margin-top: 8px; color: var(--muted); font-size: 13px; line-height: 1.4; }
-.foresight-arrow { display: flex; flex: 0 0 58px; flex-direction: column; align-items: center; justify-content: center; color: var(--fs-accent); }
-.foresight-arrow span { font-size: 24px; }
-.foresight-arrow small { color: var(--muted); font-size: 13px; text-align: center; }
-.foresight-chain-empty { align-self: center; color: var(--muted); }
+.foresight-relation { margin-top: 9px; padding-top: 8px; border-top: 1px solid var(--border); }
+.foresight-relation small { display: block; color: var(--muted); font-size: 13px; }
+.foresight-relation p { margin-top: 4px; color: var(--muted); font-size: 13px; line-height: 1.4; }
+.foresight-relation p.condition { color: var(--fs-amber); }
+.foresight-chain-empty { padding: 60px 20px; color: var(--muted); text-align: center; }
+
+.foresight-gap { min-height: 300px; padding: 30px; }
+.foresight-gap h2 { margin-top: 6px; font-size: 26px; }
+.foresight-gap > p { max-width: 650px; margin-top: 8px; color: var(--muted); line-height: 1.55; }
+.foresight-gap ul { max-width: 720px; margin: 22px 0 0 18px; color: var(--muted); }
+.foresight-gap li + li { margin-top: 7px; }
 
 .foresight-empty { display: grid; grid-template-columns: 1fr 1.3fr; gap: 24px; min-height: 400px; margin-top: 12px; padding: 54px; border: 1px solid var(--border); border-radius: 9px; background: var(--fs-panel); }
 .foresight-empty-copy { align-self: center; max-width: 470px; }
@@ -186,4 +200,6 @@
   .foresight-empty { padding: 24px; }
   .foresight-methods > div { grid-template-columns: 112px 1fr; }
   .foresight-methods span:last-child { grid-column: 1 / -1; }
+  .foresight-graph-levels { grid-template-columns: repeat(3, minmax(250px, 1fr)); }
+  .foresight-confidence { grid-template-columns: 1fr; }
 }
