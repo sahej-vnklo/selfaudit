@@ -522,7 +522,7 @@ export default function Landing({ onStart, onSignUp, session, openMenu, onMenuOp
             <button className="closing-action closing-action-start" type="button" onClick={openGettingStarted}>
               <span>
                 <span className="closing-action-title">Get Started</span>
-                <span className="closing-action-copy">Review what you need, configure the business, and begin your evaluation.</span>
+                <span className="closing-action-copy">Connect the business, uncover what is costing you, and move from insight to controlled action.</span>
               </span>
               <span className="closing-action-arrow" aria-hidden="true">→</span>
             </button>
@@ -598,7 +598,6 @@ export default function Landing({ onStart, onSignUp, session, openMenu, onMenuOp
               <li><span>03</span><div><strong>Define the standards.</strong><p>Bring the targets or thresholds that describe healthy performance. You can refine them during setup.</p></div></li>
               <li><span>04</span><div><strong>Assign an accountable operator.</strong><p>Someone should own configuration, review signals, and approve any action before it reaches the business.</p></div></li>
             </ol>
-            <div className="landing-guide-note"><strong>Evaluation period</strong><span>Your evaluation begins after the initial configuration is usable—not merely when the account is created.</span></div>
             <button className="landing-guide-demo" type="button" onClick={openDemoFromGuide}>
               <span>Request a Demo</span>
               <span aria-hidden="true">→</span>
