@@ -69,6 +69,14 @@ function BurgerMenu({ onClose, onLogoClick, onNav, onAnchor }) {
               <button className="menu-sublink" onClick={() => onNav('origin/dispatch')}>Dispatch</button>
             </div>
           </div>
+          <div className="menu-learning">
+            <div className="menu-eyebrow">Learn + Practice</div>
+            <a className="menu-cat menu-external" href="https://ei.tryselfaudit.com" target="_blank" rel="noopener noreferrer">
+              <span>Enterprise Intelligence</span>
+              <span aria-hidden="true">↗</span>
+            </a>
+            <p className="menu-resource-copy">Manual, pattern analysis, and case-file investigations.</p>
+          </div>
           <div className="menu-group">
             <button className="menu-cat" onClick={() => onNav('about')}>About</button>
           </div>

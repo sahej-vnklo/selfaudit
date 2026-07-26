@@ -682,6 +682,30 @@
 }
 .sa-home .menu-cat:hover { color: var(--breach); transform: translateX(4px); }
 
+.sa-home .menu-learning {
+  margin-bottom: clamp(40px, 5vh, 64px);
+}
+.sa-home .menu-learning .menu-eyebrow {
+  margin-bottom: 18px;
+}
+.sa-home .menu-external {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 12px;
+}
+.sa-home .menu-external span:last-child {
+  font-family: var(--sans);
+  font-size: 0.6em;
+  font-weight: 500;
+}
+.sa-home .menu-resource-copy {
+  max-width: 440px;
+  margin-top: 12px;
+  color: var(--ink-2);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
 .sa-home .menu-sublist {
   margin-top: 20px;
   padding-left: 22px;
