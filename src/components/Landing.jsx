@@ -412,7 +412,7 @@ export default function Landing({ onStart, onSignUp, session, openMenu, onMenuOp
         <div className="wrap nav-inner">
           <a className="logo" href="#" onClick={(e) => { e.preventDefault(); handleLogoClick() }}>SelfAudit</a>
           <div className="nav-actions">
-            <button className="nav-cta" onClick={handleDashboard}>Dashboard</button>
+            <button className="nav-cta" onClick={handleDashboard}>Client Access</button>
             <div className="nav-icon-group" aria-hidden="true">
               <button className="nav-menu-btn" aria-label="Open menu" onClick={() => setMenuOpen(true)} />
             </div>
