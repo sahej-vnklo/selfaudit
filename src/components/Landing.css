@@ -311,8 +311,7 @@
 }
 .sa-home .closing-action-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 22px;
+  grid-template-columns: minmax(0, 1fr);
   padding: 32px 0;
 }
 .sa-home .closing-action {
@@ -328,18 +327,16 @@
   transition: transform 180ms ease, background 180ms ease, color 180ms ease;
 }
 .sa-home .closing-action:hover { transform: translateY(-3px); }
-.sa-home .closing-action-demo {
-  color: var(--ink);
-  background: #E8E8E6;
-  border-color: #DEDEDB;
-}
-.sa-home .closing-action-demo:hover { background: #DEDEDB; }
 .sa-home .closing-action-start {
-  color: #FDFDFC;
-  background: var(--panel-3);
-  border-color: var(--panel-3);
+  color: var(--ink);
+  background: linear-gradient(112deg, #E8E8E6 0%, #DEDEDB 38%, #77797D 66%, var(--panel-3) 100%);
+  border-color: #CFCFCD;
 }
-.sa-home .closing-action-start:hover { background: var(--panel); }
+.sa-home .closing-action-start:hover {
+  background: linear-gradient(112deg, #DEDEDB 0%, #D2D2CF 38%, #67696E 66%, var(--panel) 100%);
+}
+.sa-home .closing-action-start .closing-action-copy { max-width: 520px; }
+.sa-home .closing-action-start .closing-action-arrow { color: #FDFDFC; }
 .sa-home .closing-action-title {
   display: block;
   font-family: var(--wordmark-font);
@@ -550,6 +547,33 @@
   line-height: 1.55;
 }
 .sa-home .landing-guide-note span { color: var(--ink-2); }
+.sa-home .landing-guide-demo {
+  width: 100%;
+  min-height: 58px;
+  margin-top: 16px;
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--panel-3);
+  color: #FDFDFC;
+  border: 1px solid var(--panel-3);
+  border-radius: 0;
+  font-family: var(--wordmark-font);
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  transition: background 160ms ease, transform 160ms ease;
+}
+.sa-home .landing-guide-demo:hover {
+  background: var(--panel);
+  transform: translateY(-1px);
+}
+.sa-home .landing-guide-demo span:last-child {
+  font-size: 24px;
+  font-weight: 300;
+  line-height: 1;
+}
 
 .sa-home footer { border-top: 1px solid var(--line); padding: 38px 0 50px; background: var(--white); }
 .sa-home .foot-inner { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--ink-3); }

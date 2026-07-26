@@ -319,6 +319,11 @@ export default function Landing({ onStart, onSignUp, session, openMenu, onMenuOp
     setGettingStartedOpen(true)
   }, [posthog])
 
+  const openDemoFromGuide = useCallback(() => {
+    setGettingStartedOpen(false)
+    openDemoRequest()
+  }, [openDemoRequest])
+
   const handleNav = useCallback((hash) => {
     setMenuOpen(false)
     window.location.hash = hash
@@ -514,13 +519,6 @@ export default function Landing({ onStart, onSignUp, session, openMenu, onMenuOp
         <div className="wrap">
           <div className="closing-rule" />
           <div className="closing-action-grid reveal">
-            <button className="closing-action closing-action-demo" type="button" onClick={openDemoRequest}>
-              <span>
-                <span className="closing-action-title">Request a Demo</span>
-                <span className="closing-action-copy">See SelfAudit applied to the operating questions that matter to you.</span>
-              </span>
-              <span className="closing-action-arrow" aria-hidden="true">→</span>
-            </button>
             <button className="closing-action closing-action-start" type="button" onClick={openGettingStarted}>
               <span>
                 <span className="closing-action-title">Get Started</span>
@@ -601,6 +599,10 @@ export default function Landing({ onStart, onSignUp, session, openMenu, onMenuOp
               <li><span>04</span><div><strong>Assign an accountable operator.</strong><p>Someone should own configuration, review signals, and approve any action before it reaches the business.</p></div></li>
             </ol>
             <div className="landing-guide-note"><strong>Evaluation period</strong><span>Your evaluation begins after the initial configuration is usable—not merely when the account is created.</span></div>
+            <button className="landing-guide-demo" type="button" onClick={openDemoFromGuide}>
+              <span>Request a Demo</span>
+              <span aria-hidden="true">→</span>
+            </button>
           </section>
         </div>
       )}
