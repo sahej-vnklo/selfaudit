@@ -1614,6 +1614,19 @@ export default function Dashboard({ user, onStartAudit, onSignOut, auditJustComp
     }
   }
 
+  if (hasSchema === false && !requiresPayment) {
+    return (
+      <SchemaSetup
+        user={user}
+        onComplete={() => {
+          setHasSchema(true)
+          history.replaceState({ section: 'home' }, '', '#home')
+          setSection('home')
+        }}
+      />
+    )
+  }
+
   if (shouldShowWelcomeTour) {
     return (
       <DashboardWelcomeTour
